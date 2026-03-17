@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String
+  password     String
+  role         Role        @default(MEMBER)
+
+  // Mitgliedsdaten
+  mitgliedId   Int?        @unique
+  aufnahmedatum DateTime?
+  berufsstand  String?
+  titel        String?
+
+  // Kontakt & Adresse
+  plz          String?
+  stadt        String?
+  strasse      String?
+  telefon      String?
+  arbeitgeber  String?
+  geburtsdatum DateTime?
+
+  // Bankdaten
+  bankinstitut String?
+  bic          String?
+  iban         String?
+
+  // Nur für Admins sichtbarer Kommentar zu Zahlungs-/Mitgliedschaftsthemen
+  zahlungsKommentar String?
+
+  createdAt    DateTime    @default(now())
+  fees         MemberFee[]
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+model MemberFee {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  // Jahr des Mitgliedsbeitrags (z.B. 2000, 2001, ...)
+  jahr      Int
+  bezahlt   Boolean  @default(false)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jahr])
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

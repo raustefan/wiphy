@@ -1,0 +1,19 @@
+/* src/app/globals.css */
+
+:root {
+    /* Überschreibt die wichtigste Radix-Farbe (Solid Button Background) mit deinem Türkis */
+    --teal-9: #00bfa8;
+
+    /* Hover State (etwas dunkler) */
+    --teal-10: #00a894;
+
+    /* Deine Sekundärfarbe (Beere) als eigene CSS-Variable für freie Verwendung */
+    --wiphy-secondary: #941c4d;
+}
+
+/* Alle Radix-Buttons mit "color=ruby" sollen exakt deine Sekundärfarbe bekommen */
+.rt-r-color-ruby {
+    --ruby-9: var(--wiphy-secondary);
+    --ruby-10: #7a153f;
+    /* dunklerer Hover */
+}
