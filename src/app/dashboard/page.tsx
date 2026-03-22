@@ -16,12 +16,14 @@ import {
     Box,
 } from "@radix-ui/themes";
 
-import { getFeeYears } from "@/lib/server/services/feeService";
+import { getFeeDashboardUsers } from "@/lib/server/services/feeService";
 
 import Link from "next/link";
 import type { Status } from "@prisma/client";
 import LogoutButton from "@/components/LogoutButton";
-
+import { adminDeleteUser } from "@/lib/server/services/userService";
+import { revalidatePath } from "next/cache";
+import { DeleteUserButton } from "./DeleteUserButton";
 
 
 
@@ -48,16 +50,18 @@ function formatDate(d?: string | Date | null) {
     });
 }
 
-const years = getFeeYears(2000);
-const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
-    User & { fees: MemberFee[] }
->;
 
-const currentYear = new Date().getFullYear();
-// Find the current user's record in the users array
-const myRecord = users.find((u) => u.id === currentUser.id);
-const myCurrentYearFeePaid = myRecord?.fees?.find((f) => f.jahr === currentYear)?.bezahlt ?? false;
 
+async function deleteUserAction(formData: FormData) {
+    "use server";
+    const { requireUser } = await import("@/lib/server/authz");
+    const currentUser = await requireUser();
+    const id = formData.get("id") as string;
+    if (currentUser.role !== "ADMIN" || !id) return;
+    if (currentUser.id === id) return; // Prevent self-deletion
+    await adminDeleteUser(id, currentUser.role);
+    revalidatePath("/dashboard");
+}
 
 export default async function DashboardPage() {
     const currentUser = await requireUser();
@@ -65,6 +69,14 @@ export default async function DashboardPage() {
     if (!currentUser.id) redirect("/login");
     const users = await getDashboardUsers(currentUser.id, currentUser.role);
     const profile = await getEditableUser(currentUser.id);
+
+    // Fetch current user's fee data for the visualizer
+    const feeUsers = await getFeeDashboardUsers(currentUser.id, "MEMBER");
+    const myRecord = feeUsers.find((u) => u.id === currentUser.id);
+    const myFees = myRecord?.fees || [];
+
+    const currentYear = new Date().getFullYear();
+    const last3Years = [currentYear - 2, currentYear - 1, currentYear];
 
     // Resolve status and memberSince once, safely
     const userStatus = profile?.status ?? currentUser.status ?? "KEIN_MITGLIED";
@@ -125,6 +137,11 @@ export default async function DashboardPage() {
                                         Blog verwalten
                                     </Button>
                                 </Link>
+                                <Link href="/dashboard/users/new">
+                                    <Button size="2" color="green" variant="solid">
+                                        User hinzufügen
+                                    </Button>
+                                </Link>
                                 <Link href="/dashboard/mail">
                                     <Button size="2" color="blue" variant="solid">
                                         Rundmail senden
@@ -139,6 +156,34 @@ export default async function DashboardPage() {
                         </Card>
                     )}
                 </Flex>
+
+                <Card size="3" mb="4">
+                    <Flex justify="between" align="baseline" mb="3">
+                        <Box>
+                            <Text size="2" color="gray">
+                                Zahlungsübersicht
+                            </Text>
+                            <Heading size="4">Meine Beiträge (Letzte 3 Jahre)</Heading>
+                        </Box>
+                    </Flex>
+
+                    <Separator mb="3" />
+
+                    <Flex gap={{ initial: "3", md: "6" }} justify="start">
+                        {last3Years.map(year => {
+                            const fee = myFees.find(f => f.jahr === year);
+                            const isPaid = fee?.bezahlt ?? false;
+                            return (
+                                <Flex key={year} direction="column" align="center" gap="2">
+                                    <Text size="3" weight="bold">{year}</Text>
+                                    <Badge color={isPaid ? "green" : "red"} size="2">
+                                        {isPaid ? "Bezahlt" : "Ausstehend"}
+                                    </Badge>
+                                </Flex>
+                            );
+                        })}
+                    </Flex>
+                </Card>
 
                 <Card size="3">
                     <Flex justify="between" align="baseline" mb="3">
@@ -158,6 +203,7 @@ export default async function DashboardPage() {
                     <Table.Root variant="surface">
                         <Table.Header>
                             <Table.Row>
+                                {<Table.ColumnHeaderCell>Mitglieds-ID</Table.ColumnHeaderCell>}
                                 <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                                 <Table.ColumnHeaderCell>E-Mail</Table.ColumnHeaderCell>
                                 <Table.ColumnHeaderCell>Rolle</Table.ColumnHeaderCell>
@@ -168,7 +214,8 @@ export default async function DashboardPage() {
                         <Table.Body>
                             {users.map((u) => (
                                 <Table.Row key={u.id}>
-                                    <Table.Cell>{u.name || "—"}</Table.Cell>
+                                    {isAdmin && <Table.Cell>{u.mitgliedId || "—"}</Table.Cell>}
+                                    <Table.Cell>{u.name + ", " + u.vorname || "—"}</Table.Cell>
                                     <Table.Cell>{u.email}</Table.Cell>
                                     <Table.Cell>
                                         <Badge color={u.role === "ADMIN" ? "red" : "blue"}>{u.role}</Badge>
@@ -179,11 +226,19 @@ export default async function DashboardPage() {
                                         </Badge>
                                     </Table.Cell>
                                     <Table.Cell align="right">
-                                        <Link href={`/dashboard/users/${u.id}`}>
-                                            <Button size="1" variant="soft">
-                                                Bearbeiten
-                                            </Button>
-                                        </Link>
+                                        <Flex gap="2" justify="end">
+                                            <Link href={`/dashboard/users/${u.id}`}>
+                                                <Button size="1" variant="soft">
+                                                    Bearbeiten
+                                                </Button>
+                                            </Link>
+                                            {isAdmin && u.id !== currentUser.id && (
+                                                <form action={deleteUserAction}>
+                                                    <input type="hidden" name="id" value={u.id} />
+                                                    <DeleteUserButton />
+                                                </form>
+                                            )}
+                                        </Flex>
                                     </Table.Cell>
                                 </Table.Row>
                             ))}

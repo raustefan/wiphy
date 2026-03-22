@@ -28,3 +28,12 @@ export function updateUserById(id: string, data: Prisma.UserUpdateInput) {
     data,
   });
 }
+
+export async function deleteUserById(id: string) {
+  await prisma.memberFee.deleteMany({ where: { userId: id } });
+  return prisma.user.delete({ where: { id } });
+}
+
+export function createUser(data: Prisma.UserCreateInput) {
+  return prisma.user.create({ data });
+}

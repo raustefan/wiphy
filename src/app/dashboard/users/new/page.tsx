@@ -1,0 +1,120 @@
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/server/authz";
+import { adminCreateUser } from "@/lib/server/services/userService";
+import { Flex, Heading, Text, Button, Container, Card, TextField, Select } from "@radix-ui/themes";
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import type { Role, Status } from "@prisma/client";
+
+async function createUserAction(formData: FormData) {
+    "use server";
+    const currentUser = await requireUser();
+    if (currentUser.role !== "ADMIN") return redirect("/dashboard");
+
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const name = formData.get("name") as string;
+    const vorname = formData.get("vorname") as string;
+    const role = formData.get("role") as Role;
+    const status = formData.get("status") as Status;
+
+    if (!email || !password || !name || !vorname) {
+        redirect("/dashboard/users/new?error=missing_fields");
+    }
+
+    try {
+        await adminCreateUser({
+            email,
+            password,
+            name,
+            vorname,
+            role: role || "MEMBER",
+            status: status || "KEIN_MITGLIED",
+        }, currentUser.role);
+    } catch (e) {
+        redirect("/dashboard/users/new?error=creation_failed");
+    }
+
+    revalidatePath("/dashboard");
+    redirect("/dashboard");
+}
+
+export default async function NewUserPage({ searchParams }: { searchParams?: Promise<{ error?: string }> }) {
+    const currentUser = await requireUser();
+    if (currentUser.role !== "ADMIN") return redirect("/dashboard");
+    
+    const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
+    return (
+        <Container size="2" mt="6">
+            <Card size="4">
+                <Heading mb="4">Benutzer hinzufügen</Heading>
+
+                {resolvedSearchParams?.error === "missing_fields" && (
+                    <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                        <Text weight="bold" color="red" size="2">Bitte alle Pflichtfelder ausfüllen.</Text>
+                    </Card>
+                )}
+                {resolvedSearchParams?.error === "creation_failed" && (
+                    <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                        <Text weight="bold" color="red" size="2">Ein Fehler ist aufgetreten (evtl. existiert die E-Mail bereits).</Text>
+                    </Card>
+                )}
+
+                <form action={createUserAction}>
+                    <Flex direction="column" gap="3">
+                        <label>
+                            <Text size="2" weight="bold">Vorname *</Text>
+                            <TextField.Root name="vorname" required />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">Nachname *</Text>
+                            <TextField.Root name="name" required />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">E-Mail *</Text>
+                            <TextField.Root name="email" type="email" required />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">Passwort *</Text>
+                            <TextField.Root name="password" type="password" required />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold" mb="1" as="div">Rolle</Text>
+                            <Select.Root name="role" defaultValue="MEMBER">
+                                <Select.Trigger />
+                                <Select.Content>
+                                    <Select.Item value="MEMBER">MEMBER</Select.Item>
+                                    <Select.Item value="ADMIN">ADMIN</Select.Item>
+                                </Select.Content>
+                            </Select.Root>
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold" mb="1" as="div">Status</Text>
+                            <Select.Root name="status" defaultValue="KEIN_MITGLIED">
+                                <Select.Trigger />
+                                <Select.Content>
+                                    <Select.Item value="ORDENTLICHES_MITGLIED">ORDENTLICHES_MITGLIED</Select.Item>
+                                    <Select.Item value="EHRENMITGLIED">EHRENMITGLIED</Select.Item>
+                                    <Select.Item value="KEIN_MITGLIED">KEIN_MITGLIED</Select.Item>
+                                </Select.Content>
+                            </Select.Root>
+                        </label>
+
+                        <Flex gap="3" mt="4">
+                            <Button type="submit">Hinzufügen</Button>
+                            <Link href="/dashboard">
+                                <Button variant="soft" color="gray">Abbrechen</Button>
+                            </Link>
+                        </Flex>
+                    </Flex>
+                </form>
+            </Card>
+        </Container>
+    );
+}

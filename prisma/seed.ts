@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
@@ -16,6 +16,7 @@ async function main() {
         create: {
             email: "admin@wiphy.de",
             name: "Admin",
+            vorname: "Admin",
             password: hashed,
             role: "ADMIN",
         },

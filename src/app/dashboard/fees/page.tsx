@@ -10,7 +10,7 @@ export default async function FeesDashboardPage() {
   const currentUser = await requireUser();
   const isAdmin = currentUser.role === "ADMIN";
   if (!currentUser.id) redirect("/login");
-  const years = getFeeYears(2025);
+  const years = getFeeYears(2024);
   const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
     User & { fees: MemberFee[] }
   >;
@@ -32,7 +32,7 @@ export default async function FeesDashboardPage() {
               {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
             </Heading>
             <Text size="2" color="gray">
-              Jahre ab 2025
+              Jahre ab 2045
             </Text>
           </Box>
           <Link href="/dashboard">

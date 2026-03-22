@@ -4,7 +4,10 @@ import {
   findUserByMitgliedIdExcludingUser,
   findUsersForDashboard,
   updateUserById,
+  deleteUserById,
+  createUser,
 } from "@/lib/server/repositories/userRepository";
+import bcrypt from "bcryptjs";
 
 type MaybeDate = Date | string | null | undefined;
 type MaybeBool = boolean | string | null | undefined;
@@ -193,5 +196,24 @@ export async function updateUserProfile(input: UpdateUserInput) {
   }
 
   await updateUserById(input.idToEdit, data);
+  return { ok: true as const };
+}
+
+export async function adminDeleteUser(userIdToDelete: string, currentUserRole: Role) {
+  if (currentUserRole !== "ADMIN") {
+    throw new Error("Unauthorized: Only admins can delete users");
+  }
+  await deleteUserById(userIdToDelete);
+  return { ok: true as const };
+}
+
+export async function adminCreateUser(input: Prisma.UserCreateInput, currentUserRole: Role) {
+  if (currentUserRole !== "ADMIN") {
+    throw new Error("Unauthorized: Only admins can create users");
+  }
+  // Hash password before saving
+  const hashedPassword = await bcrypt.hash(input.password, 12);
+  const data = { ...input, password: hashedPassword };
+  await createUser(data);
   return { ok: true as const };
 }
