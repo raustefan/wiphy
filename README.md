@@ -15,12 +15,11 @@ Eine moderne Vereinswebsite mit einem öffentlichen Bereich (Startseite, Blog) u
 ## ✨ Features
 
 - **Öffentlicher Bereich:**
-  - Schicke Startseite mit Hero-Sektion und Info-Cards.
+  - Startseite mit Hero-Sektion und Info-Cards.
   - Blog-Übersicht (`/blog`) und Lese-Ansicht für Markdown-Artikel.
   - Globaler Header & Footer.
 - **Authentifizierung:**
   - Registrierung (`/register`) und Login (`/login`) via E-Mail & Passwort.
-  - Custom Logout-Button mit Bestätigungs-Overlay (Radix UI Dialog).
 - **Rollen-System (ADMIN & MEMBER):**
   - **MEMBER:** Kann sich einloggen, das Dashboard sehen und das eigene Profil (Name, Stadt, Telefon) bearbeiten.
   - **ADMIN:** Sieht alle Benutzer, kann Rollen ändern und hat vollen Zugriff auf das Blog-System (Erstellen, Bearbeiten, Löschen, Veröffentlichen).
@@ -29,8 +28,8 @@ Eine moderne Vereinswebsite mit einem öffentlichen Bereich (Startseite, Blog) u
   - Öffentliche Anzeige der Beiträge im Blog-Bereich.
 - **Rundmail-System:**
   - Admins können über `/dashboard/mail` eine Rundmail an definierte Empfänger-Gruppen schicken.
-  - Unterstützte Gruppen: **Alle Benutzer**, **nur Mitglieder (MEMBER)** oder **nur Administratoren (ADMIN)**.
-  - Versand per BCC, damit Empfänger nicht alle Adressen sehen.
+  - Unterstützte Gruppen: **Alle Benutzer**, **nur Mitglieder (MEMBER)**, **nur Administratoren (ADMIN)** oder **ausgewählte Nutzer** (Suche, Mehrfachauswahl).
+  - Versand per BCC, damit Empfänger nicht alle Adressen sehen; optional **BCC an mich** (Kopie an den absendenden Admin).
   - Nutzt Nodemailer und SMTP-Zugangsdaten aus der `.env`.
 
 ## 📂 Ordnerstruktur
@@ -72,7 +71,6 @@ Lege eine `.env` im Projekt-Root an (nicht ins Repo einchecken) und befülle min
   - `DATABASE_URL` – PostgreSQL-Verbindungs-URL
   - `NEXTAUTH_SECRET` – Secret für NextAuth
   - `NEXTAUTH_URL` – Basis-URL der Anwendung (z.B. `http://localhost:3000`)
-
 - **SMTP / Rundmail**
   - `SMTP_HOST` – SMTP-Server (z.B. Mail-Provider)
   - `SMTP_PORT` – Port (z.B. `587` oder `465`)
@@ -82,19 +80,22 @@ Lege eine `.env` im Projekt-Root an (nicht ins Repo einchecken) und befülle min
 
 ## 🛠 Wichtige Befehle
 
-
 Entwicklungsserver starten:
 
-
-	pnpm dev
+```
+pnpm dev
+```
 
 Datenbank-Schema pushen (nach Änderungen in schema.prisma):
 
-
-	pnpm dlx prisma generate
-	pnpm dlx prisma db push
+```
+pnpm dlx prisma generate
+pnpm dlx prisma db push
+```
 
 Datenbank grafisch einsehen (Prisma Studio):
 
+```
+pnpm dlx prisma studio
+```
 
-	pnpm dlx prisma studio

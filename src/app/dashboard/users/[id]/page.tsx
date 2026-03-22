@@ -1,6 +1,9 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { assertCanEditUser, requireUser } from "@/lib/server/authz";
+import { AppError } from "@/lib/server/errors";
+import { getEditableUser, updateUserProfile } from "@/lib/server/services/userService";
+import { parseFormData } from "@/lib/server/validation/parseFormData";
+import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import {
     Flex,
     Heading,
@@ -16,66 +19,86 @@ import { revalidatePath } from "next/cache";
 
 async function updateUser(formData: FormData) {
     "use server";
-    const session = await auth();
-    if (!session) redirect("/login");
+    const currentUser = await requireUser();
 
-    const currentUser = session.user as any;
-    const currentUserId = currentUser.id;
-    const currentUserRole = currentUser.role;
-    const idToEdit = formData.get("id") as string;
-
-    // SICHERHEIT: Nur Admins oder der Besitzer selbst dürfen speichern
-    if (currentUserRole !== "ADMIN" && currentUserId !== idToEdit) {
-        throw new Error("Keine Berechtigung");
-    }
-
-    const data: any = {
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        titel: (formData.get("titel") as string) || null,
-        berufsstand: (formData.get("berufsstand") as string) || null,
-        plz: (formData.get("plz") as string) || null,
-        stadt: (formData.get("stadt") as string) || null,
-        strasse: (formData.get("strasse") as string) || null,
-        telefon: (formData.get("telefon") as string) || null,
-        arbeitgeber: (formData.get("arbeitgeber") as string) || null,
-    };
-
-    // SICHERHEIT: Nur Admins dürfen Rolle & Mitgliedsdaten ändern
-    if (currentUserRole === "ADMIN") {
-        const roleValue = formData.get("role");
-        if (roleValue) {
-            data.role = roleValue as "ADMIN" | "MEMBER";
-        }
-
-        const mitgliedIdRaw = formData.get("mitgliedId") as string;
-        if (mitgliedIdRaw !== null && mitgliedIdRaw !== "") {
-            const parsed = Number(mitgliedIdRaw);
-            if (!Number.isNaN(parsed)) {
-                // Prüfen, ob diese Mitglieds-ID bereits bei einem ANDEREN User vergeben ist
-                const existingWithMitgliedId = await prisma.user.findFirst({
-                    where: {
-                        mitgliedId: parsed,
-                        id: { not: idToEdit },
-                    },
-                } as any);
-
-                if (existingWithMitgliedId) {
-                    // Zurück zur Bearbeitungsseite mit Fehlermeldungs-Query
-                    redirect(`/dashboard/users/${idToEdit}?mitgliedIdError=1`);
-                }
-
-                data.mitgliedId = parsed;
+    let parsed;
+    try {
+        parsed = parseFormData(userUpdateSchema, formData);
+    } catch (e) {
+        if (e instanceof AppError && e.code === "VALIDATION_ERROR") {
+            const id = formData.get("id");
+            const idStr = typeof id === "string" ? id : "";
+            if (idStr) {
+                redirect(`/dashboard/users/${idStr}?validationError=1`);
             }
-        } else {
-            data.mitgliedId = null;
+            redirect("/dashboard");
         }
+        throw e;
     }
 
-    await prisma.user.update({
-        where: { id: idToEdit },
-        data,
+    assertCanEditUser(currentUser, parsed.id);
+
+    const result = await updateUserProfile({
+        idToEdit: parsed.id,
+        currentUserRole: currentUser.role,
+        // basic
+        name: parsed.name,
+        vorname: parsed.vorname,
+        email: parsed.email,
+        titel: parsed.titel,
+        // kontakt & adresse
+        plz: parsed.plz,
+        stadt: parsed.stadt,
+        strasse: parsed.strasse,
+        telefon: parsed.telefon,
+        land: parsed.land,
+        geburtsdatum: parsed.geburtsdatum,
+        website: parsed.website,
+        // studium
+        studiengang: parsed.studiengang,
+        studienbeginn: parsed.studienbeginn,
+        studienende: parsed.studienende,
+        diplomarbeit: parsed.diplomarbeit,
+        bachelorarbeit: parsed.bachelorarbeit,
+        masterarbeit: parsed.masterarbeit,
+        dissertation: parsed.dissertation,
+        // beruf
+        arbeitgeber: parsed.arbeitgeber,
+        berufsstand: parsed.berufsstand,
+        berufszweig: parsed.berufszweig,
+        position: parsed.position,
+        praktika: parsed.praktika,
+        berufserfahrung: parsed.berufserfahrung,
+        // zahlungs/admin
+        zahlungsKommentar: parsed.zahlungsKommentar,
+        bank: parsed.bank,
+        BLZ: parsed.BLZ,
+        KTO: parsed.KTO,
+        bankeinzug: parsed.bankeinzug,
+        zuwendungsbesch: parsed.zuwendungsbesch,
+        mahnung: parsed.mahnung,
+        IBAN: parsed.IBAN,
+        BIC: parsed.BIC,
+        mandatserteilung: parsed.mandatserteilung,
+        datensperren: parsed.datensperren,
+        ausschluss: parsed.ausschluss,
+        // Mitglieds- / role (admin only allowed to change)
+        role:
+            parsed.role === "ADMIN" || parsed.role === "MEMBER"
+                ? parsed.role
+                : undefined,
+        status:
+            parsed.status === "ORDENTLICHES_MITGLIED" ||
+                parsed.status === "EHRENMITGLIED" ||
+                parsed.status === "KEIN_MITGLIED"
+                ? parsed.status
+                : undefined,
+        mitgliedId: parsed.mitgliedId,
     });
+
+    if (!result.ok && result.reason === "mitgliedId_conflict") {
+        redirect(`/dashboard/users/${parsed.id}?mitgliedIdError=1`);
+    }
 
     revalidatePath("/dashboard");
     redirect("/dashboard");
@@ -86,14 +109,12 @@ export default async function EditUserPage({
     searchParams,
 }: {
     params: Promise<{ id: string }>;
-    searchParams?: { mitgliedIdError?: string };
+    searchParams?: Promise<{ mitgliedIdError?: string; validationError?: string }>;
 }) {
     const resolvedParams = await params;
+    const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
-    const session = await auth();
-    if (!session) redirect("/login");
-
-    const currentUser = session.user as any;
+    const currentUser = await requireUser();
     const isAdmin = currentUser.role === "ADMIN";
 
     // SICHERHEIT: MEMBER wird beim Zugriff auf fremde Profile aufs Dashboard geschickt
@@ -101,9 +122,7 @@ export default async function EditUserPage({
         redirect("/dashboard");
     }
 
-    const user = (await prisma.user.findUnique({
-        where: { id: resolvedParams.id },
-    })) as any;
+    const user = await getEditableUser(resolvedParams.id);
     if (!user) return <Text>User nicht gefunden</Text>;
 
     return (
@@ -113,7 +132,18 @@ export default async function EditUserPage({
                     {isAdmin ? "Benutzer bearbeiten" : "Mein Profil bearbeiten"}
                 </Heading>
 
-                {isAdmin && searchParams?.mitgliedIdError === "1" && (
+                {resolvedSearchParams?.validationError === "1" && (
+                    <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                        <Text weight="bold" color="red" size="2">
+                            Bitte prüfe deine Eingaben.
+                        </Text>
+                        <Text size="2" color="red">
+                            Ein oder mehrere Felder sind ungültig oder fehlen.
+                        </Text>
+                    </Card>
+                )}
+
+                {isAdmin && resolvedSearchParams?.mitgliedIdError === "1" && (
                     <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
                         <Text weight="bold" color="red" size="2">
                             Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.
@@ -123,24 +153,28 @@ export default async function EditUserPage({
                         </Text>
                     </Card>
                 )}
+
                 <form action={updateUser}>
                     <input type="hidden" name="id" value={user.id} />
 
                     <Flex direction="column" gap="3">
                         <label>
                             <Text size="2" weight="bold">
-                                Name
+                                Vorname
                             </Text>
-                            <TextField.Root
-                                name="name"
-                                defaultValue={user.name || ""}
-                                required
-                            />
+                            <TextField.Root name="vorname" defaultValue={user.vorname || ""} />
                         </label>
 
                         <label>
                             <Text size="2" weight="bold">
-                                Email
+                                Name
+                            </Text>
+                            <TextField.Root name="name" defaultValue={user.name || ""} required />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                E-Mail
                             </Text>
                             <TextField.Root
                                 name="email"
@@ -159,9 +193,24 @@ export default async function EditUserPage({
 
                         <label>
                             <Text size="2" weight="bold">
-                                Berufsstand
+                                Geburtsdatum
                             </Text>
-                            <TextField.Root name="berufsstand" defaultValue={user.berufsstand || ""} />
+                            <input
+                                name="geburtsdatum"
+                                type="date"
+                                defaultValue={
+                                    user.geburtsdatum
+                                        ? new Date(user.geburtsdatum).toISOString().slice(0, 10)
+                                        : ""
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Land
+                            </Text>
+                            <TextField.Root name="land" defaultValue={user.land || ""} />
                         </label>
 
                         <label>
@@ -194,12 +243,247 @@ export default async function EditUserPage({
 
                         <label>
                             <Text size="2" weight="bold">
-                                Arbeitgeber
+                                Website
                             </Text>
-                            <TextField.Root name="arbeitgeber" defaultValue={user.arbeitgeber || ""} />
+                            <TextField.Root name="website" defaultValue={user.website || ""} />
                         </label>
 
-                        {/* Mitgliedsdaten & Rolle können NUR vom Admin geändert werden */}
+                        <Heading size="3" mb="2">
+                            Studium
+                        </Heading>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Studiengang
+                            </Text>
+                            <TextField.Root
+                                name="studiengang"
+                                defaultValue={user.studiengang || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Studienbeginn
+                            </Text>
+                            <input
+                                name="studienbeginn"
+                                type="date"
+                                defaultValue={
+                                    user.studienbeginn
+                                        ? new Date(user.studienbeginn).toISOString().slice(0, 10)
+                                        : ""
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Studienende
+                            </Text>
+                            <input
+                                name="studienende"
+                                type="date"
+                                defaultValue={
+                                    user.studienende
+                                        ? new Date(user.studienende).toISOString().slice(0, 10)
+                                        : ""
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Diplomarbeit
+                            </Text>
+                            <TextField.Root
+                                name="diplomarbeit"
+                                defaultValue={user.diplomarbeit || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Bachelorarbeit
+                            </Text>
+                            <TextField.Root
+                                name="bachelorarbeit"
+                                defaultValue={user.bachelorarbeit || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Masterarbeit
+                            </Text>
+                            <TextField.Root
+                                name="masterarbeit"
+                                defaultValue={user.masterarbeit || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Dissertation
+                            </Text>
+                            <TextField.Root
+                                name="dissertation"
+                                defaultValue={user.dissertation || ""}
+                            />
+                        </label>
+
+                        <Heading size="3" mb="2">
+                            Beruf
+                        </Heading>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Arbeitgeber
+                            </Text>
+                            <TextField.Root
+                                name="arbeitgeber"
+                                defaultValue={user.arbeitgeber || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Berufsstand
+                            </Text>
+                            <TextField.Root
+                                name="berufsstand"
+                                defaultValue={user.berufsstand || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Berufszweig
+                            </Text>
+                            <TextField.Root
+                                name="berufszweig"
+                                defaultValue={user.berufszweig || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Position
+                            </Text>
+                            <TextField.Root name="position" defaultValue={user.position || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Praktika
+                            </Text>
+                            <TextField.Root name="praktika" defaultValue={user.praktika || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Berufserfahrung
+                            </Text>
+                            <TextField.Root
+                                name="berufserfahrung"
+                                defaultValue={user.berufserfahrung || ""}
+                            />
+                        </label>
+
+                        <Heading size="3" mb="2">
+                            Zahlungs- & Admin-Informationen
+                        </Heading>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Zahlungs-Kommentar
+                            </Text>
+                            <TextField.Root
+                                name="zahlungsKommentar"
+                                defaultValue={user.zahlungsKommentar || ""}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Bank
+                            </Text>
+                            <TextField.Root name="bank" defaultValue={user.bank || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                BLZ
+                            </Text>
+                            <TextField.Root name="BLZ" defaultValue={user.BLZ || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Kontonummer
+                            </Text>
+                            <TextField.Root name="KTO" defaultValue={user.KTO || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Bankeinzug
+                            </Text>
+                            <input
+                                name="bankeinzug"
+                                type="checkbox"
+                                defaultChecked={Boolean(user.bankeinzug)}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Zuwendungsbeschreibung
+                            </Text>
+                            <input
+                                name="zuwendungsbesch"
+                                type="checkbox"
+                                defaultChecked={Boolean(user.zuwendungsbesch)}
+                            />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Mahnung
+                            </Text>
+                            <TextField.Root name="mahnung" defaultValue={user.mahnung || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                IBAN
+                            </Text>
+                            <TextField.Root name="IBAN" defaultValue={user.IBAN || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                BIC
+                            </Text>
+                            <TextField.Root name="BIC" defaultValue={user.BIC || ""} />
+                        </label>
+
+                        <label>
+                            <Text size="2" weight="bold">
+                                Mandatserteilung
+                            </Text>
+                            <input
+                                name="mandatserteilung"
+                                type="date"
+                                defaultValue={
+                                    user.mandatserteilung
+                                        ? new Date(user.mandatserteilung).toISOString().slice(0, 10)
+                                        : ""
+                                }
+                            />
+                        </label>
+
+                        {/* Admin-only fields */}
                         {isAdmin && (
                             <>
                                 <label>
@@ -224,6 +508,46 @@ export default async function EditUserPage({
                                             <Select.Item value="ADMIN">ADMIN</Select.Item>
                                         </Select.Content>
                                     </Select.Root>
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold" mb="1" as="div">
+                                        Status
+                                    </Text>
+                                    <Select.Root name="status" defaultValue={user.status}>
+                                        <Select.Trigger />
+                                        <Select.Content>
+                                            <Select.Item value="ORDENTLICHES_MITGLIED">
+                                                ORDENTLICHES_MITGLIED
+                                            </Select.Item>
+                                            <Select.Item value="EHRENMITGLIED">
+                                                EHRENMITGLIED
+                                            </Select.Item>
+                                            <Select.Item value="KEIN_MITGLIED">KEIN_MITGLIED</Select.Item>
+                                        </Select.Content>
+                                    </Select.Root>
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Datensperren
+                                    </Text>
+                                    <input
+                                        name="datensperren"
+                                        type="checkbox"
+                                        defaultChecked={Boolean(user.datensperren)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Ausschluss
+                                    </Text>
+                                    <input
+                                        name="ausschluss"
+                                        type="checkbox"
+                                        defaultChecked={Boolean(user.ausschluss)}
+                                    />
                                 </label>
                             </>
                         )}

@@ -3,33 +3,30 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { AppError, executeAction } from "@/lib/server/errors";
+import { parseFormData } from "@/lib/server/validation/parseFormData";
+import { registerSchema } from "@/lib/server/validation/schemas";
 
 export async function registerUser(formData: FormData) {
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    return executeAction(async () => {
+        const { vorname, name, email, password } = parseFormData(registerSchema, formData);
 
-    if (!name || !email || !password) {
-        return { error: "Bitte alle Felder ausfüllen." };
-    }
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            throw new AppError("CONFLICT", "Diese E-Mail-Adresse wird bereits verwendet.");
+        }
 
-    // Prüfen, ob Email schon existiert
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-        return { error: "Diese E-Mail-Adresse wird bereits verwendet." };
-    }
+        const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Passwort hashen und User anlegen (Rolle ist standardmäßig MEMBER laut Schema)
-    const hashedPassword = await bcrypt.hash(password, 12);
+        await prisma.user.create({
+            data: {
+                vorname,
+                name,
+                email,
+                password: hashedPassword,
+            },
+        });
 
-    await prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-        },
+        redirect("/login?register=success");
     });
-
-    // Nach erfolgreicher Registrierung zum Login leiten
-    redirect("/login");
 }

@@ -1,73 +1,31 @@
  "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/server/authz";
+import { setFeeComment, setFeePaidStatus } from "@/lib/server/services/feeService";
+import { executeAction } from "@/lib/server/errors";
+import { parseFormData } from "@/lib/server/validation/parseFormData";
+import { feeCommentSchema, feeToggleSchema } from "@/lib/server/validation/schemas";
 
 export async function toggleFee(formData: FormData) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  await executeAction(async () => {
+    await requireAdmin();
 
-  const currentUser = session.user as any;
-  if (currentUser.role !== "ADMIN") {
-    throw new Error("Keine Berechtigung");
-  }
+    const { userId, year, paid } = parseFormData(feeToggleSchema, formData);
 
-  const userId = formData.get("userId") as string;
-  const yearRaw = formData.get("year") as string;
-  const paidRaw = formData.get("paid") as string;
-
-  const year = Number(yearRaw);
-  const paid = paidRaw === "true";
-
-  if (!userId || Number.isNaN(year)) {
-    throw new Error("Ungültige Daten");
-  }
-
-  await prisma.memberFee.upsert({
-    where: {
-      userId_jahr: {
-        userId,
-        jahr: year,
-      },
-    },
-    update: {
-      bezahlt: paid,
-    },
-    create: {
-      userId,
-      jahr: year,
-      bezahlt: paid,
-    },
+    await setFeePaidStatus({ userId, year, paid });
+    revalidatePath("/dashboard/fees");
   });
-
-  revalidatePath("/dashboard/fees");
 }
 
 export async function updateFeeComment(formData: FormData) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  await executeAction(async () => {
+    await requireAdmin();
 
-  const currentUser = session.user as any;
-  if (currentUser.role !== "ADMIN") {
-    throw new Error("Keine Berechtigung");
-  }
+    const { userId, comment } = parseFormData(feeCommentSchema, formData);
 
-  const userId = formData.get("userId") as string;
-  const comment = (formData.get("comment") as string) || null;
-
-  if (!userId) {
-    throw new Error("Ungültige Daten");
-  }
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      zahlungsKommentar: comment,
-    },
+    await setFeeComment({ userId, comment });
+    revalidatePath("/dashboard/fees");
   });
-
-  revalidatePath("/dashboard/fees");
 }
 

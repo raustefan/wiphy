@@ -10,38 +10,82 @@ model User {
   id           String      @id @default(cuid())
   email        String      @unique
   name         String
+  vorname      String      
   password     String
-  role         Role        @default(MEMBER)
+  titel        String?
 
   // Mitgliedsdaten
   mitgliedId   Int?        @unique
   aufnahmedatum DateTime?
-  berufsstand  String?
-  titel        String?
+  role         Role        @default(MEMBER)
+  status       Status      @default(KEIN_MITGLIED)
+  user          String?
 
   // Kontakt & Adresse
   plz          String?
   stadt        String?
   strasse      String?
   telefon      String?
-  arbeitgeber  String?
   geburtsdatum DateTime?
+  land         String?
 
   // Bankdaten
   bankinstitut String?
   bic          String?
   iban         String?
 
+  //Sonstiges
+  website String?
+  studiengang String?
+  studienbeginn DateTime?
+  studienende DateTime?
+  diplomarbeit String?
+  bachelorarbeit String?
+  masterarbeit String?
+  dissertation String?
+ 
+
+  //Beruf
+  arbeitgeber  String?
+  berufsstand String?
+  berufszweig String?
+  position String?
+  praktika String?
+  berufserfahrung String?
+
   // Nur für Admins sichtbarer Kommentar zu Zahlungs-/Mitgliedschaftsthemen
   zahlungsKommentar String?
+  bank String?
+  BLZ String?
+  KTO String?
+  bankeinzug Boolean?
+  zuwendungsbesch Boolean?
+  mahnung String?
+  IBAN String?
+  BIC String?
+  mandatserteilung DateTime?
+
+
+  datensperren Boolean?
+  ausschluss Boolean?
+
+
+
 
   createdAt    DateTime    @default(now())
   fees         MemberFee[]
+  lastLogin DateTime @default(now())
 }
 
 enum Role {
   MEMBER
   ADMIN
+}
+
+enum Status {
+  ORDENTLICHES_MITGLIED
+  EHRENMITGLIED
+  KEIN_MITGLIED
 }
 
 model MemberFee {

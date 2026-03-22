@@ -1,31 +1,19 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/server/authz";
+import { getFeeDashboardUsers, getFeeYears } from "@/lib/server/services/feeService";
 import { Container, Card, Heading, Text, Table, Badge, Flex, Box, Separator, Button, ScrollArea, TextArea } from "@radix-ui/themes";
 import Link from "next/link";
 import { toggleFee, updateFeeComment } from "./actions";
+import type { User, MemberFee } from "@prisma/client";
 
 export default async function FeesDashboardPage() {
-  const session = await auth();
-  if (!session) redirect("/login");
-
-  const currentUser = session.user as any;
+  const currentUser = await requireUser();
   const isAdmin = currentUser.role === "ADMIN";
-
-  if (!currentUser.id) return <Text>Session-Fehler: Bitte neu einloggen!</Text>;
-
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 2000 + 1 }, (_, i) => 2000 + i);
-
-  const users = (await prisma.user.findMany({
-    where: isAdmin ? {} : { id: currentUser.id },
-    orderBy: {
-      createdAt: "asc",
-    } as any,
-    include: {
-      fees: true,
-    },
-  })) as any[];
+  if (!currentUser.id) redirect("/login");
+  const years = getFeeYears(2025);
+  const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
+    User & { fees: MemberFee[] }
+  >;
 
   return (
     <Box
@@ -44,7 +32,7 @@ export default async function FeesDashboardPage() {
               {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
             </Heading>
             <Text size="2" color="gray">
-              Jahre ab 2000
+              Jahre ab 2025
             </Text>
           </Box>
           <Link href="/dashboard">
@@ -119,9 +107,7 @@ export default async function FeesDashboardPage() {
                       </Table.Cell>
                     )}
                     {years.map((year) => {
-                      const existing = user.fees.find(
-                        (f: any) => f.jahr === year
-                      );
+                      const existing = user.fees.find((f) => f.jahr === year);
                       const paid = existing?.bezahlt ?? false;
 
                       if (!isAdmin) {

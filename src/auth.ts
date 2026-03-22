@@ -1,13 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
-
-// Prisma mit dem PG-Adapter initialisieren (genau wie im Seed!)
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
 import { prisma } from "@/lib/prisma"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -32,15 +25,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         jwt({ token, user }) {
             if (user) {
-                token.role = (user as any).role;
-                token.id = user.id; // <-- WICHTIG: ID in den Token packen
+                const role = (user as { role?: unknown }).role;
+                if (role === "ADMIN" || role === "MEMBER") {
+                    token.role = role;
+                }
+                token.id = user.id;
             }
             return token;
         },
         session({ session, token }) {
             if (session.user) {
-                (session.user as any).role = token.role;
-                (session.user as any).id = token.id; // <-- WICHTIG: ID in die Session packen
+                if (token.role === "ADMIN" || token.role === "MEMBER") {
+                    (session.user as { role?: "ADMIN" | "MEMBER" }).role = token.role;
+                }
+                if (typeof token.id === "string") {
+                    (session.user as { id?: string }).id = token.id;
+                }
             }
             return session;
         },

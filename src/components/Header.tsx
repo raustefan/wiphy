@@ -32,7 +32,9 @@ export default async function Header() {
                         <Link href="/blog" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Blog
                         </Link>
-
+                        <Link href="/vorstand" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
+                            Vorstand
+                        </Link>
                         <Link href={session ? "/dashboard" : "/login"}>
                             {/* Hier nutzen wir "ruby" für deinen zweiten Button (Beere) */}
                             <Button color="ruby" variant="soft" style={{ cursor: "pointer" }}>

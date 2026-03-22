@@ -1,16 +1,12 @@
-// src/app/dashboard/blog/page.tsx
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/server/authz";
+import { getAdminPosts } from "@/lib/server/services/blogService";
 import { Flex, Heading, Button, Container, Card, Table, Badge } from "@radix-ui/themes";
 import Link from "next/link";
 import { deletePost } from "./actions";
 
 export default async function AdminBlogPage() {
-    const session = await auth();
-    if ((session?.user as any)?.role !== "ADMIN") redirect("/dashboard");
-
-    const posts = await prisma.blogPost.findMany({ orderBy: { createdAt: "desc" } });
+    await requireAdmin();
+    const posts = await getAdminPosts();
 
     return (
         <Container size="4" mt="6">

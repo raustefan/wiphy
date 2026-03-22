@@ -1,47 +1,48 @@
-// src/app/dashboard/blog/actions.ts
 "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-// Hilfsfunktion für den Admin-Check
-async function checkAdmin() {
-    const session = await auth();
-    if ((session?.user as any)?.role !== "ADMIN") {
-        throw new Error("Keine Berechtigung");
-    }
-}
+import { requireAdmin } from "@/lib/server/authz";
+import { removeAdminPost, saveAdminPost } from "@/lib/server/services/blogService";
+import { AppError, executeAction } from "@/lib/server/errors";
+import { blogDeleteSchema, blogSaveSchema } from "@/lib/server/validation/schemas";
 
 export async function savePost(formData: FormData) {
-    await checkAdmin();
+    await executeAction(async () => {
+        await requireAdmin();
 
-    const id = formData.get("id") as string;
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const published = formData.get("published") === "on";
+        const raw = {
+            id: String(formData.get("id") ?? ""),
+            title: String(formData.get("title") ?? ""),
+            content: String(formData.get("content") ?? ""),
+            published: formData.get("published") === "on",
+        };
+        const parsed = blogSaveSchema.safeParse(raw);
+        if (!parsed.success) {
+            throw new AppError(
+                "VALIDATION_ERROR",
+                parsed.error.issues[0]?.message ?? "Bitte alle Felder ausfüllen.",
+            );
+        }
 
-    if (id === "new") {
-        await prisma.blogPost.create({
-            data: { title, content, published },
-        });
-    } else {
-        await prisma.blogPost.update({
-            where: { id },
-            data: { title, content, published },
-        });
-    }
-
-    revalidatePath("/dashboard/blog");
-    redirect("/dashboard/blog");
+        await saveAdminPost(parsed.data);
+        revalidatePath("/dashboard/blog");
+        redirect("/dashboard/blog");
+    });
 }
 
 export async function deletePost(formData: FormData) {
-    await checkAdmin();
-    const id = formData.get("id") as string;
-
-    await prisma.blogPost.delete({ where: { id } });
-
-    revalidatePath("/dashboard/blog");
+    await executeAction(async () => {
+        await requireAdmin();
+        const raw = { id: String(formData.get("id") ?? "") };
+        const parsed = blogDeleteSchema.safeParse(raw);
+        if (!parsed.success) {
+            throw new AppError(
+                "VALIDATION_ERROR",
+                parsed.error.issues[0]?.message ?? "Ungültige Beitrags-ID.",
+            );
+        }
+        await removeAdminPost(parsed.data.id);
+        revalidatePath("/dashboard/blog");
+    });
 }

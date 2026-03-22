@@ -11,8 +11,8 @@ export default function RegisterPage() {
     async function handleAction(formData: FormData) {
         setError("");
         const res = await registerUser(formData);
-        if (res?.error) {
-            setError(res.error);
+        if (!res.ok) {
+            setError(res.message);
         }
     }
 
@@ -32,8 +32,12 @@ export default function RegisterPage() {
                         )}
 
                         <label>
-                            <Text size="2" weight="bold">Name</Text>
-                            <TextField.Root name="name" required placeholder="Max Mustermann" mt="1" />
+                            <Text size="2" weight="bold">Vorname</Text>
+                            <TextField.Root name="vorname" required placeholder="Albert" mt="1" />
+                        </label>
+                        <label>
+                            <Text size="2" weight="bold">Nachname</Text>
+                            <TextField.Root name="name" required placeholder="Einstein" mt="1" />
                         </label>
 
                         <label>
@@ -43,7 +47,7 @@ export default function RegisterPage() {
 
                         <label>
                             <Text size="2" weight="bold">Passwort</Text>
-                            <TextField.Root name="password" type="password" required placeholder="Mindestens 6 Zeichen" mt="1" />
+                            <TextField.Root name="password" type="password" required placeholder="Mindestens 8 Zeichen" mt="1" />
                         </label>
 
                         <Button type="submit" size="3" mt="2">

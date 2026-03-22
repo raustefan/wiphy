@@ -1,53 +1,104 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/server/authz";
+import { AppError, executeAction } from "@/lib/server/errors";
+import { mailSendSchema } from "@/lib/server/validation/schemas";
+
+function parseMailForm(formData: FormData) {
+    const selectedUserIds = [
+        ...new Set(
+            formData
+                .getAll("selectedUserIds")
+                .filter((v): v is string => typeof v === "string" && v.length > 0),
+        ),
+    ];
+
+    const raw = {
+        target: String(formData.get("target") ?? ""),
+        subject: String(formData.get("subject") ?? ""),
+        message: String(formData.get("message") ?? ""),
+        selectedUserIds,
+        bccToSelf: formData.get("bccToSelf") === "on",
+    };
+
+    const parsed = mailSendSchema.safeParse(raw);
+    if (!parsed.success) {
+        throw new AppError(
+            "VALIDATION_ERROR",
+            parsed.error.issues[0]?.message ?? "Ungültige Eingaben.",
+        );
+    }
+    return parsed.data;
+}
 
 export async function sendEmailAction(formData: FormData) {
-    const session = await auth();
-    if ((session?.user as any)?.role !== "ADMIN") {
-        throw new Error("Keine Berechtigung");
-    }
+    return executeAction(async () => {
+        const admin = await requireAdmin();
 
-    const target = formData.get("target") as string;
-    const subject = formData.get("subject") as string;
-    const message = formData.get("message") as string;
+        const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
 
-    // 1. Empfänger aus der Datenbank laden
-    let users = [];
-    if (target === "ALL") {
-        users = await prisma.user.findMany({ select: { email: true } });
-    } else if (target === "MEMBER" || target === "ADMIN") {
-        users = await prisma.user.findMany({ where: { role: target }, select: { email: true } });
-    }
+        let users: Array<{ email: string }> = [];
 
-    const emails = users.map((u) => u.email).join(",");
+        if (target === "ALL") {
+            users = await prisma.user.findMany({ select: { email: true } });
+        } else if (target === "MEMBER" || target === "ADMIN") {
+            users = await prisma.user.findMany({
+                where: { role: target },
+                select: { email: true },
+            });
+        } else if (target === "SELECTED") {
+            const found = await prisma.user.findMany({
+                where: { id: { in: selectedUserIds } },
+                select: { id: true, email: true },
+            });
+            if (found.length !== selectedUserIds.length) {
+                throw new AppError(
+                    "VALIDATION_ERROR",
+                    "Ein oder mehrere ausgewählte Nutzer existieren nicht.",
+                );
+            }
+            users = found;
+        } else {
+            throw new AppError("VALIDATION_ERROR", "Ungültige Empfänger-Gruppe.");
+        }
 
-    if (!emails) {
-        return { error: "Keine Empfänger gefunden." };
-    }
+        const bccAddresses = new Set(users.map((u) => u.email));
+        if (bccToSelf) {
+            const selfEmail = admin.email?.trim();
+            if (!selfEmail) {
+                throw new AppError(
+                    "VALIDATION_ERROR",
+                    "Keine E-Mail in der Session. Bitte neu einloggen oder „BCC an mich“ deaktivieren.",
+                );
+            }
+            bccAddresses.add(selfEmail);
+        }
 
-    // 2. Nodemailer Transporter konfigurieren
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: Number(process.env.SMTP_PORT) === 465, // true für 465, false für 587
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
+        const emails = Array.from(bccAddresses).join(",");
+        if (!emails) {
+            throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            secure: Number(process.env.SMTP_PORT) === 465,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_FROM,
+            bcc: emails,
+            subject,
+            text: message,
+        });
+
+        redirect("/dashboard?mail=success");
     });
-
-    // 3. E-Mail senden (BCC, damit Empfänger die anderen Adressen nicht sehen)
-    await transporter.sendMail({
-        from: process.env.EMAIL_FROM,
-        bcc: emails,
-        subject: subject,
-        text: message, // Für einfaches Textformat
-        // html: message.replace(/\n/g, "<br>"), // Falls du HTML erlauben willst
-    });
-
-    redirect("/dashboard?mail=success");
 }

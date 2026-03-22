@@ -1,8 +1,9 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RegSuccessDialog } from "./RegSuccessDialog";
 import {
     Container,
     Card,
@@ -15,9 +16,11 @@ import {
 } from "@radix-ui/themes";
 
 export default function LoginPage() {
+
+
     const router = useRouter();
-    const [email, setEmail] = useState("admin@wiphy.de");
-    const [password, setPassword] = useState("admin123");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -39,12 +42,20 @@ export default function LoginPage() {
     };
 
     return (
+
+
+
+
         <Container size="1" style={{ paddingTop: "20vh" }}>
+            <Suspense fallback={null}>
+                <RegSuccessDialog />
+            </Suspense>
+
             <Card size="4">
                 <form onSubmit={handleSubmit}>
                     <Flex direction="column" gap="4">
                         <Heading as="h1" size="6" align="center">
-                            wiphy Login
+                            Mitgliederbereich Login
                         </Heading>
 
                         {error && (
@@ -83,7 +94,7 @@ export default function LoginPage() {
 
                         {/* NEU: Link zur Registrierung */}
                         <Text align="center" size="2" color="gray" mt="3">
-                            Noch kein Konto?{" "}
+                            Noch kein Mitglied?{" "}
                             <Link href="/register" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
                                 Jetzt registrieren
                             </Link>

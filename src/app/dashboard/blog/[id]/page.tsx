@@ -1,6 +1,5 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/server/authz";
+import { getPostForEdit } from "@/lib/server/services/blogService";
 import { Flex, Heading, Text, Button, Container, Card, TextField, Checkbox } from "@radix-ui/themes";
 import Link from "next/link";
 import { savePost } from "../actions";
@@ -8,14 +7,13 @@ import MarkdownEditor from "@/components/MarkdownEditor";
 
 export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
-    const session = await auth();
-    if ((session?.user as any)?.role !== "ADMIN") redirect("/dashboard");
+    await requireAdmin();
 
     const isNew = resolvedParams.id === "new";
 
     let post = null;
     if (!isNew) {
-        post = await prisma.blogPost.findUnique({ where: { id: resolvedParams.id } });
+        post = await getPostForEdit(resolvedParams.id);
         if (!post) return <Text>Beitrag nicht gefunden</Text>;
     }
 
