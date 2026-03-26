@@ -1,5 +1,6 @@
 "use client";
 
+import { ExitIcon } from "@radix-ui/react-icons";
 import { AlertDialog, Button, Flex } from "@radix-ui/themes";
 import { signOut } from "next-auth/react";
 
@@ -13,6 +14,7 @@ export default function LogoutButton() {
         <AlertDialog.Root>
             <AlertDialog.Trigger>
                 <Button color="red" variant="soft" style={{ cursor: "pointer" }}>
+                    <ExitIcon />
                     Logout
                 </Button>
             </AlertDialog.Trigger>
@@ -31,6 +33,7 @@ export default function LogoutButton() {
                     </AlertDialog.Cancel>
                     <AlertDialog.Action>
                         <Button variant="solid" color="red" onClick={handleLogout} style={{ cursor: "pointer" }}>
+                            <ExitIcon />
                             Ja, abmelden
                         </Button>
                     </AlertDialog.Action>
