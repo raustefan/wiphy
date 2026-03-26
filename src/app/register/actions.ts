@@ -3,13 +3,25 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { AppError, executeAction } from "@/lib/server/errors";
+import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerSchema } from "@/lib/server/validation/schemas";
 
 export async function registerUser(formData: FormData) {
     return executeAction(async () => {
         const { vorname, name, email, password } = parseFormData(registerSchema, formData);
+        const requestHeaders = await headers();
+
+        consumeRateLimit({
+            bucket: "register",
+            keyParts: [extractClientIp(requestHeaders), email],
+            limit: 3,
+            windowMs: 60 * 60 * 1000,
+            blockMs: 60 * 60 * 1000,
+            message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
+        });
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {

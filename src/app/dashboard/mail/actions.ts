@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/server/authz";
 import { AppError, executeAction } from "@/lib/server/errors";
+import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { mailSendSchema } from "@/lib/server/validation/schemas";
 
 function parseMailForm(formData: FormData) {
@@ -37,6 +39,16 @@ function parseMailForm(formData: FormData) {
 export async function sendEmailAction(formData: FormData) {
     return executeAction(async () => {
         const admin = await requireAdmin();
+        const requestHeaders = await headers();
+
+        consumeRateLimit({
+            bucket: "admin-mail",
+            keyParts: [admin.id, extractClientIp(requestHeaders)],
+            limit: 5,
+            windowMs: 10 * 60 * 1000,
+            blockMs: 10 * 60 * 1000,
+            message: "Zu viele Rundmails in kurzer Zeit. Bitte warte 10 Minuten und versuche es erneut.",
+        });
 
         const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
 
