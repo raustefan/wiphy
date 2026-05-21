@@ -1,12 +1,7 @@
 import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { AppError } from "@/lib/server/errors";
-
-type RateLimitRecord = {
-  count: number;
-  resetAt: number;
-  blockedUntil: number;
-};
+import { prisma } from "@/lib/prisma";
 
 type HeaderBag = Pick<Headers, "get">;
 
@@ -18,8 +13,6 @@ type RateLimitOptions = {
   blockMs?: number;
   message: string;
 };
-
-const rateLimitStore = new Map<string, RateLimitRecord>();
 
 function normalizeKeyPart(value: string | null | undefined) {
   return (value ?? "")
@@ -34,14 +27,6 @@ function hashKey(parts: Array<string | null | undefined>) {
 
 function now() {
   return Date.now();
-}
-
-function cleanupExpiredEntries(currentTime: number) {
-  for (const [key, value] of rateLimitStore.entries()) {
-    if (value.resetAt <= currentTime && value.blockedUntil <= currentTime) {
-      rateLimitStore.delete(key);
-    }
-  }
 }
 
 function makeStoreKey(bucket: string, keyParts: Array<string | null | undefined>) {
@@ -69,7 +54,7 @@ export async function getRequestHeaders() {
   return headers();
 }
 
-export function consumeRateLimit({
+export async function consumeRateLimit({
   bucket,
   keyParts,
   limit,
@@ -77,32 +62,61 @@ export function consumeRateLimit({
   blockMs = windowMs,
   message,
 }: RateLimitOptions) {
-  const currentTime = now();
-  cleanupExpiredEntries(currentTime);
+  const currentTime = new Date(now());
+  const resetAt = new Date(currentTime.getTime() + windowMs);
 
   const storeKey = makeStoreKey(bucket, keyParts);
-  const existing = rateLimitStore.get(storeKey);
 
-  if (existing?.blockedUntil && existing.blockedUntil > currentTime) {
-    throw new AppError("TOO_MANY_REQUESTS", message);
-  }
+  await prisma.rateLimitEntry.deleteMany({
+    where: {
+      resetAt: { lte: currentTime },
+      OR: [{ blockedUntil: null }, { blockedUntil: { lte: currentTime } }],
+    },
+  });
 
-  if (!existing || existing.resetAt <= currentTime) {
-    rateLimitStore.set(storeKey, {
-      count: 1,
-      resetAt: currentTime + windowMs,
-      blockedUntil: 0,
+  const record = await prisma.$transaction(async (tx) => {
+    const existing = await tx.rateLimitEntry.findUnique({ where: { key: storeKey } });
+
+    if (!existing || existing.resetAt <= currentTime) {
+      return tx.rateLimitEntry.upsert({
+        where: { key: storeKey },
+        update: {
+          count: 1,
+          resetAt,
+          blockedUntil: null,
+        },
+        create: {
+          key: storeKey,
+          count: 1,
+          resetAt,
+          blockedUntil: null,
+        },
+      });
+    }
+
+    if (existing.blockedUntil && existing.blockedUntil > currentTime) {
+      return existing;
+    }
+
+    return tx.rateLimitEntry.update({
+      where: { key: storeKey },
+      data: {
+        count: { increment: 1 },
+        blockedUntil:
+          existing.count + 1 > limit
+            ? new Date(currentTime.getTime() + blockMs)
+            : existing.blockedUntil,
+      },
     });
-    return;
-  }
+  });
 
-  existing.count += 1;
-  if (existing.count > limit) {
-    existing.blockedUntil = currentTime + blockMs;
+  if (record.blockedUntil && record.blockedUntil > currentTime) {
     throw new AppError("TOO_MANY_REQUESTS", message);
   }
 }
 
-export function resetRateLimit(bucket: string, keyParts: Array<string | null | undefined>) {
-  rateLimitStore.delete(makeStoreKey(bucket, keyParts));
+export async function resetRateLimit(bucket: string, keyParts: Array<string | null | undefined>) {
+  await prisma.rateLimitEntry.delete({ where: { key: makeStoreKey(bucket, keyParts) } }).catch(() => {
+    // Missing records are harmless: a successful login may be the first attempt in the window.
+  });
 }

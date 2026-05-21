@@ -14,7 +14,7 @@ export async function registerUser(formData: FormData) {
         const { vorname, name, email, password } = parseFormData(registerSchema, formData);
         const requestHeaders = await headers();
 
-        consumeRateLimit({
+        await consumeRateLimit({
             bucket: "register",
             keyParts: [extractClientIp(requestHeaders), email],
             limit: 3,

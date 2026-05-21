@@ -1,17 +1,15 @@
-import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Container, Heading, Text, Card, Button } from "@radix-ui/themes";
 import Link from "next/link";
 import MarkdownViewer from "@/components/MarkdownViewer";
+import { getPublishedPost } from "@/lib/server/services/blogService";
 
 export default async function PublicBlogPost({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
 
-    const post = await prisma.blogPost.findUnique({
-        where: { id: resolvedParams.id },
-    });
+    const post = await getPublishedPost(resolvedParams.id);
 
-    if (!post || !post.published) return notFound();
+    if (!post) return notFound();
 
     return (
         <Container size="3" mt="6" mb="6">

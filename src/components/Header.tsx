@@ -28,9 +28,12 @@ export default async function Header() {
                     </Link>
 
                     {/* Navigation */}
-                    <Flex gap="4" align="center">
+                    <Flex gap={{ initial: "2", md: "4" }} align="center" wrap="wrap" justify="end">
                         <Link href="/blog" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Blog
+                        </Link>
+                        <Link href="/geschichte" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
+                            Geschichte
                         </Link>
                         <Link href="/vorstand" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Vorstand

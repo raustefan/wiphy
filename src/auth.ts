@@ -16,7 +16,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const clientIp = extractClientIp(request.headers);
                 const rateLimitKey = [clientIp, email];
 
-                consumeRateLimit({
+                await consumeRateLimit({
                     bucket: "login",
                     keyParts: rateLimitKey,
                     limit: 5,
@@ -32,8 +32,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 if (!user) return null;
                 const valid = await bcrypt.compare(credentials.password as string, user.password);
                 if (!valid) return null;
-                resetRateLimit("login", rateLimitKey);
-                return { id: user.id, email: user.email, name: user.name, role: user.role };
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { lastLogin: new Date() },
+                });
+                await resetRateLimit("login", rateLimitKey);
+                return { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status };
             },
         }),
     ],
@@ -41,8 +45,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         jwt({ token, user }) {
             if (user) {
                 const role = (user as { role?: unknown }).role;
+                const status = (user as { status?: unknown }).status;
                 if (role === "ADMIN" || role === "MEMBER") {
                     token.role = role;
+                }
+                if (
+                    status === "ORDENTLICHES_MITGLIED" ||
+                    status === "EHRENMITGLIED" ||
+                    status === "KEIN_MITGLIED"
+                ) {
+                    token.status = status;
                 }
                 token.id = user.id;
             }
@@ -55,6 +67,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
                 if (typeof token.id === "string") {
                     (session.user as { id?: string }).id = token.id;
+                }
+                if (
+                    token.status === "ORDENTLICHES_MITGLIED" ||
+                    token.status === "EHRENMITGLIED" ||
+                    token.status === "KEIN_MITGLIED"
+                ) {
+                    (session.user as { status?: string }).status = token.status;
                 }
             }
             return session;

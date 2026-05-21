@@ -1,10 +1,8 @@
-# wiphy - Vereinswebsite
+# WirtschaftsPhysik Alumni e.V. Seite
 
-Eine moderne Vereinswebsite mit einem öffentlichen Bereich (Startseite, Blog) und einem geschützten Mitgliederbereich (Dashboard, Profilverwaltung, Blog-Admin).
+## Aufbau
 
-## 🚀 Tech Stack & Pakete
-
-- **Framework:** Next.js 15 (App Router) & TypeScript
+- **Framework:** Next.js 16 (App Router) & TypeScript
 - **UI & Styling:** Radix UI (`@radix-ui/themes`)
 - **Datenbank:** PostgreSQL (lokal via Homebrew)
 - **ORM:** Prisma v7 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`, `pg`)
@@ -12,7 +10,7 @@ Eine moderne Vereinswebsite mit einem öffentlichen Bereich (Startseite, Blog) u
 - **Blog / Editor:** `@uiw/react-md-editor`, `@uiw/react-markdown-preview`
 - **E-Mail-Versand:** Nodemailer (Rundmails an Mitglieder)
 
-## ✨ Features
+## Features
 
 - **Öffentlicher Bereich:**
   - Startseite mit Hero-Sektion und Info-Cards.
@@ -31,6 +29,86 @@ Eine moderne Vereinswebsite mit einem öffentlichen Bereich (Startseite, Blog) u
   - Unterstützte Gruppen: **Alle Benutzer**, **nur Mitglieder (MEMBER)**, **nur Administratoren (ADMIN)** oder **ausgewählte Nutzer** (Suche, Mehrfachauswahl).
   - Versand per BCC, damit Empfänger nicht alle Adressen sehen; optional **BCC an mich** (Kopie an den absendenden Admin).
   - Nutzt Nodemailer und SMTP-Zugangsdaten aus der `.env`.
+
+## 🏁 App starten (Ersteinrichtung)
+
+### Voraussetzungen
+
+- **Node.js** 20.19+, 22.12+ oder 24+ (empfohlen für Prisma 7)
+- **pnpm** (`npm install -g pnpm`)
+- **PostgreSQL** lokal (z. B. via Homebrew: `brew install postgresql@16`)
+
+### 1. Abhängigkeiten installieren
+
+```bash
+pnpm install
+```
+
+### 2. PostgreSQL starten und Datenbank anlegen
+
+```bash
+brew services start postgresql@16
+# Alternativ: brew services start postgresql
+
+createdb wiphy
+```
+
+Falls `createdb` fehlschlägt, existiert die Datenbank vermutlich schon — dann mit Schritt 3 fortfahren.
+
+### 3. `.env` anlegen
+
+Im Projekt-Root eine Datei `.env` erstellen (wird von Git ignoriert):
+
+```env
+DATABASE_URL="postgresql://DEIN_USER@localhost:5432/wiphy?schema=public"
+NEXTAUTH_SECRET="ein-langer-zufaelliger-string"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+`DEIN_USER` ist in der Regel dein macOS-Benutzername (bei Homebrew-Postgres oft ohne Passwort). Ein Secret kannst du z. B. mit `openssl rand -base64 32` erzeugen.
+
+Für **Rundmails** (optional, nur wenn du `/dashboard/mail` nutzen willst) zusätzlich SMTP-Variablen setzen — siehe [Konfiguration](#konfiguration--umgebungsvariablen).
+
+### 4. Datenbank-Schema einrichten (Prisma)
+
+```bash
+pnpm dlx prisma generate
+pnpm dlx prisma db push
+```
+
+Optional einen ersten Admin-Benutzer anlegen:
+
+```bash
+pnpm dlx prisma db seed
+```
+
+Standard-Login nach dem Seed: `admin@wiphy.de` / `admin123` (siehe `prisma/seed.ts`).
+
+### 5. Entwicklungsserver starten
+
+```bash
+pnpm dev
+```
+
+Die App läuft unter [http://localhost:3000](http://localhost:3000).
+
+### Kurz-Checkliste (wenn schon eingerichtet)
+
+```bash
+brew services start postgresql@16   # falls Postgres nicht läuft
+pnpm dev
+```
+
+### Häufige Probleme
+
+
+| Symptom                                     | Lösung                                                                                         |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `datasource.url property is required`       | `.env` fehlt oder `DATABASE_URL` ist nicht gesetzt                                             |
+| Verbindung zu PostgreSQL schlägt fehl       | `brew services start postgresql@16` und prüfen, ob die DB `wiphy` existiert (`createdb wiphy`) |
+| Prisma-Client veraltet nach Schema-Änderung | `pnpm dlx prisma generate` und ggf. `pnpm dlx prisma db push`                                  |
+| Prisma CLI warnt wegen Node-Version         | Node 22 LTS verwenden (z. B. `nvm use 22`)                                                     |
+
 
 ## 📂 Ordnerstruktur
 
@@ -58,12 +136,14 @@ wiphy/
         ├── blog/               # Öffentliche Blog-Übersicht & Detailseiten
         ├── dashboard/          # Geschützter Mitgliederbereich
         │   ├── page.tsx        # Dashboard (Nutzerliste / Profil / Admin-Übersicht)
-        │   �?── users/[id]/     # Profil bearbeiten
+        │   └── users/[id]/     # Profil bearbeiten
         │   ├── blog/           # Blog-Admin (nur für Admins)
         │   └── mail/           # Rundmails an Mitglieder (nur für Admins)
         └── api/auth/           # NextAuth API-Routen
 
 ## ⚙️ Konfiguration & Umgebungsvariablen
+
+Für die Ersteinrichtung siehe [App starten](#app-starten-ersteinrichtung). Hier die vollständige Liste der Variablen:
 
 Lege eine `.env` im Projekt-Root an (nicht ins Repo einchecken) und befülle mindestens:
 
@@ -72,30 +152,55 @@ Lege eine `.env` im Projekt-Root an (nicht ins Repo einchecken) und befülle min
   - `NEXTAUTH_SECRET` – Secret für NextAuth
   - `NEXTAUTH_URL` – Basis-URL der Anwendung (z.B. `http://localhost:3000`)
 - **SMTP / Rundmail**
+  - `MAIL_SERVICE` – optionaler Nodemailer-Service, für Google Workspace z.B. `GmailWorkspace`
   - `SMTP_HOST` – SMTP-Server (z.B. Mail-Provider)
   - `SMTP_PORT` – Port (z.B. `587` oder `465`)
   - `SMTP_USER` – SMTP-Benutzername / Login
   - `SMTP_PASS` – SMTP-Passwort / App-Passwort
   - `EMAIL_FROM` – Absender-Adresse, z.B. `"Verein XYZ" <info@verein.de>`
 
-## 🛠 Wichtige Befehle
+Für **Google Workspace SMTP Relay** kannst du entweder den generischen SMTP-Weg oder den Nodemailer-Shortcut nutzen:
 
-Entwicklungsserver starten:
-
+```env
+MAIL_SERVICE=GmailWorkspace
+SMTP_USER=meine-adresse@meinedomain.de
+SMTP_PASS=dein-app-passwort
+EMAIL_FROM="Wiphy" <info@meinedomain.de>
 ```
-pnpm dev
+
+Alternativ ohne `MAIL_SERVICE`:
+
+```env
+SMTP_HOST=smtp-relay.gmail.com
+SMTP_PORT=587
+SMTP_USER=meine-adresse@meinedomain.de
+SMTP_PASS=dein-app-passwort
+EMAIL_FROM="Wiphy" <info@meinedomain.de>
 ```
 
-Datenbank-Schema pushen (nach Änderungen in schema.prisma):
+## 🛠 Weitere Befehle
 
-```
+Nach Änderungen an `prisma/schema.prisma`:
+
+```bash
 pnpm dlx prisma generate
 pnpm dlx prisma db push
 ```
 
+Das ist nach diesem Stand besonders wichtig, weil Rate-Limits in der Datenbank
+gespeichert werden (`RateLimitEntry`) und nicht mehr nur im Server-Prozess.
+
+Qualitätschecks:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
 Datenbank grafisch einsehen (Prisma Studio):
 
-```
+```bash
 pnpm dlx prisma studio
 ```
 

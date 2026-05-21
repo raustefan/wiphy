@@ -4,34 +4,35 @@ import { adminCreateUser } from "@/lib/server/services/userService";
 import { Flex, Heading, Text, Button, Container, Card, TextField, Select } from "@radix-ui/themes";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import type { Role, Status } from "@prisma/client";
+import { AppError } from "@/lib/server/errors";
+import { parseFormData } from "@/lib/server/validation/parseFormData";
+import { adminCreateUserSchema } from "@/lib/server/validation/schemas";
 
 async function createUserAction(formData: FormData) {
     "use server";
     const currentUser = await requireUser();
     if (currentUser.role !== "ADMIN") return redirect("/dashboard");
 
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const name = formData.get("name") as string;
-    const vorname = formData.get("vorname") as string;
-    const role = formData.get("role") as Role;
-    const status = formData.get("status") as Status;
-
-    if (!email || !password || !name || !vorname) {
-        redirect("/dashboard/users/new?error=missing_fields");
+    let parsed;
+    try {
+        parsed = parseFormData(adminCreateUserSchema, formData);
+    } catch (error) {
+        if (error instanceof AppError && error.code === "VALIDATION_ERROR") {
+            redirect("/dashboard/users/new?error=missing_fields");
+        }
+        throw error;
     }
 
     try {
         await adminCreateUser({
-            email,
-            password,
-            name,
-            vorname,
-            role: role || "MEMBER",
-            status: status || "KEIN_MITGLIED",
+            email: parsed.email,
+            password: parsed.password,
+            name: parsed.name,
+            vorname: parsed.vorname,
+            role: parsed.role,
+            status: parsed.status,
         }, currentUser.role);
-    } catch (e) {
+    } catch {
         redirect("/dashboard/users/new?error=creation_failed");
     }
 

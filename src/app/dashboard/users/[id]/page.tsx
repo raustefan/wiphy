@@ -390,102 +390,101 @@ export default async function EditUserPage({
                             />
                         </label>
 
-                        <Heading size="3" mb="2">
-                            Zahlungs- & Admin-Informationen
-                        </Heading>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Zahlungs-Kommentar
-                            </Text>
-                            <TextField.Root
-                                name="zahlungsKommentar"
-                                defaultValue={user.zahlungsKommentar || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Bank
-                            </Text>
-                            <TextField.Root name="bank" defaultValue={user.bank || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                BLZ
-                            </Text>
-                            <TextField.Root name="BLZ" defaultValue={user.BLZ || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Kontonummer
-                            </Text>
-                            <TextField.Root name="KTO" defaultValue={user.KTO || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Bankeinzug
-                            </Text>
-                            <input
-                                name="bankeinzug"
-                                type="checkbox"
-                                defaultChecked={Boolean(user.bankeinzug)}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Zuwendungsbeschreibung
-                            </Text>
-                            <input
-                                name="zuwendungsbesch"
-                                type="checkbox"
-                                defaultChecked={Boolean(user.zuwendungsbesch)}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Mahnung
-                            </Text>
-                            <TextField.Root name="mahnung" defaultValue={user.mahnung || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                IBAN
-                            </Text>
-                            <TextField.Root name="IBAN" defaultValue={user.IBAN || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                BIC
-                            </Text>
-                            <TextField.Root name="BIC" defaultValue={user.BIC || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Mandatserteilung
-                            </Text>
-                            <input
-                                name="mandatserteilung"
-                                type="date"
-                                defaultValue={
-                                    user.mandatserteilung
-                                        ? new Date(user.mandatserteilung).toISOString().slice(0, 10)
-                                        : ""
-                                }
-                            />
-                        </label>
-
-                        {/* Admin-only fields */}
                         {isAdmin && (
                             <>
+                                <Heading size="3" mb="2">
+                                    Zahlungs- & Admin-Informationen
+                                </Heading>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Zahlungs-Kommentar
+                                    </Text>
+                                    <TextField.Root
+                                        name="zahlungsKommentar"
+                                        defaultValue={user.zahlungsKommentar || ""}
+                                    />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Bank
+                                    </Text>
+                                    <TextField.Root name="bank" defaultValue={user.bank || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        BLZ
+                                    </Text>
+                                    <TextField.Root name="BLZ" defaultValue={user.BLZ || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Kontonummer
+                                    </Text>
+                                    <TextField.Root name="KTO" defaultValue={user.KTO || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Bankeinzug
+                                    </Text>
+                                    <input
+                                        name="bankeinzug"
+                                        type="checkbox"
+                                        defaultChecked={Boolean(user.bankeinzug)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Zuwendungsbeschreibung
+                                    </Text>
+                                    <input
+                                        name="zuwendungsbesch"
+                                        type="checkbox"
+                                        defaultChecked={Boolean(user.zuwendungsbesch)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Mahnung
+                                    </Text>
+                                    <TextField.Root name="mahnung" defaultValue={user.mahnung || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        IBAN
+                                    </Text>
+                                    <TextField.Root name="IBAN" defaultValue={user.IBAN || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        BIC
+                                    </Text>
+                                    <TextField.Root name="BIC" defaultValue={user.BIC || ""} />
+                                </label>
+
+                                <label>
+                                    <Text size="2" weight="bold">
+                                        Mandatserteilung
+                                    </Text>
+                                    <input
+                                        name="mandatserteilung"
+                                        type="date"
+                                        defaultValue={
+                                            user.mandatserteilung
+                                                ? new Date(user.mandatserteilung).toISOString().slice(0, 10)
+                                                : ""
+                                        }
+                                    />
+                                </label>
+
                                 <label>
                                     <Text size="2" weight="bold">
                                         Mitglieds-ID

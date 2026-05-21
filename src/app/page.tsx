@@ -15,7 +15,7 @@ export default async function HomePage() {
           </Heading>
 
           <Text size="5" color="gray" mb="6" style={{ maxWidth: "600px", margin: "0 auto", display: "block", lineHeight: "1.6" }}>
-            Wir sind eine aktive Gemeinschaft, die sich für unseren Sport und Zusammenhalt einsetzt. Entdecke aktuelle Neuigkeiten in unserem Blog oder logge dich in den Mitgliederbereich ein.
+            Der Wirtschaftsphysik Alumni e.V. ist ein Ehemaligenverein zur Unterstützung der Studiengänge Wirtschaftsphysik und Physik an der Universität Ulm und deren Studierenden
           </Text>
 
           <Flex gap="4" justify="center">
@@ -44,21 +44,21 @@ export default async function HomePage() {
           <Card size="3" style={{ transition: "transform 0.2s" }} className="hover:-translate-y-1">
             <Heading size="4" mb="2">Gemeinschaft</Heading>
             <Text color="gray" size="2">
-              Lerne neue Leute kennen und werde Teil einer starken Community, die sich gegenseitig unterstützt.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
             </Text>
           </Card>
 
           <Card size="3" style={{ transition: "transform 0.2s" }} className="hover:-translate-y-1">
             <Heading size="4" mb="2">Veranstaltungen</Heading>
             <Text color="gray" size="2">
-              Wir organisieren regelmäßig Turniere, Feiern und Ausflüge. Als Mitglied bist du immer dabei.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
             </Text>
           </Card>
 
           <Card size="3" style={{ transition: "transform 0.2s" }} className="hover:-translate-y-1">
             <Heading size="4" mb="2">Mitgliederportal</Heading>
             <Text color="gray" size="2">
-              Verwalte deine Daten, lies interne News und bleibe immer auf dem neuesten Stand.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
             </Text>
           </Card>
         </Grid>

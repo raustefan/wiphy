@@ -3,6 +3,8 @@ import {
   deletePostById,
   findAllPosts,
   findPostById,
+  findPublishedPostById,
+  findPublishedPosts,
   updatePost,
 } from "@/lib/server/repositories/blogRepository";
 
@@ -12,6 +14,14 @@ export function getAdminPosts() {
 
 export function getPostForEdit(id: string) {
   return findPostById(id);
+}
+
+export function getPublishedPosts() {
+  return findPublishedPosts();
+}
+
+export function getPublishedPost(id: string) {
+  return findPublishedPostById(id);
 }
 
 export async function saveAdminPost(input: {

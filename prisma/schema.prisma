@@ -29,11 +29,6 @@ model User {
   geburtsdatum DateTime?
   land         String?
 
-  // Bankdaten
-  bankinstitut String?
-  bic          String?
-  iban         String?
-
   //Sonstiges
   website String?
   studiengang String?
@@ -73,6 +68,7 @@ model User {
 
 
   createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
   fees         MemberFee[]
   lastLogin DateTime @default(now())
 }
@@ -111,4 +107,16 @@ model BlogPost {
   published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model RateLimitEntry {
+  key          String   @id
+  count        Int
+  resetAt      DateTime
+  blockedUntil DateTime?
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@index([resetAt])
+  @@index([blockedUntil])
 }

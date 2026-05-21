@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { getFeeDashboardUsers, getFeeYears } from "@/lib/server/services/feeService";
-import { Container, Card, Heading, Text, Table, Badge, Flex, Box, Separator, Button, ScrollArea, TextArea } from "@radix-ui/themes";
+import { Container, Card, Heading, Text, Flex, Box, Separator, Button } from "@radix-ui/themes";
 import Link from "next/link";
-import { toggleFee, updateFeeComment } from "./actions";
+import { FeesTable } from "./FeesTable";
 import type { User, MemberFee } from "@prisma/client";
 
 export default async function FeesDashboardPage() {
@@ -14,6 +14,16 @@ export default async function FeesDashboardPage() {
   const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
     User & { fees: MemberFee[] }
   >;
+
+  const tableUsers = users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    vorname: u.vorname,
+    email: u.email,
+    mitgliedId: u.mitgliedId,
+    zahlungsKommentar: u.zahlungsKommentar,
+    fees: u.fees.map((f) => ({ jahr: f.jahr, bezahlt: f.bezahlt })),
+  }));
 
   return (
     <Box
@@ -32,7 +42,7 @@ export default async function FeesDashboardPage() {
               {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
             </Heading>
             <Text size="2" color="gray">
-              Jahre ab 2045
+              Jahre ab {years[0] ?? 2024}
             </Text>
           </Box>
           <Link href="/dashboard">
@@ -57,99 +67,9 @@ export default async function FeesDashboardPage() {
 
           <Separator mb="3" />
 
-          <ScrollArea scrollbars="both" style={{ maxHeight: 500 }}>
-            <Table.Root variant="surface" size="1">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Mitglied</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Mitglieds-ID</Table.ColumnHeaderCell>
-                  {isAdmin && (
-                    <Table.ColumnHeaderCell>Kommentar</Table.ColumnHeaderCell>
-                  )}
-                  {years.map((year) => (
-                    <Table.ColumnHeaderCell key={year} align="center">
-                      {year}
-                    </Table.ColumnHeaderCell>
-                  ))}
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {users.map((user) => (
-                  <Table.Row key={user.id}>
-                    <Table.Cell>
-                      <Flex direction="column" gap="1">
-                        <Text>{user.name || "—"}</Text>
-                        <Text size="1" color="gray">
-                          {user.email}
-                        </Text>
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Badge variant="soft">
-                        {user.mitgliedId ?? "—"}
-                      </Badge>
-                    </Table.Cell>
-                    {isAdmin && (
-                      <Table.Cell>
-                        <form action={updateFeeComment}>
-                          <input type="hidden" name="userId" value={user.id} />
-                          <TextArea
-                            name="comment"
-                            rows={3}
-                            defaultValue={user.zahlungsKommentar || ""}
-                          />
-                          <Flex justify="end" mt="1">
-                            <Button type="submit" size="1" variant="soft">
-                              Speichern
-                            </Button>
-                          </Flex>
-                        </form>
-                      </Table.Cell>
-                    )}
-                    {years.map((year) => {
-                      const existing = user.fees.find((f) => f.jahr === year);
-                      const paid = existing?.bezahlt ?? false;
-
-                      if (!isAdmin) {
-                        return (
-                          <Table.Cell key={year} align="center">
-                            <Badge color={paid ? "green" : "gray"}>
-                              {paid ? "bezahlt" : "offen"}
-                            </Badge>
-                          </Table.Cell>
-                        );
-                      }
-
-                      return (
-                        <Table.Cell key={year} align="center">
-                          <form action={toggleFee}>
-                            <input type="hidden" name="userId" value={user.id} />
-                            <input type="hidden" name="year" value={year} />
-                            <input
-                              type="hidden"
-                              name="paid"
-                              value={paid ? "false" : "true"}
-                            />
-                            <Button
-                              type="submit"
-                              size="1"
-                              variant={paid ? "soft" : "outline"}
-                              color={paid ? "green" : "red"}
-                            >
-                              {paid ? "✓" : "–"}
-                            </Button>
-                          </form>
-                        </Table.Cell>
-                      );
-                    })}
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </ScrollArea>
+          <FeesTable users={tableUsers} years={years} isAdmin={isAdmin} />
         </Card>
       </Container>
     </Box>
   );
 }
-

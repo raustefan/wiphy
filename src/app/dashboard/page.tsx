@@ -36,7 +36,7 @@ import {
 import LogoutButton from "@/components/LogoutButton";
 import { adminDeleteUser } from "@/lib/server/services/userService";
 import { revalidatePath } from "next/cache";
-import { DeleteUserButton } from "./DeleteUserButton";
+import { DashboardUserActions } from "./DashboardUserActions";
 
 export function formatStatus(status?: Status | string): string {
     switch (status) {
@@ -366,7 +366,7 @@ export default async function DashboardPage() {
                                         <Table.ColumnHeaderCell>
                                             <Flex align="center" gap="2">
                                                 <IdCardIcon className="dashboard-table-icon" />
-                                                Mitglieds-ID
+                                                ID
                                             </Flex>
                                         </Table.ColumnHeaderCell>
                                     )}
@@ -374,12 +374,6 @@ export default async function DashboardPage() {
                                         <Flex align="center" gap="2">
                                             <PersonIcon className="dashboard-table-icon" />
                                             Name
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>
-                                        <Flex align="center" gap="2">
-                                            <EnvelopeClosedIcon className="dashboard-table-icon" />
-                                            E-Mail
                                         </Flex>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell>
@@ -415,28 +409,16 @@ export default async function DashboardPage() {
                                         )}
                                         <Table.Cell>
                                             <Flex align="start" gap="2">
-                                                <PersonIcon className="dashboard-cell-icon dashboard-cell-icon-top" />
                                                 <Flex direction="column" gap="1">
                                                     <Text weight="medium">
-                                                    {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
+                                                        {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
                                                     </Text>
-                                                    {u.stadt && (
-                                                        <Text size="1" color="gray">
-                                                            {u.stadt}
-                                                        </Text>
-                                                    )}
                                                 </Flex>
                                             </Flex>
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Flex align="center" gap="2">
-                                                <EnvelopeClosedIcon className="dashboard-cell-icon" />
-                                                <Text style={{ whiteSpace: "nowrap" }}>{u.email}</Text>
-                                            </Flex>
-                                        </Table.Cell>
-                                        <Table.Cell>
                                             <Badge color={u.role === "ADMIN" ? "red" : "blue"} variant="soft">
-                                                <AvatarIcon />
+
                                                 {u.role === "ADMIN" ? "Admin" : "Member"}
                                             </Badge>
                                         </Table.Cell>
@@ -447,20 +429,17 @@ export default async function DashboardPage() {
                                             </Badge>
                                         </Table.Cell>
                                         <Table.Cell align="right">
-                                            <Flex gap="2" justify="end" wrap="wrap">
-                                                <Link href={`/dashboard/users/${u.id}`}>
-                                                    <Button size="1" variant="soft">
-                                                        <Pencil2Icon />
-                                                        Bearbeiten
-                                                    </Button>
-                                                </Link>
-                                                {isAdmin && u.id !== currentUser.id && (
-                                                    <form action={deleteUserAction}>
-                                                        <input type="hidden" name="id" value={u.id} />
-                                                        <DeleteUserButton />
-                                                    </form>
-                                                )}
-                                            </Flex>
+                                            <DashboardUserActions
+                                                user={{
+                                                    id: u.id,
+                                                    email: u.email,
+                                                    vorname: u.vorname,
+                                                    name: u.name,
+                                                }}
+                                                isAdmin={isAdmin}
+                                                currentUserId={currentUser.id}
+                                                deleteUserAction={deleteUserAction}
+                                            />
                                         </Table.Cell>
                                     </Table.Row>
                                 ))}

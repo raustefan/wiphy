@@ -1,12 +1,9 @@
-import { prisma } from "@/lib/prisma";
 import { Container, Heading, Text, Card, Flex, Button } from "@radix-ui/themes";
 import Link from "next/link";
+import { getPublishedPosts } from "@/lib/server/services/blogService";
 
 export default async function BlogIndexPage() {
-    const posts = await prisma.blogPost.findMany({
-        where: { published: true },
-        orderBy: { createdAt: "desc" },
-    });
+    const posts = await getPublishedPosts();
 
     return (
         <Container size="3" mt="6" mb="6">

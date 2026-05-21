@@ -25,7 +25,7 @@ const preprocessBoolean = z.preprocess((val) => {
  * Helper to coerce date strings (YYYY-MM-DD) to Date objects, while treating
  * empty strings as undefined so optional fields remain optional.
  */
-const optionalDate = (message?: string) =>
+const optionalDate = () =>
   z.preprocess((val) => {
     if (val === undefined || val === null) return undefined;
     if (typeof val === "string") {
@@ -36,6 +36,13 @@ const optionalDate = (message?: string) =>
     }
     return val;
   }, z.coerce.date().optional());
+
+const roleEnum = z.enum(["ADMIN", "MEMBER"]);
+const statusEnum = z.enum([
+  "ORDENTLICHES_MITGLIED",
+  "EHRENMITGLIED",
+  "KEIN_MITGLIED",
+]);
 
 export const registerSchema = z.object({
   vorname: z
@@ -57,6 +64,11 @@ export const registerSchema = z.object({
     .string()
     .min(8, "Passwort muss mindestens 8 Zeichen haben.")
     .max(128, "Passwort ist zu lang."),
+});
+
+export const adminCreateUserSchema = registerSchema.extend({
+  role: roleEnum.default("MEMBER"),
+  status: statusEnum.default("KEIN_MITGLIED"),
 });
 
 /** Rundmail: Gruppen oder einzeln ausgewählte Nutzer (IDs per FormData getAll) */
@@ -88,6 +100,24 @@ export const mailSendSchema = z
       });
     }
   });
+
+/** Direktmail an explizit ausgewählte Nutzer (Overlay, Fees-Erinnerung, …) */
+export const directMailSchema = z.object({
+  selectedUserIds: z
+    .array(z.string().min(1))
+    .min(1, "Bitte mindestens einen Empfänger auswählen."),
+  subject: z
+    .string()
+    .trim()
+    .min(1, "Bitte einen Betreff angeben.")
+    .max(200, "Betreff ist zu lang."),
+  message: z
+    .string()
+    .trim()
+    .min(1, "Bitte eine Nachricht eingeben.")
+    .max(100_000, "Nachricht ist zu lang."),
+  bccToSelf: z.boolean().default(false),
+});
 
 export const feeToggleSchema = z.object({
   userId: z.string().min(1, "Ungültige Benutzer-ID."),
@@ -121,13 +151,6 @@ export const blogSaveSchema = z.object({
 export const blogDeleteSchema = z.object({
   id: z.string().min(1, "Ungültige Beitrags-ID.").max(64),
 });
-
-const roleEnum = z.enum(["ADMIN", "MEMBER"]);
-const statusEnum = z.enum([
-  "ORDENTLICHES_MITGLIED",
-  "EHRENMITGLIED",
-  "KEIN_MITGLIED",
-]);
 
 export const userUpdateSchema = z.object({
   id: z.string().min(1, "Ungültige Benutzer-ID."),
