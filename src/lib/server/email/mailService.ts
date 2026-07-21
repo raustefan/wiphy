@@ -15,7 +15,7 @@ export async function resolveUsersByIds(userIds: string[]) {
 
   const found = await prisma.user.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true, email: true },
+    select: { id: true, email: true, vorname: true, name: true },
   });
 
   if (found.length !== uniqueIds.length) {
@@ -30,11 +30,11 @@ export async function resolveUsersByIds(userIds: string[]) {
 
 export async function resolveUsersByTarget(target: "ALL" | "MEMBER" | "ADMIN") {
   if (target === "ALL") {
-    return prisma.user.findMany({ select: { email: true } });
+    return prisma.user.findMany({ select: { email: true, vorname: true, name: true } });
   }
   return prisma.user.findMany({
     where: { role: target },
-    select: { email: true },
+    select: { email: true, vorname: true, name: true },
   });
 }
 
@@ -48,13 +48,65 @@ export async function resolveRecipientEmails(input: {
   return resolveUsersByTarget(input.target);
 }
 
+function replacePlaceholders(template: string, user: { vorname: string | null; name: string | null }): string {
+  let result = template;
+  result = result.replace(/\$Vorname/g, user.vorname || "");
+  result = result.replace(/\$Nachname/g, user.name || "");
+  result = result.replace(/\$Name/g, `${user.vorname || ""} ${user.name || ""}`.trim());
+  return result;
+}
+
 export async function sendMailToUsers(input: {
   recipientEmails: string[];
   subject: string;
   message: string;
   bccToSelf: boolean;
   adminEmail?: string | null;
+  htmlMessage?: string;
+  users?: { email: string; vorname: string | null; name: string | null }[];
 }) {
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  // If users are provided, send personalized individual emails
+  if (input.users && input.users.length > 0) {
+    for (const user of input.users) {
+      const personalizedSubject = replacePlaceholders(input.subject, user);
+      const personalizedMessage = replacePlaceholders(input.message, user);
+      const personalizedHtml = input.htmlMessage ? replacePlaceholders(input.htmlMessage, user) : undefined;
+
+      await transporter.sendMail({
+        from,
+        to: user.email,
+        subject: personalizedSubject,
+        text: personalizedMessage,
+        html: personalizedHtml || personalizedMessage,
+        encoding: "utf-8",
+      });
+    }
+
+    // Send copy to admin if requested
+    if (input.bccToSelf) {
+      const selfEmail = input.adminEmail?.trim();
+      if (!selfEmail) {
+        throw new AppError(
+          "VALIDATION_ERROR",
+          "Keine E-Mail in der Session. Bitte neu einloggen oder 'Kopie an mich' deaktivieren.",
+        );
+      }
+      await transporter.sendMail({
+        from,
+        to: selfEmail,
+        subject: input.subject + " (Kopie)",
+        text: input.message,
+        html: input.htmlMessage || input.message,
+        encoding: "utf-8",
+      });
+    }
+    return;
+  }
+
+  // Fallback to BCC for backward compatibility
   const bccAddresses = new Set(
     input.recipientEmails.map((e) => e.trim()).filter((e) => e.length > 0),
   );
@@ -64,7 +116,7 @@ export async function sendMailToUsers(input: {
     if (!selfEmail) {
       throw new AppError(
         "VALIDATION_ERROR",
-        "Keine E-Mail in der Session. Bitte neu einloggen oder „BCC an mich“ deaktivieren.",
+        "Keine E-Mail in der Session. Bitte neu einloggen oder 'BCC an mich' deaktivieren.",
       );
     }
     bccAddresses.add(selfEmail);
@@ -75,13 +127,13 @@ export async function sendMailToUsers(input: {
     throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
   }
 
-  const transporter = createMailTransporter();
-  const { from } = getSmtpConfig();
   await transporter.sendMail({
     from,
     bcc: emails,
     subject: input.subject,
     text: input.message,
+    html: input.htmlMessage || input.message,
+    encoding: "utf-8",
   });
 }
 
@@ -94,6 +146,7 @@ export async function sendMailForTarget(input: {
   message: string;
   bccToSelf: boolean;
   adminEmail?: string | null;
+  htmlMessage?: string;
 }) {
   const users = await resolveRecipientEmails({
     target: input.target,
@@ -105,5 +158,7 @@ export async function sendMailForTarget(input: {
     message: input.message,
     bccToSelf: input.bccToSelf,
     adminEmail: input.adminEmail,
+    htmlMessage: input.htmlMessage,
+    users,
   });
 }

@@ -1,17 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
     Flex,
     Text,
     TextField,
-    TextArea,
     Button,
     Badge,
     Box,
 } from "@radix-ui/themes";
+import { PaperPlaneIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { sendEmailAction } from "./actions";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TiptapLink from "@tiptap/extension-link";
+import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
 
 export type MailUserOption = {
     id: string;
@@ -20,15 +24,38 @@ export type MailUserOption = {
     role: string;
 };
 
+type MailFormProps = {
+    users: MailUserOption[];
+    onSuccess?: (count: number) => void;
+};
+
 const MIN_SEARCH_LEN = 2;
 const MAX_SEARCH_RESULTS = 50;
 
-export function MailForm({ users }: { users: MailUserOption[] }) {
+export function MailForm({ users, onSuccess }: MailFormProps) {
     const [target, setTarget] = useState("ALL");
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
+    
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            TiptapLink.configure({
+            openOnClick: false,
+            HTMLAttributes: {
+                class: 'text-blue-600 underline cursor-pointer',
+            },
+            }),
+        ],
+        content: "",
+        editorProps: {
+            attributes: {
+                class: "prose prose-sm max-w-none focus:outline-none min-h-[250px] p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
+            },
+        },
+    });
 
     const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
@@ -83,9 +110,13 @@ export function MailForm({ users }: { users: MailUserOption[] }) {
         setError("");
         setPending(true);
         try {
+            formData.set("message", editor?.getHTML() || "");
             const result = await sendEmailAction(formData);
             if (result && !result.ok) {
                 setError(result.message);
+            } else {
+                const recipientCount = target === "SELECTED" ? selectedIds.size : users.length;
+                onSuccess?.(recipientCount);
             }
         } finally {
             setPending(false);
@@ -304,17 +335,36 @@ export function MailForm({ users }: { users: MailUserOption[] }) {
                     <Text size="2" weight="bold">
                         Nachricht
                     </Text>
-                    <TextArea name="message" required rows={10} placeholder="Hallo zusammen..." mt="1" />
+                    <Text size="1" color="gray" mb="2">
+                        Verfügbare Platzhalter: $Vorname, $Nachname, $Name
+                    </Text>
+                    <Box mt="1">
+                        <Box
+                            style={{
+                                border: "1px solid var(--gray-6)",
+                                borderRadius: "var(--radius-2)",
+                                minHeight: "250px",
+                            }}
+                        >
+                            <EmailEditorToolbar editor={editor} />
+                            <EditorContent editor={editor} />
+                        </Box>
+                    </Box>
                 </label>
 
                 <Flex justify="between" align="center" gap="3" mt="4" wrap="wrap">
-                    <Flex gap="3" wrap="wrap">
-                        <Button type="submit" color="blue" disabled={pending}>
-                            {pending ? "Wird gesendet…" : "E-Mail senden"}
-                        </Button>
+                    <Flex gap="3" wrap="wrap" align="center">
+                        <Flex direction="column" gap="2">
+                            <Button type="submit" color="blue" disabled={pending}>
+                                <PaperPlaneIcon /> {pending ? "Wird gesendet…" : "E-Mail senden"}
+                            </Button>
+                            <Text size="1" color="gray">
+                                E-Mail an {target === "SELECTED" ? selectedIds.size : users.length} {target === "SELECTED" ? (selectedIds.size === 1 ? "Person" : "Personen") : (users.length === 1 ? "Person" : "Personen")} senden
+                            </Text>
+                        </Flex>
                         <Link href="/dashboard">
                             <Button variant="soft" color="gray" type="button">
-                                Abbrechen
+                                <MinusIcon /> Abbrechen
                             </Button>
                         </Link>
                     </Flex>

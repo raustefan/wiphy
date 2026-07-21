@@ -125,6 +125,19 @@ export const feeToggleSchema = z.object({
   paid: z.enum(["true", "false"]).transform((v) => v === "true"),
 });
 
+export const feeStatusUpdateSchema = z.object({
+  userId: z.string().min(1, "Ungültige Benutzer-ID."),
+  year: z.coerce.number().int().min(2000).max(2100),
+  field: z.enum(["paid", "isStudent"]),
+  value: z.enum(["true", "false"]).transform((v) => v === "true"),
+});
+
+export const feeAmountUpdateSchema = z.object({
+  userId: z.string().min(1, "Ungültige Benutzer-ID."),
+  year: z.coerce.number().int().min(2000).max(2100),
+  beitrag: z.coerce.number().min(0),
+});
+
 export const feeCommentSchema = z.object({
   userId: z.string().min(1, "Ungültige Benutzer-ID."),
   comment: z

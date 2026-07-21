@@ -67,8 +67,6 @@ NEXTAUTH_URL="http://localhost:3000"
 
 `DEIN_USER` ist in der Regel dein macOS-Benutzername (bei Homebrew-Postgres oft ohne Passwort). Ein Secret kannst du z. B. mit `openssl rand -base64 32` erzeugen.
 
-Für **Rundmails** (optional, nur wenn du `/dashboard/mail` nutzen willst) zusätzlich SMTP-Variablen setzen — siehe [Konfiguration](#konfiguration--umgebungsvariablen).
-
 ### 4. Datenbank-Schema einrichten (Prisma)
 
 ```bash
@@ -87,15 +85,6 @@ Standard-Login nach dem Seed: `admin@wiphy.de` / `admin123` (siehe `prisma/seed.
 ### 5. Entwicklungsserver starten
 
 ```bash
-pnpm dev
-```
-
-Die App läuft unter [http://localhost:3000](http://localhost:3000).
-
-### Kurz-Checkliste (wenn schon eingerichtet)
-
-```bash
-brew services start postgresql@16   # falls Postgres nicht läuft
 pnpm dev
 ```
 

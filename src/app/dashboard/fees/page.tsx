@@ -1,16 +1,31 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
-import { getFeeDashboardUsers, getFeeYears } from "@/lib/server/services/feeService";
+import { getFeeDashboardUsers, getFeeYears, getDatabaseYearRange } from "@/lib/server/services/feeService";
 import { Container, Card, Heading, Text, Flex, Box, Separator, Button } from "@radix-ui/themes";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { FeesTable } from "./FeesTable";
 import type { User, MemberFee } from "@prisma/client";
 
-export default async function FeesDashboardPage() {
+export default async function FeesDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ startYear?: string; endYear?: string }>;
+}) {
   const currentUser = await requireUser();
   const isAdmin = currentUser.role === "ADMIN";
   if (!currentUser.id) redirect("/login");
-  const years = getFeeYears(2024);
+
+  const resolvedParams = await searchParams;
+  const { minYear, maxYear } = await getDatabaseYearRange();
+  const startBound = Math.min(2020, minYear);
+  const endBound = Math.max(new Date().getFullYear() + 2, maxYear);
+  const availableYears = Array.from({ length: endBound - startBound + 1 }, (_, i) => startBound + i);
+
+  const startYear = resolvedParams.startYear ? parseInt(resolvedParams.startYear) : 2024;
+  const endYear = resolvedParams.endYear ? parseInt(resolvedParams.endYear) : new Date().getFullYear();
+
+  const years = getFeeYears(startYear, endYear);
   const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
     User & { fees: MemberFee[] }
   >;
@@ -22,7 +37,12 @@ export default async function FeesDashboardPage() {
     email: u.email,
     mitgliedId: u.mitgliedId,
     zahlungsKommentar: u.zahlungsKommentar,
-    fees: u.fees.map((f) => ({ jahr: f.jahr, bezahlt: f.bezahlt })),
+    fees: u.fees.map((f) => ({
+      jahr: f.jahr,
+      bezahlt: f.bezahlt,
+      isStudent: f.isStudent,
+      beitrag: f.beitrag ?? 0,
+    })),
   }));
 
   return (
@@ -46,7 +66,9 @@ export default async function FeesDashboardPage() {
             </Text>
           </Box>
           <Link href="/dashboard">
-            <Button variant="soft">Zurück zum Dashboard</Button>
+            <Button variant="soft" color="gray">
+              <ArrowLeftIcon /> Zurück zum Dashboard
+            </Button>
           </Link>
         </Flex>
 
@@ -67,7 +89,14 @@ export default async function FeesDashboardPage() {
 
           <Separator mb="3" />
 
-          <FeesTable users={tableUsers} years={years} isAdmin={isAdmin} />
+          <FeesTable
+            users={tableUsers}
+            years={years}
+            isAdmin={isAdmin}
+            availableYears={availableYears}
+            startYear={startYear}
+            endYear={endYear}
+          />
         </Card>
       </Container>
     </Box>

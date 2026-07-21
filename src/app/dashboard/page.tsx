@@ -291,6 +291,8 @@ export default async function DashboardPage() {
                         {last3Years.map((year) => {
                             const fee = myFees.find((f) => f.jahr === year);
                             const isPaid = fee?.bezahlt ?? false;
+                            const isStudent = fee?.isStudent ?? false;
+                            const amount = fee?.beitrag ?? 0;
                             return (
                                 <Card
                                     key={year}
@@ -302,7 +304,7 @@ export default async function DashboardPage() {
                                         border: "1px solid rgba(15, 23, 42, 0.06)",
                                     }}
                                 >
-                                    <Flex direction="column" gap="3">
+                                    <Flex direction="column" gap="2">
                                         <Flex align="center" gap="2">
                                             <CalendarIcon className="dashboard-card-icon" />
                                             <Text size="2" color="gray">
@@ -310,9 +312,17 @@ export default async function DashboardPage() {
                                             </Text>
                                         </Flex>
                                         <Heading size="6">{year}</Heading>
-                                        <Badge color={isPaid ? "green" : "red"} size="2" style={{ width: "fit-content" }}>
-                                            {isPaid ? "Bezahlt" : "Ausstehend"}
-                                        </Badge>
+                                        <Flex gap="1" align="center" wrap="wrap">
+                                            <Badge color={isPaid ? "green" : "red"} size="1">
+                                                {isPaid ? "Bezahlt" : "Ausstehend"}
+                                            </Badge>
+                                            <Badge color={isStudent ? "blue" : "gray"} size="1">
+                                                {isStudent ? "Student" : "Regulär"}
+                                            </Badge>
+                                        </Flex>
+                                        <Text size="1" weight="medium" color="gray">
+                                            Betrag: {amount.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                                        </Text>
                                     </Flex>
                                 </Card>
                             );

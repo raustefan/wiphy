@@ -13,7 +13,9 @@ import {
     Card,
     TextField,
     Select,
+    Box,
 } from "@radix-ui/themes";
+import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 
@@ -126,35 +128,48 @@ export default async function EditUserPage({
     if (!user) return <Text>User nicht gefunden</Text>;
 
     return (
-        <Container size="2" mt="6">
-            <Card size="4">
-                <Heading mb="4">
-                    {isAdmin ? "Benutzer bearbeiten" : "Mein Profil bearbeiten"}
-                </Heading>
+        <Box py="5" style={{ minHeight: "100%" }}>
+            <Container size="2">
+                <Flex justify="between" align="center" mb="4">
+                    <Box>
+                        <Text size="2" color="gray">
+                            Internbereich
+                        </Text>
+                        <Heading size="6">
+                            {isAdmin ? "Benutzer bearbeiten" : "Mein Profil bearbeiten"}
+                        </Heading>
+                    </Box>
+                    <Link href="/dashboard">
+                        <Button variant="soft" color="gray">
+                            <ArrowLeftIcon /> Zurück zum Dashboard
+                        </Button>
+                    </Link>
+                </Flex>
 
-                {resolvedSearchParams?.validationError === "1" && (
-                    <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                        <Text weight="bold" color="red" size="2">
-                            Bitte prüfe deine Eingaben.
-                        </Text>
-                        <Text size="2" color="red">
-                            Ein oder mehrere Felder sind ungültig oder fehlen.
-                        </Text>
-                    </Card>
-                )}
+                <Card size="3">
+                    {resolvedSearchParams?.validationError === "1" && (
+                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                            <Text weight="bold" color="red" size="2">
+                                Bitte prüfe deine Eingaben.
+                            </Text>
+                            <Text size="2" color="red">
+                                Ein oder mehrere Felder sind ungültig oder fehlen.
+                            </Text>
+                        </Card>
+                    )}
 
-                {isAdmin && resolvedSearchParams?.mitgliedIdError === "1" && (
-                    <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                        <Text weight="bold" color="red" size="2">
-                            Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.
-                        </Text>
-                        <Text size="2" color="red">
-                            Bitte wähle eine andere eindeutige Nummer.
-                        </Text>
-                    </Card>
-                )}
+                    {isAdmin && resolvedSearchParams?.mitgliedIdError === "1" && (
+                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                            <Text weight="bold" color="red" size="2">
+                                Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.
+                            </Text>
+                            <Text size="2" color="red">
+                                Bitte wähle eine andere eindeutige Nummer.
+                            </Text>
+                        </Card>
+                    )}
 
-                <form action={updateUser}>
+                    <form action={updateUser}>
                     <input type="hidden" name="id" value={user.id} />
 
                     <Flex direction="column" gap="3">
@@ -552,10 +567,12 @@ export default async function EditUserPage({
                         )}
 
                         <Flex gap="3" mt="4">
-                            <Button type="submit">Speichern</Button>
+                            <Button type="submit">
+                                <CheckIcon /> Speichern
+                            </Button>
                             <Link href="/dashboard">
-                                <Button variant="soft" color="gray">
-                                    Abbrechen
+                                <Button variant="soft" color="gray" type="button">
+                                    <MinusIcon /> Abbrechen
                                 </Button>
                             </Link>
                         </Flex>
@@ -563,5 +580,6 @@ export default async function EditUserPage({
                 </form>
             </Card>
         </Container>
+    </Box>
     );
 }

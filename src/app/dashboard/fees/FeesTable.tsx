@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Table,
   Text,
@@ -9,10 +10,12 @@ import {
   Button,
   ScrollArea,
   TextArea,
+  Box,
 } from "@radix-ui/themes";
+import { CheckIcon, MinusIcon, PlusIcon } from "@radix-ui/react-icons";
 import { EmailComposerDialog, type MailRecipient } from "@/components/EmailComposerDialog";
 import { feeReminderTemplate } from "@/lib/email/templates";
-import { toggleFee, updateFeeComment } from "./actions";
+import { updateFeeStatus, updateFeeAmount, updateFeeComment, initializeBillingYear } from "./actions";
 
 export type FeesTableUser = {
   id: string;
@@ -21,13 +24,21 @@ export type FeesTableUser = {
   email: string;
   mitgliedId: number | null;
   zahlungsKommentar: string | null;
-  fees: Array<{ jahr: number; bezahlt: boolean }>;
+  fees: Array<{
+    jahr: number;
+    bezahlt: boolean;
+    isStudent: boolean;
+    beitrag: number;
+  }>;
 };
 
 type FeesTableProps = {
   users: FeesTableUser[];
   years: number[];
   isAdmin: boolean;
+  availableYears: number[];
+  startYear: number;
+  endYear: number;
 };
 
 function hasOpenFee(user: FeesTableUser, years: number[]) {
@@ -37,9 +48,13 @@ function hasOpenFee(user: FeesTableUser, years: number[]) {
   });
 }
 
-export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
+export function FeesTable({ users, years, isAdmin, availableYears, startYear, endYear }: FeesTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mailOpen, setMailOpen] = useState(false);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const currentYear = new Date().getFullYear();
 
@@ -70,6 +85,12 @@ export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
     });
   }, [selectedUsers, currentYear]);
 
+  function handleYearChange(type: "startYear" | "endYear", value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(type, value);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   function toggleSelection(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -90,7 +111,7 @@ export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
   return (
     <>
       {isAdmin && (
-        <Flex justify="between" align="center" mb="3" gap="2" wrap="wrap">
+        <Flex justify="between" align="center" mb="3" gap="3" wrap="wrap">
           <Flex gap="2" align="center" wrap="wrap">
             <Badge variant="soft">{selectedIds.size} ausgewählt</Badge>
             <Button size="1" variant="outline" type="button" onClick={selectAllWithOpenFees}>
@@ -102,6 +123,64 @@ export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
               </Button>
             )}
           </Flex>
+
+          <Flex gap="3" align="center" wrap="wrap">
+            <Flex gap="2" align="center">
+              <Text size="1" color="gray">Anzeigezeitraum:</Text>
+              <select
+                value={startYear}
+                onChange={(e) => handleYearChange("startYear", e.target.value)}
+                style={{
+                  fontSize: "12px",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--gray-6)",
+                  background: "var(--color-background)",
+                }}
+              >
+                {availableYears.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <Text size="1" color="gray">bis</Text>
+              <select
+                value={endYear}
+                onChange={(e) => handleYearChange("endYear", e.target.value)}
+                style={{
+                  fontSize: "12px",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--gray-6)",
+                  background: "var(--color-background)",
+                }}
+              >
+                {availableYears.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </Flex>
+
+            <form action={initializeBillingYear} style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <Text size="1" color="gray">Jahr anlegen:</Text>
+              <input
+                type="number"
+                name="year"
+                defaultValue={new Date().getFullYear() + 1}
+                style={{
+                  width: "65px",
+                  fontSize: "12px",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--gray-6)",
+                  background: "var(--color-background)",
+                }}
+              />
+              <Button type="submit" size="1" color="green" variant="soft" title="Jahr für alle anlegen">
+                <PlusIcon style={{ width: 12, height: 12 }} />
+              </Button>
+            </form>
+          </Flex>
+
           <Button
             color="blue"
             disabled={selectedIds.size === 0}
@@ -163,17 +242,32 @@ export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
                     <Badge variant="soft">{user.mitgliedId ?? "—"}</Badge>
                   </Table.Cell>
                   {isAdmin && (
-                    <Table.Cell>
+                    <Table.Cell style={{ minWidth: "180px" }}>
                       <form action={updateFeeComment}>
                         <input type="hidden" name="userId" value={user.id} />
-                        <TextArea
-                          name="comment"
-                          rows={3}
-                          defaultValue={user.zahlungsKommentar || ""}
-                        />
-                        <Flex justify="end" mt="1">
-                          <Button type="submit" size="1" variant="soft">
-                            Speichern
+                        <Flex gap="1" align="end" width="100%">
+                          <Box style={{ flexGrow: 1 }}>
+                            <TextArea
+                              name="comment"
+                              rows={user.zahlungsKommentar ? 2 : 1}
+                              defaultValue={user.zahlungsKommentar || ""}
+                              placeholder="Kommentar..."
+                              style={{
+                                minHeight: user.zahlungsKommentar ? "48px" : "32px",
+                                fontSize: "11px",
+                                width: "100%",
+                              }}
+                            />
+                          </Box>
+                          <Button
+                            type="submit"
+                            size="1"
+                            variant="soft"
+                            color="blue"
+                            title="Speichern"
+                            style={{ height: "32px", width: "32px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            <CheckIcon style={{ width: 16, height: 16 }} />
                           </Button>
                         </Flex>
                       </form>
@@ -182,32 +276,109 @@ export function FeesTable({ users, years, isAdmin }: FeesTableProps) {
                   {years.map((year) => {
                     const existing = user.fees.find((f) => f.jahr === year);
                     const paid = existing?.bezahlt ?? false;
+                    const isStudent = existing?.isStudent ?? false;
+                    const beitrag = existing?.beitrag ?? 0;
 
                     if (!isAdmin) {
                       return (
                         <Table.Cell key={year} align="center">
-                          <Badge color={paid ? "green" : "gray"}>
-                            {paid ? "bezahlt" : "offen"}
-                          </Badge>
+                          <Flex direction="column" gap="1" align="center" style={{ minWidth: "80px" }}>
+                            <Badge color={paid ? "green" : "gray"} size="1">
+                              {paid ? "bezahlt" : "offen"}
+                            </Badge>
+                            <Badge color={isStudent ? "blue" : "gray"} size="1">
+                              {isStudent ? "Student" : "Regulär"}
+                            </Badge>
+                            <Text size="1" color="gray" weight="medium">
+                              Beitrag: {beitrag.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                            </Text>
+                          </Flex>
                         </Table.Cell>
                       );
                     }
 
                     return (
                       <Table.Cell key={year} align="center">
-                        <form action={toggleFee}>
-                          <input type="hidden" name="userId" value={user.id} />
-                          <input type="hidden" name="year" value={year} />
-                          <input type="hidden" name="paid" value={paid ? "false" : "true"} />
-                          <Button
-                            type="submit"
-                            size="1"
-                            variant={paid ? "soft" : "outline"}
-                            color={paid ? "green" : "red"}
-                          >
-                            {paid ? "✓" : "–"}
-                          </Button>
-                        </form>
+                        <Flex direction="column" gap="2" align="center" style={{ minWidth: "120px", padding: "4px" }}>
+                          {/* Paid status checkmark button */}
+                          <form action={updateFeeStatus}>
+                            <input type="hidden" name="userId" value={user.id} />
+                            <input type="hidden" name="year" value={year} />
+                            <input type="hidden" name="field" value="paid" />
+                            <input type="hidden" name="value" value={paid ? "false" : "true"} />
+                            <Flex gap="1" align="center">
+                              <Text size="1" color="gray" weight="medium">Bezahlt:</Text>
+                              <Button
+                                type="submit"
+                                size="1"
+                                variant={paid ? "soft" : "outline"}
+                                color={paid ? "green" : "red"}
+                                style={{ width: "24px", height: "24px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                                title={paid ? "Bezahlt (Klicken zum Ändern)" : "Offen (Klicken zum Ändern)"}
+                              >
+                                {paid ? <CheckIcon style={{ width: 16, height: 16 }} /> : <MinusIcon style={{ width: 16, height: 16 }} />}
+                              </Button>
+                            </Flex>
+                          </form>
+
+                          {/* Student status checkbox */}
+                          <form action={updateFeeStatus}>
+                            <input type="hidden" name="userId" value={user.id} />
+                            <input type="hidden" name="year" value={year} />
+                            <input type="hidden" name="field" value="isStudent" />
+                            <input type="hidden" name="value" value={isStudent ? "false" : "true"} />
+                            <Flex gap="1" align="center" style={{ cursor: "pointer" }}>
+                              <Text size="1" color="gray" weight="medium">Student:</Text>
+                              <input
+                                key={`${user.id}-${year}-${isStudent}`}
+                                type="checkbox"
+                                defaultChecked={isStudent}
+                                onChange={(e) => e.currentTarget.form?.requestSubmit()}
+                                style={{
+                                  cursor: "pointer",
+                                  width: "15px",
+                                  height: "15px",
+                                  accentColor: "var(--accent-9)",
+                                }}
+                              />
+                            </Flex>
+                          </form>
+
+                          {/* Amount edit form */}
+                          <form action={updateFeeAmount}>
+                            <input type="hidden" name="userId" value={user.id} />
+                            <input type="hidden" name="year" value={year} />
+                            <Flex gap="1" align="center">
+                              <Text size="1" color="gray" weight="medium">Beitrag:</Text>
+                              <input
+                                type="number"
+                                name="beitrag"
+                                step="0.01"
+                                defaultValue={beitrag}
+                                style={{
+                                  width: "48px",
+                                  height: "20px",
+                                  fontSize: "11px",
+                                  padding: "2px",
+                                  textAlign: "right",
+                                  borderRadius: "4px",
+                                  border: "1px solid var(--gray-6)",
+                                  background: "var(--color-background)",
+                                }}
+                              />
+                              <Button
+                                type="submit"
+                                size="1"
+                                variant="soft"
+                                color="blue"
+                                style={{ padding: 0, width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                title="Betrag speichern"
+                              >
+                                <CheckIcon style={{ width: 12, height: 12 }} />
+                              </Button>
+                            </Flex>
+                          </form>
+                        </Flex>
                       </Table.Cell>
                     );
                   })}

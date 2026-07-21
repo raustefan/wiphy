@@ -92,6 +92,8 @@ model MemberFee {
   // Jahr des Mitgliedsbeitrags (z.B. 2000, 2001, ...)
   jahr      Int
   bezahlt   Boolean  @default(false)
+  isStudent Boolean  @default(false)
+  beitrag   Float    @default(0)
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())

@@ -25,8 +25,8 @@ export function getDatabaseUrl() {
 
 export function getSmtpConfig() {
   const service = process.env.MAIL_SERVICE?.trim();
-  const user = readRequiredMailEnv("SMTP_USER");
-  const pass = readRequiredMailEnv("SMTP_PASS");
+  const user = readRequiredMailEnv("GMAIL_USER");
+  const pass = readRequiredMailEnv("GMAIL_APP_PASSWORD");
   const from = readRequiredMailEnv("EMAIL_FROM");
 
   if (service === "GmailWorkspace") {
@@ -51,7 +51,7 @@ export function getSmtpConfig() {
     transport: {
       host,
       port,
-      secure: port === 465,
+      secure: true,
       auth: { user, pass },
     },
     from,

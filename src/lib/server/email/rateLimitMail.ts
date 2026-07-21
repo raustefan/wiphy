@@ -9,7 +9,7 @@ export async function enforceAdminMailRateLimit() {
   await consumeRateLimit({
     bucket: "admin-mail",
     keyParts: [admin.id, extractClientIp(requestHeaders)],
-    limit: 5,
+    limit: 50,
     windowMs: 10 * 60 * 1000,
     blockMs: 10 * 60 * 1000,
     message: "Zu viele E-Mails in kurzer Zeit. Bitte warte 10 Minuten und versuche es erneut.",

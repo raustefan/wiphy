@@ -37,16 +37,18 @@ export async function sendEmailAction(formData: FormData) {
     return executeAction(async () => {
         const admin = await enforceAdminMailRateLimit();
         const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
+        const htmlMessage = String(formData.get("message") ?? "");
 
         await sendMailForTarget({
             target,
             selectedUserIds,
             subject,
             message,
+            htmlMessage,
             bccToSelf,
             adminEmail: admin.email,
         });
 
-        redirect("/dashboard?mail=success");
+        return { ok: true };
     });
 }

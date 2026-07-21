@@ -7,11 +7,14 @@ import {
   Flex,
   Text,
   TextField,
-  TextArea,
   Box,
 } from "@radix-ui/themes";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TiptapLink from "@tiptap/extension-link";
+import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
 
 export type MailRecipient = {
   id: string;
@@ -49,6 +52,24 @@ export function EmailComposerDialog({
   const [sentCount, setSentCount] = useState(0);
   const wasOpenRef = useRef(false);
 
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TiptapLink.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-blue-600 underline cursor-pointer',
+        },
+      }),
+    ],
+    content: defaultMessage,
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
+      },
+    },
+  });
+
   // Reset only when the dialog opens — not when parent props change while open.
   useEffect(() => {
     if (open && !wasOpenRef.current) {
@@ -58,9 +79,10 @@ export function EmailComposerDialog({
       setError("");
       setSuccess(false);
       setSentCount(0);
+      editor?.commands.setContent(defaultMessage);
     }
     wasOpenRef.current = open;
-  }, [open, defaultSubject, defaultMessage]);
+  }, [open, defaultSubject, defaultMessage, editor]);
 
   function closeDialog() {
     if (success) onSuccess?.();
@@ -80,7 +102,7 @@ export function EmailComposerDialog({
         formData.append("selectedUserIds", r.id);
       }
       formData.set("subject", subject);
-      formData.set("message", message);
+      formData.set("message", editor?.getHTML() || message);
       if (bccToSelf) formData.set("bccToSelf", "on");
 
       const result = await sendDirectMailAction(formData);
@@ -184,13 +206,21 @@ export function EmailComposerDialog({
                 <Text size="2" weight="bold">
                   Nachricht
                 </Text>
-                <TextArea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  rows={8}
-                  mt="1"
-                />
+                <Text size="1" color="gray" mb="2">
+                  Verfügbare Platzhalter: $Vorname, $Nachname, $Name
+                </Text>
+                <Box mt="1">
+                  <Box
+                    style={{
+                      border: "1px solid var(--gray-6)",
+                      borderRadius: "var(--radius-2)",
+                      minHeight: "200px",
+                    }}
+                  >
+                    <EmailEditorToolbar editor={editor} />
+                    <EditorContent editor={editor} />
+                  </Box>
+                </Box>
               </label>
               {showBccToSelf && (
                 <Flex align="center" gap="2">
@@ -224,13 +254,18 @@ export function EmailComposerDialog({
                   Abbrechen
                 </Button>
               </AlertDialog.Cancel>
-              <Button
-                type="submit"
-                color="blue"
-                disabled={pending || recipients.length === 0}
-              >
-                {pending ? "Wird gesendet…" : submitLabel}
-              </Button>
+              <Flex direction="column" align="end" gap="1">
+                <Button
+                  type="submit"
+                  color="blue"
+                  disabled={pending || recipients.length === 0}
+                >
+                  {pending ? "Wird gesendet…" : submitLabel}
+                </Button>
+                <Text size="1" color="gray">
+                  E-Mail an {recipients.length} {recipients.length === 1 ? "Person" : "Personen"} senden
+                </Text>
+              </Flex>
             </Flex>
           </form>
         )}

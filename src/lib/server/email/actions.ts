@@ -35,14 +35,17 @@ export async function sendDirectMailAction(formData: FormData) {
   return executeAction(async () => {
     const admin = await enforceAdminMailRateLimit();
     const { selectedUserIds, subject, message, bccToSelf } = parseDirectMailForm(formData);
+    const htmlMessage = String(formData.get("message") ?? "");
 
     const users = await resolveUsersByIds(selectedUserIds);
     await sendMailToUsers({
       recipientEmails: users.map((u) => u.email),
       subject,
       message,
+      htmlMessage,
       bccToSelf,
       adminEmail: admin.email,
+      users,
     });
   });
 }
