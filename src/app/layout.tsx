@@ -1,12 +1,15 @@
 import "@radix-ui/themes/styles.css";
-import "./globals.css"; // <-- WICHTIG: Hier laden wir gleich unser Custom CSS
+import "./globals.css"; 
 import { Theme } from "@radix-ui/themes";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "wiphy - Vereinswebsite",
-  description: "Die offizielle wiphy Vereinswebsite",
+  title: "WirtschaftsPhysik Alumni e.V.",
+  description: "Die offizielle Vereinswebsite des WirtschaftsPhysik Alumni e.V.",
+  icons: {
+    icon: "public/logo-plain.png", // <-- Add this line inside metadata
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
