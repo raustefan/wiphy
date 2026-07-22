@@ -77,9 +77,14 @@ export default function LoginPage() {
                         </Flex>
 
                         <Flex direction="column" gap="1">
-                            <Text as="label" size="2" weight="bold">
-                                Passwort
-                            </Text>
+                            <Flex justify="between" align="baseline">
+                                <Text as="label" size="2" weight="bold">
+                                    Passwort
+                                </Text>
+                                <Link href="/forgot-password" size="1" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
+                                    Passwort vergessen?
+                                </Link>
+                            </Flex>
                             <TextField.Root
                                 type="password"
                                 value={password}

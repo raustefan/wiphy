@@ -102,13 +102,16 @@ model MemberFee {
 }
 
 model BlogPost {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  imageUrl  String?
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  preview     String   @default("")
+  author      String   @default("")
+  publishedAt DateTime @default(now())
+  imageUrl    String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model RateLimitEntry {
@@ -121,4 +124,14 @@ model RateLimitEntry {
 
   @@index([resetAt])
   @@index([blockedUntil])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

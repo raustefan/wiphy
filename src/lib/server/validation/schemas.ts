@@ -158,6 +158,17 @@ export const blogSaveSchema = z.object({
     .string()
     .min(1, "Bitte Inhalt angeben.")
     .max(500_000, "Inhalt ist zu lang."),
+  preview: z
+    .string()
+    .trim()
+    .min(1, "Bitte eine Vorschau angeben.")
+    .max(1000, "Vorschau ist zu lang."),
+  author: z
+    .string()
+    .trim()
+    .min(1, "Bitte einen Autor angeben.")
+    .max(200, "Autor ist zu lang."),
+  publishedAt: z.coerce.date().default(() => new Date()),
   published: z.boolean(),
 });
 

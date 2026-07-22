@@ -15,6 +15,9 @@ export async function savePost(formData: FormData) {
             id: String(formData.get("id") ?? ""),
             title: String(formData.get("title") ?? ""),
             content: String(formData.get("content") ?? ""),
+            preview: String(formData.get("preview") ?? ""),
+            author: String(formData.get("author") ?? ""),
+            publishedAt: String(formData.get("publishedAt") ?? ""),
             published: formData.get("published") === "on",
         };
         const parsed = blogSaveSchema.safeParse(raw);

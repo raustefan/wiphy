@@ -20,7 +20,7 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
             <Card size="4">
                 <Heading size="8" mb="2">{post.title}</Heading>
                 <Text color="gray" size="2" mb="6" as="div">
-                    Veröffentlicht am {post.createdAt.toLocaleDateString('de-DE')}
+                    Veröffentlicht {post.author ? `von ${post.author}` : ""} am {post.publishedAt.toLocaleDateString('de-DE')}
                 </Text>
 
                 {/* Hier rufen wir unsere neue Client-Komponente auf */}

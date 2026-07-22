@@ -1,14 +1,16 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
-import { Flex, Heading, Text, Button, Container, Card, TextField, Checkbox, Box } from "@radix-ui/themes";
+import { Flex, Heading, Text, Button, Container, Card, TextField, TextArea, Checkbox, Box } from "@radix-ui/themes";
 import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { savePost } from "../actions";
 import MarkdownEditor from "@/components/MarkdownEditor";
+import { auth } from "@/auth";
 
 export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     await requireAdmin();
+    const session = await auth();
 
     const isNew = resolvedParams.id === "new";
 
@@ -17,6 +19,9 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
         post = await getPostForEdit(resolvedParams.id);
         if (!post) return <Text>Beitrag nicht gefunden</Text>;
     }
+
+    const defaultDate = (post?.publishedAt || new Date()).toISOString().split("T")[0];
+    const defaultAuthor = post?.author || session?.user?.name || "";
 
     return (
         <Box py="5" style={{ minHeight: "100%" }}>
@@ -43,6 +48,21 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                             <label>
                                 <Text size="2" weight="bold">Titel</Text>
                                 <TextField.Root name="title" defaultValue={post?.title || ""} required />
+                            </label>
+
+                            <label>
+                                <Text size="2" weight="bold">Autor</Text>
+                                <TextField.Root name="author" defaultValue={defaultAuthor} required />
+                            </label>
+
+                            <label>
+                                <Text size="2" weight="bold">Veröffentlichungsdatum</Text>
+                                <TextField.Root type="date" name="publishedAt" defaultValue={defaultDate} required />
+                            </label>
+
+                            <label>
+                                <Text size="2" weight="bold">Kurze Textpreview (Vorschau-Snippet)</Text>
+                                <TextArea name="preview" defaultValue={post?.preview || ""} placeholder="Kurze Zusammenfassung für die Blog-Übersichtsseite..." required style={{ minHeight: "80px" }} />
                             </label>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

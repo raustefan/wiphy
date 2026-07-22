@@ -37,13 +37,12 @@ export default async function BlogIndexPage() {
                                 <Heading size="5" mb="2">{post.title}</Heading>
 
                                 <Text color="gray" size="2" mb="3" as="div">
-                                    {post.createdAt.toLocaleDateString("de-DE")}
+                                    {post.publishedAt.toLocaleDateString("de-DE")}
+                                    {post.author && ` • Von ${post.author}`}
                                 </Text>
 
                                 <Text color="gray" size="3" style={{ display: "block" }}>
-                                    {post.content.length > 150
-                                        ? post.content.substring(0, 150) + "..."
-                                        : post.content}
+                                    {post.preview}
                                 </Text>
 
                                 <Flex mt="3">

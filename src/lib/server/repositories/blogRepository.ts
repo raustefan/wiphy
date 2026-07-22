@@ -7,7 +7,7 @@ export function findAllPosts() {
 export function findPublishedPosts() {
   return prisma.blogPost.findMany({
     where: { published: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { publishedAt: "desc" },
   });
 }
 
@@ -21,13 +21,27 @@ export function findPublishedPostById(id: string) {
   });
 }
 
-export function createPost(data: { title: string; content: string; published: boolean }) {
+export function createPost(data: {
+  title: string;
+  content: string;
+  preview: string;
+  author: string;
+  publishedAt: Date;
+  published: boolean;
+}) {
   return prisma.blogPost.create({ data });
 }
 
 export function updatePost(
   id: string,
-  data: { title: string; content: string; published: boolean },
+  data: {
+    title: string;
+    content: string;
+    preview: string;
+    author: string;
+    publishedAt: Date;
+    published: boolean;
+  },
 ) {
   return prisma.blogPost.update({
     where: { id },

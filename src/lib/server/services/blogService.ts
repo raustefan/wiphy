@@ -28,12 +28,18 @@ export async function saveAdminPost(input: {
   id: string;
   title: string;
   content: string;
+  preview: string;
+  author: string;
+  publishedAt: Date;
   published: boolean;
 }) {
   if (input.id === "new") {
     await createPost({
       title: input.title,
       content: input.content,
+      preview: input.preview,
+      author: input.author,
+      publishedAt: input.publishedAt,
       published: input.published,
     });
     return;
@@ -42,6 +48,9 @@ export async function saveAdminPost(input: {
   await updatePost(input.id, {
     title: input.title,
     content: input.content,
+    preview: input.preview,
+    author: input.author,
+    publishedAt: input.publishedAt,
     published: input.published,
   });
 }
