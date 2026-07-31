@@ -8,6 +8,7 @@ import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerSchema } from "@/lib/server/validation/schemas";
+import { sendAdminRegistrationNotificationEmail, sendUserRegistrationConfirmationEmail } from "@/lib/mail";
 
 export async function registerUser(formData: FormData) {
     return executeAction(async () => {
@@ -38,6 +39,19 @@ export async function registerUser(formData: FormData) {
                 password: hashedPassword,
             },
         });
+
+        try {
+            const admins = await prisma.user.findMany({
+                where: { role: "ADMIN" },
+                select: { email: true },
+            });
+            const adminEmails = admins.map((admin) => admin.email);
+
+            await sendAdminRegistrationNotificationEmail(adminEmails, { vorname, name, email });
+            await sendUserRegistrationConfirmationEmail(email, { vorname, name });
+        } catch (error) {
+            console.error("Failed to send registration notification emails:", error);
+        }
 
         redirect("/login?register=success");
     });
