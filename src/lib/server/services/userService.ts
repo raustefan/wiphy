@@ -105,7 +105,33 @@ export async function adminCreateUser(input: Prisma.UserCreateInput, currentUser
   }
   // Hash password before saving
   const hashedPassword = await bcrypt.hash(input.password, 12);
-  const data = { ...input, password: hashedPassword };
-  await createUser(data);
+  const data = { ...input, password: hashedPassword, emailVerified: false };
+  const user = await createUser(data);
+
+  // Generate email verification token
+  const crypto = await import("crypto");
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  const { prisma } = await import("@/lib/prisma");
+  await prisma.emailVerificationToken.create({
+    data: {
+      userId: user.id,
+      email: user.email,
+      token,
+      expires,
+    },
+  });
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
+
+  try {
+    const { sendAdminCreatedUserEmail } = await import("@/lib/mail");
+    await sendAdminCreatedUserEmail(user.email, verificationUrl, { vorname: user.vorname, name: user.name });
+  } catch (error) {
+    console.error("Failed to send admin created user notification email:", error);
+  }
+
   return { ok: true as const };
 }

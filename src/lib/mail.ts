@@ -57,3 +57,17 @@ export async function sendEmailChangeEmail(email: string, verificationUrl: strin
     encoding: "utf-8",
   });
 }
+
+export async function sendAdminCreatedUserEmail(email: string, verificationUrl: string, user: { vorname: string; name: string }) {
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: "Dein Account beim WirtschaftsPhysik Alumni e.V. wurde erstellt",
+    text: `Hallo ${user.vorname} ${user.name},\n\ndein Account beim WirtschaftsPhysik Alumni e.V. wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).\n\nBitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:\n\n${verificationUrl}\n\nDanach kannst du dich mit deiner E-Mail-Adresse anmelden. Es empfiehlt sich dringend, dich danach anzumelden und dein Passwort über das Portal zu ändern.\n\nViele Grüße,\nDein Vereinsteam des WirtschaftsPhysik Alumni e.V. \nPS: Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren.`,
+    html: `<p>Hallo ${user.vorname} ${user.name},</p><p>dein Account beim WirtschaftsPhysik Alumni e.V. wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).</p><p>Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Danach kannst du dich mit deiner E-Mail-Adresse anmelden. Es empfiehlt sich dringend, dich danach anzumelden und dein Passwort über das Portal zurückzusetzen/zu ändern.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p></p><p>PS: Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren.</p>`,
+    encoding: "utf-8",
+  });
+}
