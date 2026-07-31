@@ -26,12 +26,12 @@ pnpm build
 
 # Restart application via PM2
 echo "🔄 Restarting application with PM2..."
-if pm2 show wiphy-app > /dev/null 2>&1; then
+if pm2 show wiphy > /dev/null 2>&1; then
   echo "🔄 Restarting existing PM2 process..."
-  pm2 restart wiphy-app
+  pm2 restart wiphy
 else
   echo "🚀 Starting new PM2 process..."
-  pm2 start pnpm --name "wiphy-app" -- start
+  pm2 start pnpm --name "wiphy" -- start
 fi
 
 echo "✅ Deployment finished successfully!"
