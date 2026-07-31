@@ -8,6 +8,7 @@ import {
     Button,
     Badge,
     Box,
+    Dialog,
 } from "@radix-ui/themes";
 import { PaperPlaneIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
@@ -65,6 +66,19 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
             .filter((u): u is MailUserOption => u != null);
     }, [selectedIds, userById]);
 
+    const recipients = useMemo(() => {
+        if (target === "ALL") {
+            return users;
+        } else if (target === "ADMIN") {
+            return users.filter((u) => u.role === "ADMIN");
+        } else if (target === "MEMBER") {
+            return users.filter((u) => u.role === "MEMBER");
+        } else if (target === "SELECTED") {
+            return selectedUsers;
+        }
+        return [];
+    }, [target, users, selectedUsers]);
+
     const searchResults = useMemo(() => {
         const q = search.trim().toLowerCase();
         if (q.length < MIN_SEARCH_LEN) return [];
@@ -115,7 +129,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
             if (result && !result.ok) {
                 setError(result.message);
             } else {
-                const recipientCount = target === "SELECTED" ? selectedIds.size : users.length;
+                const recipientCount = recipients.length;
                 onSuccess?.(recipientCount);
             }
         } finally {
@@ -358,9 +372,41 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                             <Button type="submit" color="blue" disabled={pending}>
                                 <PaperPlaneIcon /> {pending ? "Wird gesendet…" : "E-Mail senden"}
                             </Button>
-                            <Text size="1" color="gray">
-                                E-Mail an {target === "SELECTED" ? selectedIds.size : users.length} {target === "SELECTED" ? (selectedIds.size === 1 ? "Person" : "Personen") : (users.length === 1 ? "Person" : "Personen")} senden
-                            </Text>
+                            <Dialog.Root>
+                                <Dialog.Trigger>
+                                    <Text
+                                        size="1"
+                                        color="blue"
+                                        style={{ cursor: "pointer", textDecoration: "underline" }}
+                                    >
+                                        E-Mail an {recipients.length} {recipients.length === 1 ? "Person" : "Personen"} senden (Liste anzeigen)
+                                    </Text>
+                                </Dialog.Trigger>
+                                <Dialog.Content maxWidth="450px">
+                                    <Dialog.Title>Empfängerliste ({recipients.length})</Dialog.Title>
+                                    <Dialog.Description size="2" mb="3">
+                                        Die E-Mail wird an folgende Empfänger gesendet:
+                                    </Dialog.Description>
+                                    <Box style={{ maxHeight: "300px", overflowY: "auto" }}>
+                                        <Flex direction="column" gap="2">
+                                            {recipients.map((u) => (
+                                                <Flex key={u.id} justify="between" align="center" style={{ borderBottom: "1px solid var(--gray-4)", paddingBottom: "4px" }}>
+                                                    <Box>
+                                                        <Text size="2" weight="bold">{u.name || "—"}</Text>
+                                                        <Text size="1" color="gray" style={{ display: "block" }}>{u.email}</Text>
+                                                    </Box>
+                                                    <Badge color={u.role === "ADMIN" ? "red" : "blue"}>{u.role}</Badge>
+                                                </Flex>
+                                            ))}
+                                        </Flex>
+                                    </Box>
+                                    <Flex justify="end" mt="4">
+                                        <Dialog.Close>
+                                            <Button variant="soft" color="gray">Schließen</Button>
+                                        </Dialog.Close>
+                                    </Flex>
+                                </Dialog.Content>
+                            </Dialog.Root>
                         </Flex>
                         <Link href="/dashboard">
                             <Button variant="soft" color="gray" type="button">
