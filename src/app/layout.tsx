@@ -3,6 +3,8 @@ import "./globals.css";
 import { Theme } from "@radix-ui/themes";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Fraunces } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 
 export const metadata = {
   title: "WirtschaftsPhysik Alumni e.V.",
@@ -11,6 +13,23 @@ export const metadata = {
     icon: "public/logo-plain.png", // <-- Add this line inside metadata
   },
 };
+
+// app/layout.tsx (Ausschnitt)
+
+const serif = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  weight: ["400", "600"],
+  style: ["italic", "normal"],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "700"],
+});
+
+// im <html> oder <body>: className={`${serif.variable} ${mono.variable}`}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

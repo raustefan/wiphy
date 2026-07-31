@@ -358,3 +358,23 @@ body {
     font-size: 2rem;
   }
 }
+
+.feature-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  height: 100%;
+}
+
+@media (hover: hover) {
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px -12px var(--accent-a7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transition: none;
+  }
+}
