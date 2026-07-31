@@ -17,6 +17,7 @@ async function main() {
             vorname: "Admin",
             password: hashed,
             role: "ADMIN",
+            emailVerified: true,
         },
     });
     console.log("✅ Admin user created");

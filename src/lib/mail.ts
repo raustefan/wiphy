@@ -30,16 +30,30 @@ export async function sendAdminRegistrationNotificationEmail(adminEmails: string
   });
 }
 
-export async function sendUserRegistrationConfirmationEmail(email: string, user: { vorname: string; name: string }) {
+export async function sendUserRegistrationConfirmationEmail(email: string, verificationUrl: string, user: { vorname: string; name: string }) {
   const transporter = createMailTransporter();
   const { from } = getSmtpConfig();
 
   await transporter.sendMail({
     from,
     to: email,
-    subject: "Registrierung erfolgreich",
-    text: `Hallo ${user.vorname} ${user.name},\n\nvielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!\n\nDeine Registrierung war erfolgreich. Sobald ein Administrator dein Konto bestätigt hat, erhältst du vollen Zugriff auf den Internbereich.\n\nViele Grüße,\nDein Vereinsteam des WirtschaftsPhysik Alumni e.V.`,
-    html: `<p>Hallo ${user.vorname} ${user.name},</p><p>vielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!</p><p>Deine Registrierung war erfolgreich. Sobald ein Administrator dein Konto bestätigt hat, erhältst du vollen Zugriff auf den Internbereich.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p>`,
+    subject: "Registrierung erfolgreich - Bitte E-Mail bestätigen",
+    text: `Hallo ${user.vorname} ${user.name},\n\nvielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!\n\nDeine Registrierung war erfolgreich. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:\n\n${verificationUrl}\n\nDieser Link ist für 24 Stunden gültig.\n\nSobald ein Administrator dein Konto bestätigt hat und du deine E-Mail-Adresse verifiziert hast, erhältst du vollen Zugriff auf den Internbereich.\n\nViele Grüße,\nDein Vereinsteam des WirtschaftsPhysik Alumni e.V.`,
+    html: `<p>Hallo ${user.vorname} ${user.name},</p><p>vielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!</p><p>Deine Registrierung war erfolgreich. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Dieser Link ist für 24 Stunden gültig.</p><p>Sobald ein Administrator dein Konto bestätigt hat und du deine E-Mail-Adresse verifiziert hast, erhältst du vollen Zugriff auf den Internbereich.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p>`,
+    encoding: "utf-8",
+  });
+}
+
+export async function sendEmailChangeEmail(email: string, verificationUrl: string) {
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: "E-Mail-Adresse ändern",
+    text: `Hallo,\n\num deine E-Mail-Adresse zu bestätigen, klicke bitte auf den folgenden Link:\n\n${verificationUrl}\n\nDieser Link ist für 30 Minuten gültig.\n\nWenn du diese E-Mail nicht angefordert hast, kannst du sie ignorieren.\n\nViele Grüße,\nIhr Vorstand des WirtschaftsPhysik Alumni e.V.`,
+    html: `<p>Hallo,</p><p>um deine E-Mail-Adresse zu bestätigen, klicke bitte auf den folgenden Link:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Dieser Link ist für 30 Minuten gültig.</p><p>Wenn du diese E-Mail nicht angefordert hast, kannst du sie ignorieren.</p><p>Viele Grüße,<br>Ihr Vorstand des WirtschaftsPhysik Alumni e.V.</p>`,
     encoding: "utf-8",
   });
 }

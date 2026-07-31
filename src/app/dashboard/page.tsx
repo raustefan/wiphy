@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { MailSuccessDialog } from "./MailSuccessDialog";
+import { EmailChangeDialog } from "./EmailChangeDialog";
 import { getDashboardUsers, getEditableUser } from "@/lib/server/services/userService";
 import {
     Flex,
@@ -125,6 +126,9 @@ export default async function DashboardPage() {
         >
             <Suspense fallback={null}>
                 <MailSuccessDialog />
+            </Suspense>
+            <Suspense fallback={null}>
+                <EmailChangeDialog />
             </Suspense>
             <Container size="4">
                 <Flex
@@ -398,6 +402,12 @@ export default async function DashboardPage() {
                                             Mitgliedschaft
                                         </Flex>
                                     </Table.ColumnHeaderCell>
+                                    <Table.ColumnHeaderCell>
+                                        <Flex align="center" gap="2">
+                                            <EnvelopeClosedIcon className="dashboard-table-icon" />
+                                            E-Mail-Status
+                                        </Flex>
+                                    </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell align="right">
                                         <Flex align="center" gap="2" justify="end">
                                             <Pencil2Icon className="dashboard-table-icon" />
@@ -436,6 +446,12 @@ export default async function DashboardPage() {
                                             <Badge color={getStatusTone(u.status)} variant="soft">
                                                 {getStatusIcon(u.status)}
                                                 {formatStatus(u.status)}
+                                            </Badge>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Badge color={(u as any).emailVerified ? "green" : "orange"} variant="soft">
+                                                {(u as any).emailVerified ? <CheckCircledIcon /> : <ClockIcon />}
+                                                {(u as any).emailVerified ? "Verifiziert" : "Nicht verifiziert"}
                                             </Badge>
                                         </Table.Cell>
                                         <Table.Cell align="right">

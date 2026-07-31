@@ -6,6 +6,7 @@ type MaybeBool = boolean | string | null | undefined;
 export type UpdateUserInput = {
   idToEdit: string;
   currentUserRole: Role;
+  currentUserId?: string;
   name: string;
   email: string;
   titel?: string | null;

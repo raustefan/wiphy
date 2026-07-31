@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { AppError, executeAction } from "@/lib/server/errors";
@@ -31,14 +32,31 @@ export async function registerUser(formData: FormData) {
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
                 vorname,
                 name,
                 email,
                 password: hashedPassword,
+                emailVerified: false,
             },
         });
+
+        // Generate email verification token
+        const token = crypto.randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        await prisma.emailVerificationToken.create({
+            data: {
+                userId: user.id,
+                email,
+                token,
+                expires,
+            },
+        });
+
+        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
 
         try {
             const admins = await prisma.user.findMany({
@@ -48,7 +66,7 @@ export async function registerUser(formData: FormData) {
             const adminEmails = admins.map((admin) => admin.email);
 
             await sendAdminRegistrationNotificationEmail(adminEmails, { vorname, name, email });
-            await sendUserRegistrationConfirmationEmail(email, { vorname, name });
+            await sendUserRegistrationConfirmationEmail(email, verificationUrl, { vorname, name });
         } catch (error) {
             console.error("Failed to send registration notification emails:", error);
         }

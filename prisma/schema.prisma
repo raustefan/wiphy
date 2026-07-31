@@ -71,6 +71,7 @@ model User {
   updatedAt    DateTime    @updatedAt
   fees         MemberFee[]
   lastLogin DateTime @default(now())
+  emailVerified Boolean @default(false)
 }
 
 enum Role {
@@ -134,4 +135,16 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([userId])
 }

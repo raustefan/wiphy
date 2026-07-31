@@ -43,6 +43,7 @@ async function updateUser(formData: FormData) {
     const result = await updateUserProfile({
         idToEdit: parsed.id,
         currentUserRole: currentUser.role,
+        currentUserId: currentUser.id,
         // basic
         name: parsed.name,
         vorname: parsed.vorname,
@@ -103,7 +104,11 @@ async function updateUser(formData: FormData) {
     }
 
     revalidatePath("/dashboard");
-    redirect("/dashboard");
+    if (result.emailChanged) {
+        redirect("/dashboard?emailChanged=1");
+    } else {
+        redirect("/dashboard");
+    }
 }
 
 export default async function EditUserPage({

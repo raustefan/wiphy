@@ -21,6 +21,53 @@ export async function getEditableUser(id: string) {
 export async function updateUserProfile(input: UpdateUserInput) {
   const data = buildUserUpdateData(input);
 
+  const user = await findUserById(input.idToEdit);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  let emailChanged = false;
+  const isSelf = input.idToEdit === input.currentUserId;
+  const isMember = input.currentUserRole !== "ADMIN";
+
+  if ((isSelf || isMember) && input.email && input.email.trim().toLowerCase() !== user.email.trim().toLowerCase()) {
+    const newEmail = input.email.trim().toLowerCase();
+
+    const { prisma } = await import("@/lib/prisma");
+    const existing = await prisma.user.findUnique({ where: { email: newEmail } });
+    if (existing) {
+      throw new Error("EMAIL_ALREADY_EXISTS");
+    }
+
+    emailChanged = true;
+
+    const crypto = await import("crypto");
+    const token = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+    await prisma.emailVerificationToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        email: newEmail,
+        token,
+        expires,
+      },
+    });
+
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
+
+    const { sendEmailChangeEmail } = await import("@/lib/mail");
+    await sendEmailChangeEmail(newEmail, verificationUrl);
+
+    // Keep the old email in updated data
+    data.email = user.email;
+  }
+
   // Admin-only updates
   if (input.currentUserRole === "ADMIN") {
     if (typeof input.mitgliedId === "string" && input.mitgliedId !== "") {
@@ -41,7 +88,7 @@ export async function updateUserProfile(input: UpdateUserInput) {
   }
 
   await updateUserById(input.idToEdit, data);
-  return { ok: true as const };
+  return { ok: true as const, emailChanged };
 }
 
 export async function adminDeleteUser(userIdToDelete: string, currentUserRole: Role) {
