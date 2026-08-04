@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
-import { getFeeDashboardUsers, getFeeYears, getDatabaseYearRange } from "@/lib/server/services/feeService";
+import { getFeeDashboardUsers, getDatabaseYearRange } from "@/lib/server/services/feeService";
 import { Container, Card, Heading, Text, Flex, Box, Separator, Button } from "@radix-ui/themes";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
@@ -10,22 +10,25 @@ import type { User, MemberFee } from "@prisma/client";
 export default async function FeesDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ startYear?: string; endYear?: string }>;
+  searchParams: Promise<{ year?: string; startYear?: string; endYear?: string }>;
 }) {
   const currentUser = await requireUser();
   const isAdmin = currentUser.role === "ADMIN";
   if (!currentUser.id) redirect("/login");
 
   const resolvedParams = await searchParams;
+  const currentYear = new Date().getFullYear();
   const { minYear, maxYear } = await getDatabaseYearRange();
   const startBound = Math.min(2020, minYear);
-  const endBound = Math.max(new Date().getFullYear() + 2, maxYear);
+  const endBound = Math.max(currentYear + 2, maxYear);
   const availableYears = Array.from({ length: endBound - startBound + 1 }, (_, i) => startBound + i);
 
-  const startYear = resolvedParams.startYear ? parseInt(resolvedParams.startYear) : 2024;
-  const endYear = resolvedParams.endYear ? parseInt(resolvedParams.endYear) : new Date().getFullYear();
+  const selectedYear = resolvedParams.year
+    ? parseInt(resolvedParams.year)
+    : resolvedParams.endYear
+      ? parseInt(resolvedParams.endYear)
+      : currentYear;
 
-  const years = getFeeYears(startYear, endYear);
   const users = (await getFeeDashboardUsers(currentUser.id, currentUser.role)) as Array<
     User & { fees: MemberFee[] }
   >;
@@ -37,6 +40,7 @@ export default async function FeesDashboardPage({
     email: u.email,
     mitgliedId: u.mitgliedId,
     zahlungsKommentar: u.zahlungsKommentar,
+    aufnahmedatum: u.aufnahmedatum?.toISOString() ?? null,
     fees: u.fees.map((f) => ({
       jahr: f.jahr,
       bezahlt: f.bezahlt,
@@ -62,7 +66,7 @@ export default async function FeesDashboardPage({
               {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
             </Heading>
             <Text size="2" color="gray">
-              Jahre ab {years[0] ?? 2024}
+              Beiträge für {selectedYear}
             </Text>
           </Box>
           <Link href="/dashboard">
@@ -80,7 +84,7 @@ export default async function FeesDashboardPage({
                   ? "Admin-Sicht: Alle Benutzer und Jahresbeiträge"
                   : "Nur deine eigenen Beiträge, lesend"}
               </Text>
-              <Heading size="4">Jahresbeiträge</Heading>
+              <Heading size="4">Jahresbeiträge {selectedYear}</Heading>
             </Box>
             <Text size="2" color="gray">
               {users.length} {users.length === 1 ? "Mitglied" : "Mitglieder"}
@@ -91,11 +95,9 @@ export default async function FeesDashboardPage({
 
           <FeesTable
             users={tableUsers}
-            years={years}
+            selectedYear={selectedYear}
             isAdmin={isAdmin}
             availableYears={availableYears}
-            startYear={startYear}
-            endYear={endYear}
           />
         </Card>
       </Container>

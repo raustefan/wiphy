@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -8,14 +8,39 @@ import {
   Badge,
   Flex,
   Button,
+  IconButton,
   ScrollArea,
   TextArea,
-  Box,
+  TextField,
+  Select,
+  Tooltip,
+  Card,
+  AlertDialog,
+  Separator,
 } from "@radix-ui/themes";
-import { CheckIcon, MinusIcon, PlusIcon } from "@radix-ui/react-icons";
-import { EmailComposerDialog, type MailRecipient } from "@/components/EmailComposerDialog";
+import {
+  CheckIcon,
+  PlusIcon,
+  IdCardIcon,
+  CheckCircledIcon,
+  TokensIcon,
+  CalendarIcon,
+  Pencil2Icon,
+  Cross2Icon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
+import { CircleEuro, GraduationCap, MessageSquare } from "lucide-react";
+import {
+  EmailComposerDialog,
+  type MailRecipient,
+} from "@/components/EmailComposerDialog";
 import { feeReminderTemplate } from "@/lib/email/templates";
-import { updateFeeStatus, updateFeeAmount, updateFeeComment, initializeBillingYear } from "./actions";
+import {
+  updateFeeStatus,
+  updateFeeAmount,
+  updateFeeComment,
+  initializeBillingYear,
+} from "./actions";
 
 export type FeesTableUser = {
   id: string;
@@ -24,6 +49,7 @@ export type FeesTableUser = {
   email: string;
   mitgliedId: number | null;
   zahlungsKommentar: string | null;
+  aufnahmedatum: string | null;
   fees: Array<{
     jahr: number;
     bezahlt: boolean;
@@ -34,31 +60,216 @@ export type FeesTableUser = {
 
 type FeesTableProps = {
   users: FeesTableUser[];
-  years: number[];
+  selectedYear: number;
   isAdmin: boolean;
   availableYears: number[];
-  startYear: number;
-  endYear: number;
 };
 
-function hasOpenFee(user: FeesTableUser, years: number[]) {
-  return years.some((year) => {
-    const existing = user.fees.find((f) => f.jahr === year);
-    return !(existing?.bezahlt ?? false);
+function hasOpenFee(user: FeesTableUser, year: number) {
+  const existing = user.fees.find((f) => f.jahr === year);
+  return !(existing?.bezahlt ?? false);
+}
+
+function formatDate(d: string | null) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("de-DE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
-export function FeesTable({ users, years, isAdmin, availableYears, startYear, endYear }: FeesTableProps) {
+function formatCurrency(amount: number) {
+  return amount.toLocaleString("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  });
+}
+
+function IconHeader({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <Tooltip content={label}>
+      <Flex align="center" justify="center" aria-label={label}>
+        {icon}
+      </Flex>
+    </Tooltip>
+  );
+}
+
+function CommentDialog({
+  user,
+  open,
+  onOpenChange,
+}: {
+  user: FeesTableUser | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!user) return null;
+
+  return (
+    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      <AlertDialog.Content maxWidth="480px">
+        <AlertDialog.Title>
+          Kommentar – {user.vorname} {user.name ?? ""}
+        </AlertDialog.Title>
+        <AlertDialog.Description size="2" mb="3">
+          Zahlungs- oder Mitgliedschaftshinweis für dieses Mitglied.
+        </AlertDialog.Description>
+        <form action={updateFeeComment}>
+          <input type="hidden" name="userId" value={user.id} />
+          <TextArea
+            name="comment"
+            rows={4}
+            defaultValue={user.zahlungsKommentar ?? ""}
+            placeholder="Kommentar eingeben…"
+            style={{ width: "100%" }}
+          />
+          <Flex gap="3" mt="4" justify="end">
+            <AlertDialog.Cancel>
+              <Button variant="soft" color="gray" type="button">
+                Abbrechen
+              </Button>
+            </AlertDialog.Cancel>
+            <Button type="submit" color="blue">
+              Speichern
+            </Button>
+          </Flex>
+        </form>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
+  );
+}
+
+function UserPaymentHistoryDialog({
+  user,
+  open,
+  onOpenChange,
+}: {
+  user: FeesTableUser | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!user) return null;
+
+  const sortedFees = [...user.fees].sort((a, b) => b.jahr - a.jahr);
+  const openCount = sortedFees.filter((f) => !f.bezahlt).length;
+
+  return (
+    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      <AlertDialog.Content maxWidth="560px">
+        <Flex justify="between" align="start" mb="1">
+          <AlertDialog.Title mb="0">
+            {user.vorname} {user.name ?? ""}
+          </AlertDialog.Title>
+          {openCount > 0 && (
+            <Badge color="red" variant="soft">
+              {openCount} offen
+            </Badge>
+          )}
+        </Flex>
+        <AlertDialog.Description size="2" mb="3" color="gray">
+          {user.email}
+        </AlertDialog.Description>
+
+        <Flex gap="2" align="center" mb="3">
+          <CalendarIcon
+            style={{ width: 16, height: 16, color: "var(--gray-9)" }}
+          />
+          <Text size="2">
+            Mitglied seit{" "}
+            <Text weight="medium">{formatDate(user.aufnahmedatum)}</Text>
+          </Text>
+        </Flex>
+
+        <Separator mb="3" size="4" />
+
+        {sortedFees.length === 0 ? (
+          <Text size="2" color="gray">
+            Keine Zahlungsdaten vorhanden.
+          </Text>
+        ) : (
+          <ScrollArea style={{ maxHeight: 320 }}>
+            <Table.Root variant="surface" size="1">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Jahr</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell align="center">
+                    <IconHeader icon={<GraduationCap size={16} />} label="Student" />
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell align="center">
+                    <IconHeader icon={<CircleEuro size={16} />} label="Bezahlt" />
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell align="right">
+                    Betrag
+                  </Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {sortedFees.map((fee) => (
+                  <Table.Row key={fee.jahr}>
+                    <Table.Cell>
+                      <Text weight="medium">{fee.jahr}</Text>
+                    </Table.Cell>
+                    <Table.Cell align="center">
+                      <Badge color={fee.isStudent ? "blue" : "gray"} size="1">
+                        {fee.isStudent ? "Ja" : "Nein"}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell align="center">
+                      <Badge color={fee.bezahlt ? "green" : "red"} size="1">
+                        {fee.bezahlt ? "Bezahlt" : "Offen"}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell align="right">
+                      <Text size="2">{formatCurrency(fee.beitrag)}</Text>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </ScrollArea>
+        )}
+
+        <Flex mt="4" justify="end">
+          <AlertDialog.Action>
+            <Button variant="soft" color="gray">
+              Schließen
+            </Button>
+          </AlertDialog.Action>
+        </Flex>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
+  );
+}
+
+export function FeesTable({
+  users,
+  selectedYear,
+  isAdmin,
+  availableYears,
+}: FeesTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mailOpen, setMailOpen] = useState(false);
+  const [commentUser, setCommentUser] = useState<FeesTableUser | null>(null);
+  const [historyUser, setHistoryUser] = useState<FeesTableUser | null>(null);
+  const [search, setSearch] = useState("");
 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const currentYear = new Date().getFullYear();
-
   const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
+
+  const filteredUsers = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return users;
+    return users.filter((u) =>
+      `${u.vorname} ${u.name ?? ""} ${u.email} ${u.mitgliedId ?? ""}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [users, search]);
 
   const selectedUsers = useMemo(() => {
     return Array.from(selectedIds)
@@ -81,13 +292,13 @@ export function FeesTable({ users, years, isAdmin, availableYears, startYear, en
     return feeReminderTemplate({
       vorname: single?.vorname,
       name: single?.name,
-      year: currentYear,
+      year: selectedYear,
     });
-  }, [selectedUsers, currentYear]);
+  }, [selectedUsers, selectedYear]);
 
-  function handleYearChange(type: "startYear" | "endYear", value: string) {
+  function handleYearChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set(type, value);
+    params.set("year", value);
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -101,120 +312,173 @@ export function FeesTable({ users, years, isAdmin, availableYears, startYear, en
   }
 
   function selectAllWithOpenFees() {
-    setSelectedIds(new Set(users.filter((u) => hasOpenFee(u, years)).map((u) => u.id)));
+    setSelectedIds(
+      new Set(
+        filteredUsers.filter((u) => hasOpenFee(u, selectedYear)).map((u) => u.id),
+      ),
+    );
   }
 
   function clearSelection() {
     setSelectedIds(new Set());
   }
 
+  function openUserHistory(user: FeesTableUser) {
+    setHistoryUser(user);
+  }
+
+  function stopRowClick(e: React.MouseEvent) {
+    e.stopPropagation();
+  }
+
   return (
     <>
-      {isAdmin && (
-        <Flex justify="between" align="center" mb="3" gap="3" wrap="wrap">
-          <Flex gap="2" align="center" wrap="wrap">
-            <Badge variant="soft">{selectedIds.size} ausgewählt</Badge>
-            <Button size="1" variant="outline" type="button" onClick={selectAllWithOpenFees}>
-              Alle mit offenen Beiträgen
-            </Button>
-            {selectedIds.size > 0 && (
-              <Button size="1" variant="ghost" type="button" onClick={clearSelection}>
-                Auswahl leeren
-              </Button>
-            )}
-          </Flex>
-
-          <Flex gap="3" align="center" wrap="wrap">
+      <Card mb="4" variant="surface">
+        <Flex justify="between" align="center" gap="3" wrap="wrap">
+          <Flex gap="4" align="center" wrap="wrap">
             <Flex gap="2" align="center">
-              <Text size="1" color="gray">Anzeigezeitraum:</Text>
-              <select
-                value={startYear}
-                onChange={(e) => handleYearChange("startYear", e.target.value)}
-                style={{
-                  fontSize: "12px",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--gray-6)",
-                  background: "var(--color-background)",
-                }}
-              >
-                {availableYears.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-              <Text size="1" color="gray">bis</Text>
-              <select
-                value={endYear}
-                onChange={(e) => handleYearChange("endYear", e.target.value)}
-                style={{
-                  fontSize: "12px",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--gray-6)",
-                  background: "var(--color-background)",
-                }}
-              >
-                {availableYears.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
+              <CalendarIcon style={{ width: 16, height: 16, color: "var(--gray-9)" }} />
+              <Text size="2" weight="medium">
+                Jahr
+              </Text>
+              <Select.Root value={String(selectedYear)} onValueChange={handleYearChange}>
+                <Select.Trigger variant="surface" />
+                <Select.Content>
+                  {availableYears.map((y) => (
+                    <Select.Item key={y} value={String(y)}>
+                      {y}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
             </Flex>
 
-            <form action={initializeBillingYear} style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              <Text size="1" color="gray">Jahr anlegen:</Text>
-              <input
+            <TextField.Root
+              placeholder="Suche nach Name, E-Mail oder ID…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ width: 260 }}
+            >
+              <TextField.Slot>
+                <MagnifyingGlassIcon height="14" width="14" />
+              </TextField.Slot>
+            </TextField.Root>
+          </Flex>
+
+          {isAdmin && (
+            <form
+              action={initializeBillingYear}
+              style={{ display: "flex", gap: 6, alignItems: "center" }}
+            >
+              <Text size="1" color="gray">
+                Neues Jahr anlegen:
+              </Text>
+              <TextField.Root
                 type="number"
                 name="year"
                 defaultValue={new Date().getFullYear() + 1}
-                style={{
-                  width: "65px",
-                  fontSize: "12px",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  border: "1px solid var(--gray-6)",
-                  background: "var(--color-background)",
-                }}
+                style={{ width: 90 }}
+                size="1"
               />
-              <Button type="submit" size="1" color="green" variant="soft" title="Jahr für alle anlegen">
-                <PlusIcon style={{ width: 12, height: 12 }} />
-              </Button>
+              <Tooltip content="Jahr für alle Mitglieder anlegen">
+                <IconButton type="submit" size="1" color="green" variant="soft">
+                  <PlusIcon />
+                </IconButton>
+              </Tooltip>
             </form>
-          </Flex>
-
-          <Button
-            color="blue"
-            disabled={selectedIds.size === 0}
-            onClick={() => setMailOpen(true)}
-          >
-            Erinnerung senden
-          </Button>
+          )}
         </Flex>
-      )}
 
-      <ScrollArea scrollbars="both" style={{ maxHeight: 500 }}>
-        <Table.Root variant="surface" size="1">
+        {isAdmin && (
+          <>
+            <Separator my="3" size="4" />
+            <Flex justify="between" align="center" gap="3" wrap="wrap">
+              <Flex gap="2" align="center" wrap="wrap">
+                <Badge variant="soft" color={selectedIds.size > 0 ? "blue" : "gray"}>
+                  {selectedIds.size} ausgewählt
+                </Badge>
+                <Button size="1" variant="outline" type="button" onClick={selectAllWithOpenFees}>
+                  Alle mit offenen Beiträgen
+                </Button>
+                {selectedIds.size > 0 && (
+                  <Button size="1" variant="ghost" type="button" onClick={clearSelection}>
+                    Auswahl leeren
+                  </Button>
+                )}
+              </Flex>
+
+              <Button
+                color="blue"
+                disabled={selectedIds.size === 0}
+                type="button"
+                onClick={() => setMailOpen(true)}
+              >
+                <MessageSquare size={16} />
+                Erinnerung senden
+              </Button>
+            </Flex>
+          </>
+        )}
+      </Card>
+
+      <ScrollArea scrollbars="horizontal">
+        <Table.Root variant="surface" size="2" className="dashboard-table">
           <Table.Header>
             <Table.Row>
               {isAdmin && <Table.ColumnHeaderCell style={{ width: 40 }} />}
-              <Table.ColumnHeaderCell>Mitglied</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Mitglieds-ID</Table.ColumnHeaderCell>
-              {isAdmin && <Table.ColumnHeaderCell>Kommentar</Table.ColumnHeaderCell>}
-              {years.map((year) => (
-                <Table.ColumnHeaderCell key={year} align="center">
-                  {year}
+              <Table.ColumnHeaderCell style={{ width: 72 }}>
+                <IconHeader icon={<IdCardIcon />} label="Mitglieds-ID" />
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Vorname</Table.ColumnHeaderCell>
+              {isAdmin && (
+                <Table.ColumnHeaderCell style={{ minWidth: 160 }}>
+                  <IconHeader icon={<MessageSquare size={16} />} label="Kommentar" />
                 </Table.ColumnHeaderCell>
-              ))}
+              )}
+              <Table.ColumnHeaderCell align="center" style={{ width: 72 }}>
+                <IconHeader icon={<GraduationCap size={16} />} label="Student" />
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell align="center" style={{ width: 72 }}>
+                <IconHeader icon={<CheckCircledIcon />} label="Bezahlt" />
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell align="center" style={{ width: 130 }}>
+                <IconHeader icon={<TokensIcon />} label="Betrag" />
+              </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {users.map((user) => {
+            {filteredUsers.length === 0 && (
+              <Table.Row>
+                <Table.Cell colSpan={isAdmin ? 8 : 6}>
+                  <Flex justify="center" py="6">
+                    <Text size="2" color="gray">
+                      Keine Mitglieder gefunden.
+                    </Text>
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
+            )}
+
+            {filteredUsers.map((user) => {
               const isSelected = selectedIds.has(user.id);
               const checkboxId = `fees-select-${user.id}`;
+              const existing = user.fees.find((f) => f.jahr === selectedYear);
+              const paid = existing?.bezahlt ?? false;
+              const isStudent = existing?.isStudent ?? false;
+              const beitrag = existing?.beitrag ?? 0;
 
               return (
-                <Table.Row key={user.id}>
+                <Table.Row
+                  key={user.id}
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor: !paid ? "var(--red-2)" : undefined,
+                  }}
+                  onClick={() => openUserHistory(user)}
+                >
                   {isAdmin && (
-                    <Table.Cell>
+                    <Table.Cell onClick={stopRowClick}>
                       <input
                         id={checkboxId}
                         type="checkbox"
@@ -231,163 +495,189 @@ export function FeesTable({ users, years, isAdmin, availableYears, startYear, en
                     </Table.Cell>
                   )}
                   <Table.Cell>
-                    <Flex direction="column" gap="1">
-                      <Text>{user.name || "—"}</Text>
-                      <Text size="1" color="gray">
-                        {user.email}
-                      </Text>
-                    </Flex>
-                  </Table.Cell>
-                  <Table.Cell>
                     <Badge variant="soft">{user.mitgliedId ?? "—"}</Badge>
                   </Table.Cell>
+                  <Table.Cell>
+                    <Text weight="medium">{user.name || "—"}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Text>{user.vorname}</Text>
+                  </Table.Cell>
                   {isAdmin && (
-                    <Table.Cell style={{ minWidth: "180px" }}>
-                      <form action={updateFeeComment}>
-                        <input type="hidden" name="userId" value={user.id} />
-                        <Flex gap="1" align="end" width="100%">
-                          <Box style={{ flexGrow: 1 }}>
-                            <TextArea
-                              name="comment"
-                              rows={user.zahlungsKommentar ? 2 : 1}
-                              defaultValue={user.zahlungsKommentar || ""}
-                              placeholder="Kommentar..."
-                              style={{
-                                minHeight: user.zahlungsKommentar ? "48px" : "32px",
-                                fontSize: "11px",
-                                width: "100%",
-                              }}
-                            />
-                          </Box>
-                          <Button
-                            type="submit"
+                    <Table.Cell onClick={stopRowClick}>
+                      {user.zahlungsKommentar ? (
+                        <Flex gap="1" align="center">
+                          <Text
+                            size="2"
+                            style={{
+                              flex: 1,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: 180,
+                            }}
+                            title={user.zahlungsKommentar}
+                          >
+                            {user.zahlungsKommentar}
+                          </Text>
+                          <Tooltip content="Kommentar bearbeiten">
+                            <IconButton
+                              size="1"
+                              variant="ghost"
+                              color="gray"
+                              type="button"
+                              onClick={() => setCommentUser(user)}
+                            >
+                              <Pencil2Icon />
+                            </IconButton>
+                          </Tooltip>
+                        </Flex>
+                      ) : (
+                        <Tooltip content="Kommentar hinzufügen">
+                          <IconButton
                             size="1"
                             variant="soft"
-                            color="blue"
-                            title="Speichern"
-                            style={{ height: "32px", width: "32px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                            color="gray"
+                            type="button"
+                            onClick={() => setCommentUser(user)}
                           >
-                            <CheckIcon style={{ width: 16, height: 16 }} />
-                          </Button>
-                        </Flex>
-                      </form>
+                            <PlusIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Table.Cell>
                   )}
-                  {years.map((year) => {
-                    const existing = user.fees.find((f) => f.jahr === year);
-                    const paid = existing?.bezahlt ?? false;
-                    const isStudent = existing?.isStudent ?? false;
-                    const beitrag = existing?.beitrag ?? 0;
-
-                    if (!isAdmin) {
-                      return (
-                        <Table.Cell key={year} align="center">
-                          <Flex direction="column" gap="1" align="center" style={{ minWidth: "80px" }}>
-                            <Badge color={paid ? "green" : "gray"} size="1">
-                              {paid ? "bezahlt" : "offen"}
-                            </Badge>
-                            <Badge color={isStudent ? "blue" : "gray"} size="1">
-                              {isStudent ? "Student" : "Regulär"}
-                            </Badge>
-                            <Text size="1" color="gray" weight="medium">
-                              Beitrag: {beitrag.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
-                            </Text>
-                          </Flex>
-                        </Table.Cell>
-                      );
-                    }
-
-                    return (
-                      <Table.Cell key={year} align="center">
-                        <Flex direction="column" gap="2" align="center" style={{ minWidth: "120px", padding: "4px" }}>
-                          {/* Paid status checkmark button */}
-                          <form action={updateFeeStatus}>
-                            <input type="hidden" name="userId" value={user.id} />
-                            <input type="hidden" name="year" value={year} />
-                            <input type="hidden" name="field" value="paid" />
-                            <input type="hidden" name="value" value={paid ? "false" : "true"} />
-                            <Flex gap="1" align="center">
-                              <Text size="1" color="gray" weight="medium">Bezahlt:</Text>
-                              <Button
-                                type="submit"
-                                size="1"
-                                variant={paid ? "soft" : "outline"}
-                                color={paid ? "green" : "red"}
-                                style={{ width: "24px", height: "24px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
-                                title={paid ? "Bezahlt (Klicken zum Ändern)" : "Offen (Klicken zum Ändern)"}
-                              >
-                                {paid ? <CheckIcon style={{ width: 16, height: 16 }} /> : <MinusIcon style={{ width: 16, height: 16 }} />}
-                              </Button>
-                            </Flex>
-                          </form>
-
-                          {/* Student status checkbox */}
-                          <form action={updateFeeStatus}>
-                            <input type="hidden" name="userId" value={user.id} />
-                            <input type="hidden" name="year" value={year} />
-                            <input type="hidden" name="field" value="isStudent" />
-                            <input type="hidden" name="value" value={isStudent ? "false" : "true"} />
-                            <Flex gap="1" align="center" style={{ cursor: "pointer" }}>
-                              <Text size="1" color="gray" weight="medium">Student:</Text>
-                              <input
-                                key={`${user.id}-${year}-${isStudent}`}
-                                type="checkbox"
-                                defaultChecked={isStudent}
-                                onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                                style={{
-                                  cursor: "pointer",
-                                  width: "15px",
-                                  height: "15px",
-                                  accentColor: "var(--accent-9)",
-                                }}
-                              />
-                            </Flex>
-                          </form>
-
-                          {/* Amount edit form */}
-                          <form action={updateFeeAmount}>
-                            <input type="hidden" name="userId" value={user.id} />
-                            <input type="hidden" name="year" value={year} />
-                            <Flex gap="1" align="center">
-                              <Text size="1" color="gray" weight="medium">Beitrag:</Text>
-                              <input
-                                type="number"
-                                name="beitrag"
-                                step="0.01"
-                                defaultValue={beitrag}
-                                style={{
-                                  width: "48px",
-                                  height: "20px",
-                                  fontSize: "11px",
-                                  padding: "2px",
-                                  textAlign: "right",
-                                  borderRadius: "4px",
-                                  border: "1px solid var(--gray-6)",
-                                  background: "var(--color-background)",
-                                }}
-                              />
-                              <Button
-                                type="submit"
-                                size="1"
-                                variant="soft"
-                                color="blue"
-                                style={{ padding: 0, width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                                title="Betrag speichern"
-                              >
-                                <CheckIcon style={{ width: 12, height: 12 }} />
-                              </Button>
-                            </Flex>
-                          </form>
+                  <Table.Cell align="center" onClick={stopRowClick}>
+                    {isAdmin ? (
+                      <form action={updateFeeStatus}>
+                        <input type="hidden" name="userId" value={user.id} />
+                        <input type="hidden" name="year" value={selectedYear} />
+                        <input type="hidden" name="field" value="isStudent" />
+                        <input
+                          type="hidden"
+                          name="value"
+                          value={isStudent ? "false" : "true"}
+                        />
+                        <Tooltip
+                          content={
+                            isStudent
+                              ? "Student (Klicken zum Ändern)"
+                              : "Regulär (Klicken zum Ändern)"
+                          }
+                        >
+                          <IconButton
+                            type="submit"
+                            size="2"
+                            variant={isStudent ? "solid" : "outline"}
+                            color={isStudent ? "blue" : "gray"}
+                          >
+                            <GraduationCap size={16} />
+                          </IconButton>
+                        </Tooltip>
+                      </form>
+                    ) : (
+                      <Badge color={isStudent ? "blue" : "gray"} size="1">
+                        {isStudent ? "Ja" : "Nein"}
+                      </Badge>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell align="center" onClick={stopRowClick}>
+                    {isAdmin ? (
+                      <form
+                        action={updateFeeStatus}
+                        onSubmit={(e) => {
+                          // Extra confirmation only when reverting a paid fee to unpaid.
+                          if (
+                            paid &&
+                            !window.confirm(
+                              `Zahlung für ${user.vorname} ${user.name ?? ""} (${selectedYear}) wirklich als offen markieren?`,
+                            )
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <input type="hidden" name="userId" value={user.id} />
+                        <input type="hidden" name="year" value={selectedYear} />
+                        <input type="hidden" name="field" value="paid" />
+                        <input
+                          type="hidden"
+                          name="value"
+                          value={paid ? "false" : "true"}
+                        />
+                        <Tooltip
+                          content={
+                            paid
+                              ? "Bezahlt (Klicken zum Ändern)"
+                              : "Offen (Klicken zum Ändern)"
+                          }
+                        >
+                          <IconButton
+                            type="submit"
+                            size="2"
+                            variant={paid ? "solid" : "outline"}
+                            color={paid ? "green" : "red"}
+                          >
+                            {paid ? <CheckIcon /> : <Cross2Icon />}
+                          </IconButton>
+                        </Tooltip>
+                      </form>
+                    ) : (
+                      <Badge color={paid ? "green" : "red"} size="1">
+                        {paid ? "Bezahlt" : "Offen"}
+                      </Badge>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell align="center" onClick={stopRowClick}>
+                    {isAdmin ? (
+                      <form action={updateFeeAmount}>
+                        <input type="hidden" name="userId" value={user.id} />
+                        <input type="hidden" name="year" value={selectedYear} />
+                        <Flex gap="1" align="center" justify="center">
+                          <TextField.Root
+                            type="number"
+                            name="beitrag"
+                            step="0.01"
+                            min="0"
+                            defaultValue={beitrag}
+                            size="1"
+                            style={{ width: 72, textAlign: "right" }}
+                          />
+                          <Tooltip content="Betrag speichern">
+                            <IconButton type="submit" size="1" variant="soft" color="blue">
+                              <CheckIcon />
+                            </IconButton>
+                          </Tooltip>
                         </Flex>
-                      </Table.Cell>
-                    );
-                  })}
+                      </form>
+                    ) : (
+                      <Text size="2" weight="medium">
+                        {formatCurrency(beitrag)}
+                      </Text>
+                    )}
+                  </Table.Cell>
                 </Table.Row>
               );
             })}
           </Table.Body>
         </Table.Root>
       </ScrollArea>
+
+      <CommentDialog
+        user={commentUser}
+        open={commentUser != null}
+        onOpenChange={(open) => {
+          if (!open) setCommentUser(null);
+        }}
+      />
+
+      <UserPaymentHistoryDialog
+        user={historyUser}
+        open={historyUser != null}
+        onOpenChange={(open) => {
+          if (!open) setHistoryUser(null);
+        }}
+      />
 
       {isAdmin && (
         <EmailComposerDialog

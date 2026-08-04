@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { EmailChangeDialog } from "./EmailChangeDialog";
-import { getDashboardUsers, getEditableUser } from "@/lib/server/services/userService";
+import {
+    getDashboardUsers,
+    getEditableUser,
+} from "@/lib/server/services/userService";
 import {
     Flex,
     Heading,
@@ -15,25 +18,26 @@ import {
     Badge,
     Separator,
     Box,
+    Grid,
 } from "@radix-ui/themes";
 import { getFeeDashboardUsers } from "@/lib/server/services/feeService";
 import Link from "next/link";
 import type { Status } from "@prisma/client";
 import {
-    AvatarIcon,
-    CalendarIcon,
-    CheckCircledIcon,
-    ClockIcon,
-    EnvelopeClosedIcon,
-    IdCardIcon,
-    MixerHorizontalIcon,
-    PaperPlaneIcon,
-    Pencil2Icon,
-    PersonIcon,
-    ReaderIcon,
-    RowsIcon,
-    StarIcon,
-} from "@radix-ui/react-icons";
+    User,
+    UserCircle,
+    IdCard,
+    Calendar,
+    CheckCircle2,
+    Clock,
+    Mail,
+    SlidersHorizontal,
+    Send,
+    Pencil,
+    BookOpen,
+    Rows3,
+    Star,
+} from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { adminDeleteUser } from "@/lib/server/services/userService";
 import { revalidatePath } from "next/cache";
@@ -77,12 +81,12 @@ function getStatusTone(status?: Status | string): "red" | "blue" | "green" {
 function getStatusIcon(status?: Status | string) {
     switch (status) {
         case "EHRENMITGLIED":
-            return <StarIcon />;
+            return <Star size={14} />;
         case "ORDENTLICHES_MITGLIED":
-            return <CheckCircledIcon />;
+            return <CheckCircle2 size={14} />;
         case "KEIN_MITGLIED":
         default:
-            return <ClockIcon />;
+            return <Clock size={14} />;
     }
 }
 
@@ -115,208 +119,165 @@ export default async function DashboardPage() {
     const memberSince = profile?.createdAt ?? null;
 
     return (
-        <Box
-            py={{ initial: "5", md: "7" }}
-            className="dashboard-shell"
-            style={{
-                minHeight: "100%",
-                background:
-                    "radial-gradient(circle at top left, rgba(22, 163, 74, 0.14), transparent 32%), radial-gradient(circle at top right, rgba(14, 116, 144, 0.12), transparent 28%), linear-gradient(180deg, rgba(247, 250, 252, 0.98) 0%, rgba(255, 255, 255, 1) 42%, rgba(245, 247, 250, 0.98) 100%)",
-            }}
-        >
+        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
             <Suspense fallback={null}>
                 <MailSuccessDialog />
             </Suspense>
             <Suspense fallback={null}>
                 <EmailChangeDialog />
             </Suspense>
-            <Container size="4">
+
+            <Container size="4" px={{ initial: "4", sm: "5" }}>
+                {/* ---------- Header ---------- */}
                 <Flex
                     justify="between"
-                    align={{ initial: "start", md: "center" }}
-                    direction={{ initial: "column", md: "row" }}
-                    gap="3"
-                    mb="5"
+                    align={{ initial: "start", sm: "center" }}
+                    direction={{ initial: "column", sm: "row" }}
+                    gap="4"
+                    mb={{ initial: "6", sm: "7" }}
                 >
-                    <Box>
+                    <Flex direction="column" gap="1">
                         <Flex align="center" gap="2">
-                            <PersonIcon className="dashboard-section-icon" />
-                            <Text size="2" weight="bold" className="dashboard-kicker">
+                            <User size={16} color="var(--accent-9)" />
+                            <Text size="2" weight="medium" color="blue">
                                 Mitgliederbereich
                             </Text>
                         </Flex>
-                        <Heading size="8" mt="2" style={{ letterSpacing: "-0.04em" }}>
+                        <Heading size={{ initial: "7", sm: "8" }} style={{ letterSpacing: "-0.03em" }}>
                             Hallo, {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
                         </Heading>
-                    </Box>
+                    </Flex>
                     <LogoutButton />
                 </Flex>
 
-                <Card
-                    size="3"
-                    mb="5"
-                    style={{
-                        border: "1px solid rgba(15, 23, 42, 0.06)",
-                        boxShadow: "0 18px 50px rgba(15, 23, 42, 0.06)",
-                    }}
-                >
-                    <Flex
-                        gap="4"
-                        direction={{ initial: "column", md: "row" }}
-                        justify="between"
-                    >
-                        <Box style={{ flex: 1, minWidth: 0 }}>
-                            <Flex align="center" gap="2" mb="1">
-                                <IdCardIcon className="dashboard-card-icon" />
+                {/* ---------- Profile summary ---------- */}
+                <Card size="3" mb={{ initial: "5", sm: "6" }}>
+                    <Grid columns={{ initial: "1", xs: "3" }} gap="5">
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="2">
+                                <IdCard size={16} color="var(--gray-9)" />
                                 <Text size="2" color="gray">
                                     Mitgliedschaft
                                 </Text>
                             </Flex>
-                            <Heading size="4" mt="1" mb="3">
-                                {formatStatus(userStatus)}
-                            </Heading>
-                        </Box>
+                            <Heading size="4">{formatStatus(userStatus)}</Heading>
+                        </Flex>
 
-                        <Box style={{ flex: 1, minWidth: 0 }}>
-                            <Flex align="center" gap="2" mb="1">
-                                <CalendarIcon className="dashboard-card-icon" />
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="2">
+                                <Calendar size={16} color="var(--gray-9)" />
                                 <Text size="2" color="gray">
                                     Account seit
                                 </Text>
                             </Flex>
-                            <Heading size="4" mt="1" mb="3">
-                                {formatDate(memberSince)}
-                            </Heading>
-                        </Box>
+                            <Heading size="4">{formatDate(memberSince)}</Heading>
+                        </Flex>
 
-                        <Box style={{ flex: 1, minWidth: 0 }}>
-                            <Flex align="center" gap="2" mb="1">
-                                <AvatarIcon className="dashboard-card-icon" />
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="2">
+                                <UserCircle size={16} color="var(--gray-9)" />
                                 <Text size="2" color="gray">
                                     Rolle
                                 </Text>
                             </Flex>
-                            <Heading size="4" mt="1" mb="3">
+                            <Heading size="4">
                                 {currentUser.role === "ADMIN" ? "Administrator" : "Mitglied"}
                             </Heading>
-                        </Box>
-                    </Flex>
+                        </Flex>
+                    </Grid>
                 </Card>
 
+                {/* ---------- Admin actions ---------- */}
                 {isAdmin && (
-                    <Card
-                        size="3"
-                        mb="5"
-                        style={{
-                            border: "1px solid rgba(15, 23, 42, 0.06)",
-                            boxShadow: "0 22px 60px rgba(15, 23, 42, 0.07)",
-                        }}
-                    >
-                        <Flex
-                            justify="between"
-                            align={{ initial: "start", md: "center" }}
-                            direction={{ initial: "column", md: "row" }}
-                            gap="4"
-                        >
-                            <Box>
-                                <Flex align="center" gap="2" mb="1">
-                                    <MixerHorizontalIcon className="dashboard-card-icon" />
+                    <Card size="3" mb={{ initial: "5", sm: "6" }}>
+                        <Flex direction="column" gap="4">
+                            <Flex direction="column" gap="1">
+                                <Flex align="center" gap="2">
+                                    <SlidersHorizontal size={16} color="var(--gray-9)" />
                                     <Text size="2" color="gray">
                                         Admin-Aktionen
                                     </Text>
                                 </Flex>
-                                <Heading size="5" mt="1" mb="2">
-                                    Verwaltung auf einen Blick
-                                </Heading>
-                                <Text size="2" color="gray" style={{ maxWidth: 720 }}>
-                                    Pflege Inhalte, lege neue Nutzer an und bearbeite Zahlungs- oder Mail-Aufgaben
-                                    direkt aus dem Dashboard.
+                                <Heading size="5">Verwaltung auf einen Blick</Heading>
+                                <Text size="2" color="gray" style={{ maxWidth: 640 }}>
+                                    Pflege Inhalte, lege neue Nutzer an und bearbeite
+                                    Zahlungs- oder Mail-Aufgaben direkt aus dem Dashboard.
                                 </Text>
-                            </Box>
-                            <Flex gap="2" wrap="wrap" className="dashboard-admin-actions">
-                                <Link href="/dashboard/blog">
-                                    <Button size="2" variant="soft" className="dashboard-admin-button">
-                                        <ReaderIcon />
-                                        Blog verwalten
-                                    </Button>
-                                </Link>
-                                <Link href="/dashboard/users/new">
-                                    <Button size="2" variant="soft" className="dashboard-admin-button">
-                                        <PersonIcon />
-                                        User hinzufügen
-                                    </Button>
-                                </Link>
-                                <Link href="/dashboard/mail">
-                                    <Button size="2" variant="soft" className="dashboard-admin-button">
-                                        <PaperPlaneIcon />
-                                        Rundmail senden
-                                    </Button>
-                                </Link>
-                                <Link href="/dashboard/fees">
-                                    <Button size="2" variant="soft" className="dashboard-admin-button">
-                                        <IdCardIcon />
-                                        Beiträge & Zahlungen
-                                    </Button>
-                                </Link>
                             </Flex>
+
+                            <Grid columns={{ initial: "2", xs: "4" }} gap="2">
+                                <Button size="2" variant="soft" asChild>
+                                    <Link href="/dashboard/blog">
+                                        <BookOpen size={16} />
+                                        Blog
+                                    </Link>
+                                </Button>
+                                <Button size="2" variant="soft" asChild>
+                                    <Link href="/dashboard/users/new">
+                                        <User size={16} />
+                                        Neuer User
+                                    </Link>
+                                </Button>
+                                <Button size="2" variant="soft" asChild>
+                                    <Link href="/dashboard/mail">
+                                        <Send size={16} />
+                                        Rundmail
+                                    </Link>
+                                </Button>
+                                <Button size="2" variant="soft" asChild>
+                                    <Link href="/dashboard/fees">
+                                        <IdCard size={16} />
+                                        Beiträge
+                                    </Link>
+                                </Button>
+                            </Grid>
                         </Flex>
                     </Card>
                 )}
 
-                <Card
-                    size="3"
-                    mb="5"
-                    style={{
-                        border: "1px solid rgba(15, 23, 42, 0.06)",
-                        boxShadow: "0 22px 60px rgba(15, 23, 42, 0.07)",
-                    }}
-                >
-                    <Flex justify="between" align="baseline" mb="3">
-                        <Box>
-                            <Flex align="center" gap="2" mb="1">
-                                <EnvelopeClosedIcon className="dashboard-card-icon" />
+                {/* ---------- Fees ---------- */}
+                <Card size="3" mb={{ initial: "5", sm: "6" }}>
+                    <Flex
+                        justify="between"
+                        align={{ initial: "start", sm: "baseline" }}
+                        direction={{ initial: "column", sm: "row" }}
+                        gap="2"
+                        mb="4"
+                    >
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="2">
+                                <IdCard size={16} color="var(--gray-9)" />
                                 <Text size="2" color="gray">
                                     Zahlungsübersicht
                                 </Text>
                             </Flex>
-                            <Heading size="5" mt="1">
-                                Meine Beiträge der letzten drei Jahre
-                            </Heading>
-                        </Box>
+                            <Heading size="5">Meine Beiträge der letzten drei Jahre</Heading>
+                        </Flex>
                         <Badge size="2" color="gray" variant="soft">
-                            <RowsIcon />
+                            <Rows3 size={14} />
                             {last3Years.length} Jahre
                         </Badge>
                     </Flex>
 
-                    <Separator mb="4" />
+                    <Separator size="4" mb="4" />
 
-                    <Flex gap="3" wrap="wrap">
+                    <Grid columns={{ initial: "1", xs: "3" }} gap="3">
                         {last3Years.map((year) => {
                             const fee = myFees.find((f) => f.jahr === year);
                             const isPaid = fee?.bezahlt ?? false;
                             const isStudent = fee?.isStudent ?? false;
                             const amount = fee?.beitrag ?? 0;
                             return (
-                                <Card
-                                    key={year}
-                                    size="2"
-                                    className="dashboard-fee-card"
-                                    style={{
-                                        minWidth: 170,
-                                        flex: "1 1 170px",
-                                        border: "1px solid rgba(15, 23, 42, 0.06)",
-                                    }}
-                                >
+                                <Card key={year} size="2" variant="surface">
                                     <Flex direction="column" gap="2">
                                         <Flex align="center" gap="2">
-                                            <CalendarIcon className="dashboard-card-icon" />
+                                            <Calendar size={14} color="var(--gray-9)" />
                                             <Text size="2" color="gray">
                                                 Beitragsjahr
                                             </Text>
                                         </Flex>
                                         <Heading size="6">{year}</Heading>
-                                        <Flex gap="1" align="center" wrap="wrap">
+                                        <Flex gap="1" wrap="wrap">
                                             <Badge color={isPaid ? "green" : "red"} size="1">
                                                 {isPaid ? "Bezahlt" : "Ausstehend"}
                                             </Badge>
@@ -325,92 +286,93 @@ export default async function DashboardPage() {
                                             </Badge>
                                         </Flex>
                                         <Text size="1" weight="medium" color="gray">
-                                            Betrag: {amount.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                                            Betrag:{" "}
+                                            {amount.toLocaleString("de-DE", {
+                                                style: "currency",
+                                                currency: "EUR",
+                                            })}
                                         </Text>
                                     </Flex>
                                 </Card>
                             );
                         })}
-                    </Flex>
+                    </Grid>
                 </Card>
 
-                <Card
-                    size="3"
-                    style={{
-                        border: "1px solid rgba(15, 23, 42, 0.06)",
-                        boxShadow: "0 22px 60px rgba(15, 23, 42, 0.07)",
-                    }}
-                >
+                {/* ---------- Users table ---------- */}
+                <Card size="3">
                     <Flex
                         justify="between"
-                        align={{ initial: "start", md: "baseline" }}
-                        direction={{ initial: "column", md: "row" }}
+                        align={{ initial: "start", sm: "baseline" }}
+                        direction={{ initial: "column", sm: "row" }}
                         gap="3"
-                        mb="3"
+                        mb="4"
                     >
-                        <Box>
-                            <Flex align="center" gap="2" mb="1">
-                                <ReaderIcon className="dashboard-card-icon" />
+                        <Flex direction="column" gap="1">
+                            <Flex align="center" gap="2">
+                                <BookOpen size={16} color="var(--gray-9)" />
                                 <Text size="2" color="gray">
-                                    {isAdmin ? "Übersicht aller registrierten Nutzer" : "Deine hinterlegten Daten"}
+                                    {isAdmin
+                                        ? "Übersicht aller registrierten Nutzer"
+                                        : "Deine hinterlegten Daten"}
                                 </Text>
                             </Flex>
-                            <Heading size="5" mt="1">
+                            <Heading size="5">
                                 {isAdmin ? "Benutzerverwaltung" : "Mein Profil"}
                             </Heading>
-                            <Text size="2" color="gray" mt="2">
+                            <Text size="2" color="gray">
                                 {isAdmin
                                     ? "Alle Konten mit Rollen, Mitgliedsstatus und schnellen Aktionen."
                                     : "Deine derzeit hinterlegten Kontodaten im Überblick."}
                             </Text>
-                        </Box>
+                        </Flex>
                         <Badge size="2" color="gray" variant="soft">
-                            <RowsIcon />
+                            <Rows3 size={14} />
                             {users.length} {users.length === 1 ? "Eintrag" : "Einträge"}
                         </Badge>
                     </Flex>
 
-                    <Separator mb="4" />
+                    <Separator size="4" mb="4" />
 
-                    <Box style={{ overflowX: "auto" }}>
-                        <Table.Root variant="surface" className="dashboard-table">
+                    <Box style={{ overflowX: "auto" }} mx={{ initial: "-4", sm: "0" }}>
+                        <Table.Root variant="surface" style={{ minWidth: 640 }}>
                             <Table.Header>
                                 <Table.Row>
                                     {isAdmin && (
                                         <Table.ColumnHeaderCell>
                                             <Flex align="center" gap="2">
-                                                <IdCardIcon className="dashboard-table-icon" />
+                                                <IdCard size={14} />
                                                 ID
                                             </Flex>
                                         </Table.ColumnHeaderCell>
                                     )}
                                     <Table.ColumnHeaderCell>
                                         <Flex align="center" gap="2">
-                                            <PersonIcon className="dashboard-table-icon" />
+                                            <User size={14} />
                                             Name
                                         </Flex>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell>
                                         <Flex align="center" gap="2">
-                                            <AvatarIcon className="dashboard-table-icon" />
+                                            <UserCircle size={14} />
                                             Rolle
                                         </Flex>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell>
                                         <Flex align="center" gap="2">
-                                            <CheckCircledIcon className="dashboard-table-icon" />
+                                            <CheckCircle2 size={14} />
                                             Mitgliedschaft
                                         </Flex>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell>
                                         <Flex align="center" gap="2">
-                                            <EnvelopeClosedIcon className="dashboard-table-icon" />
+                                            <Mail size={14} />
                                             E-Mail-Status
                                         </Flex>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell align="right">
                                         <Flex align="center" gap="2" justify="end">
-                                            <Pencil2Icon className="dashboard-table-icon" />
+                                            <Pencil size={14} />
                                             Aktion
                                         </Flex>
                                     </Table.ColumnHeaderCell>
@@ -421,24 +383,16 @@ export default async function DashboardPage() {
                                     <Table.Row key={u.id}>
                                         {isAdmin && (
                                             <Table.Cell>
-                                                <Flex align="center" gap="2">
-                                                    <IdCardIcon className="dashboard-cell-icon" />
-                                                    <Text>{u.mitgliedId || "—"}</Text>
-                                                </Flex>
+                                                <Text>{u.mitgliedId || "—"}</Text>
                                             </Table.Cell>
                                         )}
                                         <Table.Cell>
-                                            <Flex align="start" gap="2">
-                                                <Flex direction="column" gap="1">
-                                                    <Text weight="medium">
-                                                        {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
-                                                    </Text>
-                                                </Flex>
-                                            </Flex>
+                                            <Text weight="medium">
+                                                {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
+                                            </Text>
                                         </Table.Cell>
                                         <Table.Cell>
                                             <Badge color={u.role === "ADMIN" ? "red" : "blue"} variant="soft">
-
                                                 {u.role === "ADMIN" ? "Admin" : "Member"}
                                             </Badge>
                                         </Table.Cell>
@@ -450,7 +404,11 @@ export default async function DashboardPage() {
                                         </Table.Cell>
                                         <Table.Cell>
                                             <Badge color={(u as any).emailVerified ? "green" : "orange"} variant="soft">
-                                                {(u as any).emailVerified ? <CheckCircledIcon /> : <ClockIcon />}
+                                                {(u as any).emailVerified ? (
+                                                    <CheckCircle2 size={14} />
+                                                ) : (
+                                                    <Clock size={14} />
+                                                )}
                                                 {(u as any).emailVerified ? "Verifiziert" : "Nicht verifiziert"}
                                             </Badge>
                                         </Table.Cell>
