@@ -14,6 +14,8 @@ import Link from "next/link";
 import PhysicsHero from "@/components/PhysicsHero";
 import QuantumOscillator from "@/components/QuantumOscillator";
 import RandomWalkField from "@/components/RandomWalkField";
+import { getPublishedPosts } from "@/lib/server/services/blogService";
+import { Calendar, User } from 'lucide-react';
 
 const features = [
   {
@@ -47,6 +49,8 @@ const physicsFacts = [
 
 export default async function HomePage() {
   const session = await auth();
+  const posts = await getPublishedPosts();
+  const latestPost = posts.length > 0 ? posts[0] : null;
 
   return (
     <Box>
@@ -83,14 +87,14 @@ export default async function HomePage() {
             py={{ initial: "8", sm: "9" }}
             style={{ textAlign: "center" }}
           >
-
             <Heading
               size={{ initial: "8", sm: "9" }}
               style={{ letterSpacing: "-0.02em", lineHeight: 1.08 }}
             >
               <span style={{ fontFamily: "var(--font-serif)" }}>
-                Wirtschaftsphysik<br />
-              Alumni e.V.
+                WirtschaftsPhysik
+                <br />
+                Alumni e.V.
               </span>
             </Heading>
 
@@ -147,14 +151,18 @@ export default async function HomePage() {
                 </span>
               </Heading>
               <Text color="gray" size="3" style={{ lineHeight: 1.7 }}>
-Ein Teilchen im parabolischen Potential – wie eine Kugel in einer Schüssel – kann quantenmechanisch 
-nur diskrete Energieniveaus einnehmen. Überlagert man mehrere dieser Zustände, 
-entsteht ein Wellenpaket, das im Potentialtopf hin- und herschwingt: 
-der fließende Übergang von Quanten- zu klassischer Mechanik, 
-live berechnet mit Hermite-Polynomen.
+                Ein Teilchen im parabolischen Potential – wie eine Kugel in
+                einer Schüssel – kann quantenmechanisch nur diskrete
+                Energieniveaus einnehmen. Überlagert man mehrere dieser
+                Zustände, entsteht ein Wellenpaket, das im Potentialtopf
+                hin- und herschwingt: der fließende Übergang von Quanten-
+                zu klassischer Mechanik, live berechnet mit
+                Hermite-Polynomen.
               </Text>
               <Text size="2" color="gray">
-                Klicke auf n, um mehr Energieniveaus zur Superposition hinzuzufügen – je mehr Zustände beteiligt sind, desto klassischer wirkt die Bewegung.
+                Klicke auf n, um mehr Energieniveaus zur Superposition
+                hinzuzufügen – je mehr Zustände beteiligt sind, desto
+                klassischer wirkt die Bewegung.
               </Text>
             </Flex>
 
@@ -188,41 +196,38 @@ live berechnet mit Hermite-Polynomen.
         </Grid>
       </Container>
 
+      {/* ---------- Random Walk / Brownsche Bewegung ---------- */}
+      <Container size="4" px="4" mb="9">
+        <Card size={{ initial: "3", sm: "4" }}>
+          <Grid columns={{ initial: "1", md: "2" }} gap="6" align="center">
+            <RandomWalkField />
+            <Flex direction="column" gap="3">
+              <Text size="2" color="blue" weight="medium">
+                Vom Teilchen zum Kurs
+              </Text>
+              <Heading size={{ initial: "5", sm: "6" }}>
+                Brownsche Bewegung &amp;{" "}
+                <span style={{ fontFamily: "var(--font-mono)" }}>
+                  Random Walk
+                </span>
+              </Heading>
+              <Text color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                Der Wiener-Prozess beschreibt sowohl die zufällige Bewegung
+                von Teilchen in einer Flüssigkeit als auch – als geometrische
+                Brownsche Bewegung – die Grundlage der Black-Scholes-Modelle
+                in der Finanzmathematik. Zufällige Schocks, gedämpft durch
+                Mean-Reversion, erzeugen Pfade, die realen Kursverläufen
+                erstaunlich ähnlich sehen.
+              </Text>
+              <Text size="2" color="gray">
+                Bewege den Mauszeiger oder tippe auf die Fläche, um die
+                Volatilität lokal zu erhöhen.
+              </Text>
+            </Flex>
+          </Grid>
+        </Card>
+      </Container>
 
-{/* ---------- Random Walk / Brownsche Bewegung ---------- */}
-<Container size="4" px="4" mb="9">
-  <Card size={{ initial: "3", sm: "4" }}>
-    <Grid columns={{ initial: "1", md: "2" }} gap="6" align="center">
-      <RandomWalkField />
-      <Flex direction="column" gap="3">
-        <Text size="2" color="blue" weight="medium">
-          Vom Teilchen zum Kurs
-        </Text>
-        <Heading size={{ initial: "5", sm: "6" }}>
-          Brownsche Bewegung &amp;{" "}
-          <span style={{ fontFamily: "var(--font-mono)" }}>
-            Random Walk
-          </span>
-        </Heading>
-        <Text color="gray" size="3" style={{ lineHeight: 1.7 }}>
-          Der Wiener-Prozess beschreibt sowohl die zufällige Bewegung von
-          Teilchen in einer Flüssigkeit als auch – als geometrische
-          Brownsche Bewegung – die Grundlage der Black-Scholes-Modelle in
-          der Finanzmathematik. Zufällige Schocks, gedämpft durch
-          Mean-Reversion, erzeugen Pfade, die realen Kursverläufen
-          erstaunlich ähnlich sehen.
-        </Text>
-        <Text size="2" color="gray">
-          Bewege den Mauszeiger oder tippe auf die Fläche, um die
-          Volatilität lokal zu erhöhen.
-        </Text>
-      </Flex>
-
-    </Grid>
-  </Card>
-</Container>
-
-{/* ---------- Physik im Fokus ---------- */}
       {/* ---------- Physik im Fokus ---------- */}
       <Container size="4" px="4" mb="9">
         <Card size={{ initial: "3", sm: "4" }}>
@@ -236,10 +241,10 @@ live berechnet mit Hermite-Polynomen.
               </Heading>
               <Text color="gray" size="3" style={{ maxWidth: "640px" }}>
                 Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
-                Akteuren – ganz ähnlich wie Teilchensysteme in der Physik. Die
-                gleichen mathematischen Werkzeuge, die Diffusion, Phasenübergänge
-                oder Vielteilchendynamik beschreiben, lassen sich auf Märkte,
-                Netzwerke und Risiko übertragen.
+                Akteuren – ganz ähnlich wie Teilchensysteme in der Physik.
+                Die gleichen mathematischen Werkzeuge, die Diffusion,
+                Phasenübergänge oder Vielteilchendynamik beschreiben, lassen
+                sich auf Märkte, Netzwerke und Risiko übertragen.
               </Text>
             </Flex>
 
@@ -263,6 +268,65 @@ live berechnet mit Hermite-Polynomen.
           </Flex>
         </Card>
       </Container>
+
+      {latestPost && (
+        <Container size="4" px="4" mb="9">
+          <Card
+            size={{ initial: "3", sm: "4" }}
+            className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+          >
+            <Link
+              href={`/blog/${latestPost.id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <Flex direction="column" gap="4">
+                {/* Title, Author, Date in one line */}
+                <Flex
+                  direction={{ initial: "column", sm: "row" }}
+                  justify="between"
+                  align={{ initial: "start", sm: "center" }}
+                  gap="3"
+                >
+                  <Heading size={{ initial: "4", sm: "5" }}>
+                    {latestPost.title}
+                  </Heading>
+
+                  <Flex gap="4" align="center" className="flex-shrink-0">
+                    <Flex gap="1" align="center">
+                      <Calendar size={16} style={{ color: "var(--gray-10)" }} />
+                      <Text color="gray" size="2">
+                        {latestPost.publishedAt.toLocaleDateString("de-DE")}
+                      </Text>
+                    </Flex>
+
+                    {latestPost.author && (
+                      <Flex gap="1" align="center">
+                        <User size={16} style={{ color: "var(--gray-10)" }} />
+                        <Text color="gray" size="2">
+                          {latestPost.author}
+                        </Text>
+                      </Flex>
+                    )}
+                  </Flex>
+                </Flex>
+
+                <Text color="gray" size="3" style={{ lineHeight: 1.7 }} as="div">
+                  {latestPost.preview}
+                </Text>
+              </Flex>
+            </Link>
+
+            <Flex gap="3" justify="end" mt="4">
+              <Button size="3" variant="soft" asChild>
+                <a href="/blog">Alle Beiträge</a>
+              </Button>
+            </Flex>
+          </Card>
+        </Container>
+      )}
+
+
+
 
       {/* ---------- CTA ---------- */}
       <Container size="3" px="4" mb="9">
@@ -297,7 +361,6 @@ live berechnet mit Hermite-Polynomen.
               <Button size="3" asChild style={{ width: "100%" }}>
                 <Link href="/register">Jetzt registrieren</Link>
               </Button>
-              
             </Flex>
           </Flex>
         </Card>

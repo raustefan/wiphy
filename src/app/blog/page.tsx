@@ -1,4 +1,5 @@
 import { Container, Heading, Text, Card, Flex, Button } from "@radix-ui/themes";
+import { Calendar, User } from "lucide-react";
 import Link from "next/link";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 
@@ -16,39 +17,67 @@ export default async function BlogIndexPage() {
 
             <Flex direction="column" gap="4">
                 {posts.length === 0 ? (
-                    <Text color="gray">Es gibt noch keine veröffentlichten Beiträge.</Text>
+                    <Text color="gray">
+                        Es gibt noch keine veröffentlichten Beiträge.
+                    </Text>
                 ) : (
                     posts.map((post) => (
-                        // Die Card normal rendern, aber mit hover-Effekt
                         <Card
                             key={post.id}
-                            size="3"
-                            style={{
-                                cursor: "pointer",
-                                transition: "transform 0.2s, box-shadow 0.2s",
-                            }}
-                            className="hover:shadow-md hover:-translate-y-1" // Tailwind-ähnliche Utility (falls aktiv)
+                            size={{ initial: "3", sm: "4" }}
+                            className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                         >
-                            {/* Der Link füllt die ganze Karte aus */}
                             <Link
                                 href={`/blog/${post.id}`}
-                                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                                style={{ textDecoration: "none", color: "inherit" }}
                             >
-                                <Heading size="5" mb="2">{post.title}</Heading>
+                                <Flex direction="column" gap="4">
+                                    <Flex
+                                        direction={{ initial: "column", sm: "row" }}
+                                        justify="between"
+                                        align={{ initial: "start", sm: "center" }}
+                                        gap="3"
+                                    >
+                                        <Heading size={{ initial: "4", sm: "5" }}>
+                                            {post.title}
+                                        </Heading>
 
-                                <Text color="gray" size="2" mb="3" as="div">
-                                    {post.publishedAt.toLocaleDateString("de-DE")}
-                                    {post.author && ` • Von ${post.author}`}
-                                </Text>
+                                        <Flex gap="4" align="center" className="flex-shrink-0">
+                                            <Flex gap="1" align="center">
+                                                <Calendar
+                                                    size={16}
+                                                    style={{ color: "var(--gray-10)" }}
+                                                />
+                                                <Text color="gray" size="2">
+                                                    {post.publishedAt.toLocaleDateString("de-DE")}
+                                                </Text>
+                                            </Flex>
 
-                                <Text color="gray" size="3" style={{ display: "block" }}>
-                                    {post.preview}
-                                </Text>
+                                            {post.author && (
+                                                <Flex gap="1" align="center">
+                                                    <User size={16} style={{ color: "var(--gray-10)" }} />
+                                                    <Text color="gray" size="2">
+                                                        {post.author}
+                                                    </Text>
+                                                </Flex>
+                                            )}
+                                        </Flex>
+                                    </Flex>
 
-                                <Flex mt="3">
-                                    <Text color="blue" size="2" weight="bold">
-                                        Weiterlesen →
+                                    <Text
+                                        color="gray"
+                                        size="3"
+                                        style={{ lineHeight: 1.7 }}
+                                        as="div"
+                                    >
+                                        {post.preview}
                                     </Text>
+
+                                    <Flex justify="end">
+                                        <Text color="blue" size="2" weight="bold">
+                                            Weiterlesen →
+                                        </Text>
+                                    </Flex>
                                 </Flex>
                             </Link>
                         </Card>

@@ -7,13 +7,13 @@ export default function Footer() {
             <Container size="4">
                 <Flex direction="column" align="center" gap="2">
                     <Text size="2" color="gray">
-                        © {new Date().getFullYear()} wiphy - Vereinswebsite
+                        © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
                     </Text>
                     <Flex gap="4">
-                        <Link href="#" style={{ textDecoration: "none", color: "var(--gray-10)", fontSize: "14px" }}>
+                        <Link href="/impressum" style={{ textDecoration: "none", color: "var(--gray-10)", fontSize: "14px" }}>
                             Impressum
                         </Link>
-                        <Link href="#" style={{ textDecoration: "none", color: "var(--gray-10)", fontSize: "14px" }}>
+                        <Link href="/datenschutz" style={{ textDecoration: "none", color: "var(--gray-10)", fontSize: "14px" }}>
                             Datenschutz
                         </Link>
                     </Flex>
