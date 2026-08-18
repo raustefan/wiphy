@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { AppError } from "@/lib/server/errors";
 import { getSmtpConfig } from "@/lib/server/env";
+import { escapeHtml, sanitizeEmailHtml } from "@/lib/server/email/sanitizeHtml";
 
 export function createMailTransporter() {
   return nodemailer.createTransport(getSmtpConfig().transport);
@@ -48,11 +49,25 @@ export async function resolveRecipientEmails(input: {
   return resolveUsersByTarget(input.target);
 }
 
-function replacePlaceholders(template: string, user: { vorname: string | null; name: string | null }): string {
+/**
+ * Substitutes $Vorname/$Nachname/$Name placeholders with member-controlled data.
+ * `escape: true` HTML-escapes the values first — required whenever the result
+ * is used as email HTML, since a member's name is arbitrary user input.
+ */
+function replacePlaceholders(
+  template: string,
+  user: { vorname: string | null; name: string | null },
+  options: { escape?: boolean } = {},
+): string {
+  const wrap = options.escape ? escapeHtml : (v: string) => v;
+  const vorname = wrap(user.vorname || "");
+  const nachname = wrap(user.name || "");
+  const full = wrap(`${user.vorname || ""} ${user.name || ""}`.trim());
+
   let result = template;
-  result = result.replace(/\$Vorname/g, user.vorname || "");
-  result = result.replace(/\$Nachname/g, user.name || "");
-  result = result.replace(/\$Name/g, `${user.vorname || ""} ${user.name || ""}`.trim());
+  result = result.replace(/\$Vorname/g, vorname);
+  result = result.replace(/\$Nachname/g, nachname);
+  result = result.replace(/\$Name/g, full);
   return result;
 }
 
@@ -68,12 +83,20 @@ export async function sendMailToUsers(input: {
   const transporter = createMailTransporter();
   const { from } = getSmtpConfig();
 
+  // Sanitize the admin-authored HTML once: strips scripts, event handlers and
+  // unsafe link schemes (e.g. javascript:) regardless of what the rich-text
+  // editor produced or allowed client-side.
+  const sanitizedHtmlTemplate = input.htmlMessage ? sanitizeEmailHtml(input.htmlMessage) : undefined;
+
   // If users are provided, send personalized individual emails
   if (input.users && input.users.length > 0) {
     for (const user of input.users) {
       const personalizedSubject = replacePlaceholders(input.subject, user);
       const personalizedMessage = replacePlaceholders(input.message, user);
-      const personalizedHtml = input.htmlMessage ? replacePlaceholders(input.htmlMessage, user) : undefined;
+      // Member-controlled name fields must be HTML-escaped before landing in the HTML body.
+      const personalizedHtml = sanitizedHtmlTemplate
+        ? replacePlaceholders(sanitizedHtmlTemplate, user, { escape: true })
+        : undefined;
 
       await transporter.sendMail({
         from,
@@ -99,7 +122,7 @@ export async function sendMailToUsers(input: {
         to: selfEmail,
         subject: input.subject + " (Kopie)",
         text: input.message,
-        html: input.htmlMessage || input.message,
+        html: sanitizedHtmlTemplate || input.message,
         encoding: "utf-8",
       });
     }
@@ -132,7 +155,7 @@ export async function sendMailToUsers(input: {
     bcc: emails,
     subject: input.subject,
     text: input.message,
-    html: input.htmlMessage || input.message,
+    html: sanitizedHtmlTemplate || input.message,
     encoding: "utf-8",
   });
 }

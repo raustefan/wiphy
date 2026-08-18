@@ -22,7 +22,7 @@ export default function DatenschutzPage() {
                     Hinblick auf die verwendeten Begrifflichkeiten, wie z.B.
                     „Verarbeitung" oder „Verantwortlicher" verweisen wir auf die
                     Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).
-                </Text>
+                </Text>prisma migrate deploy
 
                 <Separator size="4" my="2" />
 

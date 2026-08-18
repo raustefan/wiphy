@@ -10,7 +10,7 @@ export const metadata = {
   title: "WirtschaftsPhysik Alumni e.V.",
   description: "Die offizielle Vereinswebsite des WirtschaftsPhysik Alumni e.V.",
   icons: {
-    icon: "public/logo-plain.png", // <-- Add this line inside metadata
+    icon: "/logo-plain.png",
   },
 };
 

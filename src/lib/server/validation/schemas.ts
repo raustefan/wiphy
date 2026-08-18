@@ -44,6 +44,13 @@ const statusEnum = z.enum([
   "KEIN_MITGLIED",
 ]);
 
+/** Treats an empty string the same as "field not submitted" instead of baking "" into the type. */
+const optionalEnum = <T extends [string, ...string[]]>(values: T) =>
+  z.preprocess(
+    (v) => (v === "" || v === undefined ? undefined : v),
+    z.enum(values).optional(),
+  );
+
 export const registerSchema = z.object({
   vorname: z
     .string()
@@ -239,8 +246,8 @@ export const userUpdateSchema = z.object({
 
   // Mitglieds- / admin-only fields
   /** Present only for admins; omit or empty for members */
-  role: z.union([roleEnum, z.literal("")]).optional(),
-  status: z.union([statusEnum, z.literal("")]).optional(),
+  role: optionalEnum(["ADMIN", "MEMBER"]),
+  status: optionalEnum(["ORDENTLICHES_MITGLIED", "EHRENMITGLIED", "KEIN_MITGLIED"]),
   mitgliedId: z
     .string()
     .optional()

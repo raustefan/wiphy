@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/mail";
+import { AppError } from "@/lib/server/errors";
+import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +14,33 @@ export async function POST(request: Request) {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+    const clientIp = extractClientIp(request.headers);
+
+    try {
+      // Per-IP cap first: stops one IP from requesting resets for many different
+      // emails (mass email-bombing), which the per-(IP, email) bucket can't catch.
+      await consumeRateLimit({
+        bucket: "forgot-password-ip",
+        keyParts: [clientIp],
+        limit: 20,
+        windowMs: 15 * 60 * 1000,
+        blockMs: 15 * 60 * 1000,
+        message: "Zu viele Anfragen. Bitte versuche es später erneut.",
+      });
+      await consumeRateLimit({
+        bucket: "forgot-password",
+        keyParts: [clientIp, trimmedEmail],
+        limit: 5,
+        windowMs: 15 * 60 * 1000,
+        blockMs: 15 * 60 * 1000,
+        message: "Zu viele Anfragen für diese E-Mail-Adresse. Bitte versuche es später erneut.",
+      });
+    } catch (error) {
+      if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+        return NextResponse.json({ error: error.message }, { status: 429 });
+      }
+      throw error;
+    }
 
     // Look up user by email
     const user = await prisma.user.findUnique({

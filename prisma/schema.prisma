@@ -72,6 +72,8 @@ model User {
   fees         MemberFee[]
   lastLogin DateTime @default(now())
   emailVerified Boolean @default(false)
+  /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
+  passwordChangedAt DateTime @default(now())
 }
 
 enum Role {

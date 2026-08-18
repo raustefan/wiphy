@@ -94,9 +94,14 @@ export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
       <ToolbarButton
         onClick={() => {
           const url = window.prompt("Link URL eingeben:");
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
+          if (!url) return;
+          const trimmed = url.trim();
+          const isSafe = /^(https?:|mailto:)/i.test(trimmed);
+          if (!isSafe) {
+            window.alert("Nur http(s)- oder mailto-Links sind erlaubt.");
+            return;
           }
+          editor.chain().focus().setLink({ href: trimmed }).run();
         }}
         active={editor.isActive("link")}
         title="Link einfügen"

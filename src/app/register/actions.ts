@@ -15,10 +15,22 @@ export async function registerUser(formData: FormData) {
     return executeAction(async () => {
         const { vorname, name, email, password } = parseFormData(registerSchema, formData);
         const requestHeaders = await headers();
+        const clientIp = extractClientIp(requestHeaders);
+
+        // Per-IP cap first: stops spraying many different emails from one IP,
+        // which the per-(IP, email) bucket below can't catch on its own.
+        await consumeRateLimit({
+            bucket: "register-ip",
+            keyParts: [clientIp],
+            limit: 10,
+            windowMs: 60 * 60 * 1000,
+            blockMs: 60 * 60 * 1000,
+            message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
+        });
 
         await consumeRateLimit({
             bucket: "register",
-            keyParts: [extractClientIp(requestHeaders), email],
+            keyParts: [clientIp, email],
             limit: 3,
             windowMs: 60 * 60 * 1000,
             blockMs: 60 * 60 * 1000,
@@ -27,7 +39,9 @@ export async function registerUser(formData: FormData) {
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            throw new AppError("CONFLICT", "Diese E-Mail-Adresse wird bereits verwendet.");
+            // Don't reveal whether the email is already registered (avoids account enumeration).
+            // Pretend registration succeeded without creating a duplicate account or sending mail.
+            redirect("/login?register=success");
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);

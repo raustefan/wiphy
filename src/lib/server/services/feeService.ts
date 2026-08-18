@@ -8,13 +8,6 @@ import {
   updateFeeComment as updateFeeCommentRepo,
 } from "@/lib/server/repositories/feeRepository";
 
-export function getFeeYears(startYear = 2024, endYear?: number) {
-  const currentYear = endYear ?? new Date().getFullYear();
-  const start = Math.min(startYear, currentYear);
-  const end = Math.max(startYear, currentYear);
-  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-}
-
 export function getFeeDashboardUsers(userId: string, role: Role) {
   return findUsersWithFees(userId, role);
 }

@@ -1,5 +1,6 @@
 import { createMailTransporter } from "@/lib/server/email/mailService";
 import { getSmtpConfig } from "@/lib/server/env";
+import { escapeHtml } from "@/lib/server/email/sanitizeHtml";
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   const transporter = createMailTransporter();
@@ -20,12 +21,17 @@ export async function sendAdminRegistrationNotificationEmail(adminEmails: string
   const transporter = createMailTransporter();
   const { from } = getSmtpConfig();
 
+  // vorname/name/email are member-supplied at registration and must be escaped before landing in HTML.
+  const vorname = escapeHtml(newUser.vorname);
+  const name = escapeHtml(newUser.name);
+  const email = escapeHtml(newUser.email);
+
   await transporter.sendMail({
     from,
     to: adminEmails.join(","),
     subject: "Neuer Benutzer registriert",
     text: `Hallo Admin,\n\nein neuer Benutzer hat sich registriert und wartet auf Bestätigung:\n\nName: ${newUser.vorname} ${newUser.name}\nE-Mail: ${newUser.email}\n\nBitte prüfen und bestätigen Sie die Registrierung online im Dashboard.\n\nViele Grüße,\nIhr WirtschaftsPhysik Alumni e.V. System`,
-    html: `<p>Hallo Admin,</p><p>ein neuer Benutzer hat sich registriert und wartet auf Bestätigung:</p><p><strong>Name:</strong> ${newUser.vorname} ${newUser.name}<br><strong>E-Mail:</strong> ${newUser.email}</p><p>Bitte prüfen und bestätigen Sie die Registrierung online im Dashboard.</p><p>Viele Grüße,<br>Ihr WirtschaftsPhysik Alumni e.V. System</p>`,
+    html: `<p>Hallo Admin,</p><p>ein neuer Benutzer hat sich registriert und wartet auf Bestätigung:</p><p><strong>Name:</strong> ${vorname} ${name}<br><strong>E-Mail:</strong> ${email}</p><p>Bitte prüfen und bestätigen Sie die Registrierung online im Dashboard.</p><p>Viele Grüße,<br>Ihr WirtschaftsPhysik Alumni e.V. System</p>`,
     encoding: "utf-8",
   });
 }
@@ -34,12 +40,15 @@ export async function sendUserRegistrationConfirmationEmail(email: string, verif
   const transporter = createMailTransporter();
   const { from } = getSmtpConfig();
 
+  const vorname = escapeHtml(user.vorname);
+  const name = escapeHtml(user.name);
+
   await transporter.sendMail({
     from,
     to: email,
     subject: "Registrierung erfolgreich - Bitte E-Mail bestätigen",
     text: `Hallo ${user.vorname} ${user.name},\n\nvielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!\n\nDeine Registrierung war erfolgreich. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:\n\n${verificationUrl}\n\nDieser Link ist für 24 Stunden gültig.\n\nSobald ein Administrator dein Konto bestätigt hat und du deine E-Mail-Adresse verifiziert hast, erhältst du vollen Zugriff auf den Internbereich.\n\nViele Grüße,\nDein Vereinsteam des WirtschaftsPhysik Alumni e.V.`,
-    html: `<p>Hallo ${user.vorname} ${user.name},</p><p>vielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!</p><p>Deine Registrierung war erfolgreich. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Dieser Link ist für 24 Stunden gültig.</p><p>Sobald ein Administrator dein Konto bestätigt hat und du deine E-Mail-Adresse verifiziert hast, erhältst du vollen Zugriff auf den Internbereich.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p>`,
+    html: `<p>Hallo ${vorname} ${name},</p><p>vielen Dank für deine Registrierung beim WirtschaftsPhysik Alumni e.V.!</p><p>Deine Registrierung war erfolgreich. Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Dieser Link ist für 24 Stunden gültig.</p><p>Sobald ein Administrator dein Konto bestätigt hat und du deine E-Mail-Adresse verifiziert hast, erhältst du vollen Zugriff auf den Internbereich.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p>`,
     encoding: "utf-8",
   });
 }
@@ -62,12 +71,15 @@ export async function sendAdminCreatedUserEmail(email: string, verificationUrl: 
   const transporter = createMailTransporter();
   const { from } = getSmtpConfig();
 
+  const vorname = escapeHtml(user.vorname);
+  const name = escapeHtml(user.name);
+
   await transporter.sendMail({
     from,
     to: email,
     subject: "Dein Account beim WirtschaftsPhysik Alumni e.V. wurde erstellt",
     text: `Hallo ${user.vorname} ${user.name},\n\ndein Account beim WirtschaftsPhysik Alumni e.V. wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).\n\nBitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:\n\n${verificationUrl}\n\nDanach kannst du dich mit deiner E-Mail-Adresse anmelden. Es empfiehlt sich dringend, dich danach anzumelden und dein Passwort über das Portal zu ändern.\n\nViele Grüße,\nDein Vereinsteam des WirtschaftsPhysik Alumni e.V. \nPS: Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren.`,
-    html: `<p>Hallo ${user.vorname} ${user.name},</p><p>dein Account beim WirtschaftsPhysik Alumni e.V. wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).</p><p>Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Danach kannst du dich mit deiner E-Mail-Adresse anmelden. Es empfiehlt sich dringend, dich danach anzumelden und dein Passwort über das Portal zurückzusetzen/zu ändern.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p></p><p>PS: Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren.</p>`,
+    html: `<p>Hallo ${vorname} ${name},</p><p>dein Account beim WirtschaftsPhysik Alumni e.V. wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).</p><p>Bitte bestätige deine E-Mail-Adresse, indem du auf den folgenden Link klickst:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>Danach kannst du dich mit deiner E-Mail-Adresse anmelden. Es empfiehlt sich dringend, dich danach anzumelden und dein Passwort über das Portal zurückzusetzen/zu ändern.</p><p>Viele Grüße,<br>Dein Vereinsteam des WirtschaftsPhysik Alumni e.V.</p></p><p>PS: Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren.</p>`,
     encoding: "utf-8",
   });
 }
