@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 
 export async function POST(request: Request) {
   try {
+    if (!(await isFeatureEnabled("EMAIL_VERIFICATION"))) {
+      return NextResponse.json(
+        { error: "E-Mail-Verifizierung wurde von einem Administrator deaktiviert.", code: "FEATURE_DISABLED" },
+        { status: 403 },
+      );
+    }
+
     const { token } = await request.json();
 
     if (!token || typeof token !== "string") {

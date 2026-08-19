@@ -4,6 +4,7 @@ import { AppError, executeAction } from "@/lib/server/errors";
 import { directMailSchema } from "@/lib/server/validation/schemas";
 import { resolveUsersByIds, sendMailToUsers } from "./mailService";
 import { enforceAdminMailRateLimit } from "./rateLimitMail";
+import { requireFeatureEnabled } from "@/lib/server/featureGate";
 
 function parseDirectMailForm(formData: FormData) {
   const selectedUserIds = [
@@ -34,6 +35,7 @@ function parseDirectMailForm(formData: FormData) {
 export async function sendDirectMailAction(formData: FormData) {
   return executeAction(async () => {
     const admin = await enforceAdminMailRateLimit();
+    await requireFeatureEnabled("MAIL_SERVICES");
     const { selectedUserIds, subject, message, bccToSelf } = parseDirectMailForm(formData);
     const htmlMessage = String(formData.get("message") ?? "");
 

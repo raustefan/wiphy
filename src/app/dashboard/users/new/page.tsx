@@ -8,11 +8,16 @@ import { revalidatePath } from "next/cache";
 import { AppError } from "@/lib/server/errors";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { adminCreateUserSchema } from "@/lib/server/validation/schemas";
+import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
+import { Suspense } from "react";
+import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 
 async function createUserAction(formData: FormData) {
     "use server";
     const currentUser = await requireUser();
     if (currentUser.role !== "ADMIN") return redirect("/dashboard");
+
+    await requireFeatureEnabledOrRedirect("USER_CREATION", "/dashboard/users/new");
 
     let parsed;
     try {
@@ -49,6 +54,9 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
 
     return (
         <Box py="5" style={{ minHeight: "100%" }}>
+            <Suspense fallback={null}>
+                <FeatureDisabledQueryDialog />
+            </Suspense>
             <Container size="2">
                 <Flex justify="between" align="center" mb="4">
                     <Box>

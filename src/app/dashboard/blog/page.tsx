@@ -4,6 +4,8 @@ import { Flex, Heading, Button, Container, Card, Table, Badge, Text, Box } from 
 import { ArrowLeftIcon, PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { deletePost } from "./actions";
+import { Suspense } from "react";
+import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 
 export default async function AdminBlogPage() {
     await requireAdmin();
@@ -11,6 +13,9 @@ export default async function AdminBlogPage() {
 
     return (
         <Box py="5" style={{ minHeight: "100%" }}>
+            <Suspense fallback={null}>
+                <FeatureDisabledQueryDialog />
+            </Suspense>
             <Container size="4">
                 <Flex justify="between" align="center" mb="4">
                     <Box>

@@ -4,6 +4,8 @@ import { signIn } from "next-auth/react";
 import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RegSuccessDialog } from "./RegSuccessDialog";
+import { checkLoginFeatureEnabled } from "./actions";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import {
     Container,
     Card,
@@ -22,10 +24,17 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [featureDisabled, setFeatureDisabled] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+
+        const loginEnabled = await checkLoginFeatureEnabled(email);
+        if (!loginEnabled) {
+            setFeatureDisabled(true);
+            return;
+        }
 
         const res = await signIn("credentials", {
             email,
@@ -50,6 +59,11 @@ export default function LoginPage() {
             <Suspense fallback={null}>
                 <RegSuccessDialog />
             </Suspense>
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="Login"
+                onOpenChange={setFeatureDisabled}
+            />
 
             <Card size="4">
                 <form onSubmit={handleSubmit}>

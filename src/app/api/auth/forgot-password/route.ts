@@ -4,9 +4,17 @@ import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 
 export async function POST(request: Request) {
   try {
+    if (!(await isFeatureEnabled("PASSWORD_RESET"))) {
+      return NextResponse.json(
+        { error: "Passwort zurücksetzen wurde von einem Administrator deaktiviert.", code: "FEATURE_DISABLED" },
+        { status: 403 },
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email || typeof email !== "string") {

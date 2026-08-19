@@ -11,11 +11,13 @@ import {
     Button,
     Link,
 } from "@radix-ui/themes";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [featureDisabled, setFeatureDisabled] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,6 +35,11 @@ export default function ForgotPasswordPage() {
 
             if (!res.ok) {
                 const data = await res.json();
+                if (data.code === "FEATURE_DISABLED") {
+                    setFeatureDisabled(true);
+                    setStatus("idle");
+                    return;
+                }
                 throw new Error(data.error || "Etwas ist schiefgelaufen.");
             }
 
@@ -46,6 +53,11 @@ export default function ForgotPasswordPage() {
 
     return (
         <Container size="1" style={{ paddingTop: "20vh" }}>
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="Passwort zurücksetzen"
+                onOpenChange={setFeatureDisabled}
+            />
             <Card size="4">
                 <Flex direction="column" gap="4">
                     <Heading as="h1" size="6" align="center">

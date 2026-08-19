@@ -3,9 +3,17 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 
 export async function POST(request: Request) {
   try {
+    if (!(await isFeatureEnabled("PASSWORD_RESET"))) {
+      return NextResponse.json(
+        { error: "Passwort zurücksetzen wurde von einem Administrator deaktiviert.", code: "FEATURE_DISABLED" },
+        { status: 403 },
+      );
+    }
+
     const { token, password } = await request.json();
 
     if (!token || typeof token !== "string") {

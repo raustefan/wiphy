@@ -37,11 +37,14 @@ import {
     BookOpen,
     Rows3,
     Star,
+    ToggleLeft,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { adminDeleteUser } from "@/lib/server/services/userService";
 import { revalidatePath } from "next/cache";
 import { DashboardUserActions } from "./DashboardUserActions";
+import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
+import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 
 export function formatStatus(status?: Status | string): string {
     switch (status) {
@@ -97,6 +100,7 @@ async function deleteUserAction(formData: FormData) {
     const id = formData.get("id") as string;
     if (currentUser.role !== "ADMIN" || !id) return;
     if (currentUser.id === id) return; // Prevent self-deletion
+    await requireFeatureEnabledOrRedirect("USER_DELETION", "/dashboard");
     await adminDeleteUser(id, currentUser.role);
     revalidatePath("/dashboard");
 }
@@ -125,6 +129,9 @@ export default async function DashboardPage() {
             </Suspense>
             <Suspense fallback={null}>
                 <EmailChangeDialog />
+            </Suspense>
+            <Suspense fallback={null}>
+                <FeatureDisabledQueryDialog />
             </Suspense>
 
             <Container size="4" px={{ initial: "4", sm: "5" }}>
@@ -228,6 +235,12 @@ export default async function DashboardPage() {
                                     <Link href="/dashboard/fees">
                                         <IdCard size={16} />
                                         Beiträge
+                                    </Link>
+                                </Button>
+                                <Button size="2" variant="soft" asChild>
+                                    <Link href="/dashboard/feature-flags">
+                                        <ToggleLeft size={16} />
+                                        Feature Flags
                                     </Link>
                                 </Button>
                             </Grid>

@@ -7,10 +7,12 @@ import { executeAction } from "@/lib/server/errors";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { feeCommentSchema, feeToggleSchema, feeStatusUpdateSchema, feeAmountUpdateSchema } from "@/lib/server/validation/schemas";
 import { prisma } from "@/lib/prisma";
+import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 
 export async function toggleFee(formData: FormData) {
   await executeAction(async () => {
     await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
 
     const { userId, year, paid } = parseFormData(feeToggleSchema, formData);
 
@@ -22,6 +24,7 @@ export async function toggleFee(formData: FormData) {
 export async function updateFeeStatus(formData: FormData) {
   await executeAction(async () => {
     await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
 
     const { userId, year, field, value } = parseFormData(feeStatusUpdateSchema, formData);
 
@@ -33,6 +36,7 @@ export async function updateFeeStatus(formData: FormData) {
 export async function updateFeeAmount(formData: FormData) {
   await executeAction(async () => {
     await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
 
     const { userId, year, beitrag } = parseFormData(feeAmountUpdateSchema, formData);
 
@@ -44,6 +48,7 @@ export async function updateFeeAmount(formData: FormData) {
 export async function updateFeeComment(formData: FormData) {
   await executeAction(async () => {
     await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
 
     const { userId, comment } = parseFormData(feeCommentSchema, formData);
 
@@ -55,6 +60,7 @@ export async function updateFeeComment(formData: FormData) {
 export async function initializeBillingYear(formData: FormData) {
   await executeAction(async () => {
     await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
     const year = parseInt(formData.get("year") as string);
     if (!year || isNaN(year)) return;
 

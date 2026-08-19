@@ -11,6 +11,7 @@ import {
     Button,
     Link,
 } from "@radix-ui/themes";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ function VerifyEmailContent() {
 
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [featureDisabled, setFeatureDisabled] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -38,6 +40,11 @@ function VerifyEmailContent() {
             .then(async (res) => {
                 const data = await res.json();
                 if (!res.ok) {
+                    if (data.code === "FEATURE_DISABLED") {
+                        setFeatureDisabled(true);
+                        setStatus("idle");
+                        return;
+                    }
                     throw new Error(data.error || "Etwas ist schiefgelaufen.");
                 }
                 setStatus("success");
@@ -100,6 +107,11 @@ function VerifyEmailContent() {
 
     return (
         <Flex direction="column" gap="4">
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="E-Mail-Verifizierung"
+                onOpenChange={setFeatureDisabled}
+            />
             <Heading as="h1" size="6" align="center">
                 Fehler bei der Verifizierung
             </Heading>

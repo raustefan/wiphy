@@ -6,6 +6,8 @@ import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { FeesTable } from "./FeesTable";
 import type { User, MemberFee } from "@prisma/client";
+import { Suspense } from "react";
+import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 
 export default async function FeesDashboardPage({
   searchParams,
@@ -56,6 +58,9 @@ export default async function FeesDashboardPage({
         minHeight: "100%",
       }}
     >
+      <Suspense fallback={null}>
+        <FeatureDisabledQueryDialog />
+      </Suspense>
       <Container size="4">
         <Flex justify="between" align="center" mb="4">
           <Box>

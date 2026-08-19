@@ -4,20 +4,31 @@ import { useState } from "react";
 import { registerUser } from "./actions";
 import { Container, Card, Heading, Flex, Text, TextField, Button } from "@radix-ui/themes";
 import Link from "next/link";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
 export default function RegisterPage() {
     const [error, setError] = useState("");
+    const [featureDisabled, setFeatureDisabled] = useState(false);
 
     async function handleAction(formData: FormData) {
         setError("");
         const res = await registerUser(formData);
         if (!res.ok) {
-            setError(res.message);
+            if (res.code === "FORBIDDEN") {
+                setFeatureDisabled(true);
+            } else {
+                setError(res.message);
+            }
         }
     }
 
     return (
         <Container size="1" mt="9">
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="Registrierung"
+                onOpenChange={setFeatureDisabled}
+            />
             <Card size="4">
                 <form action={handleAction}>
                     <Flex direction="column" gap="4">

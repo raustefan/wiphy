@@ -12,6 +12,7 @@ import {
     Button,
     Link,
 } from "@radix-ui/themes";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ function ResetPasswordForm() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const [featureDisabled, setFeatureDisabled] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,6 +60,11 @@ function ResetPasswordForm() {
             const data = await res.json();
 
             if (!res.ok) {
+                if (data.code === "FEATURE_DISABLED") {
+                    setFeatureDisabled(true);
+                    setStatus("idle");
+                    return;
+                }
                 throw new Error(data.error || "Etwas ist schiefgelaufen.");
             }
 
@@ -107,6 +114,11 @@ function ResetPasswordForm() {
 
     return (
         <form onSubmit={handleSubmit}>
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="Passwort zurücksetzen"
+                onOpenChange={setFeatureDisabled}
+            />
             <Flex direction="column" gap="4">
                 <Heading as="h1" size="6" align="center">
                     Neues Passwort festlegen

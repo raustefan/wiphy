@@ -5,6 +5,7 @@ import { AppError, executeAction } from "@/lib/server/errors";
 import { mailSendSchema } from "@/lib/server/validation/schemas";
 import { sendMailForTarget } from "@/lib/server/email/mailService";
 import { enforceAdminMailRateLimit } from "@/lib/server/email/rateLimitMail";
+import { requireFeatureEnabled } from "@/lib/server/featureGate";
 
 function parseMailForm(formData: FormData) {
     const selectedUserIds = [
@@ -36,6 +37,7 @@ function parseMailForm(formData: FormData) {
 export async function sendEmailAction(formData: FormData) {
     return executeAction(async () => {
         const admin = await enforceAdminMailRateLimit();
+        await requireFeatureEnabled("MAIL_SERVICES");
         const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
         const htmlMessage = String(formData.get("message") ?? "");
 

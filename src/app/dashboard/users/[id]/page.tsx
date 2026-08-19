@@ -4,6 +4,9 @@ import { AppError } from "@/lib/server/errors";
 import { getEditableUser, updateUserProfile } from "@/lib/server/services/userService";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { userUpdateSchema } from "@/lib/server/validation/schemas";
+import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
+import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import {
     Flex,
     Heading,
@@ -18,10 +21,18 @@ import {
 import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { Suspense } from "react";
 
 async function updateUser(formData: FormData) {
     "use server";
     const currentUser = await requireUser();
+    const idForRedirect = formData.get("id");
+    const editPath =
+        typeof idForRedirect === "string" && idForRedirect
+            ? `/dashboard/users/${idForRedirect}`
+            : "/dashboard";
+
+    await requireFeatureEnabledOrRedirect("PROFILE_EDIT", editPath);
 
     let parsed;
     try {
@@ -39,6 +50,11 @@ async function updateUser(formData: FormData) {
     }
 
     assertCanEditUser(currentUser, parsed.id);
+
+    const targetUser = await getEditableUser(parsed.id);
+    if (targetUser && targetUser.email !== parsed.email && !(await isFeatureEnabled("EMAIL_CHANGE"))) {
+        redirect(`${editPath}?featureDisabled=EMAIL_CHANGE`);
+    }
 
     const result = await updateUserProfile({
         idToEdit: parsed.id,
@@ -134,6 +150,9 @@ export default async function EditUserPage({
 
     return (
         <Box py="5" style={{ minHeight: "100%" }}>
+            <Suspense fallback={null}>
+                <FeatureDisabledQueryDialog />
+            </Suspense>
             <Container size="2">
                 <Flex justify="between" align="center" mb="4">
                     <Box>

@@ -11,11 +11,23 @@ import {
   Text,
 } from "@radix-ui/themes";
 import Link from "next/link";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import PhysicsHero from "@/components/PhysicsHero";
 import QuantumOscillator from "@/components/QuantumOscillator";
 import RandomWalkField from "@/components/RandomWalkField";
+import UncertaintyPrinciple from "@/components/UncertaintyPrinciple";
+import DoubleSlitExperiment from "@/components/DoubleSlitExperiment";
+import EntropyDiffusion from "@/components/EntropyDiffusion";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { Calendar, User } from 'lucide-react';
+
+const demoSims = [
+  { title: "Quantenharmonischer Oszillator", component: QuantumOscillator },
+  { title: "Brownsche Bewegung & Random Walk", component: RandomWalkField },
+  { title: "Heisenbergsche Unschärferelation", component: UncertaintyPrinciple },
+  { title: "Doppelspaltexperiment", component: DoubleSlitExperiment },
+  // { title: "Gas im Kasten — Entropie", component: EntropyDiffusion },
+];
 
 const features = [
   {
@@ -136,41 +148,6 @@ export default async function HomePage() {
         </Container>
       </Box>
 
-      {/* ---------- Quantenharmonischer Oszillator ---------- */}
-      <Container size="4" px="4" mb="9">
-        <Card size={{ initial: "3", sm: "4" }}>
-          <Grid columns={{ initial: "1", md: "2" }} gap="6" align="center">
-            <Flex direction="column" gap="3">
-              <Text size="2" color="blue" weight="medium">
-                Ein Blick in die Theorie
-              </Text>
-              <Heading size={{ initial: "5", sm: "6" }}>
-                Der{" "}
-                <span style={{ fontFamily: "var(--font-mono)" }}>
-                  quantenharmonische Oszillator
-                </span>
-              </Heading>
-              <Text color="gray" size="3" style={{ lineHeight: 1.7 }}>
-                Ein Teilchen im parabolischen Potential – wie eine Kugel in
-                einer Schüssel – kann quantenmechanisch nur diskrete
-                Energieniveaus einnehmen. Überlagert man mehrere dieser
-                Zustände, entsteht ein Wellenpaket, das im Potentialtopf
-                hin- und herschwingt: der fließende Übergang von Quanten-
-                zu klassischer Mechanik, live berechnet mit
-                Hermite-Polynomen.
-              </Text>
-              <Text size="2" color="gray">
-                Klicke auf n, um mehr Energieniveaus zur Superposition
-                hinzuzufügen – je mehr Zustände beteiligt sind, desto
-                klassischer wirkt die Bewegung.
-              </Text>
-            </Flex>
-
-            <QuantumOscillator />
-          </Grid>
-        </Card>
-      </Container>
-
       {/* ---------- Features ---------- */}
       <Container size="4" px="4" mb="9">
         <Flex direction="column" align="center" gap="2" mb="6">
@@ -194,38 +171,6 @@ export default async function HomePage() {
             </Card>
           ))}
         </Grid>
-      </Container>
-
-      {/* ---------- Random Walk / Brownsche Bewegung ---------- */}
-      <Container size="4" px="4" mb="9">
-        <Card size={{ initial: "3", sm: "4" }}>
-          <Grid columns={{ initial: "1", md: "2" }} gap="6" align="center">
-            <RandomWalkField />
-            <Flex direction="column" gap="3">
-              <Text size="2" color="blue" weight="medium">
-                Vom Teilchen zum Kurs
-              </Text>
-              <Heading size={{ initial: "5", sm: "6" }}>
-                Brownsche Bewegung &amp;{" "}
-                <span style={{ fontFamily: "var(--font-mono)" }}>
-                  Random Walk
-                </span>
-              </Heading>
-              <Text color="gray" size="3" style={{ lineHeight: 1.7 }}>
-                Der Wiener-Prozess beschreibt sowohl die zufällige Bewegung
-                von Teilchen in einer Flüssigkeit als auch – als geometrische
-                Brownsche Bewegung – die Grundlage der Black-Scholes-Modelle
-                in der Finanzmathematik. Zufällige Schocks, gedämpft durch
-                Mean-Reversion, erzeugen Pfade, die realen Kursverläufen
-                erstaunlich ähnlich sehen.
-              </Text>
-              <Text size="2" color="gray">
-                Bewege den Mauszeiger oder tippe auf die Fläche, um die
-                Volatilität lokal zu erhöhen.
-              </Text>
-            </Flex>
-          </Grid>
-        </Card>
       </Container>
 
       {/* ---------- Physik im Fokus ---------- */}
@@ -359,10 +304,37 @@ export default async function HomePage() {
               width={{ initial: "100%", xs: "auto" }}
             >
               <Button size="3" asChild style={{ width: "100%" }}>
-                <Link href="/register">Jetzt registrieren</Link>
+                <Link href="O/register">Jetzt registrieren</Link>
               </Button>
             </Flex>
           </Flex>
+        </Card>
+      </Container>
+
+      {/* ---------- Physik-Demos (nur zu Demonstrationszwecken) ---------- */}
+      <Container size="4" px="4" mb="9">
+        <Card
+          size={{ initial: "3", sm: "4" }}
+          style={{ border: "1px dashed var(--amber-7)", background: "var(--amber-2)" }}
+        >
+          <Flex direction="column" gap="1" mb="6">
+            <Flex align="center" gap="2">
+              <ExclamationTriangleIcon style={{ color: "var(--amber-9)" }} />
+              <Text size="2" weight="bold" color="amber">
+                Nur zu Testzwecken
+              </Text>
+            </Flex>
+            
+          </Flex>
+
+          <Grid columns={{ initial: "1", lg: "2" }} gap="6">
+            {demoSims.map(({ title, component: Sim }) => (
+              <Flex key={title} direction="column" gap="2">
+                <Heading size="3">{title}</Heading>
+                <Sim />
+              </Flex>
+            ))}
+          </Grid>
         </Card>
       </Container>
     </Box>

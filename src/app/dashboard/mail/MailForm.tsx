@@ -17,6 +17,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TiptapLink from "@tiptap/extension-link";
 import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
+import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
 export type MailUserOption = {
     id: string;
@@ -39,7 +40,8 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
-    
+    const [featureDisabled, setFeatureDisabled] = useState(false);
+
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -127,7 +129,11 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
             formData.set("message", editor?.getHTML() || "");
             const result = await sendEmailAction(formData);
             if (result && !result.ok) {
-                setError(result.message);
+                if (result.code === "FORBIDDEN") {
+                    setFeatureDisabled(true);
+                } else {
+                    setError(result.message);
+                }
             } else {
                 const recipientCount = recipients.length;
                 onSuccess?.(recipientCount);
@@ -139,6 +145,11 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
 
     return (
         <form action={submitAction}>
+            <FeatureDisabledDialog
+                open={featureDisabled}
+                featureLabel="Mail-Versand"
+                onOpenChange={setFeatureDisabled}
+            />
             <Flex direction="column" gap="4">
                 {error && (
                     <Text size="2" color="red" role="alert">

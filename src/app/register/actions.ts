@@ -7,12 +7,15 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
+import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerSchema } from "@/lib/server/validation/schemas";
 import { sendAdminRegistrationNotificationEmail, sendUserRegistrationConfirmationEmail } from "@/lib/mail";
 
 export async function registerUser(formData: FormData) {
     return executeAction(async () => {
+        await requireFeatureEnabled("REGISTRATION");
+
         const { vorname, name, email, password } = parseFormData(registerSchema, formData);
         const requestHeaders = await headers();
         const clientIp = extractClientIp(requestHeaders);

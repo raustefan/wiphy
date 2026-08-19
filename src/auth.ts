@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, extractClientIp, resetRateLimit } from "@/lib/server/rateLimit";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -44,6 +45,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 if (!user.emailVerified) return null;
                 const valid = await bcrypt.compare(credentials.password as string, user.password);
                 if (!valid) return null;
+                // Admins must always be able to log in, even while the LOGIN flag is off,
+                // so they can get back in to re-enable it.
+                if (user.role !== "ADMIN" && !(await isFeatureEnabled("LOGIN"))) return null;
                 await prisma.user.update({
                     where: { id: user.id },
                     data: { lastLogin: new Date() },

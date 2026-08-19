@@ -6,10 +6,12 @@ import { requireAdmin } from "@/lib/server/authz";
 import { removeAdminPost, saveAdminPost } from "@/lib/server/services/blogService";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { blogDeleteSchema, blogSaveSchema } from "@/lib/server/validation/schemas";
+import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 
 export async function savePost(formData: FormData) {
     await executeAction(async () => {
         await requireAdmin();
+        await requireFeatureEnabledOrRedirect("BLOG_MANAGEMENT", "/dashboard/blog");
 
         const raw = {
             id: String(formData.get("id") ?? ""),
@@ -37,6 +39,7 @@ export async function savePost(formData: FormData) {
 export async function deletePost(formData: FormData) {
     await executeAction(async () => {
         await requireAdmin();
+        await requireFeatureEnabledOrRedirect("BLOG_MANAGEMENT", "/dashboard/blog");
         const raw = { id: String(formData.get("id") ?? "") };
         const parsed = blogDeleteSchema.safeParse(raw);
         if (!parsed.success) {

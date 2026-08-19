@@ -7,11 +7,12 @@ import {
   BarChartIcon,
   CheckCircledIcon,
   Component1Icon,
+  HomeIcon,
   LapTimerIcon,
   StarIcon,
 } from "@radix-ui/react-icons";
 
-type TimelineCategory = "physik" | "wirtschaftsphysik" | "alumni";
+type TimelineCategory = "uni" | "physik" | "wirtschaftsphysik" | "alumni";
 
 type TimelineEvent = {
   id: string;
@@ -25,6 +26,7 @@ type TimelineEvent = {
 
 const categories: Array<{ id: "alle" | TimelineCategory; label: string }> = [
   { id: "alle", label: "Alle" },
+  { id: "uni", label: "Universität Ulm" },
   { id: "physik", label: "Physik" },
   { id: "wirtschaftsphysik", label: "Wirtschaftsphysik" },
   { id: "alumni", label: "Alumni" },
@@ -32,27 +34,52 @@ const categories: Array<{ id: "alle" | TimelineCategory; label: string }> = [
 
 const events: TimelineEvent[] = [
   {
+    id: "arbeitskreis",
+    year: 1960,
+    label: "1960",
+    title: "Arbeitskreis Universität Ulm",
+    category: "uni",
+    summary: "Erste Bestrebungen für eine Universität in Ulm nehmen Gestalt an.",
+    details: [
+      "Ein Arbeitskreis engagiert sich für die Gründung einer Universität in Ulm.",
+      "Diese Initiative legt den Grundstein für die Universitätsgründung sieben Jahre später.",
+    ],
+  },
+  {
     id: "uni-ulm",
     year: 1967,
     label: "1967",
     title: "Gründung der Universität Ulm",
-    category: "physik",
-    summary: "Die Universität Ulm entsteht als junge Forschungsuniversität.",
+    category: "uni",
+    summary: "Offizielle Gründungsfeier und Verleihung des Universitätsstatus.",
     details: [
-      "Physik gehörte zu den frühen Fachrichtungen der Universität.",
-      "Damit war der Boden für den späteren Ausbau naturwissenschaftlicher Studiengänge gelegt.",
+      "25. Februar 1967: Offizielle Gründungsfeier der Medizinisch-Naturwissenschaftlichen Hochschule Ulm.",
+      "4. Juli 1967: Der Universität-Status wird verliehen.",
+      "Physik gehörte von Anfang an zu den frühen Fachrichtungen der jungen Universität.",
+    ],
+  },
+  {
+    id: "eselsberg",
+    year: 1969,
+    label: "14.7.1969",
+    title: "Grundstein auf dem Eselsberg",
+    category: "uni",
+    summary: "Grundsteinlegung für die Neubauten auf dem Oberen Eselsberg.",
+    details: [
+      "Am 14. Juli 1969 wird der Grundstein für die Neubauten auf dem Oberen Eselsberg gelegt.",
+      "1969/70 nimmt der Lehrbetrieb in Physik und der vorklinischen Medizin seine Arbeit auf.",
     ],
   },
   {
     id: "physik",
     year: 1969,
-    label: "~1969",
+    label: "1969",
     title: "Start des Studiengangs Physik",
     category: "physik",
-    summary: "Der Studiengang Physik wird an der Universität Ulm etabliert.",
+    summary: "Physik wird eines der ersten Fächer an der jungen Universität Ulm.",
     details: [
+      "Das Physikstudium beginnt als eines der ersten Fächer der Universität Ulm.",
       "2024 wurde das 55-jährige Jubiläum der Physik an der Universität Ulm gefeiert.",
-      "Physik prägt seit den frühen Jahren das naturwissenschaftliche Profil der Universität.",
     ],
   },
   {
@@ -60,11 +87,11 @@ const events: TimelineEvent[] = [
     year: 1977,
     label: "1977",
     title: "Ulmer Vorbild: Wirtschaftsmathematik",
-    category: "wirtschaftsphysik",
-    summary: "Wirtschaftsmathematik wird als Ulmer Eigenentwicklung eingeführt.",
+    category: "physik",
+    summary: "Ein innovatives Lehrkonzept wird an der Universität Ulm entwickelt.",
     details: [
-      "Der Studiengang wurde später von vielen deutschen Hochschulen kopiert.",
-      "Dieses Erfolgsmodell diente als gedankliches Vorbild für Wirtschaftsphysik.",
+      "Wirtschaftsmathematik wird als Ulmer Eigenentwicklung eingeführt.",
+      "Der Studiengang wurde später von vielen deutschen Hochschulen kopiert und diente als gedankliches Vorbild für Wirtschaftsphysik.",
     ],
   },
   {
@@ -73,7 +100,7 @@ const events: TimelineEvent[] = [
     label: "1998",
     title: "Konzeption der Wirtschaftsphysik",
     category: "wirtschaftsphysik",
-    summary: "Ein neuer integrierter Studiengang wird entworfen.",
+    summary: "Prof. Wolfgang Hüttners visionäre Idee, Physik und Wirtschaft zu verbinden.",
     details: [
       "Maßgebliche Initiative: Prof. Dr. Wolfgang Hüttner, damaliger Studiendekan Physik.",
       "Das Konzept verbindet Physik, Mathematik, Wirtschaftswissenschaften und Informatik.",
@@ -107,13 +134,14 @@ const events: TimelineEvent[] = [
   {
     id: "alumni",
     year: 2004,
-    label: "2004",
+    label: "6.7.2004",
     title: "Gründung des Alumni-Vereins",
     category: "alumni",
-    summary: "Der Wirtschaftsphysik Alumni e. V. wird gegründet.",
+    summary: "Der Wirtschaftsphysik Alumni e.V. wird gegründet.",
     details: [
-      "Der Verein verbindet Ehemalige, Studierende und die Studiengänge.",
-      "2024 feierte der Alumni e. V. sein 20-jähriges Jubiläum.",
+      "Am 6. Juli 2004 wird der Ehemaligenverein Wirtschaftsphysik Alumni e.V. gegründet.",
+      "Ziel: die Studiengänge Physik und Wirtschaftsphysik unterstützen und eine Vernetzung zwischen Studierenden, Alumni, Professoren und der Industrie schaffen.",
+      "Der Verein ist seit 2004 im Vereinsregister Ulm eingetragen.",
     ],
   },
   {
@@ -122,33 +150,34 @@ const events: TimelineEvent[] = [
     label: "2000er",
     title: "Bologna-Reform",
     category: "wirtschaftsphysik",
-    summary: "Die Abschlüsse werden von Diplom auf Bachelor und Master umgestellt.",
+    summary: "Im Zuge der europaweiten Bologna-Reform werden die Abschlüsse umgestellt.",
     details: [
-      "Bachelor of Science: 6 Semester.",
-      "Master of Science: 4 Semester.",
+      "Die Bologna-Reform stellt die Abschlüsse von Diplom auf Bachelor und Master um.",
+      "Bachelor of Science: 6 Semester. Master of Science: 4 Semester.",
       "Das Curriculum erhält Wahlpflichtbereiche wie Ökonophysik, Wirtschaftswissenschaften und Fachspezialisierung.",
     ],
   },
   {
-    id: "fspo-2019",
-    year: 2019,
-    label: "2019",
-    title: "Neue FSPO für den Master",
-    category: "wirtschaftsphysik",
-    summary: "Die Fachspezifische Studien- und Prüfungsordnung 2019 wird eingeführt.",
+    id: "20-jahre-wiphy",
+    year: 2018,
+    label: "24.11.2018",
+    title: "20 Jahre Wirtschaftsphysik",
+    category: "alumni",
+    summary: "Der Alumni e.V. feiert 20 Jahre Wirtschaftsphysik.",
     details: [
-      "Der Masterstudiengang erhält eine aktualisierte Studien- und Prüfungsordnung.",
-      "Die Weiterentwicklung des Curriculums bleibt damit Teil der Studiengangsgeschichte.",
+      "Am 24. November 2018 wird das 20-jährige Bestehen des Studiengangs Wirtschaftsphysik gefeiert.",
+      "Der Verein hat sich zu einem zentralen Netzwerk für Studierende, Alumni, Professoren und die Industrie entwickelt.",
     ],
   },
   {
     id: "jubiläum-2024",
     year: 2024,
-    label: "2024",
+    label: "21.9.2024",
     title: "Dreifaches Jubiläum",
     category: "alumni",
-    summary: "55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e. V.",
+    summary: "55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e.V.",
     details: [
+      "Am 21. September 2024 wird das dreifache Jubiläum gefeiert: 55 Jahre Physik, 25 Jahre Wirtschaftsphysik, 20 Jahre Alumni e.V.",
       "Außerdem tritt die neue FSPO 2024 für den Master in Kraft.",
       "Wirtschaftsphysik bleibt NC-frei und startet jeweils zum Wintersemester.",
       "Eine aktuelle Herausforderung sind sinkende Studierendenzahlen.",
@@ -157,19 +186,21 @@ const events: TimelineEvent[] = [
 ];
 
 function categoryLabel(category: TimelineCategory) {
+  if (category === "uni") return "Universität Ulm";
   if (category === "physik") return "Physik";
   if (category === "alumni") return "Alumni";
   return "Wirtschaftsphysik";
 }
 
 function categoryIcon(category: TimelineCategory) {
+  if (category === "uni") return <HomeIcon />;
   if (category === "physik") return <Component1Icon />;
   if (category === "alumni") return <StarIcon />;
   return <BarChartIcon />;
 }
 
 function eventProgress(year: number) {
-  const min = 1967;
+  const min = 1960;
   const max = 2024;
   return ((year - min) / (max - min)) * 100;
 }
@@ -204,7 +235,7 @@ export function PhysicsTimeline() {
                     Chronologie
                   </Text>
                 </Flex>
-                <Heading size="6">Meilensteine seit 1967</Heading>
+                <Heading size="6">Meilensteine seit 1960</Heading>
               </Box>
 
               <Flex gap="2" wrap="wrap">
@@ -214,7 +245,7 @@ export function PhysicsTimeline() {
                     type="button"
                     size="2"
                     variant={filter === category.id ? "solid" : "soft"}
-                    color={filter === category.id ? "teal" : "gray"}
+                    color={filter === category.id ? undefined : "gray"}
                     onClick={() => selectFilter(category.id)}
                   >
                     {category.label}
@@ -248,7 +279,7 @@ export function PhysicsTimeline() {
           <Flex direction="column" gap="4">
             <Flex justify="between" align="start" gap="3">
               <Box>
-                <Badge color="teal" variant="soft" size="2">
+                <Badge color="blue" variant="soft" size="2">
                   {categoryIcon(activeEvent.category)}
                   {categoryLabel(activeEvent.category)}
                 </Badge>
@@ -276,6 +307,13 @@ export function PhysicsTimeline() {
 
       <Grid columns={{ initial: "1", md: "3" }} gap="4" mt="5">
         <Card size="3" className="history-fact">
+          <HomeIcon className="history-fact-icon" />
+          <Heading size="4" mb="2">Verein im Register</Heading>
+          <Text color="gray" size="2">
+            Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulm eingetragen.
+          </Text>
+        </Card>
+        <Card size="3" className="history-fact">
           <BackpackIcon className="history-fact-icon" />
           <Heading size="4" mb="2">NC-frei</Heading>
           <Text color="gray" size="2">
@@ -283,17 +321,10 @@ export function PhysicsTimeline() {
           </Text>
         </Card>
         <Card size="3" className="history-fact">
-          <BarChartIcon className="history-fact-icon" />
-          <Heading size="4" mb="2">Ulmer Ursprung</Heading>
-          <Text color="gray" size="2">
-            Ulm gilt als Ursprung des Studiengangstyps Wirtschaftsphysik in Deutschland.
-          </Text>
-        </Card>
-        <Card size="3" className="history-fact">
           <StarIcon className="history-fact-icon" />
           <Heading size="4" mb="2">Drei Jubiläen</Heading>
           <Text color="gray" size="2">
-            2024 verband 55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e. V.
+            2024 verband 55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e.V.
           </Text>
         </Card>
       </Grid>
