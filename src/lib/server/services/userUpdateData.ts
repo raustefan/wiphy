@@ -6,7 +6,7 @@ type MaybeBool = boolean | string | null | undefined;
 export type UpdateUserInput = {
   idToEdit: string;
   currentUserRole: Role;
-  currentUserId?: string;
+  currentUserId: string;
   name: string;
   email: string;
   titel?: string | null;
@@ -126,18 +126,26 @@ export function buildUserUpdateData(input: UpdateUserInput): Prisma.UserUpdateIn
   applyDate(data, "studienbeginn", input.studienbeginn);
   applyDate(data, "studienende", input.studienende);
 
-  if (input.currentUserRole === "ADMIN") {
-    data.zahlungsKommentar = input.zahlungsKommentar ?? null;
+  const isAdmin = input.currentUserRole === "ADMIN";
+  const isSelf = input.currentUserId === input.idToEdit;
+
+  // Zahlungsdaten (ohne Kommentar/Mahnung): Nutzer dürfen ihre eigenen Daten pflegen
+  if (isAdmin || isSelf) {
     data.bank = input.bank ?? null;
     data.BLZ = input.BLZ ?? null;
     data.KTO = input.KTO ?? null;
-    data.mahnung = input.mahnung ?? null;
     data.IBAN = input.IBAN ?? null;
     data.BIC = input.BIC ?? null;
 
     applyDate(data, "mandatserteilung", input.mandatserteilung);
     applyBool(data, "bankeinzug", input.bankeinzug);
     applyBool(data, "zuwendungsbesch", input.zuwendungsbesch);
+  }
+
+  if (isAdmin) {
+    data.zahlungsKommentar = input.zahlungsKommentar ?? null;
+    data.mahnung = input.mahnung ?? null;
+
     applyBool(data, "datensperren", input.datensperren);
     applyBool(data, "ausschluss", input.ausschluss);
 

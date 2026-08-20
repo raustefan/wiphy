@@ -11,6 +11,7 @@ import { adminCreateUserSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
+import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 
 async function createUserAction(formData: FormData) {
     "use server";
@@ -106,28 +107,38 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                                 <TextField.Root name="password" type="password" required />
                             </label>
 
-                            <label>
-                                <Text size="2" weight="bold" mb="1" as="div">Rolle</Text>
-                                <Select.Root name="role" defaultValue="MEMBER">
-                                    <Select.Trigger />
-                                    <Select.Content>
-                                        <Select.Item value="MEMBER">MEMBER</Select.Item>
-                                        <Select.Item value="ADMIN">ADMIN</Select.Item>
-                                    </Select.Content>
-                                </Select.Root>
-                            </label>
-
-                            <label>
-                                <Text size="2" weight="bold" mb="1" as="div">Status</Text>
-                                <Select.Root name="status" defaultValue="KEIN_MITGLIED">
-                                    <Select.Trigger />
-                                    <Select.Content>
-                                        <Select.Item value="ORDENTLICHES_MITGLIED">ORDENTLICHES_MITGLIED</Select.Item>
-                                        <Select.Item value="EHRENMITGLIED">EHRENMITGLIED</Select.Item>
-                                        <Select.Item value="KEIN_MITGLIED">KEIN_MITGLIED</Select.Item>
-                                    </Select.Content>
-                                </Select.Root>
-                            </label>
+                            <Flex gap="3">
+                                <Box flexGrow="1">
+                                    <label>
+                                        <Text size="2" weight="bold" mb="1" as="div">Rolle</Text>
+                                        <Select.Root name="role" defaultValue="MEMBER">
+                                            <Select.Trigger />
+                                            <Select.Content>
+                                                {ROLE_OPTIONS.map((o) => (
+                                                    <Select.Item key={o.value} value={o.value}>
+                                                        {o.label}
+                                                    </Select.Item>
+                                                ))}
+                                            </Select.Content>
+                                        </Select.Root>
+                                    </label>
+                                </Box>
+                                <Box flexGrow="1">
+                                    <label>
+                                        <Text size="2" weight="bold" mb="1" as="div">Status</Text>
+                                        <Select.Root name="status" defaultValue="KEIN_MITGLIED">
+                                            <Select.Trigger />
+                                            <Select.Content>
+                                                {STATUS_OPTIONS.map((o) => (
+                                                    <Select.Item key={o.value} value={o.value}>
+                                                        {o.label}
+                                                    </Select.Item>
+                                                ))}
+                                            </Select.Content>
+                                        </Select.Root>
+                                    </label>
+                                </Box>
+                            </Flex>
 
                             <Flex gap="3" mt="4">
                                 <Button type="submit">

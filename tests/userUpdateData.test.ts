@@ -4,13 +4,14 @@ import { buildUserUpdateData, type UpdateUserInput } from "../src/lib/server/ser
 
 const baseInput: UpdateUserInput = {
   idToEdit: "user-1",
+  currentUserId: "user-1",
   currentUserRole: "MEMBER",
   name: "Rau",
   vorname: "Stefan",
   email: "stefan@example.com",
 };
 
-test("member profile updates ignore admin and payment fields", () => {
+test("member self-updates may change payment data but not admin fields or payment notes", () => {
   const data = buildUserUpdateData({
     ...baseInput,
     role: "ADMIN",
@@ -31,26 +32,48 @@ test("member profile updates ignore admin and payment fields", () => {
 
   assert.equal(data.name, "Rau");
   assert.equal(data.email, "stefan@example.com");
+
+  // Admin-exklusive Felder bleiben gesperrt
   assert.equal("role" in data, false);
   assert.equal("status" in data, false);
-  assert.equal("zahlungsKommentar" in data, false);
-  assert.equal("bank" in data, false);
-  assert.equal("BLZ" in data, false);
-  assert.equal("KTO" in data, false);
-  assert.equal("IBAN" in data, false);
-  assert.equal("BIC" in data, false);
-  assert.equal("mahnung" in data, false);
-  assert.equal("mandatserteilung" in data, false);
-  assert.equal("bankeinzug" in data, false);
-  assert.equal("zuwendungsbesch" in data, false);
   assert.equal("datensperren" in data, false);
   assert.equal("ausschluss" in data, false);
+  assert.equal("zahlungsKommentar" in data, false);
+  assert.equal("mahnung" in data, false);
+
+  // Eigene Zahlungsdaten (ohne Kommentar/Mahnung) darf ein Mitglied selbst pflegen
+  assert.equal(data.bank, "Example Bank");
+  assert.equal(data.BLZ, "123");
+  assert.equal(data.KTO, "456");
+  assert.equal(data.IBAN, "DE123");
+  assert.equal(data.BIC, "TESTDEFF");
+  assert.equal(data.bankeinzug, true);
+  assert.equal(data.zuwendungsbesch, true);
+  assert.ok(data.mandatserteilung instanceof Date);
+});
+
+test("member editing another user's profile ignores payment and admin fields", () => {
+  const data = buildUserUpdateData({
+    ...baseInput,
+    idToEdit: "other-user",
+    bank: "Example Bank",
+    IBAN: "DE123",
+    zahlungsKommentar: "internal note",
+    role: "ADMIN",
+  });
+
+  assert.equal("bank" in data, false);
+  assert.equal("IBAN" in data, false);
+  assert.equal("zahlungsKommentar" in data, false);
+  assert.equal("role" in data, false);
 });
 
 test("admin profile updates include admin and payment fields", () => {
   const data = buildUserUpdateData({
     ...baseInput,
     currentUserRole: "ADMIN",
+    currentUserId: "admin-1",
+    idToEdit: "user-1",
     role: "ADMIN",
     status: "ORDENTLICHES_MITGLIED",
     zahlungsKommentar: "paid manually",

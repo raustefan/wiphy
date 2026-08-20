@@ -310,7 +310,7 @@ export function PhysicsTimeline() {
           <HomeIcon className="history-fact-icon" />
           <Heading size="4" mb="2">Verein im Register</Heading>
           <Text color="gray" size="2">
-            Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulm eingetragen.
+            Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulmil eingetragen.
           </Text>
         </Card>
         <Card size="3" className="history-fact">

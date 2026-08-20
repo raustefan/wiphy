@@ -7,21 +7,12 @@ import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import {
-    Flex,
-    Heading,
-    Text,
-    Button,
-    Container,
-    Card,
-    TextField,
-    Select,
-    Box,
-} from "@radix-ui/themes";
-import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+import { Flex, Heading, Text, Button, Container, Card, Box } from "@radix-ui/themes";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
+import { EditUserForm } from "./EditUserForm";
+import { EmailChangeDialog } from "../../EmailChangeDialog";
 
 async function updateUser(formData: FormData) {
     "use server";
@@ -121,7 +112,7 @@ async function updateUser(formData: FormData) {
 
     revalidatePath("/dashboard");
     if (result.emailChanged) {
-        redirect("/dashboard?emailChanged=1");
+        redirect(`${editPath}?emailChanged=1`);
     } else {
         redirect("/dashboard");
     }
@@ -153,21 +144,31 @@ export default async function EditUserPage({
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
+            <Suspense fallback={null}>
+                <EmailChangeDialog />
+            </Suspense>
             <Container size="2">
                 <Flex justify="between" align="center" mb="4">
                     <Box>
                         <Text size="2" color="gray">
-                            Internbereich
+                            Mitgliederselbstverwaltung
                         </Text>
                         <Heading size="6">
-                            {isAdmin ? "Benutzer bearbeiten" : "Mein Profil bearbeiten"}
+                            {isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
                         </Heading>
+                        {!isAdmin && (
+                            <Text size="2" color="gray">
+                                Halte deine persönlichen Angaben aktuell.
+                            </Text>
+                        )}
                     </Box>
-                    <Link href="/dashboard">
-                        <Button variant="soft" color="gray">
+                    <Button variant="soft" color="gray" asChild>
+                        {/* Plain anchor (not next/link) so an unsaved-changes warning
+                            reliably fires via beforeunload when leaving this page. */}
+                        <a href="/dashboard">
                             <ArrowLeftIcon /> Zurück zum Dashboard
-                        </Button>
-                    </Link>
+                        </a>
+                    </Button>
                 </Flex>
 
                 <Card size="3">
@@ -193,417 +194,9 @@ export default async function EditUserPage({
                         </Card>
                     )}
 
-                    <form action={updateUser}>
-                    <input type="hidden" name="id" value={user.id} />
-
-                    <Flex direction="column" gap="3">
-                        <label>
-                            <Text size="2" weight="bold">
-                                Vorname
-                            </Text>
-                            <TextField.Root name="vorname" defaultValue={user.vorname || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Name
-                            </Text>
-                            <TextField.Root name="name" defaultValue={user.name || ""} required />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                E-Mail
-                            </Text>
-                            <TextField.Root
-                                name="email"
-                                type="email"
-                                defaultValue={user.email}
-                                required
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Titel
-                            </Text>
-                            <TextField.Root name="titel" defaultValue={user.titel || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Geburtsdatum
-                            </Text>
-                            <input
-                                name="geburtsdatum"
-                                type="date"
-                                defaultValue={
-                                    user.geburtsdatum
-                                        ? new Date(user.geburtsdatum).toISOString().slice(0, 10)
-                                        : ""
-                                }
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Land
-                            </Text>
-                            <TextField.Root name="land" defaultValue={user.land || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                PLZ
-                            </Text>
-                            <TextField.Root name="plz" defaultValue={user.plz || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Stadt
-                            </Text>
-                            <TextField.Root name="stadt" defaultValue={user.stadt || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Straße
-                            </Text>
-                            <TextField.Root name="strasse" defaultValue={user.strasse || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Telefon
-                            </Text>
-                            <TextField.Root name="telefon" defaultValue={user.telefon || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Website
-                            </Text>
-                            <TextField.Root name="website" defaultValue={user.website || ""} />
-                        </label>
-
-                        <Heading size="3" mb="2">
-                            Studium
-                        </Heading>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Studiengang
-                            </Text>
-                            <TextField.Root
-                                name="studiengang"
-                                defaultValue={user.studiengang || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Studienbeginn
-                            </Text>
-                            <input
-                                name="studienbeginn"
-                                type="date"
-                                defaultValue={
-                                    user.studienbeginn
-                                        ? new Date(user.studienbeginn).toISOString().slice(0, 10)
-                                        : ""
-                                }
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Studienende
-                            </Text>
-                            <input
-                                name="studienende"
-                                type="date"
-                                defaultValue={
-                                    user.studienende
-                                        ? new Date(user.studienende).toISOString().slice(0, 10)
-                                        : ""
-                                }
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Diplomarbeit
-                            </Text>
-                            <TextField.Root
-                                name="diplomarbeit"
-                                defaultValue={user.diplomarbeit || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Bachelorarbeit
-                            </Text>
-                            <TextField.Root
-                                name="bachelorarbeit"
-                                defaultValue={user.bachelorarbeit || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Masterarbeit
-                            </Text>
-                            <TextField.Root
-                                name="masterarbeit"
-                                defaultValue={user.masterarbeit || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Dissertation
-                            </Text>
-                            <TextField.Root
-                                name="dissertation"
-                                defaultValue={user.dissertation || ""}
-                            />
-                        </label>
-
-                        <Heading size="3" mb="2">
-                            Beruf
-                        </Heading>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Arbeitgeber
-                            </Text>
-                            <TextField.Root
-                                name="arbeitgeber"
-                                defaultValue={user.arbeitgeber || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Berufsstand
-                            </Text>
-                            <TextField.Root
-                                name="berufsstand"
-                                defaultValue={user.berufsstand || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Berufszweig
-                            </Text>
-                            <TextField.Root
-                                name="berufszweig"
-                                defaultValue={user.berufszweig || ""}
-                            />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Position
-                            </Text>
-                            <TextField.Root name="position" defaultValue={user.position || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Praktika
-                            </Text>
-                            <TextField.Root name="praktika" defaultValue={user.praktika || ""} />
-                        </label>
-
-                        <label>
-                            <Text size="2" weight="bold">
-                                Berufserfahrung
-                            </Text>
-                            <TextField.Root
-                                name="berufserfahrung"
-                                defaultValue={user.berufserfahrung || ""}
-                            />
-                        </label>
-
-                        {isAdmin && (
-                            <>
-                                <Heading size="3" mb="2">
-                                    Zahlungs- & Admin-Informationen
-                                </Heading>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Zahlungs-Kommentar
-                                    </Text>
-                                    <TextField.Root
-                                        name="zahlungsKommentar"
-                                        defaultValue={user.zahlungsKommentar || ""}
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Bank
-                                    </Text>
-                                    <TextField.Root name="bank" defaultValue={user.bank || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        BLZ
-                                    </Text>
-                                    <TextField.Root name="BLZ" defaultValue={user.BLZ || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Kontonummer
-                                    </Text>
-                                    <TextField.Root name="KTO" defaultValue={user.KTO || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Bankeinzug
-                                    </Text>
-                                    <input
-                                        name="bankeinzug"
-                                        type="checkbox"
-                                        defaultChecked={Boolean(user.bankeinzug)}
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Zuwendungsbeschreibung
-                                    </Text>
-                                    <input
-                                        name="zuwendungsbesch"
-                                        type="checkbox"
-                                        defaultChecked={Boolean(user.zuwendungsbesch)}
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Mahnung
-                                    </Text>
-                                    <TextField.Root name="mahnung" defaultValue={user.mahnung || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        IBAN
-                                    </Text>
-                                    <TextField.Root name="IBAN" defaultValue={user.IBAN || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        BIC
-                                    </Text>
-                                    <TextField.Root name="BIC" defaultValue={user.BIC || ""} />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Mandatserteilung
-                                    </Text>
-                                    <input
-                                        name="mandatserteilung"
-                                        type="date"
-                                        defaultValue={
-                                            user.mandatserteilung
-                                                ? new Date(user.mandatserteilung).toISOString().slice(0, 10)
-                                                : ""
-                                        }
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Mitglieds-ID
-                                    </Text>
-                                    <TextField.Root
-                                        name="mitgliedId"
-                                        type="number"
-                                        defaultValue={String(user.mitgliedId ?? "")}
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold" mb="1" as="div">
-                                        Rolle
-                                    </Text>
-                                    <Select.Root name="role" defaultValue={user.role}>
-                                        <Select.Trigger />
-                                        <Select.Content>
-                                            <Select.Item value="MEMBER">MEMBER</Select.Item>
-                                            <Select.Item value="ADMIN">ADMIN</Select.Item>
-                                        </Select.Content>
-                                    </Select.Root>
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold" mb="1" as="div">
-                                        Status
-                                    </Text>
-                                    <Select.Root name="status" defaultValue={user.status}>
-                                        <Select.Trigger />
-                                        <Select.Content>
-                                            <Select.Item value="ORDENTLICHES_MITGLIED">
-                                                ORDENTLICHES_MITGLIED
-                                            </Select.Item>
-                                            <Select.Item value="EHRENMITGLIED">
-                                                EHRENMITGLIED
-                                            </Select.Item>
-                                            <Select.Item value="KEIN_MITGLIED">KEIN_MITGLIED</Select.Item>
-                                        </Select.Content>
-                                    </Select.Root>
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Datensperren
-                                    </Text>
-                                    <input
-                                        name="datensperren"
-                                        type="checkbox"
-                                        defaultChecked={Boolean(user.datensperren)}
-                                    />
-                                </label>
-
-                                <label>
-                                    <Text size="2" weight="bold">
-                                        Ausschluss
-                                    </Text>
-                                    <input
-                                        name="ausschluss"
-                                        type="checkbox"
-                                        defaultChecked={Boolean(user.ausschluss)}
-                                    />
-                                </label>
-                            </>
-                        )}
-
-                        <Flex gap="3" mt="4">
-                            <Button type="submit">
-                                <CheckIcon /> Speichern
-                            </Button>
-                            <Link href="/dashboard">
-                                <Button variant="soft" color="gray" type="button">
-                                    <MinusIcon /> Abbrechen
-                                </Button>
-                            </Link>
-                        </Flex>
-                    </Flex>
-                </form>
-            </Card>
-        </Container>
-    </Box>
+                    <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />
+                </Card>
+            </Container>
+        </Box>
     );
 }

@@ -22,7 +22,6 @@ import {
 } from "@radix-ui/themes";
 import { getFeeDashboardUsers } from "@/lib/server/services/feeService";
 import Link from "next/link";
-import type { Status } from "@prisma/client";
 import {
     User,
     UserCircle,
@@ -38,6 +37,8 @@ import {
     Rows3,
     Star,
     ToggleLeft,
+    UserCog,
+    ArrowRight,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { adminDeleteUser } from "@/lib/server/services/userService";
@@ -45,19 +46,8 @@ import { revalidatePath } from "next/cache";
 import { DashboardUserActions } from "./DashboardUserActions";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-
-export function formatStatus(status?: Status | string): string {
-    switch (status) {
-        case "KEIN_MITGLIED":
-            return "Kein Mitglied";
-        case "ORDENTLICHES_MITGLIED":
-            return "Ordentliches Mitglied";
-        case "EHRENMITGLIED":
-            return "Ehrenmitglied";
-        default:
-            return "Unbekannt";
-    }
-}
+import { formatStatus, getStatusTone } from "@/lib/statusLabels";
+import type { Status } from "@prisma/client";
 
 function formatDate(d?: string | Date | null) {
     if (!d) return "—";
@@ -67,18 +57,6 @@ function formatDate(d?: string | Date | null) {
         month: "long",
         day: "numeric",
     });
-}
-
-function getStatusTone(status?: Status | string): "red" | "blue" | "green" {
-    switch (status) {
-        case "EHRENMITGLIED":
-            return "green";
-        case "ORDENTLICHES_MITGLIED":
-            return "blue";
-        case "KEIN_MITGLIED":
-        default:
-            return "red";
-    }
 }
 
 function getStatusIcon(status?: Status | string) {
@@ -156,6 +134,52 @@ export default async function DashboardPage() {
                     </Flex>
                     <LogoutButton />
                 </Flex>
+
+                {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
+                <Box
+                    asChild
+                    mb={{ initial: "5", sm: "6" }}
+                    style={{
+                        display: "block",
+                        borderRadius: "var(--radius-4)",
+                        padding: "var(--space-5)",
+                        background:
+                            "linear-gradient(135deg, var(--accent-9), var(--accent-10))",
+                        boxShadow: "var(--shadow-3)",
+                    }}
+                >
+                    <Link href={`/dashboard/users/${currentUser.id}`}>
+                        <Flex
+                            justify="between"
+                            align={{ initial: "start", sm: "center" }}
+                            direction={{ initial: "column", sm: "row" }}
+                            gap="4"
+                        >
+                            <Flex direction="column" gap="1">
+                                <Flex align="center" gap="2">
+                                    <UserCog size={18} color="white" />
+                                    <Text size="2" weight="medium" style={{ color: "white", opacity: 0.85 }}>
+                                        Mitgliederselbstverwaltung
+                                    </Text>
+                                </Flex>
+                                <Heading size={{ initial: "5", sm: "6" }} style={{ color: "white" }}>
+                                    Verwalte deine Mitgliedsdaten
+                                </Heading>
+                                <Text size="2" style={{ color: "white", opacity: 0.85, maxWidth: 520 }}>
+                                    Persönliche Daten, Kontakt, Studium und Beruf jederzeit
+                                    selbst einsehen und aktualisieren.
+                                </Text>
+                            </Flex>
+                            <Button
+                                size="3"
+                                variant="solid"
+                                style={{ backgroundColor: "white", color: "var(--accent-9)" }}
+                            >
+                                Zu meinem Profil <ArrowRight size={16} />
+                            </Button>
+                        </Flex>
+                    </Link>
+                </Box>
 
                 {/* ---------- Profile summary ---------- */}
                 <Card size="3" mb={{ initial: "5", sm: "6" }}>
