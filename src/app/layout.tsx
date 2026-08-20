@@ -1,6 +1,6 @@
 import "@radix-ui/themes/styles.css";
-import "./globals.css"; 
-import { Theme } from "@radix-ui/themes";
+import "./globals.css";
+import AppThemeProvider from "@/components/AppThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Fraunces } from "next/font/google";
@@ -33,10 +33,17 @@ const mono = JetBrains_Mono({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de">
-      <body style={{ margin: 0 }}>
-        {/* Wir wählen "teal" als Basis, biegen die Farbe aber per CSS exakt auf deines um */}
-        <Theme accentColor="teal" grayColor="slate" radius="medium">
+    <html lang="de" suppressHydrationWarning>
+      <head>
+        <script
+          // Sets the appearance attribute before hydration to avoid a flash of the wrong theme.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("theme-appearance");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme-appearance",t);}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body style={{ margin: 0 }} suppressHydrationWarning>
+        <AppThemeProvider>
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <Header />
             <main style={{ flex: 1, padding: "24px 16px" }}>
@@ -44,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <Footer />
           </div>
-        </Theme>
+        </AppThemeProvider>
       </body>
     </html>
   );

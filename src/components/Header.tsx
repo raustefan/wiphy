@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { Flex, Button, Container } from "@radix-ui/themes";
 import Link from "next/link";
 import Image from "next/image"; // Next.js Image Komponente für Performance
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function Header() {
     const session = await auth();
@@ -44,6 +45,7 @@ export default async function Header() {
                                 {session ? "Dashboard" : "Mitgliederbereich"}
                             </Button>
                         </Link>
+                        <ThemeToggle />
                     </Flex>
 
                 </Flex>

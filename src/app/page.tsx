@@ -304,7 +304,7 @@ export default async function HomePage() {
               width={{ initial: "100%", xs: "auto" }}
             >
               <Button size="3" asChild style={{ width: "100%" }}>
-                <Link href="O/register">Jetzt registrieren</Link>
+                <Link href="/register">Jetzt registrieren</Link>
               </Button>
             </Flex>
           </Flex>
