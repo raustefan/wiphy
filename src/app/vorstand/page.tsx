@@ -1,12 +1,40 @@
 import { Box, Card, Container, Flex, Grid, Heading, Text } from "@radix-ui/themes";
 import { Users } from "lucide-react";
 
+function LinkedinIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="var(--accent-9)" aria-hidden="true">
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+    </svg>
+  );
+}
+
 const vorstand = [
-  { name: "Nikolas Tomek", role: "1. Vorstandsvorsitzender" },
-  { name: "Jannes Weghake", role: "2. Vorstandsvorsitzender" },
-  { name: "Carsten Schäfer-Sienert", role: "Finanzen" },
-  { name: "Stefan Rau", role: "Medien & IT" },
-  { name: "Andreas Dietrich", role: "Schriftführer" },
+  {
+    name: "Nikolas Tomek",
+    role: "1. Vorstandsvorsitzender",
+    linkedin: "https://www.linkedin.com/in/nikolas-tomek/",
+  },
+  {
+    name: "Jannes Weghake",
+    role: "2. Vorstandsvorsitzender",
+    linkedin: "https://www.linkedin.com/in/jannes-weghake-317b95274/",
+  },
+  {
+    name: "Carsten Schäfer-Siebert",
+    role: "Finanzen",
+    linkedin: "https://www.linkedin.com/in/carsten-sch%C3%A4fer-siebert/",
+  },
+  {
+    name: "Stefan Rau",
+    role: "Medien & IT",
+    linkedin: "https://www.linkedin.com/in/stefan-rau-91243721a/",
+  },
+  {
+    name: "Andreas Dietrich",
+    role: "Schriftführer",
+    linkedin: "https://www.linkedin.com/in/andreas-dietrich-3934282a6/",
+  },
   { name: "André Knoll", role: "Fachschaftsbotschafter" },
 ];
 
@@ -64,6 +92,11 @@ export default function VorstandPage() {
                   {entry.role}
                 </Text>
               </Box>
+              {entry.linkedin && (
+                <a href={entry.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${entry.name} auf LinkedIn`}>
+                  <LinkedinIcon />
+                </a>
+              )}
             </Flex>
           </Card>
         ))}

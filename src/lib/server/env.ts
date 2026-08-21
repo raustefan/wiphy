@@ -23,6 +23,10 @@ export function getDatabaseUrl() {
   return readRequiredEnv("DATABASE_URL");
 }
 
+export function getAltchaHmacKey() {
+  return readRequiredEnv("ALTCHA_HMAC_KEY");
+}
+
 export function getSmtpConfig() {
   const service = process.env.MAIL_SERVICE?.trim();
   const user = readRequiredMailEnv("GMAIL_USER");

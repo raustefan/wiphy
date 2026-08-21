@@ -20,6 +20,8 @@
     "@tiptap/starter-kit": "^3.28.0",
     "@uiw/react-markdown-preview": "^5.1.5",
     "@uiw/react-md-editor": "^4.0.11",
+    "altcha": "^3.2.2",
+    "altcha-lib": "^2.3.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "lucide-react": "^1.28.0",

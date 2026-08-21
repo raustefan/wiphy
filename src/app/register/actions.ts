@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
+import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerSchema } from "@/lib/server/validation/schemas";
 import { sendAdminRegistrationNotificationEmail, sendUserRegistrationConfirmationEmail } from "@/lib/mail";
@@ -30,6 +31,11 @@ export async function registerUser(formData: FormData) {
             blockMs: 60 * 60 * 1000,
             message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
         });
+
+        const captchaValid = await verifyAltchaPayload(formData.get("altcha") as string | null);
+        if (!captchaValid) {
+            throw new AppError("VALIDATION_ERROR", "Captcha-Prüfung fehlgeschlagen. Bitte versuche es erneut.");
+        }
 
         await consumeRateLimit({
             bucket: "register",
