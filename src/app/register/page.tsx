@@ -79,7 +79,7 @@ export default function RegisterPage() {
 
                             <label>
                                 <Text size="2" weight="bold">Passwort</Text>
-                                <TextField.Root name="password" type="password" required placeholder="Mindestens 8 Zeichen" mt="1" />
+                                <TextField.Root name="password" type="password" required minLength={8} placeholder="Mindestens 8 Zeichen" mt="1" />
                                 <Text size="1" color="gray" mt="1">
                                     Verwende eine starke Kombination aus Buchstaben, Zahlen und Sonderzeichen
                                 </Text>

@@ -22,19 +22,19 @@ export default async function AdminBlogPage() {
                         <Text size="2" color="gray">
                             Internbereich
                         </Text>
-                        <Heading size="6">Blog verwalten</Heading>
+                        <Heading as="h1" size="6">Blog verwalten</Heading>
                     </Box>
                     <Flex gap="3">
-                        <Link href="/dashboard">
-                            <Button variant="soft" color="gray">
+                        <Button variant="soft" color="gray" asChild>
+                            <Link href="/dashboard">
                                 <ArrowLeftIcon /> Zurück zum Dashboard
-                            </Button>
-                        </Link>
-                        <Link href="/dashboard/blog/new">
-                            <Button color="green">
+                            </Link>
+                        </Button>
+                        <Button color="green" asChild>
+                            <Link href="/dashboard/blog/new">
                                 <PlusIcon /> Neuer Beitrag
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </Flex>
                 </Flex>
 
@@ -60,11 +60,11 @@ export default async function AdminBlogPage() {
                                     <Table.Cell>{post.createdAt.toLocaleDateString('de-DE')}</Table.Cell>
                                     <Table.Cell>
                                         <Flex gap="2">
-                                            <Link href={`/dashboard/blog/${post.id}`}>
-                                                <Button size="1" variant="soft" color="blue">
+                                            <Button size="1" variant="soft" color="blue" asChild>
+                                                <Link href={`/dashboard/blog/${post.id}`}>
                                                     <Pencil2Icon /> Bearbeiten
-                                                </Button>
-                                            </Link>
+                                                </Link>
+                                            </Button>
                                             <form action={deletePost}>
                                                 <input type="hidden" name="id" value={post.id} />
                                                 <Button size="1" color="red" variant="soft" type="submit">

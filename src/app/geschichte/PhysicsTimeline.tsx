@@ -235,7 +235,7 @@ export function PhysicsTimeline() {
                     Chronologie
                   </Text>
                 </Flex>
-                <Heading size="6">Meilensteine seit 1960</Heading>
+                <Heading as="h2" size="6">Meilensteine seit 1960</Heading>
               </Box>
 
               <Flex gap="2" wrap="wrap">
@@ -283,7 +283,7 @@ export function PhysicsTimeline() {
                   {categoryIcon(activeEvent.category)}
                   {categoryLabel(activeEvent.category)}
                 </Badge>
-                <Heading size="7" mt="3" mb="2">
+                <Heading as="h2" size="7" mt="3" mb="2">
                   {activeEvent.title}
                 </Heading>
                 <Text size="5" color="gray" className="history-summary">
@@ -308,21 +308,21 @@ export function PhysicsTimeline() {
       <Grid columns={{ initial: "1", md: "3" }} gap="4" mt="5">
         <Card size="3" className="history-fact">
           <HomeIcon className="history-fact-icon" />
-          <Heading size="4" mb="2">Verein im Register</Heading>
+          <Heading as="h2" size="4" mb="2">Verein im Register</Heading>
           <Text color="gray" size="2">
             Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulmil eingetragen.
           </Text>
         </Card>
         <Card size="3" className="history-fact">
           <BackpackIcon className="history-fact-icon" />
-          <Heading size="4" mb="2">NC-frei</Heading>
+          <Heading as="h2" size="4" mb="2">NC-frei</Heading>
           <Text color="gray" size="2">
             Wirtschaftsphysik ist aktuell weiterhin ohne Numerus Clausus und startet jeweils zum Wintersemester.
           </Text>
         </Card>
         <Card size="3" className="history-fact">
           <StarIcon className="history-fact-icon" />
-          <Heading size="4" mb="2">Drei Jubiläen</Heading>
+          <Heading as="h2" size="4" mb="2">Drei Jubiläen</Heading>
           <Text color="gray" size="2">
             2024 verband 55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e.V.
           </Text>

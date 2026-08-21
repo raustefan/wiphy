@@ -5,10 +5,10 @@ export default function ImpressumPage() {
     return (
         <Container size="3" mt="6" mb="9">
             <Flex justify="between" mb="6" align="center">
-                <Heading size="8">Impressum</Heading>
-                <Link href="/">
-                    <Button variant="soft">← Zurück zur Startseite</Button>
-                </Link>
+                <Heading as="h1" size="8">Impressum</Heading>
+                <Button variant="soft" asChild>
+                    <Link href="/">← Zurück zur Startseite</Link>
+                </Button>
             </Flex>
 
             <Flex direction="column" gap="4">

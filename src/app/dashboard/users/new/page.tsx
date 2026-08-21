@@ -64,13 +64,13 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                         <Text size="2" color="gray">
                             Internbereich
                         </Text>
-                        <Heading size="6">Benutzer hinzufügen</Heading>
+                        <Heading as="h1" size="6">Benutzer hinzufügen</Heading>
                     </Box>
-                    <Link href="/dashboard">
-                        <Button variant="soft" color="gray">
+                    <Button variant="soft" color="gray" asChild>
+                        <Link href="/dashboard">
                             <ArrowLeftIcon /> Zurück zum Dashboard
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </Flex>
 
                 <Card size="3">
@@ -144,11 +144,11 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                                 <Button type="submit">
                                     <CheckIcon /> Hinzufügen
                                 </Button>
-                                <Link href="/dashboard">
-                                    <Button variant="soft" color="gray" type="button">
+                                <Button variant="soft" color="gray" asChild>
+                                    <Link href="/dashboard">
                                         <MinusIcon /> Abbrechen
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </Flex>
                         </Flex>
                     </form>

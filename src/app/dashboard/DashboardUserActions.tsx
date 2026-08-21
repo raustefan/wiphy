@@ -39,12 +39,11 @@ export function DashboardUserActions({
 
           </Button>
         )}
-        <Link href={`/dashboard/users/${user.id}`}>
-          <Button size="1" variant="soft">
+        <Button size="1" variant="soft" asChild>
+          <Link href={`/dashboard/users/${user.id}`}>
             <Pencil2Icon />
-
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         {isAdmin && user.id !== currentUserId && (
           <form action={deleteUserAction}>
             <input type="hidden" name="id" value={user.id} />

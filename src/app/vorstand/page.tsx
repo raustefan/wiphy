@@ -57,7 +57,7 @@ export default function VorstandPage() {
             Der Verein
           </Text>
         </Flex>
-        <Heading size={{ initial: "7", sm: "8" }} align="center" style={{ letterSpacing: "-0.03em" }}>
+        <Heading as="h1" size={{ initial: "7", sm: "8" }} align="center" style={{ letterSpacing: "-0.03em" }}>
           Vorstand
         </Heading>
         <Text size="3" color="gray" align="center" style={{ maxWidth: 480 }}>

@@ -9,10 +9,10 @@ export default async function BlogIndexPage() {
     return (
         <Container size="3" mt="6" mb="6">
             <Flex justify="between" mb="6" align="center">
-                <Heading size="8">Vereins-Blog</Heading>
-                <Link href="/">
-                    <Button variant="soft">← Zurück zur Startseite</Button>
-                </Link>
+                <Heading as="h1" size="8">Vereins-Blog</Heading>
+                <Button variant="soft" asChild>
+                    <Link href="/">← Zurück zur Startseite</Link>
+                </Button>
             </Flex>
 
             <Flex direction="column" gap="4">
@@ -38,7 +38,7 @@ export default async function BlogIndexPage() {
                                         align={{ initial: "start", sm: "center" }}
                                         gap="3"
                                     >
-                                        <Heading size={{ initial: "4", sm: "5" }}>
+                                        <Heading as="h2" size={{ initial: "4", sm: "5" }}>
                                             {post.title}
                                         </Heading>
 

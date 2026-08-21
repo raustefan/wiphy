@@ -48,6 +48,7 @@ export default function GeschichtePage() {
             </Text>
 
             <Heading
+              as="h1"
               size={{ initial: "8", sm: "9" }}
               style={{ letterSpacing: "-0.02em", lineHeight: 1.08 }}
             >

@@ -40,17 +40,17 @@ export default function MailDashboardPage() {
                             color="var(--green-9)"
                             aria-hidden
                         />
-                        <Heading mb="0">E-Mail gesendet</Heading>
+                        <Heading as="h1" mb="0">E-Mail gesendet</Heading>
                         <Text size="2" align="center" mb="0">
                             Die Nachricht wurde an {sentCount} {sentCount === 1 ? "Empfänger" : "Empfänger"} versendet.
                         </Text>
                         <Flex justify="center" mt="2" width="100%">
-                            <Link href="/dashboard/mail">
-                                <Button>Weitere E-Mail senden</Button>
-                            </Link>
-                            <Link href="/dashboard" style={{ marginLeft: "8px" }}>
-                                <Button variant="soft">Zum Dashboard</Button>
-                            </Link>
+                            <Button asChild>
+                                <Link href="/dashboard/mail">Weitere E-Mail senden</Link>
+                            </Button>
+                            <Button variant="soft" asChild>
+                                <Link href="/dashboard" style={{ marginLeft: "8px" }}>Zum Dashboard</Link>
+                            </Button>
                         </Flex>
                     </Flex>
                 </Card>
@@ -76,13 +76,13 @@ export default function MailDashboardPage() {
                         <Text size="2" color="gray">
                             Internbereich
                         </Text>
-                        <Heading size="6">Rundmail verschicken</Heading>
+                        <Heading as="h1" size="6">Rundmail verschicken</Heading>
                     </Box>
-                    <Link href="/dashboard">
-                        <Button variant="soft" color="gray">
+                    <Button variant="soft" color="gray" asChild>
+                        <Link href="/dashboard">
                             <ArrowLeftIcon /> Zurück zum Dashboard
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </Flex>
 
                 <Card size="3">

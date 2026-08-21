@@ -153,7 +153,7 @@ export default async function EditUserPage({
                         <Text size="2" color="gray">
                             Mitgliederselbstverwaltung
                         </Text>
-                        <Heading size="6">
+                        <Heading as="h1" size="6">
                             {isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
                         </Heading>
                         {!isAdmin && (

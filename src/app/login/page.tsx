@@ -60,6 +60,7 @@ export default function LoginPage() {
 
         if (res?.error) {
             setError("Login fehlgeschlagen. Bitte prüfe deine Daten.");
+            setPassword("");
         } else {
             router.push("/dashboard");
             router.refresh();

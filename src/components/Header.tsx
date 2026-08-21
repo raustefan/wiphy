@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
-import { Flex, Button, Container } from "@radix-ui/themes";
+import { Flex, Button, Container, DropdownMenu, IconButton } from "@radix-ui/themes";
 import Link from "next/link";
 import Image from "next/image"; // Next.js Image Komponente für Performance
+import { Menu } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function Header() {
@@ -28,8 +29,8 @@ export default async function Header() {
                         />
                     </Link>
 
-                    {/* Navigation */}
-                    <Flex gap={{ initial: "2", md: "4" }} align="center" wrap="wrap" justify="end">
+                    {/* Navigation (Desktop) */}
+                    <Flex gap="4" align="center" display={{ initial: "none", sm: "flex" }}>
                         <Link href="/blog" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Blog
                         </Link>
@@ -39,13 +40,41 @@ export default async function Header() {
                         <Link href="/vorstand" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Vorstand
                         </Link>
-                        <Link href={session ? "/dashboard" : "/login"}>
-                            {/* Hier nutzen wir "ruby" für deinen zweiten Button (Beere) */}
-                            <Button color="ruby" variant="soft" style={{ cursor: "pointer" }}>
+                        <Button color="ruby" variant="soft" asChild>
+                            <Link href={session ? "/dashboard" : "/login"}>
                                 {session ? "Dashboard" : "Mitgliederbereich"}
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                         <ThemeToggle />
+                    </Flex>
+
+                    {/* Navigation (Mobil) */}
+                    <Flex gap="2" align="center" display={{ initial: "flex", sm: "none" }}>
+                        <ThemeToggle />
+                        <DropdownMenu.Root>
+                            <DropdownMenu.Trigger>
+                                <IconButton variant="soft" aria-label="Menü öffnen">
+                                    <Menu size={18} />
+                                </IconButton>
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content align="end">
+                                <DropdownMenu.Item asChild>
+                                    <Link href="/blog">Blog</Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item asChild>
+                                    <Link href="/geschichte">Geschichte</Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item asChild>
+                                    <Link href="/vorstand">Vorstand</Link>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Separator />
+                                <DropdownMenu.Item asChild>
+                                    <Link href={session ? "/dashboard" : "/login"}>
+                                        {session ? "Dashboard" : "Mitgliederbereich"}
+                                    </Link>
+                                </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Root>
                     </Flex>
 
                 </Flex>

@@ -67,18 +67,18 @@ export default async function FeesDashboardPage({
             <Text size="2" color="gray">
               Internbereich
             </Text>
-            <Heading size="6">
+            <Heading as="h1" size="6">
               {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
             </Heading>
             <Text size="2" color="gray">
               Beiträge für {selectedYear}
             </Text>
           </Box>
-          <Link href="/dashboard">
-            <Button variant="soft" color="gray">
+          <Button variant="soft" color="gray" asChild>
+            <Link href="/dashboard">
               <ArrowLeftIcon /> Zurück zum Dashboard
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </Flex>
 
         <Card size="3">
@@ -89,7 +89,7 @@ export default async function FeesDashboardPage({
                   ? "Admin-Sicht: Alle Benutzer und Jahresbeiträge"
                   : "Nur deine eigenen Beiträge, lesend"}
               </Text>
-              <Heading size="4">Jahresbeiträge {selectedYear}</Heading>
+              <Heading as="h2" size="4">Jahresbeiträge {selectedYear}</Heading>
             </Box>
             <Text size="2" color="gray">
               {users.length} {users.length === 1 ? "Mitglied" : "Mitglieder"}

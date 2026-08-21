@@ -31,13 +31,13 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                         <Text size="2" color="gray">
                             Internbereich
                         </Text>
-                        <Heading size="6">{isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}</Heading>
+                        <Heading as="h1" size="6">{isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}</Heading>
                     </Box>
-                    <Link href="/dashboard/blog">
-                        <Button variant="soft" color="gray">
+                    <Button variant="soft" color="gray" asChild>
+                        <Link href="/dashboard/blog">
                             <ArrowLeftIcon /> Zurück zur Übersicht
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </Flex>
 
                 <Card size="3">
@@ -81,11 +81,11 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                                 <Button type="submit">
                                     <CheckIcon /> Speichern
                                 </Button>
-                                <Link href="/dashboard/blog">
-                                    <Button variant="soft" color="gray" type="button">
+                                <Button variant="soft" color="gray" asChild>
+                                    <Link href="/dashboard/blog">
                                         <MinusIcon /> Abbrechen
-                                    </Button>
-                                </Link>
+                                    </Link>
+                                </Button>
                             </Flex>
                         </Flex>
                     </form>

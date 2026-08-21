@@ -100,6 +100,7 @@ export default async function HomePage() {
             style={{ textAlign: "center" }}
           >
             <Heading
+              as="h1"
               size={{ initial: "8", sm: "9" }}
               style={{ letterSpacing: "-0.02em", lineHeight: 1.08 }}
             >
@@ -125,7 +126,7 @@ export default async function HomePage() {
             <Flex
               gap="3"
               direction={{ initial: "column", xs: "row" }}
-              width={{ initial: "100%", xs: "auto" }}
+              width={{ initial: "100%", xs: "50%" }}
               justify="center"
             >
               <Button size="4" asChild style={{ width: "100%" }}>
@@ -154,7 +155,7 @@ export default async function HomePage() {
           <Text size="2" color="blue" weight="medium">
             Was der Verein leistet
           </Text>
-          <Heading size={{ initial: "6", sm: "7" }} align="center">
+          <Heading as="h2" size={{ initial: "6", sm: "7" }} align="center">
             Drei Säulen, ein Netzwerk
           </Heading>
         </Flex>
@@ -163,7 +164,7 @@ export default async function HomePage() {
           {features.map((f) => (
             <Card key={f.title} size="3" className="feature-card">
               <Flex direction="column" gap="3" height="100%">
-                <Heading size="4">{f.title}</Heading>
+                <Heading as="h3" size="4">{f.title}</Heading>
                 <Text color="gray" size="2" style={{ lineHeight: 1.6 }}>
                   {f.body}
                 </Text>
@@ -181,7 +182,7 @@ export default async function HomePage() {
               <Text size="2" color="blue" weight="medium">
                 Warum Physik?
               </Text>
-              <Heading size={{ initial: "5", sm: "6" }}>
+              <Heading as="h2" size={{ initial: "5", sm: "6" }}>
                 Physikalische Methoden für komplexe Systeme
               </Heading>
               <Text color="gray" size="3" style={{ maxWidth: "640px" }}>
@@ -232,7 +233,7 @@ export default async function HomePage() {
                   align={{ initial: "start", sm: "center" }}
                   gap="3"
                 >
-                  <Heading size={{ initial: "4", sm: "5" }}>
+                  <Heading as="h2" size={{ initial: "4", sm: "5" }}>
                     {latestPost.title}
                   </Heading>
 
@@ -290,7 +291,7 @@ export default async function HomePage() {
             py="4"
             style={{ textAlign: "center" }}
           >
-            <Heading size={{ initial: "5", sm: "7" }}>
+            <Heading as="h2" size={{ initial: "5", sm: "7" }}>
               Mitglied werden
             </Heading>
             <Text color="gray" size="3" style={{ maxWidth: "540px" }}>
@@ -330,7 +331,7 @@ export default async function HomePage() {
           <Grid columns={{ initial: "1", lg: "2" }} gap="6">
             {demoSims.map(({ title, component: Sim }) => (
               <Flex key={title} direction="column" gap="2">
-                <Heading size="3">{title}</Heading>
+                <Heading as="h3" size="3">{title}</Heading>
                 <Sim />
               </Flex>
             ))}

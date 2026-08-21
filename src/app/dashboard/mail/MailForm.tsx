@@ -419,11 +419,11 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                 </Dialog.Content>
                             </Dialog.Root>
                         </Flex>
-                        <Link href="/dashboard">
-                            <Button variant="soft" color="gray" type="button">
+                        <Button variant="soft" color="gray" asChild>
+                            <Link href="/dashboard">
                                 <MinusIcon /> Abbrechen
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </Flex>
                     <Flex
                         align="center"

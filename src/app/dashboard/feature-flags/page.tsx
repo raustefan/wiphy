@@ -20,7 +20,7 @@ export default async function FeatureFlagsPage() {
                                 Admin
                             </Text>
                         </Flex>
-                        <Heading size={{ initial: "6", sm: "7" }}>Feature Flags</Heading>
+                        <Heading as="h1" size={{ initial: "6", sm: "7" }}>Feature Flags</Heading>
                         <Text size="2" color="gray" style={{ maxWidth: 640 }}>
                             Schalte einzelne Funktionen für alle Nutzer ein oder aus. Deaktivierte
                             Funktionen zeigen betroffenen Nutzern einen Hinweis-Dialog an.

@@ -6,7 +6,7 @@ export function findAllPosts() {
 
 export function findPublishedPosts() {
   return prisma.blogPost.findMany({
-    where: { published: true },
+    where: { published: true, publishedAt: { lte: new Date() } },
     orderBy: { publishedAt: "desc" },
   });
 }
@@ -17,7 +17,7 @@ export function findPostById(id: string) {
 
 export function findPublishedPostById(id: string) {
   return prisma.blogPost.findFirst({
-    where: { id, published: true },
+    where: { id, published: true, publishedAt: { lte: new Date() } },
   });
 }
 

@@ -128,7 +128,7 @@ export default async function DashboardPage() {
                                 Mitgliederbereich
                             </Text>
                         </Flex>
-                        <Heading size={{ initial: "7", sm: "8" }} style={{ letterSpacing: "-0.03em" }}>
+                        <Heading as="h1" size={{ initial: "7", sm: "8" }} style={{ letterSpacing: "-0.03em" }}>
                             Hallo, {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
                         </Heading>
                     </Flex>
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
                 </Flex>
 
                 {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
-                <Box
+                <Button
                     asChild
                     mb={{ initial: "5", sm: "6" }}
                     style={{
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
                                         Mitgliederselbstverwaltung
                                     </Text>
                                 </Flex>
-                                <Heading size={{ initial: "5", sm: "6" }} style={{ color: "white" }}>
+                                <Heading as="h2" size={{ initial: "5", sm: "6" }} style={{ color: "white" }}>
                                     Verwalte deine Mitgliedsdaten
                                 </Heading>
                                 <Text size="2" style={{ color: "white", opacity: 0.85, maxWidth: 520 }}>
@@ -170,16 +170,22 @@ export default async function DashboardPage() {
                                     selbst einsehen und aktualisieren.
                                 </Text>
                             </Flex>
-                            <Button
-                                size="3"
-                                variant="solid"
-                                style={{ backgroundColor: "white", color: "var(--accent-9)" }}
+                            <Flex
+                                align="center"
+                                gap="2"
+                                style={{
+                                    backgroundColor: "white",
+                                    color: "var(--accent-9)",
+                                    borderRadius: "var(--radius-3)",
+                                    padding: "var(--space-2) var(--space-4)",
+                                    fontWeight: 500,
+                                }}
                             >
                                 Zu meinem Profil <ArrowRight size={16} />
-                            </Button>
+                            </Flex>
                         </Flex>
                     </Link>
-                </Box>
+                </Button>
 
                 {/* ---------- Profile summary ---------- */}
                 <Card size="3" mb={{ initial: "5", sm: "6" }}>
@@ -191,7 +197,7 @@ export default async function DashboardPage() {
                                     Mitgliedschaft
                                 </Text>
                             </Flex>
-                            <Heading size="4">{formatStatus(userStatus)}</Heading>
+                            <Heading as="h2" size="4">{formatStatus(userStatus)}</Heading>
                         </Flex>
 
                         <Flex direction="column" gap="1">
@@ -201,7 +207,7 @@ export default async function DashboardPage() {
                                     Account seit
                                 </Text>
                             </Flex>
-                            <Heading size="4">{formatDate(memberSince)}</Heading>
+                            <Heading as="h2" size="4">{formatDate(memberSince)}</Heading>
                         </Flex>
 
                         <Flex direction="column" gap="1">
@@ -211,7 +217,7 @@ export default async function DashboardPage() {
                                     Rolle
                                 </Text>
                             </Flex>
-                            <Heading size="4">
+                            <Heading as="h2" size="4">
                                 {currentUser.role === "ADMIN" ? "Administrator" : "Mitglied"}
                             </Heading>
                         </Flex>
@@ -229,7 +235,7 @@ export default async function DashboardPage() {
                                         Admin-Aktionen
                                     </Text>
                                 </Flex>
-                                <Heading size="5">Verwaltung auf einen Blick</Heading>
+                                <Heading as="h2" size="5">Verwaltung auf einen Blick</Heading>
                                 <Text size="2" color="gray" style={{ maxWidth: 640 }}>
                                     Pflege Inhalte, lege neue Nutzer an und bearbeite
                                     Zahlungs- oder Mail-Aufgaben direkt aus dem Dashboard.
@@ -288,7 +294,7 @@ export default async function DashboardPage() {
                                     Zahlungsübersicht
                                 </Text>
                             </Flex>
-                            <Heading size="5">Meine Beiträge der letzten drei Jahre</Heading>
+                            <Heading as="h2" size="5">Meine Beiträge der letzten drei Jahre</Heading>
                         </Flex>
                         <Badge size="2" color="gray" variant="soft">
                             <Rows3 size={14} />
@@ -313,7 +319,7 @@ export default async function DashboardPage() {
                                                 Beitragsjahr
                                             </Text>
                                         </Flex>
-                                        <Heading size="6">{year}</Heading>
+                                        <Heading as="h3" size="6">{year}</Heading>
                                         <Flex gap="1" wrap="wrap">
                                             <Badge color={isPaid ? "green" : "red"} size="1">
                                                 {isPaid ? "Bezahlt" : "Ausstehend"}
@@ -354,7 +360,7 @@ export default async function DashboardPage() {
                                         : "Deine hinterlegten Daten"}
                                 </Text>
                             </Flex>
-                            <Heading size="5">
+                            <Heading as="h2" size="5">
                                 {isAdmin ? "Benutzerverwaltung" : "Mein Profil"}
                             </Heading>
                             <Text size="2" color="gray">

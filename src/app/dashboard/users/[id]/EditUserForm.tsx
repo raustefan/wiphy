@@ -663,7 +663,7 @@ function Section({
     return (
         <Flex direction="column" gap="3">
             <Box>
-                <Heading size="4">{title}</Heading>
+                <Heading as="h2" size="4">{title}</Heading>
                 {description && (
                     <Text size="2" color="gray">
                         {description}
