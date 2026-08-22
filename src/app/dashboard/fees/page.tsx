@@ -1,13 +1,12 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { getFeeDashboardUsers, getDatabaseYearRange } from "@/lib/server/services/feeService";
-import { Container, Card, Heading, Text, Flex, Box, Separator, Button } from "@radix-ui/themes";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+import { Container, Card, Heading, Text, Flex, Box, Separator } from "@radix-ui/themes";
 import { FeesTable } from "./FeesTable";
 import type { User, MemberFee } from "@prisma/client";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
+import { DashboardPageHeader } from "../DashboardPageHeader";
 
 export default async function FeesDashboardPage({
   searchParams,
@@ -53,7 +52,7 @@ export default async function FeesDashboardPage({
 
   return (
     <Box
-      py="5"
+      py={{ initial: "6", sm: "8" }}
       style={{
         minHeight: "100%",
       }}
@@ -61,28 +60,22 @@ export default async function FeesDashboardPage({
       <Suspense fallback={null}>
         <FeatureDisabledQueryDialog />
       </Suspense>
-      <Container size="4">
-        <Flex justify="between" align="center" mb="4">
-          <Box>
-            <Text size="2" color="gray">
-              Internbereich
-            </Text>
-            <Heading as="h1" size="6">
-              {isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
-            </Heading>
-            <Text size="2" color="gray">
-              Beiträge für {selectedYear}
-            </Text>
-          </Box>
-          <Button variant="soft" color="gray" asChild>
-            <Link href="/dashboard">
-              <ArrowLeftIcon /> Zurück zum Dashboard
-            </Link>
-          </Button>
-        </Flex>
+      <Container size="4" px={{ initial: "4", sm: "5" }}>
+        <DashboardPageHeader
+          eyebrow="Internbereich"
+          title={isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
+          description={`Beiträge für ${selectedYear}`}
+          backHref="/dashboard"
+        />
 
         <Card size="3">
-          <Flex justify="between" align="baseline" mb="3">
+          <Flex
+            justify="between"
+            align={{ initial: "start", sm: "baseline" }}
+            direction={{ initial: "column", sm: "row" }}
+            gap="2"
+            mb="3"
+          >
             <Box>
               <Text size="2" color="gray">
                 {isAdmin

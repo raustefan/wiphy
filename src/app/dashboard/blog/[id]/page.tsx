@@ -1,11 +1,12 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
-import { Flex, Heading, Text, Button, Container, Card, TextField, TextArea, Checkbox, Box } from "@radix-ui/themes";
-import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
+import { Flex, Text, Button, Container, Card, TextField, TextArea, Checkbox, Box } from "@radix-ui/themes";
+import { CheckIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { savePost } from "../actions";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { auth } from "@/auth";
+import { DashboardPageHeader } from "../../DashboardPageHeader";
 
 export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -24,21 +25,14 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
     const defaultAuthor = post?.author || session?.user?.name || "";
 
     return (
-        <Box py="5" style={{ minHeight: "100%" }}>
-            <Container size="3">
-                <Flex justify="between" align="center" mb="4">
-                    <Box>
-                        <Text size="2" color="gray">
-                            Internbereich
-                        </Text>
-                        <Heading as="h1" size="6">{isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}</Heading>
-                    </Box>
-                    <Button variant="soft" color="gray" asChild>
-                        <Link href="/dashboard/blog">
-                            <ArrowLeftIcon /> Zurück zur Übersicht
-                        </Link>
-                    </Button>
-                </Flex>
+        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
+            <Container size="3" px={{ initial: "4", sm: "5" }}>
+                <DashboardPageHeader
+                    eyebrow="Internbereich"
+                    title={isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}
+                    backHref="/dashboard/blog"
+                    backLabel="Zurück zur Übersicht"
+                />
 
                 <Card size="3">
                     <form action={savePost}>
@@ -77,11 +71,11 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                                 </Flex>
                             </Text>
 
-                            <Flex gap="3" mt="4">
-                                <Button type="submit">
+                            <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="4">
+                                <Button size="3" type="submit">
                                     <CheckIcon /> Speichern
                                 </Button>
-                                <Button variant="soft" color="gray" asChild>
+                                <Button size="3" variant="soft" color="gray" asChild>
                                     <Link href="/dashboard/blog">
                                         <MinusIcon /> Abbrechen
                                     </Link>

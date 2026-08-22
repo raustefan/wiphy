@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Container, Card, Heading, Flex, Text, Button, Box } from "@radix-ui/themes";
-import { CheckCircledIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
+import { CheckCircledIcon } from "@radix-ui/react-icons";
 import { MailForm, type MailUserOption } from "./MailForm";
 import Link from "next/link";
+import { DashboardPageHeader } from "../DashboardPageHeader";
 
 export default function MailDashboardPage() {
     const [success, setSuccess] = useState(false);
@@ -31,7 +32,7 @@ export default function MailDashboardPage() {
 
     if (success) {
         return (
-            <Container size="2" mt="6" mb="6">
+            <Container size="2" mt="6" mb="6" px={{ initial: "4", sm: "5" }}>
                 <Card size="4">
                     <Flex direction="column" align="center" gap="3" py="4">
                         <CheckCircledIcon
@@ -44,12 +45,12 @@ export default function MailDashboardPage() {
                         <Text size="2" align="center" mb="0">
                             Die Nachricht wurde an {sentCount} {sentCount === 1 ? "Empfänger" : "Empfänger"} versendet.
                         </Text>
-                        <Flex justify="center" mt="2" width="100%">
-                            <Button asChild>
+                        <Flex justify="center" mt="2" width="100%" gap="3" direction={{ initial: "column", xs: "row" }}>
+                            <Button size="3" asChild>
                                 <Link href="/dashboard/mail">Weitere E-Mail senden</Link>
                             </Button>
-                            <Button variant="soft" asChild>
-                                <Link href="/dashboard" style={{ marginLeft: "8px" }}>Zum Dashboard</Link>
+                            <Button size="3" variant="soft" asChild>
+                                <Link href="/dashboard">Zum Dashboard</Link>
                             </Button>
                         </Flex>
                     </Flex>
@@ -60,7 +61,7 @@ export default function MailDashboardPage() {
 
     if (loading) {
         return (
-            <Container size="2" mt="6" mb="6">
+            <Container size="2" mt="6" mb="6" px={{ initial: "4", sm: "5" }}>
                 <Card size="4">
                     <Text>Lade Benutzer...</Text>
                 </Card>
@@ -69,21 +70,13 @@ export default function MailDashboardPage() {
     }
 
     return (
-        <Box py="5" style={{ minHeight: "100%" }}>
-            <Container size="4">
-                <Flex justify="between" align="center" mb="4">
-                    <Box>
-                        <Text size="2" color="gray">
-                            Internbereich
-                        </Text>
-                        <Heading as="h1" size="6">Rundmail verschicken</Heading>
-                    </Box>
-                    <Button variant="soft" color="gray" asChild>
-                        <Link href="/dashboard">
-                            <ArrowLeftIcon /> Zurück zum Dashboard
-                        </Link>
-                    </Button>
-                </Flex>
+        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
+            <Container size="4" px={{ initial: "4", sm: "5" }}>
+                <DashboardPageHeader
+                    eyebrow="Internbereich"
+                    title="Rundmail verschicken"
+                    backHref="/dashboard"
+                />
 
                 <Card size="3">
                     <MailForm users={users} onSuccess={(count) => {

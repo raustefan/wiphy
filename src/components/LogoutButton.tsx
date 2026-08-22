@@ -13,7 +13,7 @@ export default function LogoutButton() {
     return (
         <AlertDialog.Root>
             <AlertDialog.Trigger>
-                <Button color="red" variant="soft" style={{ cursor: "pointer" }}>
+                <Button size="3" color="red" variant="soft" style={{ cursor: "pointer" }}>
                     <ExitIcon />
                     Logout
                 </Button>
@@ -27,12 +27,12 @@ export default function LogoutButton() {
 
                 <Flex gap="3" justify="end">
                     <AlertDialog.Cancel>
-                        <Button variant="soft" color="gray" style={{ cursor: "pointer" }}>
+                        <Button size="3" variant="soft" color="gray" style={{ cursor: "pointer" }}>
                             Abbrechen
                         </Button>
                     </AlertDialog.Cancel>
                     <AlertDialog.Action>
-                        <Button variant="solid" color="red" onClick={handleLogout} style={{ cursor: "pointer" }}>
+                        <Button size="3" variant="solid" color="red" onClick={handleLogout} style={{ cursor: "pointer" }}>
                             <ExitIcon />
                             Ja, abmelden
                         </Button>

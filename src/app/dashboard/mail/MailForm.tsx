@@ -168,12 +168,13 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                         style={{
                             width: "100%",
                             maxWidth: "100%",
-                            padding: "8px 10px",
+                            minHeight: 44,
+                            padding: "10px 12px",
                             borderRadius: "var(--radius-2)",
                             border: "1px solid var(--gray-6)",
                             backgroundColor: "var(--color-panel)",
                             color: "var(--gray-12)",
-                            fontSize: "14px",
+                            fontSize: "16px",
                         }}
                     >
                         <option value="ALL">Alle Benutzer (Admins & Members)</option>
@@ -211,7 +212,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                         align="center"
                                         justify="between"
                                         gap="2"
-                                        py="1"
+                                        py="2"
                                         px="2"
                                         style={{
                                             borderRadius: "var(--radius-2)",
@@ -227,7 +228,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                             </Text>
                                         </Flex>
                                         <Button
-                                            size="1"
+                                            size="2"
                                             variant="ghost"
                                             color="red"
                                             type="button"
@@ -237,7 +238,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                         </Button>
                                     </Flex>
                                 ))}
-                                <Button size="1" variant="outline" type="button" onClick={clearSelection}>
+                                <Button size="2" variant="outline" type="button" onClick={clearSelection}>
                                     Alle entfernen
                                 </Button>
                             </Flex>
@@ -269,7 +270,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                         : `${searchResults.length} Treffer`}
                                 </Text>
                                 {searchResults.length > 0 && (
-                                    <Button size="1" variant="soft" type="button" onClick={addAllSearchResults}>
+                                    <Button size="2" variant="soft" type="button" onClick={addAllSearchResults}>
                                         Alle Treffer übernehmen
                                     </Button>
                                 )}
@@ -299,10 +300,12 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                                     key={u.id}
                                                     align="center"
                                                     gap="3"
-                                                    py="1"
+                                                    py="2"
                                                     px="2"
+                                                    onClick={() => toggle(u.id)}
                                                     style={{
                                                         borderRadius: "var(--radius-2)",
+                                                        cursor: "pointer",
                                                     }}
                                                 >
                                                     {/* Nur die Checkbox schaltet die Auswahl (kein Radix-Checkbox — vermeidet Update-Loops) */}
@@ -311,9 +314,10 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                                         type="checkbox"
                                                         checked={isSelected}
                                                         onChange={() => toggle(u.id)}
+                                                        onClick={(e) => e.stopPropagation()}
                                                         style={{
-                                                            width: 18,
-                                                            height: 18,
+                                                            width: 20,
+                                                            height: 20,
                                                             flexShrink: 0,
                                                             cursor: "pointer",
                                                             accentColor: "var(--accent-9)",
@@ -377,10 +381,16 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                     </Box>
                 </label>
 
-                <Flex justify="between" align="center" gap="3" mt="4" wrap="wrap">
-                    <Flex gap="3" wrap="wrap" align="center">
+                <Flex
+                    justify="between"
+                    align={{ initial: "start", sm: "center" }}
+                    direction={{ initial: "column", sm: "row" }}
+                    gap="4"
+                    mt="4"
+                >
+                    <Flex gap="3" wrap="wrap" align={{ initial: "start", xs: "center" }} direction={{ initial: "column", xs: "row" }}>
                         <Flex direction="column" gap="2">
-                            <Button type="submit" color="blue" disabled={pending}>
+                            <Button size="3" type="submit" color="blue" disabled={pending}>
                                 <PaperPlaneIcon /> {pending ? "Wird gesendet…" : "E-Mail senden"}
                             </Button>
                             <Dialog.Root>
@@ -413,31 +423,27 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                                     </Box>
                                     <Flex justify="end" mt="4">
                                         <Dialog.Close>
-                                            <Button variant="soft" color="gray">Schließen</Button>
+                                            <Button size="3" variant="soft" color="gray">Schließen</Button>
                                         </Dialog.Close>
                                     </Flex>
                                 </Dialog.Content>
                             </Dialog.Root>
                         </Flex>
-                        <Button variant="soft" color="gray" asChild>
+                        <Button size="3" variant="soft" color="gray" asChild>
                             <Link href="/dashboard">
                                 <MinusIcon /> Abbrechen
                             </Link>
                         </Button>
                     </Flex>
-                    <Flex
-                        align="center"
-                        gap="2"
-                        style={{ marginLeft: "auto" }}
-                    >
+                    <Flex align="center" gap="2">
                         <input
                             type="checkbox"
                             id="mail-bcc-self"
                             name="bccToSelf"
                             value="on"
                             style={{
-                                width: 18,
-                                height: 18,
+                                width: 20,
+                                height: 20,
                                 cursor: "pointer",
                                 accentColor: "var(--accent-9)",
                             }}

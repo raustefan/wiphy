@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { adminCreateUser } from "@/lib/server/services/userService";
-import { Flex, Heading, Text, Button, Container, Card, TextField, Select, Box } from "@radix-ui/themes";
-import { ArrowLeftIcon, CheckIcon, MinusIcon } from "@radix-ui/react-icons";
+import { Flex, Text, Button, Container, Card, TextField, Select, Box } from "@radix-ui/themes";
+import { CheckIcon, MinusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { AppError } from "@/lib/server/errors";
@@ -12,6 +12,7 @@ import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
+import { DashboardPageHeader } from "../../DashboardPageHeader";
 
 async function createUserAction(formData: FormData) {
     "use server";
@@ -54,24 +55,16 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
     const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
     return (
-        <Box py="5" style={{ minHeight: "100%" }}>
+        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
-            <Container size="2">
-                <Flex justify="between" align="center" mb="4">
-                    <Box>
-                        <Text size="2" color="gray">
-                            Internbereich
-                        </Text>
-                        <Heading as="h1" size="6">Benutzer hinzufügen</Heading>
-                    </Box>
-                    <Button variant="soft" color="gray" asChild>
-                        <Link href="/dashboard">
-                            <ArrowLeftIcon /> Zurück zum Dashboard
-                        </Link>
-                    </Button>
-                </Flex>
+            <Container size="2" px={{ initial: "4", sm: "5" }}>
+                <DashboardPageHeader
+                    eyebrow="Internbereich"
+                    title="Benutzer hinzufügen"
+                    backHref="/dashboard"
+                />
 
                 <Card size="3">
                     {resolvedSearchParams?.error === "missing_fields" && (
@@ -89,30 +82,30 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                         <Flex direction="column" gap="3">
                             <label>
                                 <Text size="2" weight="bold">Vorname *</Text>
-                                <TextField.Root name="vorname" required />
+                                <TextField.Root name="vorname" size="3" required />
                             </label>
 
                             <label>
                                 <Text size="2" weight="bold">Nachname *</Text>
-                                <TextField.Root name="name" required />
+                                <TextField.Root name="name" size="3" required />
                             </label>
 
                             <label>
                                 <Text size="2" weight="bold">E-Mail *</Text>
-                                <TextField.Root name="email" type="email" required />
+                                <TextField.Root name="email" type="email" size="3" required />
                             </label>
 
                             <label>
                                 <Text size="2" weight="bold">Passwort *</Text>
-                                <TextField.Root name="password" type="password" required />
+                                <TextField.Root name="password" type="password" size="3" required />
                             </label>
 
-                            <Flex gap="3">
+                            <Flex gap="3" direction={{ initial: "column", sm: "row" }}>
                                 <Box flexGrow="1">
                                     <label>
                                         <Text size="2" weight="bold" mb="1" as="div">Rolle</Text>
-                                        <Select.Root name="role" defaultValue="MEMBER">
-                                            <Select.Trigger />
+                                        <Select.Root name="role" defaultValue="MEMBER" size="3">
+                                            <Select.Trigger style={{ width: "100%" }} />
                                             <Select.Content>
                                                 {ROLE_OPTIONS.map((o) => (
                                                     <Select.Item key={o.value} value={o.value}>
@@ -126,8 +119,8 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                                 <Box flexGrow="1">
                                     <label>
                                         <Text size="2" weight="bold" mb="1" as="div">Status</Text>
-                                        <Select.Root name="status" defaultValue="KEIN_MITGLIED">
-                                            <Select.Trigger />
+                                        <Select.Root name="status" defaultValue="KEIN_MITGLIED" size="3">
+                                            <Select.Trigger style={{ width: "100%" }} />
                                             <Select.Content>
                                                 {STATUS_OPTIONS.map((o) => (
                                                     <Select.Item key={o.value} value={o.value}>
@@ -140,11 +133,11 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                                 </Box>
                             </Flex>
 
-                            <Flex gap="3" mt="4">
-                                <Button type="submit">
+                            <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="4">
+                                <Button size="3" type="submit">
                                     <CheckIcon /> Hinzufügen
                                 </Button>
-                                <Button variant="soft" color="gray" asChild>
+                                <Button size="3" variant="soft" color="gray" asChild>
                                     <Link href="/dashboard">
                                         <MinusIcon /> Abbrechen
                                     </Link>

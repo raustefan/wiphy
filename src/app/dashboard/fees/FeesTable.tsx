@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -127,11 +127,11 @@ function CommentDialog({
           />
           <Flex gap="3" mt="4" justify="end">
             <AlertDialog.Cancel>
-              <Button variant="soft" color="gray" type="button">
+              <Button size="3" variant="soft" color="gray" type="button">
                 Abbrechen
               </Button>
             </AlertDialog.Cancel>
-            <Button type="submit" color="blue">
+            <Button size="3" type="submit" color="blue">
               Speichern
             </Button>
           </Flex>
@@ -233,7 +233,7 @@ function UserPaymentHistoryDialog({
 
         <Flex mt="4" justify="end">
           <AlertDialog.Action>
-            <Button variant="soft" color="gray">
+            <Button size="3" variant="soft" color="gray">
               Schließen
             </Button>
           </AlertDialog.Action>
@@ -254,6 +254,11 @@ export function FeesTable({
   const [commentUser, setCommentUser] = useState<FeesTableUser | null>(null);
   const [historyUser, setHistoryUser] = useState<FeesTableUser | null>(null);
   const [search, setSearch] = useState("");
+  const [revertConfirm, setRevertConfirm] = useState<{
+    form: HTMLFormElement;
+    label: string;
+  } | null>(null);
+  const bypassFormsRef = useRef<WeakSet<HTMLFormElement>>(new WeakSet());
 
   const router = useRouter();
   const pathname = usePathname();
@@ -331,11 +336,19 @@ export function FeesTable({
     e.stopPropagation();
   }
 
+  function confirmRevert() {
+    if (revertConfirm) {
+      bypassFormsRef.current.add(revertConfirm.form);
+      revertConfirm.form.requestSubmit();
+    }
+    setRevertConfirm(null);
+  }
+
   return (
     <>
       <Card mb="4" variant="surface">
-        <Flex justify="between" align="center" gap="3" wrap="wrap">
-          <Flex gap="4" align="center" wrap="wrap">
+        <Flex justify="between" align="center" gap="3" wrap="wrap" direction={{ initial: "column", sm: "row" }}>
+          <Flex gap="3" align="center" wrap="wrap" width={{ initial: "100%", sm: "auto" }}>
             <Flex gap="2" align="center">
               <CalendarIcon style={{ width: 16, height: 16, color: "var(--gray-9)" }} />
               <Text size="2" weight="medium">
@@ -357,7 +370,7 @@ export function FeesTable({
               placeholder="Suche nach Name, E-Mail oder ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 260 }}
+              style={{ width: "100%", maxWidth: 260 }}
             >
               <TextField.Slot>
                 <MagnifyingGlassIcon height="14" width="14" />
@@ -378,10 +391,10 @@ export function FeesTable({
                 name="year"
                 defaultValue={new Date().getFullYear() + 1}
                 style={{ width: 90 }}
-                size="1"
+                size="2"
               />
               <Tooltip content="Jahr für alle Mitglieder anlegen">
-                <IconButton type="submit" size="1" color="green" variant="soft">
+                <IconButton type="submit" size="2" color="green" variant="soft">
                   <PlusIcon />
                 </IconButton>
               </Tooltip>
@@ -392,26 +405,28 @@ export function FeesTable({
         {isAdmin && (
           <>
             <Separator my="3" size="4" />
-            <Flex justify="between" align="center" gap="3" wrap="wrap">
+            <Flex justify="between" align="center" gap="3" wrap="wrap" direction={{ initial: "column", sm: "row" }}>
               <Flex gap="2" align="center" wrap="wrap">
                 <Badge variant="soft" color={selectedIds.size > 0 ? "blue" : "gray"}>
                   {selectedIds.size} ausgewählt
                 </Badge>
-                <Button size="1" variant="outline" type="button" onClick={selectAllWithOpenFees}>
+                <Button size="2" variant="outline" type="button" onClick={selectAllWithOpenFees}>
                   Alle mit offenen Beiträgen
                 </Button>
                 {selectedIds.size > 0 && (
-                  <Button size="1" variant="ghost" type="button" onClick={clearSelection}>
+                  <Button size="2" variant="ghost" type="button" onClick={clearSelection}>
                     Auswahl leeren
                   </Button>
                 )}
               </Flex>
 
               <Button
+                size="3"
                 color="blue"
                 disabled={selectedIds.size === 0}
                 type="button"
                 onClick={() => setMailOpen(true)}
+                style={{ width: "100%", maxWidth: 260 }}
               >
                 <MessageSquare size={16} />
                 Erinnerung senden
@@ -522,7 +537,7 @@ export function FeesTable({
                           </Text>
                           <Tooltip content="Kommentar bearbeiten">
                             <IconButton
-                              size="1"
+                              size="2"
                               variant="ghost"
                               color="gray"
                               type="button"
@@ -535,7 +550,7 @@ export function FeesTable({
                       ) : (
                         <Tooltip content="Kommentar hinzufügen">
                           <IconButton
-                            size="1"
+                            size="2"
                             variant="soft"
                             color="gray"
                             type="button"
@@ -587,13 +602,13 @@ export function FeesTable({
                         action={updateFeeStatus}
                         onSubmit={(e) => {
                           // Extra confirmation only when reverting a paid fee to unpaid.
-                          if (
-                            paid &&
-                            !window.confirm(
-                              `Zahlung für ${user.vorname} ${user.name ?? ""} (${selectedYear}) wirklich als offen markieren?`,
-                            )
-                          ) {
+                          const form = e.currentTarget;
+                          if (paid && !bypassFormsRef.current.has(form)) {
                             e.preventDefault();
+                            setRevertConfirm({
+                              form,
+                              label: `${user.vorname} ${user.name ?? ""} (${selectedYear})`,
+                            });
                           }
                         }}
                       >
@@ -640,11 +655,11 @@ export function FeesTable({
                             step="0.01"
                             min="0"
                             defaultValue={beitrag}
-                            size="1"
-                            style={{ width: 72, textAlign: "right" }}
+                            size="2"
+                            style={{ width: 80, textAlign: "right" }}
                           />
                           <Tooltip content="Betrag speichern">
-                            <IconButton type="submit" size="1" variant="soft" color="blue">
+                            <IconButton type="submit" size="2" variant="soft" color="blue">
                               <CheckIcon />
                             </IconButton>
                           </Tooltip>
@@ -662,6 +677,30 @@ export function FeesTable({
           </Table.Body>
         </Table.Root>
       </ScrollArea>
+
+      <AlertDialog.Root
+        open={revertConfirm != null}
+        onOpenChange={(open) => {
+          if (!open) setRevertConfirm(null);
+        }}
+      >
+        <AlertDialog.Content maxWidth="420px">
+          <AlertDialog.Title>Zahlung als offen markieren?</AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="3">
+            Zahlung für {revertConfirm?.label} wirklich als offen markieren?
+          </AlertDialog.Description>
+          <Flex gap="3" justify="end">
+            <AlertDialog.Cancel>
+              <Button size="2" variant="soft" color="gray" type="button">
+                Abbrechen
+              </Button>
+            </AlertDialog.Cancel>
+            <Button size="2" color="red" type="button" onClick={confirmRevert}>
+              Als offen markieren
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
 
       <CommentDialog
         user={commentUser}

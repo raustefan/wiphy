@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button, Flex } from "@radix-ui/themes";
 import { EnvelopeClosedIcon, Pencil2Icon } from "@radix-ui/react-icons";
 import { EmailComposerDialog } from "@/components/EmailComposerDialog";
-import { DeleteUserButton } from "./DeleteUserButton";
 
 export type DashboardUserActionsUser = {
   id: string;
@@ -17,15 +16,11 @@ export type DashboardUserActionsUser = {
 type DashboardUserActionsProps = {
   user: DashboardUserActionsUser;
   isAdmin: boolean;
-  currentUserId: string;
-  deleteUserAction: (formData: FormData) => Promise<void>;
 };
 
 export function DashboardUserActions({
   user,
   isAdmin,
-  currentUserId,
-  deleteUserAction,
 }: DashboardUserActionsProps) {
   const [mailOpen, setMailOpen] = useState(false);
   const displayName = [user.vorname, user.name].filter(Boolean).join(" ") || null;
@@ -34,22 +29,15 @@ export function DashboardUserActions({
     <>
       <Flex gap="2" justify="end" wrap="wrap">
         {isAdmin && (
-          <Button size="1" variant="soft" type="button" onClick={() => setMailOpen(true)}>
+          <Button size="2" variant="soft" type="button" onClick={() => setMailOpen(true)}>
             <EnvelopeClosedIcon />
-
           </Button>
         )}
-        <Button size="1" variant="soft" asChild>
+        <Button size="2" variant="soft" asChild>
           <Link href={`/dashboard/users/${user.id}`}>
             <Pencil2Icon />
           </Link>
         </Button>
-        {isAdmin && user.id !== currentUserId && (
-          <form action={deleteUserAction}>
-            <input type="hidden" name="id" value={user.id} />
-            <DeleteUserButton />
-          </form>
-        )}
       </Flex>
 
       {isAdmin && (

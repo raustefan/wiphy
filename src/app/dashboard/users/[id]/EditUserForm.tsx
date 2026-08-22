@@ -551,11 +551,12 @@ export function EditUserForm({
                         </>
                     )}
 
-                    <Flex gap="3" mt="2">
-                        <Button type="submit">
+                    <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="2" wrap="wrap" align={{ initial: "stretch", xs: "center" }}>
+                        <Button size="3" type="submit">
                             <CheckIcon /> Speichern
                         </Button>
                         <Button
+                            size="3"
                             variant="soft"
                             color="gray"
                             type="button"
@@ -564,7 +565,7 @@ export function EditUserForm({
                             <ArrowLeftIcon /> Abbrechen
                         </Button>
                         {isDirty && (
-                            <Flex align="center" gap="2" ml="2">
+                            <Flex align="center" gap="2">
                                 <Info size={14} color="var(--amber-9)" />
                                 <Text size="1" color="amber">
                                     Ungespeicherte Änderungen
@@ -605,11 +606,11 @@ export function EditUserForm({
                     </Flex>
                     <Flex gap="3" justify="end" mt="2">
                         <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray" type="button">
+                            <Button size="3" variant="soft" color="gray" type="button">
                                 Abbrechen
                             </Button>
                         </AlertDialog.Cancel>
-                        <Button type="button" onClick={confirmAndSubmit}>
+                        <Button size="3" type="button" onClick={confirmAndSubmit}>
                             <CheckIcon /> Ja, Änderungen speichern
                         </Button>
                     </Flex>
@@ -626,12 +627,13 @@ export function EditUserForm({
                     </AlertDialog.Description>
                     <Flex gap="3" justify="end" mt="2">
                         <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray" type="button">
+                            <Button size="3" variant="soft" color="gray" type="button">
                                 Zurück zum Formular
                             </Button>
                         </AlertDialog.Cancel>
                         <AlertDialog.Action>
                             <Button
+                                size="3"
                                 color="red"
                                 type="button"
                                 onClick={() => {

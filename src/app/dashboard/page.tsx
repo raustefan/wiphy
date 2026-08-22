@@ -41,10 +41,7 @@ import {
     ArrowRight,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
-import { adminDeleteUser } from "@/lib/server/services/userService";
-import { revalidatePath } from "next/cache";
 import { DashboardUserActions } from "./DashboardUserActions";
-import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 import type { Status } from "@prisma/client";
@@ -69,18 +66,6 @@ function getStatusIcon(status?: Status | string) {
         default:
             return <Clock size={14} />;
     }
-}
-
-async function deleteUserAction(formData: FormData) {
-    "use server";
-    const { requireUser } = await import("@/lib/server/authz");
-    const currentUser = await requireUser();
-    const id = formData.get("id") as string;
-    if (currentUser.role !== "ADMIN" || !id) return;
-    if (currentUser.id === id) return; // Prevent self-deletion
-    await requireFeatureEnabledOrRedirect("USER_DELETION", "/dashboard");
-    await adminDeleteUser(id, currentUser.role);
-    revalidatePath("/dashboard");
 }
 
 export default async function DashboardPage() {
@@ -136,56 +121,46 @@ export default async function DashboardPage() {
                 </Flex>
 
                 {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
-                <Button
-                    asChild
-                    mb={{ initial: "5", sm: "6" }}
-                    style={{
-                        display: "block",
-                        borderRadius: "var(--radius-4)",
-                        padding: "var(--space-5)",
-                        background:
-                            "linear-gradient(135deg, var(--accent-9), var(--accent-10))",
-                        boxShadow: "var(--shadow-3)",
-                    }}
-                >
-                    <Link href={`/dashboard/users/${currentUser.id}`}>
+                <Box asChild mb={{ initial: "5", sm: "6" }}>
+                    <Link
+                        href={`/dashboard/users/${currentUser.id}`}
+                        style={{
+                            display: "block",
+                            borderRadius: "var(--radius-4)",
+                            padding: "var(--space-4) var(--space-5)",
+                            background:
+                                "linear-gradient(135deg, var(--accent-9), var(--accent-10))",
+                            boxShadow: "var(--shadow-3)",
+                            width: "100%",
+                            textDecoration: "none",
+                            color: "inherit",
+                            cursor: "pointer",
+                        }}
+                    >
                         <Flex
-                            justify="between"
-                            align={{ initial: "start", sm: "center" }}
-                            direction={{ initial: "column", sm: "row" }}
-                            gap="4"
+                            direction="column"
+                            gap="3"
+                            width="100%"
                         >
-                            <Flex direction="column" gap="1">
-                                <Flex align="center" gap="2">
-                                    <UserCog size={18} color="white" />
-                                    <Text size="2" weight="medium" style={{ color: "white", opacity: 0.85 }}>
-                                        Mitgliederselbstverwaltung
-                                    </Text>
-                                </Flex>
-                                <Heading as="h2" size={{ initial: "5", sm: "6" }} style={{ color: "white" }}>
-                                    Verwalte deine Mitgliedsdaten
-                                </Heading>
-                                <Text size="2" style={{ color: "white", opacity: 0.85, maxWidth: 520 }}>
-                                    Persönliche Daten, Kontakt, Studium und Beruf jederzeit
-                                    selbst einsehen und aktualisieren.
+                            <Flex align="center" gap="2">
+                                <UserCog size={18} color="white" />
+                                <Text size="2" weight="medium" style={{ color: "white", opacity: 0.85 }}>
+                                    Mitgliederselbstverwaltung
                                 </Text>
                             </Flex>
-                            <Flex
-                                align="center"
-                                gap="2"
-                                style={{
-                                    backgroundColor: "white",
-                                    color: "var(--accent-9)",
-                                    borderRadius: "var(--radius-3)",
-                                    padding: "var(--space-2) var(--space-4)",
-                                    fontWeight: 500,
-                                }}
-                            >
+                            <Heading as="h2" size={{ initial: "4", sm: "5" }} style={{ color: "white", margin: 0 }}>
+                                Verwalte deine Mitgliedsdaten
+                            </Heading>
+                            <Text size="2" style={{ color: "white", opacity: 0.85 }}>
+                                Persönliche Daten, Kontakt, Studium und Beruf jederzeit
+                                selbst einsehen und aktualisieren.
+                            </Text>
+                            <Flex align="center" gap="2" style={{ color: "white", marginTop: "var(--space-2)" }}>
                                 Zu meinem Profil <ArrowRight size={16} />
                             </Flex>
                         </Flex>
                     </Link>
-                </Button>
+                </Box>
 
                 {/* ---------- Profile summary ---------- */}
                 <Card size="3" mb={{ initial: "5", sm: "6" }}>
@@ -242,32 +217,32 @@ export default async function DashboardPage() {
                                 </Text>
                             </Flex>
 
-                            <Grid columns={{ initial: "2", xs: "4" }} gap="2">
-                                <Button size="2" variant="soft" asChild>
+                            <Grid columns={{ initial: "1", xs: "2", sm: "3" }} gap="3">
+                                <Button size="3" variant="soft" asChild>
                                     <Link href="/dashboard/blog">
                                         <BookOpen size={16} />
                                         Blog
                                     </Link>
                                 </Button>
-                                <Button size="2" variant="soft" asChild>
+                                <Button size="3" variant="soft" asChild>
                                     <Link href="/dashboard/users/new">
                                         <User size={16} />
                                         Neuer User
                                     </Link>
                                 </Button>
-                                <Button size="2" variant="soft" asChild>
+                                <Button size="3" variant="soft" asChild>
                                     <Link href="/dashboard/mail">
                                         <Send size={16} />
                                         Rundmail
                                     </Link>
                                 </Button>
-                                <Button size="2" variant="soft" asChild>
+                                <Button size="3" variant="soft" asChild>
                                     <Link href="/dashboard/fees">
                                         <IdCard size={16} />
                                         Beiträge
                                     </Link>
                                 </Button>
-                                <Button size="2" variant="soft" asChild>
+                                <Button size="3" variant="soft" asChild>
                                     <Link href="/dashboard/feature-flags">
                                         <ToggleLeft size={16} />
                                         Feature Flags
@@ -464,8 +439,6 @@ export default async function DashboardPage() {
                                                     name: u.name,
                                                 }}
                                                 isAdmin={isAdmin}
-                                                currentUserId={currentUser.id}
-                                                deleteUserAction={deleteUserAction}
                                             />
                                         </Table.Cell>
                                     </Table.Row>

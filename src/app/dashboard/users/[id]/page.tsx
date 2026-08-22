@@ -1,18 +1,23 @@
 import { redirect } from "next/navigation";
 import { assertCanEditUser, requireUser } from "@/lib/server/authz";
 import { AppError } from "@/lib/server/errors";
-import { getEditableUser, updateUserProfile } from "@/lib/server/services/userService";
+import {
+    adminDeleteUser,
+    getEditableUser,
+    updateUserProfile,
+} from "@/lib/server/services/userService";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import { Flex, Heading, Text, Button, Container, Card, Box } from "@radix-ui/themes";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { Text, Container, Card, Box } from "@radix-ui/themes";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 import { EditUserForm } from "./EditUserForm";
+import { DeleteMemberSection } from "./DeleteMemberSection";
 import { EmailChangeDialog } from "../../EmailChangeDialog";
+import { DashboardPageHeader } from "../../DashboardPageHeader";
 
 async function updateUser(formData: FormData) {
     "use server";
@@ -118,6 +123,19 @@ async function updateUser(formData: FormData) {
     }
 }
 
+async function deleteUserAction(formData: FormData) {
+    "use server";
+    const currentUser = await requireUser();
+    const id = formData.get("id");
+    const idStr = typeof id === "string" ? id : "";
+    if (currentUser.role !== "ADMIN" || !idStr) return;
+    if (currentUser.id === idStr) return; // Selbstlöschung ist nicht erlaubt
+    await requireFeatureEnabledOrRedirect("USER_DELETION", `/dashboard/users/${idStr}`);
+    await adminDeleteUser(idStr, currentUser.role);
+    revalidatePath("/dashboard");
+    redirect("/dashboard");
+}
+
 export default async function EditUserPage({
     params,
     searchParams,
@@ -139,37 +157,25 @@ export default async function EditUserPage({
     const user = await getEditableUser(resolvedParams.id);
     if (!user) return <Text>User nicht gefunden</Text>;
 
+    const canDelete = isAdmin && currentUser.id !== resolvedParams.id;
+    const displayName = [user.vorname, user.name].filter(Boolean).join(" ") || user.email;
+
     return (
-        <Box py="5" style={{ minHeight: "100%" }}>
+        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
             <Suspense fallback={null}>
                 <EmailChangeDialog />
             </Suspense>
-            <Container size="2">
-                <Flex justify="between" align="center" mb="4">
-                    <Box>
-                        <Text size="2" color="gray">
-                            Mitgliederselbstverwaltung
-                        </Text>
-                        <Heading as="h1" size="6">
-                            {isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
-                        </Heading>
-                        {!isAdmin && (
-                            <Text size="2" color="gray">
-                                Halte deine persönlichen Angaben aktuell.
-                            </Text>
-                        )}
-                    </Box>
-                    <Button variant="soft" color="gray" asChild>
-                        {/* Plain anchor (not next/link) so an unsaved-changes warning
-                            reliably fires via beforeunload when leaving this page. */}
-                        <a href="/dashboard">
-                            <ArrowLeftIcon /> Zurück zum Dashboard
-                        </a>
-                    </Button>
-                </Flex>
+            <Container size="2" px={{ initial: "4", sm: "5" }}>
+                <DashboardPageHeader
+                    eyebrow="Mitgliederselbstverwaltung"
+                    title={isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
+                    description={!isAdmin ? "Halte deine persönlichen Angaben aktuell." : undefined}
+                    backHref="/dashboard"
+                    backAsPlainAnchor
+                />
 
                 <Card size="3">
                     {resolvedSearchParams?.validationError === "1" && (
@@ -196,6 +202,15 @@ export default async function EditUserPage({
 
                     <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />
                 </Card>
+
+                {canDelete && (
+                    <DeleteMemberSection
+                        userId={user.id}
+                        displayName={displayName}
+                        email={user.email}
+                        deleteAction={deleteUserAction}
+                    />
+                )}
             </Container>
         </Box>
     );

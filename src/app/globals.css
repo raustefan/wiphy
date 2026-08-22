@@ -53,17 +53,17 @@ body {
 .dashboard-section-icon,
 .dashboard-card-icon {
   flex: 0 0 auto;
-  color: rgba(15, 23, 42, 0.62);
+  color: var(--gray-11);
 }
 
 .dashboard-table-icon {
   flex: 0 0 auto;
-  color: rgba(15, 23, 42, 0.56);
+  color: var(--gray-10);
 }
 
 .dashboard-cell-icon {
   flex: 0 0 auto;
-  color: rgba(15, 23, 42, 0.46);
+  color: var(--gray-9);
 }
 
 .dashboard-cell-icon-top {
@@ -77,10 +77,10 @@ body {
 .dashboard-admin-button {
   min-width: 180px;
   justify-content: center;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
-  color: rgb(15, 23, 42);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--gray-a5);
+  background: var(--color-panel-solid);
+  color: var(--gray-12);
+  box-shadow: 0 10px 24px var(--gray-a3);
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -91,18 +91,18 @@ body {
 
 .dashboard-admin-button:hover {
   transform: translateY(-2px);
-  border-color: rgba(14, 116, 144, 0.24);
-  background: linear-gradient(180deg, rgba(240, 249, 255, 1), rgba(236, 253, 245, 0.98));
-  box-shadow: 0 16px 34px rgba(14, 116, 144, 0.14);
+  border-color: var(--accent-a6);
+  background: var(--accent-a3);
+  box-shadow: 0 16px 34px var(--accent-a4);
 }
 
 .dashboard-admin-button:focus-visible {
-  outline: 2px solid rgba(14, 116, 144, 0.3);
+  outline: 2px solid var(--accent-a6);
   outline-offset: 2px;
 }
 
 .dashboard-fee-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.92));
+  background: var(--color-panel-solid);
 }
 
 .dashboard-table th {
@@ -160,12 +160,12 @@ body {
 .markdown-content blockquote {
   border-left: 4px solid var(--accent-6);
   padding-left: 1rem;
-  color: #666;
+  color: var(--gray-11);
   font-style: italic;
 }
 
 .markdown-content pre {
-  background-color: #f5f5f5;
+  background-color: var(--gray-a3);
   padding: 1rem;
   border-radius: 6px;
   overflow-x: auto;
@@ -173,7 +173,7 @@ body {
 }
 
 .markdown-content code {
-  background-color: #f1f1f1;
+  background-color: var(--gray-a3);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-size: 0.9em;
@@ -194,19 +194,19 @@ body {
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--gray-a5);
   padding: 0.5rem 0.75rem;
 }
 
 .markdown-content th {
-  background-color: #f8fafc;
+  background-color: var(--gray-a3);
   font-weight: 600;
   text-align: left;
 }
 
 .markdown-content hr {
   border: 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--gray-a5);
   margin: 2rem 0;
 }
 

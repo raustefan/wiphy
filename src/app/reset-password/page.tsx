@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
     Container,
     Card,
@@ -10,7 +11,6 @@ import {
     Text,
     TextField,
     Button,
-    Link,
 } from "@radix-ui/themes";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 
