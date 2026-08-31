@@ -41,7 +41,7 @@ const FRAMES_PER_STEP = 4;
 const VOLATILITIES = [
   { label: "σ = 10 %", value: 0.1 },
   { label: "σ = 20 %", value: 0.2 },
-  { label: "σ = 40 %", value: 0.4 },
+  { label: "σ = 90 %", value: 0.9 },
 ];
 
 /** Standardnormalverteilte Zufallszahl (Box–Muller). */
@@ -363,7 +363,7 @@ export default function MarketDiffusion() {
           </button>
         ))}
         <span style={{ width: 12 }} />
-        {[0, 12, 24].map((n) => (
+        {[0, 3, 5].map((n) => (
           <button
             key={n}
             type="button"
