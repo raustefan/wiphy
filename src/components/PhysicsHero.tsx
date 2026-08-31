@@ -2,12 +2,48 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useAppearance } from "@/components/AppThemeProvider";
+import { paletteFor, rgba } from "@/lib/palette";
 
-type P = { x: number; y: number; z: number; ph: number };
+/**
+ * Gitterschwingungen (Phononen) als Hintergrundfeld.
+ *
+ * Die Atome sitzen auf einem quadratischen Gitter mit Konstante a und werden
+ * von drei überlagerten Normalmoden ausgelenkt:
+ *
+ *   u(r, t) = Σ_i  A_i ê_i cos(k_i · r − ω_i t + φ_i)
+ *
+ * Die Frequenzen folgen dabei nicht willkürlich, sondern der Dispersions-
+ * relation der linearen Kette mit nächster-Nachbar-Kopplung:
+ *
+ *   ω(k) = 2 √(K/m) · √( sin²(k_x a / 2) + sin²(k_y a / 2) )
+ *
+ * Kurzwellige Moden schwingen dadurch schneller als langwellige, und am Rand
+ * der Brillouin-Zone (k = π/a) läuft die Gruppengeschwindigkeit gegen null —
+ * genau das erzeugt das charakteristische Flirren im Bild.
+ *
+ * Der Zeiger regt zusätzlich ein lokales Wellenpaket an, das mit 1/r² abklingt.
+ */
+
+type Mode = {
+  kx: number;
+  ky: number;
+  omega: number;
+  phase: number;
+  amp: number;
+  /** Polarisationsrichtung ê (Einheitsvektor). */
+  ex: number;
+  ey: number;
+};
+
+const LATTICE_SPACING = 44;
+/** √(K/m) — setzt die Zeitskala der Schwingung. */
+const OMEGA_0 = 0.9;
 
 export default function PhysicsHero() {
   const ref = useRef<HTMLCanvasElement>(null);
-  const mouse = useRef({ x: 0, y: 0, active: false });
+  const pointer = useRef({ x: 0, y: 0, strength: 0 });
+  const { appearance } = useAppearance();
 
   useEffect(() => {
     const canvas = ref.current;
@@ -15,27 +51,43 @@ export default function PhysicsHero() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const colors = paletteFor(appearance);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let w = 0;
     let h = 0;
     let dpr = 1;
     let raf = 0;
+    let t = 0;
 
-    const isMobile = () => w < 640;
-    const N = () => (isMobile() ? 32 : 60);
+    let cols = 0;
+    let rows = 0;
+    let originX = 0;
+    let originY = 0;
 
-    let pts: P[] = [];
-    const seed = () => {
-      pts = Array.from({ length: N() }, () => ({
-        x: Math.random() * 2 - 1,
-        y: Math.random() * 2 - 1,
-        z: Math.random() * 2 - 1,
-        ph: Math.random() * Math.PI * 2,
-      }));
-    };
+    // Drei Moden mit zufälligem k im ersten Brillouin-Zonen-Viertel.
+    const modes: Mode[] = Array.from({ length: 3 }, (_, i) => {
+      const kx = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING;
+      const ky = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING;
+      const omega =
+        2 *
+        OMEGA_0 *
+        Math.hypot(
+          Math.sin((kx * LATTICE_SPACING) / 2),
+          Math.sin((ky * LATTICE_SPACING) / 2),
+        );
+      const angle = Math.random() * Math.PI * 2;
+      return {
+        kx,
+        ky,
+        omega,
+        phase: Math.random() * Math.PI * 2,
+        // Langwellige Moden tragen mehr Amplitude (∝ 1/ω, thermisches Gewicht).
+        amp: (5.5 - i * 1.1) / (0.6 + omega),
+        ex: Math.cos(angle),
+        ey: Math.sin(angle),
+      };
+    });
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -44,7 +96,11 @@ export default function PhysicsHero() {
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
+
+      cols = Math.ceil(w / LATTICE_SPACING) + 2;
+      rows = Math.ceil(h / LATTICE_SPACING) + 2;
+      originX = (w - (cols - 1) * LATTICE_SPACING) / 2;
+      originY = (h - (rows - 1) * LATTICE_SPACING) / 2;
     };
 
     resize();
@@ -53,82 +109,101 @@ export default function PhysicsHero() {
 
     const onMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouse.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.current.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      mouse.current.active = true;
+      pointer.current.x = e.clientX - rect.left;
+      pointer.current.y = e.clientY - rect.top;
+      pointer.current.strength = 1;
     };
     const onLeave = () => {
-      mouse.current.active = false;
+      pointer.current.strength = 0;
     };
 
     canvas.addEventListener("mousemove", onMove);
     canvas.addEventListener("mouseleave", onLeave);
 
-    const accent = "99, 145, 255";
-    let t = 0;
+    // Auslenkung u(r, t) eines Gitterplatzes.
+    const displace = (x0: number, y0: number, out: { x: number; y: number }) => {
+      let ux = 0;
+      let uy = 0;
+      for (const m of modes) {
+        const arg = m.kx * x0 + m.ky * y0 - m.omega * t + m.phase;
+        const s = Math.cos(arg) * m.amp;
+        ux += s * m.ex;
+        uy += s * m.ey;
+      }
 
-    // gedämpfte Trägheit für Maus-Einfluss -> ruhige Bewegung
-    let tiltX = 0;
-    let tiltY = 0;
+      // Lokales Wellenpaket um den Zeiger: radiale Auslenkung ∝ sin(kr − ωt)/(1 + r²).
+      if (pointer.current.strength > 0.01) {
+        const dx = x0 - pointer.current.x;
+        const dy = y0 - pointer.current.y;
+        const r = Math.hypot(dx, dy) + 1e-3;
+        const envelope = 1 / (1 + (r / 90) ** 2);
+        const wave = Math.sin(r * 0.055 - t * 2.2) * 16 * envelope * pointer.current.strength;
+        ux += (dx / r) * wave;
+        uy += (dy / r) * wave;
+      }
+
+      out.x = ux;
+      out.y = uy;
+    };
 
     const draw = () => {
-      t += reduce ? 0.0008 : 0.0014; // deutlich langsamer als vorher
+      t += reduce ? 0.004 : 0.011;
+      pointer.current.strength *= 0.985;
       ctx.clearRect(0, 0, w, h);
 
-      const cx = w / 2;
-      const cy = h / 2;
-      const scale = Math.min(w, h) * 0.4;
-      const fov = 2.8;
+      // Alle Positionen einmal berechnen, danach Bindungen und Atome zeichnen.
+      const px = new Float32Array(cols * rows);
+      const py = new Float32Array(cols * rows);
+      const amp = new Float32Array(cols * rows);
+      const u = { x: 0, y: 0 };
 
-      // sanftes Nachlaufen (easing) Richtung Mausposition
-      const targetX = mouse.current.active ? mouse.current.y * 0.35 : 0;
-      const targetY = mouse.current.active ? mouse.current.x * 0.35 : 0;
-      tiltX += (targetX - tiltX) * 0.03;
-      tiltY += (targetY - tiltY) * 0.03;
-
-      const cosY = Math.cos(t + tiltY);
-      const sinY = Math.sin(t + tiltY);
-      const cosX = Math.cos(t * 0.5 + tiltX);
-      const sinX = Math.sin(t * 0.5 + tiltX);
-
-      const proj = pts.map((p) => {
-        const osc = 1 + Math.sin(t * 1.2 + p.ph) * 0.05;
-        const x0 = p.x * osc;
-        const y0 = p.y * osc;
-        const z0 = p.z * osc;
-
-        const x1 = x0 * cosY - z0 * sinY;
-        const z1 = x0 * sinY + z0 * cosY;
-        const y1 = y0 * cosX - z1 * sinX;
-        const z2 = y0 * sinX + z1 * cosX;
-
-        const k = fov / (fov + z2);
-        return { sx: cx + x1 * scale * k, sy: cy + y1 * scale * k, k };
-      });
-
-      const maxD = isMobile() ? 65 : 85;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < proj.length; i++) {
-        for (let j = i + 1; j < proj.length; j++) {
-          const dx = proj[i].sx - proj[j].sx;
-          const dy = proj[i].sy - proj[j].sy;
-          const d = Math.hypot(dx, dy);
-          if (d > maxD) continue;
-          ctx.strokeStyle = `rgba(${accent}, ${(1 - d / maxD) * 0.28})`;
-          ctx.beginPath();
-          ctx.moveTo(proj[i].sx, proj[i].sy);
-          ctx.lineTo(proj[j].sx, proj[j].sy);
-          ctx.stroke();
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          const x0 = originX + i * LATTICE_SPACING;
+          const y0 = originY + j * LATTICE_SPACING;
+          displace(x0, y0, u);
+          const idx = j * cols + i;
+          px[idx] = x0 + u.x;
+          py[idx] = y0 + u.y;
+          amp[idx] = Math.hypot(u.x, u.y);
         }
       }
 
-      proj.forEach((p) => {
-        const r = Math.max(0.6, p.k * (isMobile() ? 1.5 : 2));
+      // Bindungen: Deckkraft folgt der Dehnung |Δu| gegenüber der Ruhelage.
+      ctx.lineWidth = 1;
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          const idx = j * cols + i;
+          for (const [di, dj] of [
+            [1, 0],
+            [0, 1],
+          ] as const) {
+            const ni = i + di;
+            const nj = j + dj;
+            if (ni >= cols || nj >= rows) continue;
+            const nIdx = nj * cols + ni;
+            const d = Math.hypot(px[nIdx] - px[idx], py[nIdx] - py[idx]);
+            const strain = (d - LATTICE_SPACING) / LATTICE_SPACING;
+            const a = Math.min(0.5, Math.abs(strain) * 1.5 + 0.06);
+            // Dehnung teal, Stauchung ruby — das Feld zeigt seine eigene Spannung.
+            ctx.strokeStyle = rgba(strain > 0 ? colors.physics : colors.market, a);
+            ctx.beginPath();
+            ctx.moveTo(px[idx], py[idx]);
+            ctx.lineTo(px[nIdx], py[nIdx]);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Atome.
+      for (let idx = 0; idx < px.length; idx++) {
+        const a = Math.min(1, 0.25 + amp[idx] / 14);
+        const r = 1.1 + Math.min(2.2, amp[idx] / 7);
         ctx.beginPath();
-        ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${accent}, ${Math.min(1, p.k * 0.7)})`;
+        ctx.arc(px[idx], py[idx], r, 0, Math.PI * 2);
+        ctx.fillStyle = rgba(colors.physics, a * 0.8);
         ctx.fill();
-      });
+      }
 
       raf = requestAnimationFrame(draw);
     };
@@ -141,7 +216,7 @@ export default function PhysicsHero() {
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseleave", onLeave);
     };
-  }, []);
+  }, [appearance]);
 
   return (
     <canvas
@@ -153,7 +228,7 @@ export default function PhysicsHero() {
         width: "100%",
         height: "100%",
         display: "block",
-        opacity: 0.8,
+        opacity: 0.85,
       }}
     />
   );

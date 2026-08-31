@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import {
-  Badge,
   Box,
   Button,
   Card,
@@ -8,56 +7,52 @@ import {
   Flex,
   Grid,
   Heading,
+  Separator,
   Text,
 } from "@radix-ui/themes";
 import Link from "next/link";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { ArrowRight, CalendarDays, PenLine } from "lucide-react";
 import PhysicsHero from "@/components/PhysicsHero";
 import QuantumOscillator from "@/components/QuantumOscillator";
-import RandomWalkField from "@/components/RandomWalkField";
-import UncertaintyPrinciple from "@/components/UncertaintyPrinciple";
-import DoubleSlitExperiment from "@/components/DoubleSlitExperiment";
-import EntropyDiffusion from "@/components/EntropyDiffusion";
+import MarketDiffusion from "@/components/MarketDiffusion";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
-import { Calendar, User } from 'lucide-react';
 
-const demoSims = [
-  { title: "Quantenharmonischer Oszillator", component: QuantumOscillator },
-  { title: "Brownsche Bewegung & Random Walk", component: RandomWalkField },
-  { title: "Heisenbergsche Unschärferelation", component: UncertaintyPrinciple },
-  { title: "Doppelspaltexperiment", component: DoubleSlitExperiment },
-  // { title: "Gas im Kasten — Entropie", component: EntropyDiffusion },
-];
-
-const features = [
+const pillars = [
   {
+    index: "01",
     title: "Netzwerk fürs Leben",
-    body: "Vom ersten Semester bis in die Forschung oder Führungsetage: Stammtische, Afterwork-Drinks und Exkursionen halten den Kontakt zwischen Studierenden, Absolvent:innen und Lehrenden lebendig.",
+    body:
+      "Vom ersten Semester bis in die Forschung oder Führungsetage: Stammtische, Afterwork-Drinks und Exkursionen halten den Kontakt zwischen Studierenden, Absolvent:innen und Lehrenden lebendig.",
   },
   {
+    index: "02",
     title: "Physik trifft Praxis",
-    body: "Sondervorlesungen und Gastvorträge aus Industrie, Forschung und Finanzwesen zeigen, wie sich physikalische Methoden – von statistischer Mechanik bis Modellbildung – auf reale Probleme übertragen lassen.",
+    body:
+      "Sondervorlesungen und Gastvorträge aus Industrie, Forschung und Finanzwesen zeigen, wie sich physikalische Methoden — von statistischer Mechanik bis Modellbildung — auf reale Probleme übertragen lassen.",
   },
   {
+    index: "03",
     title: "Digitales Mitgliederportal",
-    body: "Ein geschützter Bereich mit Mitgliedersuche, Profilen und internen Neuigkeiten hält das Netzwerk auch zwischen den Veranstaltungen zusammen.",
+    body:
+      "Ein geschützter Bereich mit Mitgliedersuche, Profilen und internen Neuigkeiten hält das Netzwerk auch zwischen den Veranstaltungen zusammen.",
   },
 ];
 
-const physicsFacts = [
-  {
-    k: "Statistische Physik",
-    v: "Von der Brownschen Bewegung zur Modellierung von Finanzmärkten – Fluktuationen und Zufallsprozesse sind das gemeinsame Werkzeug.",
-  },
-  {
-    k: "Ökonophysik",
-    v: "Methoden aus Thermodynamik und Vielteilchenphysik werden auf ökonomische Systeme mit vielen wechselwirkenden Akteuren angewendet.",
-  },
-  {
-    k: "Mathematische Modelle",
-    v: "Differentialgleichungen, Wahrscheinlichkeitstheorie und numerische Simulation bilden das Rückgrat quantitativer Analyse.",
-  },
+const heroMetrics = [
+  { value: "1967", label: "Universität Ulm" },
+  { value: "2004", label: "Verein gegründet" },
+  { value: "e. V.", label: "gemeinnützig" },
 ];
+
+/** Kleiner Kapitelkopf im Stil einer Laborheft-Seitenmarke. */
+function SectionMarker({ index, label }: { index: string; label: string }) {
+  return (
+    <div className="section-marker">
+      <span className="marker-index">{index}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
 
 export default async function HomePage() {
   const session = await auth();
@@ -66,277 +61,404 @@ export default async function HomePage() {
 
   return (
     <Box>
-      {/* ---------- Hero ---------- */}
-      <Box
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          borderRadius: "var(--radius-5)",
-          marginBottom: "48px",
-          background:
-            "radial-gradient(120% 120% at 50% 0%, var(--accent-4) 0%, var(--accent-3) 45%, var(--color-panel-solid) 100%)",
-          border: "1px solid var(--accent-6)",
-        }}
-      >
-        <PhysicsHero />
+      {/* ═══════════════════ Hero ═══════════════════ */}
+      <Container size="4" px="0">
+        <Box className="hero">
+          <PhysicsHero />
+          <div className="hero-veil" aria-hidden="true" />
 
-        <Box
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(70% 60% at 50% 45%, var(--color-background) 0%, transparent 75%)",
-            opacity: 0.72,
-            pointerEvents: "none",
-          }}
-        />
-
-        <Container size="3" px="4" style={{ position: "relative" }}>
-          <Flex
-            direction="column"
-            align="center"
-            gap="5"
-            py={{ initial: "8", sm: "9" }}
-            style={{ textAlign: "center" }}
-          >
-            <Heading
-              as="h1"
-              size={{ initial: "8", sm: "9" }}
-              style={{ letterSpacing: "-0.02em", lineHeight: 1.08 }}
-            >
-              <span style={{ fontFamily: "var(--font-serif)" }}>
-                WirtschaftsPhysik
-                <br />
-                Alumni e.V.
-              </span>
-            </Heading>
-
-            <Text
-              size={{ initial: "3", sm: "5" }}
-              color="gray"
-              style={{ maxWidth: "640px", lineHeight: 1.65 }}
-            >
-              Wir sind ein gemeinnütziger Verein für Physik- und
-              Wirtschaftsphysik-Alumni sowie Studierende der Universität Ulm.
-              Im Zentrum steht die Physik – ihre Methoden der statistischen
-              Mechanik, Modellbildung und Datenanalyse, angewendet auf
-              wirtschaftliche Systeme.
-            </Text>
-
+          <Container size="3" px="5" style={{ position: "relative" }}>
             <Flex
-              gap="3"
-              direction={{ initial: "column", xs: "row" }}
-              width={{ initial: "100%", xs: "50%" }}
-              justify="center"
+              direction="column"
+              align="center"
+              gap="6"
+              py={{ initial: "8", sm: "9" }}
+              style={{ textAlign: "center" }}
             >
-              <Button size="4" asChild style={{ width: "100%" }}>
-                <Link href="/blog">Neuigkeiten &amp; Blog</Link>
-              </Button>
+              <Text className="eyebrow" style={{ color: "rgb(var(--physics))" }}>
+                Universität Ulm · Alumni &amp; Studierende
+              </Text>
 
-              <Button
-                size="4"
-                variant="soft"
-                color="gray"
-                asChild
-                style={{ width: "100%" }}
+              <Heading
+                as="h1"
+                size={{ initial: "8", sm: "9" }}
+                className="display-title"
               >
-                <Link href={session ? "/dashboard" : "/login"}>
-                  {session ? "Zum Dashboard" : "Mitgliederbereich"}
-                </Link>
-              </Button>
-            </Flex>
-          </Flex>
-        </Container>
-      </Box>
+                Wirtschafts<span className="grad-text">Physik</span>
+                <br />
+                Alumni e.&nbsp;V.
+              </Heading>
 
-      {/* ---------- Features ---------- */}
-      <Container size="4" px="4" mb="9">
-        <Flex direction="column" align="center" gap="2" mb="6">
-          <Text className="eyebrow" size="2" color="blue" weight="medium">
-            Was der Verein leistet
-          </Text>
-          <Heading as="h2" size={{ initial: "6", sm: "7" }} align="center">
-            Drei Säulen, ein Netzwerk
-          </Heading>
-        </Flex>
+              <Text
+                size={{ initial: "3", sm: "4" }}
+                color="gray"
+                style={{ maxWidth: 620, lineHeight: 1.7 }}
+              >
+                Ein gemeinnütziger Verein für Physik- und
+                Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die{" "}
+                <span className="voice">Physik</span> — ihre Methoden der
+                statistischen Mechanik, Modellbildung und Datenanalyse,
+                angewendet auf wirtschaftliche Systeme.
+              </Text>
 
-        <Grid columns={{ initial: "1", sm: "3" }} gap="4">
-          {features.map((f) => (
-            <Card key={f.title} size="3" className="feature-card">
-              <Flex direction="column" gap="3" height="100%">
-                <Heading as="h3" size="4">{f.title}</Heading>
-                <Text color="gray" size="2" style={{ lineHeight: 1.6 }}>
-                  {f.body}
-                </Text>
+              <Flex
+                gap="3"
+                direction={{ initial: "column", xs: "row" }}
+                justify="center"
+                width={{ initial: "100%", xs: "auto" }}
+              >
+                <Button size="4" radius="full" asChild>
+                  <Link href="/blog">Neuigkeiten &amp; Blog</Link>
+                </Button>
+                <Button
+                  size="4"
+                  radius="full"
+                  variant="soft"
+                  color="gray"
+                  highContrast
+                  asChild
+                >
+                  <Link href={session ? "/dashboard" : "/login"}>
+                    {session ? "Zum Dashboard" : "Mitgliederbereich"}
+                  </Link>
+                </Button>
               </Flex>
-            </Card>
-          ))}
-        </Grid>
+
+              <Flex gap="0" mt="2" wrap="wrap" justify="center">
+                {heroMetrics.map((metric) => (
+                  <div key={metric.label} className="hero-metric">
+                    <span className="hero-metric-value">{metric.value}</span>
+                    <span className="hero-metric-label">{metric.label}</span>
+                  </div>
+                ))}
+              </Flex>
+            </Flex>
+          </Container>
+        </Box>
       </Container>
 
-      {/* ---------- Physik im Fokus ---------- */}
-      <Container size="4" px="4" mb="9">
-        <Card size={{ initial: "3", sm: "4" }}>
-          <Flex direction="column" gap="5">
-            <Flex direction="column" gap="2">
-              <Text className="eyebrow" size="2" color="blue" weight="medium">
-                Warum Physik?
-              </Text>
-              <Heading as="h2" size={{ initial: "5", sm: "6" }}>
-                Physikalische Methoden für komplexe Systeme
-              </Heading>
-              <Text color="gray" size="3" style={{ maxWidth: "640px" }}>
-                Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
-                Akteuren – ganz ähnlich wie Teilchensysteme in der Physik.
-                Die gleichen mathematischen Werkzeuge, die Diffusion,
-                Phasenübergänge oder Vielteilchendynamik beschreiben, lassen
-                sich auf Märkte, Netzwerke und Risiko übertragen.
-              </Text>
-            </Flex>
+      {/* ═══════════════════ Der Verein ═══════════════════ */}
+      <Container size="4" px="0">
+        <section className="section reveal">
+          <SectionMarker index="01" label="Der Verein" />
 
-            <Grid columns={{ initial: "1", sm: "3" }} gap="4">
-              {physicsFacts.map((row) => (
+          <Flex direction="column" gap="3" mb="6" style={{ maxWidth: 720 }}>
+            <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
+              Drei Säulen, ein Netzwerk
+            </Heading>
+            <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+              Was in Ulm im Hörsaal beginnt, hört dort nicht auf. Der Verein
+              hält die Verbindung zwischen Studium, Forschung und Berufspraxis
+              offen — in beide Richtungen.
+            </Text>
+          </Flex>
+
+          <Grid columns={{ initial: "1", sm: "3" }} gap="4">
+            {pillars.map((pillar) => (
+              <Card key={pillar.title} size="3" className="feature-card panel panel-ticks">
+                <Flex direction="column" gap="3" height="100%" p="2">
+                  <span className="card-index">{pillar.index}</span>
+                  <Heading as="h3" size="4">
+                    {pillar.title}
+                  </Heading>
+                  <Text color="gray" size="2" style={{ lineHeight: 1.7 }}>
+                    {pillar.body}
+                  </Text>
+                </Flex>
+              </Card>
+            ))}
+          </Grid>
+        </section>
+      </Container>
+
+      {/* ═══════════════════ Physik dahinter ═══════════════════ */}
+      <Container size="4" px="0">
+        <section className="section reveal">
+          <SectionMarker index="02" label="Die Physik dahinter" />
+
+          <Flex direction="column" gap="3" mb="7" style={{ maxWidth: 760 }}>
+            <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
+              Zwei Gleichungen, <span className="voice">ein Werkzeugkasten</span>
+            </Heading>
+            <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+              Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
+              Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Die
+              beiden folgenden Modelle laufen live im Browser und zeigen, wo
+              sich Quantenmechanik und Kapitalmarkt derselben Mathematik
+              bedienen. Beide sind vollständig durchgerechnet, nicht
+              nachgezeichnet.
+            </Text>
+          </Flex>
+
+          <Flex direction="column" gap="6">
+            {/* ─── Modul 1: harmonischer Oszillator ─── */}
+            <Box className="lab-module">
+              <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap="6" p={{ initial: "4", sm: "6" }}>
+                <Flex direction="column" gap="4">
+                  <Flex direction="column" gap="2">
+                    <Text
+                      className="eyebrow"
+                      style={{ color: "rgb(var(--physics))" }}
+                    >
+                      Modul I · Quantenmechanik
+                    </Text>
+                    <Heading as="h3" size={{ initial: "5", sm: "6" }}>
+                      Der harmonische Oszillator
+                    </Heading>
+                  </Flex>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    Warum ausgerechnet eine Parabel? Weil jedes System, das um
+                    eine stabile Ruhelage schwingt, in erster Näherung gleich
+                    aussieht. Entwickelt man ein beliebiges Potential um sein
+                    Minimum, verschwindet der lineare Term — übrig bleibt ein
+                    quadratischer. Deshalb beschreibt derselbe Hamiltonoperator
+                    ein Molekülgitter, eine Mode des elektromagnetischen Feldes
+                    und das Rauschen eines Regelkreises gleichermaßen.
+                  </Text>
+
+                  <code className="formula-block">
+                    H = p²/2m + ½ mω²x²
+                    <br />
+                    E<sub>n</sub> = ħω (n + ½) &nbsp; n = 0, 1, 2, …
+                    <br />
+                  </code>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    Die Lösung liefert das bekannteste Spektrum der
+                    Quantenmechanik: Die Energie ist quantisiert, die Niveaus
+                    sind äquidistant — und selbst der Grundzustand behält{" "}
+                    <span className="formula">½ħω</span>. Diese
+                    Nullpunktsenergie ist keine Rechenkuriosität, sondern eine
+                    Folge der Unschärferelation{" "}
+                    <span className="formula">Δx·Δp ≥ ħ/2</span>: ein Teilchen
+                    kann nicht gleichzeitig ruhen und exakt im Minimum sitzen.
+                  </Text>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    Interessanter noch sind die <em>kohärenten Zustände</em>{" "}
+                    <span className="formula">|α⟩</span> — Überlagerungen mit
+                    poissonverteilten Gewichten. Ihr Wellenpaket zerfließt
+                    nicht, sondern schwingt als Ganzes: der Schwerpunkt folgt
+                    exakt der klassischen Bahn und
+                    das Unschärfeprodukt bleibt bei minimalen{" "}
+                    <span className="formula">½</span>. Genau hier schlägt die
+                    Quantenmechanik in klassische Mechanik um — und genau dieses
+                    Objekt beschreibt auch das Licht eines Lasers.
+                  </Text>
+
+                  <Text size="1" color="gray" className="formula-legend">
+                    Simulation in natürlichen Einheiten ħ = m = ω = 1.
+                    Zeitentwicklung ψ(x,t) = Σ c<sub>n</sub> ψ<sub>n</sub>(x)
+                    e<sup>−iE<sub>n</sub>t</sup>; Δx·Δp wird pro Bild numerisch
+                    aus dem Gitter bestimmt.
+                  </Text>
+                </Flex>
+
+                <QuantumOscillator />
+              </Grid>
+            </Box>
+
+            {/* ─── Modul 2: geometrische Brownsche Bewegung ─── */}
+            <Box className="lab-module is-market">
+              <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap="6" p={{ initial: "4", sm: "6" }}>
+                <Box order={{ initial: "2", md: "1" }}>
+                  <MarketDiffusion />
+                </Box>
+
+                <Flex direction="column" gap="4" order={{ initial: "1", md: "2" }}>
+                  <Flex direction="column" gap="2">
+                    <Text className="eyebrow" style={{ color: "rgb(var(--market))" }}>
+                      Modul II · Statistische Physik
+                    </Text>
+                    <Heading as="h3" size={{ initial: "5", sm: "6" }}>
+                      Vom Pollenkorn zum Kurszettel
+                    </Heading>
+                  </Flex>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    1827 beobachtete Robert Brown, wie Pollenkörner im Wasser
+                    ruckartig zittern. Erst Einstein lieferte 1905 die Erklärung:
+                    unzählige Stöße einzelner Moleküle, deren Summe eine Diffusion
+                    mit <span className="formula">⟨x²⟩ = 2Dt</span> ergibt. Fünf
+                    Jahre zuvor hatte Louis Bachelier in seiner Dissertation
+                    <em> Théorie de la spéculation</em> exakt dieselbe Mathematik
+                    für die Pariser Börse aufgeschrieben — die Diffusions&shy;gleichung
+                    hatte ihren ökonomischen Auftritt vor ihrem physikalischen.
+                  </Text>
+
+                  <code className="formula-block is-market">
+                    dS = μS dt + σS dW
+                    <br />
+                    d ln S = (μ − σ²/2) dt + σ dW &nbsp; (Itô)
+                    <br />
+                    S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW
+                    <sub>t</sub></sup>
+                  </code>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    Ein Kurs kann allerdings nicht negativ werden, und seine
+                    Ausschläge wachsen mit dem Niveau. Man ersetzt das additive
+                    Rauschen also durch ein multiplikatives — und erhält eine
+                    Langevin-Gleichung mit demselben Wiener-Prozess{" "}
+                    <span className="formula">W</span> wie beim Pollenkorn. Das
+                    Lemma von Itô macht daraus eine gewöhnliche Diffusion in{" "}
+                    <span className="formula">ln S</span>: der Logarithmus des
+                    Kurses ist normalverteilt, der Kurs selbst log-normal.
+                  </Text>
+
+                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                    Der Term <span className="formula">−σ²/2</span> ist dabei der
+                    aufschlussreichste: Volatilität kostet Rendite. Median und
+                    Erwartungswert der Prognose laufen deshalb sichtbar
+                    auseinander. Und die Breite der Verteilung wächst mit{" "}
+                    <span className="formula">σ√t</span> — nicht linear in der
+                    Zeit. Diese √t-Skalierung ist der Grund, warum eine
+                    ehrliche Prognose keine Linie ist, sondern ein Kegel.
+                  </Text>
+
+                  <Text size="1" color="gray" className="formula-legend">
+                    Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind
+                    keine gefitteten Hüllkurven, sondern die analytischen
+                    Quantile der Log-Normalverteilung.
+                  </Text>
+                </Flex>
+              </Grid>
+            </Box>
+          </Flex>
+
+          <Box mt="7">
+            <Separator size="4" mb="6" />
+            <Grid columns={{ initial: "1", sm: "3" }} gap="6">
+              {[
+                {
+                  k: "Ökonophysik",
+                  v: "Methoden aus Thermodynamik und Vielteilchenphysik, angewendet auf Systeme mit vielen wechselwirkenden Akteuren: Märkte, Netzwerke, Verkehr.",
+                },
+                {
+                  k: "Skalengesetze",
+                  v: "Fette Verteilungsränder, Volatilitäts-Cluster und Potenzgesetze tauchen an der Börse genauso auf wie in der Nähe eines Phasenübergangs.",
+                },
+                {
+                  k: "Modellbildung",
+                  v: "Stochastische Differentialgleichungen, Monte-Carlo-Simulation und numerische Analysis bilden das gemeinsame Handwerkszeug beider Welten.",
+                },
+              ].map((row) => (
                 <Flex key={row.k} direction="column" gap="2">
                   <Text
                     size="2"
                     weight="bold"
-                    color="blue"
-                    style={{ fontFamily: "var(--font-mono)" }}
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      color: "rgb(var(--physics))",
+                    }}
                   >
                     {row.k}
                   </Text>
-                  <Text size="2" color="gray" style={{ lineHeight: 1.6 }}>
+                  <Text size="2" color="gray" style={{ lineHeight: 1.7 }}>
                     {row.v}
                   </Text>
                 </Flex>
               ))}
             </Grid>
-          </Flex>
-        </Card>
+          </Box>
+        </section>
       </Container>
 
+      {/* ═══════════════════ Neuigkeiten ═══════════════════ */}
       {latestPost && (
-        <Container size="4" px="4" mb="9">
-          <Card
-            size={{ initial: "3", sm: "4" }}
-            className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-          >
-            <Link
-              href={`/blog/${latestPost.id}`}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <Flex direction="column" gap="4">
-                {/* Title, Author, Date in one line */}
-                <Flex
-                  direction={{ initial: "column", sm: "row" }}
-                  justify="between"
-                  align={{ initial: "start", sm: "center" }}
-                  gap="3"
-                >
-                  <Heading as="h2" size={{ initial: "4", sm: "5" }}>
-                    {latestPost.title}
-                  </Heading>
+        <Container size="4" px="0">
+          <section className="section reveal">
+            <SectionMarker index="03" label="Aus dem Verein" />
 
-                  <Flex gap="4" align="center" className="flex-shrink-0">
+            <Card size={{ initial: "3", sm: "4" }} className="post-card panel">
+              <Link
+                href={`/blog/${latestPost.id}`}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <Flex direction="column" gap="4" p="2">
+                  <Flex gap="4" align="center" wrap="wrap" className="post-meta">
                     <Flex gap="1" align="center">
-                      <Calendar size={16} style={{ color: "var(--gray-10)" }} />
-                      <Text color="gray" size="2">
-                        {latestPost.publishedAt.toLocaleDateString("de-DE")}
-                      </Text>
+                      <CalendarDays size={14} />
+                      {latestPost.publishedAt.toLocaleDateString("de-DE")}
                     </Flex>
-
                     {latestPost.author && (
                       <Flex gap="1" align="center">
-                        <User size={16} style={{ color: "var(--gray-10)" }} />
-                        <Text color="gray" size="2">
-                          {latestPost.author}
-                        </Text>
+                        <PenLine size={14} />
+                        {latestPost.author}
                       </Flex>
                     )}
                   </Flex>
+
+                  <Heading as="h2" size={{ initial: "5", sm: "7" }} className="display-title">
+                    {latestPost.title}
+                  </Heading>
+
+                  <Text color="gray" size="3" style={{ lineHeight: 1.75 }} as="div">
+                    {latestPost.preview}
+                  </Text>
                 </Flex>
+              </Link>
 
-                <Text color="gray" size="3" style={{ lineHeight: 1.7 }} as="div">
-                  {latestPost.preview}
-                </Text>
+              <Flex justify="end" mt="4">
+                <Button size="3" variant="soft" radius="full" asChild>
+                  <Link href="/blog">
+                    Alle Beiträge <ArrowRight size={16} />
+                  </Link>
+                </Button>
               </Flex>
-            </Link>
-
-            <Flex gap="3" justify="end" mt="4">
-              <Button size="3" variant="soft" asChild>
-                <a href="/blog">Alle Beiträge</a>
-              </Button>
-            </Flex>
-          </Card>
+            </Card>
+          </section>
         </Container>
       )}
 
+      {/* ═══════════════════ Mitglied werden ═══════════════════ */}
+      <Container size="4" px="0">
+        <section className="section reveal" style={{ paddingBottom: 24 }}>
+          <SectionMarker index="04" label="Mitmachen" />
 
-
-
-      {/* ---------- CTA ---------- */}
-      <Container size="3" px="4" mb="9">
-        <Card
-          size="4"
-          style={{
-            background:
-              "linear-gradient(135deg, var(--accent-3), var(--accent-4))",
-            border: "1px solid var(--accent-6)",
-          }}
-        >
-          <Flex
-            direction="column"
-            align="center"
-            gap="4"
-            py="4"
-            style={{ textAlign: "center" }}
+          <Box
+            className="panel"
+            style={{
+              background:
+                "radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, rgb(var(--physics)) 16%, transparent), transparent 60%), radial-gradient(120% 140% at 85% 100%, color-mix(in srgb, rgb(var(--market)) 14%, transparent), transparent 60%), var(--surface)",
+            }}
           >
-            <Heading as="h2" size={{ initial: "5", sm: "7" }}>
-              Mitglied werden
-            </Heading>
-            <Text color="gray" size="3" style={{ maxWidth: "540px" }}>
-              Als gemeinnütziger Verein unterstützen wir Physik- und
-              Wirtschaftsphysik-Alumni sowie Studierende der Universität Ulm.
-              Die Registrierung dauert nur wenige Minuten.
-            </Text>
             <Flex
-              gap="3"
-              direction={{ initial: "column", xs: "row" }}
-              width={{ initial: "100%", xs: "auto" }}
+              direction={{ initial: "column", md: "row" }}
+              align={{ initial: "start", md: "center" }}
+              justify="between"
+              gap="5"
+              p={{ initial: "5", sm: "8" }}
             >
-              <Button size="3" asChild style={{ width: "100%" }}>
-                <Link href="/register">Jetzt registrieren</Link>
-              </Button>
-            </Flex>
-          </Flex>
-        </Card>
-      </Container>
-
-      {/* ---------- Physik-Demos (nur zu Demonstrationszwecken) ---------- */}
-      <Container size="4" px="4" mb="9">
-        <Card
-          size={{ initial: "3", sm: "4" }}
-          style={{ border: "1px dashed var(--amber-7)", background: "var(--amber-2)" }}
-        >
-          <Flex direction="column" gap="1" mb="6">
-            <Flex align="center" gap="2">
-              <ExclamationTriangleIcon style={{ color: "var(--amber-9)" }} />
-              <Text size="2" weight="bold" color="amber">
-                Nur zu Testzwecken
-              </Text>
-            </Flex>
-            
-          </Flex>
-
-          <Grid columns={{ initial: "1", lg: "2" }} gap="6">
-            {demoSims.map(({ title, component: Sim }) => (
-              <Flex key={title} direction="column" gap="2">
-                <Heading as="h3" size="3">{title}</Heading>
-                <Sim />
+              <Flex direction="column" gap="3" style={{ maxWidth: 560 }}>
+                <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
+                  Mitglied werden
+                </Heading>
+                <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+                  Offen für Alumni und Studierende der Physik und
+                  Wirtschaftsphysik an der Universität Ulm. Die Registrierung
+                  dauert wenige Minuten — den Rest übernehmen wir.
+                </Text>
               </Flex>
-            ))}
-          </Grid>
-        </Card>
+
+              <Flex
+                direction={{ initial: "column", xs: "row" }}
+                gap="3"
+                width={{ initial: "100%", md: "auto" }}
+              >
+                <Button size="4" radius="full" asChild>
+                  <Link href="/register">
+                    Jetzt registrieren <ArrowRight size={16} />
+                  </Link>
+                </Button>
+                <Button size="4" radius="full" variant="soft" color="gray" highContrast asChild>
+                  <Link href="/vorstand">Unser Vorstand </Link>
+                </Button>
+              </Flex>
+            </Flex>
+          </Box>
+        </section>
       </Container>
     </Box>
   );

@@ -1,28 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   WirtschaftsPhysik Alumni e.V. — Design-System
+   --------------------------------------------------------------------------
+   Bildsprache: Laborheft trifft Editorial. Millimeterpapier-Raster, feines
+   Korn und ein ruhiges Aurora-Feld im Hintergrund; darüber eine strenge
+   typografische Hierarchie aus Fraunces (Serif, Stimme), Space Grotesk
+   (Display, UI-Chrome) und JetBrains Mono (Messwerte, Formeln, Marker).
+   Zwei Akzente tragen die inhaltliche Dualität des Vereins:
+     · Teal  = Physik / Quantenmechanik
+     · Ruby  = Ökonomie / Märkte — beide Farben stammen aus dem Vereinslogo.
+   ========================================================================== */
 
-html[data-theme-appearance="dark"] {
-  --background: #111113;
-  --foreground: #ededed;
-}
-
-/*
- * Typography.
- *
- * `--font-serif` (Fraunces) and `--font-mono` (JetBrains Mono) are injected on
- * <html> by next/font in app/layout.tsx. There is no webfont for body copy on
- * purpose: the native UI stack renders instantly, costs nothing to download,
- * and keeps Fraunces as the distinctive voice for headings rather than making
- * every paragraph serif.
- */
 :root {
+  --background: #fbfbfa;
+  --foreground: #16181d;
+
+  /* Flächen */
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --hairline: rgba(16, 24, 32, 0.1);
+  --hairline-strong: rgba(16, 24, 32, 0.18);
+
+  /* Akzente (fix, damit Canvas-Zeichnungen dieselben Werte nutzen können) */
+  --physics: 0, 168, 150; /* Logo-Teal   */
+  --market: 168, 26, 82; /* Logo-Ruby   */
+
+  /* Hintergrundfeld */
+  --aurora-a: rgba(0, 168, 150, 0.16);
+  --aurora-b: rgba(168, 26, 82, 0.1);
+  --aurora-c: rgba(104, 92, 168, 0.1);
+  --grid-line: rgba(16, 24, 32, 0.045);
+  --grain-opacity: 0.035;
+
+  /* Erhebung */
+  --lift-1: 0 1px 2px rgba(16, 24, 32, 0.05), 0 8px 24px -16px rgba(16, 24, 32, 0.4);
+  --lift-2: 0 1px 2px rgba(16, 24, 32, 0.06), 0 24px 60px -28px rgba(16, 24, 32, 0.45);
+
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
+}
+
+html[data-theme-appearance="dark"] {
+  --background: #0b0d10;
+  --foreground: #e8eaed;
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-solid: #12151a;
+  --hairline: rgba(255, 255, 255, 0.09);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+
+  --physics: 45, 212, 191;
+  --market: 236, 92, 134;
+
+  --aurora-a: rgba(45, 212, 191, 0.14);
+  --aurora-b: rgba(236, 92, 134, 0.1);
+  --aurora-c: rgba(140, 128, 220, 0.12);
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --grain-opacity: 0.05;
+
+  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
+  --lift-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 24px 60px -28px rgba(0, 0, 0, 0.9);
 }
 
 @theme inline {
@@ -30,16 +69,89 @@ html[data-theme-appearance="dark"] {
   --color-foreground: var(--foreground);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/*
- * Hand the same three stacks to Radix Themes, which otherwise ships its own
- * defaults and would ignore the fonts entirely.
- */
+/* --------------------------------------------------------------------------
+   Hintergrundfeld: Millimeterpapier + Aurora + Korn.
+   Drei fixierte Layer hinter allem, komplett ohne Layout-Kosten.
+   -------------------------------------------------------------------------- */
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.site-backdrop::before {
+  /* Millimeterpapier — 8px Feinraster über 64px Grobraster */
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px, 8px 8px, 8px 8px;
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 78%);
+}
+
+.site-backdrop::after {
+  /* Korn: prozedural, kein Bild-Request */
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+.aurora {
+  position: absolute;
+  inset: -20%;
+  filter: blur(70px);
+  background:
+    radial-gradient(38% 34% at 18% 12%, var(--aurora-a) 0%, transparent 70%),
+    radial-gradient(34% 30% at 84% 22%, var(--aurora-b) 0%, transparent 70%),
+    radial-gradient(46% 38% at 52% 88%, var(--aurora-c) 0%, transparent 72%);
+  animation: aurora-drift 42s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Typografie
+   -------------------------------------------------------------------------- */
 .radix-themes {
   --default-font-family: var(--font-sans);
   --heading-font-family: var(--font-serif);
@@ -49,30 +161,47 @@ body {
   --code-font-family: var(--font-mono);
 }
 
-/* Headings carry the serif; tighten the tracking a little at display sizes. */
 .radix-themes :where(h1, h2, h3, h4, h5, h6) {
   font-family: var(--font-serif);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
-/*
- * Fonts define the site's voice: Fraunces (serif) for headings and anything
- * editorial, Space Grotesk (--font-display) for functional UI chrome —
- * eyebrows, nav, buttons, kickers. Extending them past headings is what gives
- * the site its distinctive look. JetBrains Mono stays reserved for tabular
- * figures (member IDs, timeline years).
- */
+/* Display-Überschriften: optischer Ausgleich bei großen Graden. */
+.display-title {
+  font-family: var(--font-serif);
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
 
-/* Editorial lead-ins above a heading. */
+/* Verlaufstext für einzelne Wörter in Headlines. */
+.grad-text {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--physics)) 0%,
+    color-mix(in oklab, rgb(var(--physics)), rgb(var(--market)) 55%) 55%,
+    rgb(var(--market)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Kursive Fraunces-Variante für eingestreute Betonungen. */
+.voice {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
 .eyebrow {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-/* Primary nav, footer links and call-to-action buttons share the display face. */
 .radix-themes .site-nav a,
 .radix-themes .site-footer a {
   font-family: var(--font-display);
@@ -83,20 +212,453 @@ body {
 .radix-themes :where(button.rt-Button, a.rt-Button) {
   font-family: var(--font-display);
   letter-spacing: 0.01em;
+  font-weight: 600;
 }
 
-/* Card / section kickers that use the blue accent get the display treatment too. */
 .radix-themes .dashboard-kicker,
 .radix-themes .history-kicker {
   font-family: var(--font-display);
 }
 
-/* Member IDs, fees and years line up only in a tabular face. */
 .dashboard-table :where(td, th),
-.dashboard-numeric {
+.dashboard-numeric,
+.tabular {
   font-variant-numeric: tabular-nums;
 }
 
+/* Formeln: gesetzte Gleichungen im Fließtext bzw. als Block. */
+.formula {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.formula-block {
+  display: block;
+  overflow-x: auto;
+  padding: 14px 18px;
+  border-left: 2px solid rgb(var(--physics));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, rgb(var(--physics)) 8%, transparent),
+    transparent 70%
+  );
+  border-radius: 0 8px 8px 0;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+
+.formula-block.is-market {
+  border-left-color: rgb(var(--market));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, rgb(var(--market)) 10%, transparent),
+    transparent 70%
+  );
+}
+
+.formula-legend {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.7;
+  color: var(--gray-11);
+}
+
+/* --------------------------------------------------------------------------
+   Sektionsgerüst
+   -------------------------------------------------------------------------- */
+.section {
+  position: relative;
+  padding-block: clamp(56px, 9vw, 112px);
+}
+
+/* Kapitelmarke: Mono-Nummer + Haarlinie, wie eine Laborheft-Seitenzahl. */
+.section-marker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-10);
+}
+
+.section-marker::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hairline-strong), transparent);
+}
+
+.section-marker .marker-index {
+  color: rgb(var(--physics));
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Karten & Panels
+   -------------------------------------------------------------------------- */
+.panel {
+  position: relative;
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  background: var(--surface);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: var(--lift-1);
+  overflow: hidden;
+}
+
+/* Eckmarken wie auf einem Messblatt. */
+.panel-ticks::before,
+.panel-ticks::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--hairline-strong);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.panel-ticks::before {
+  top: 10px;
+  left: 10px;
+  border-width: 1px 0 0 1px;
+}
+
+.panel-ticks::after {
+  bottom: 10px;
+  right: 10px;
+  border-width: 0 1px 1px 0;
+}
+
+.feature-card {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.28s ease;
+}
+
+/* Wanderndes Licht am oberen Rand beim Hover. */
+.feature-card::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--physics)),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+@media (hover: hover) {
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--lift-2);
+  }
+
+  .feature-card:hover::after {
+    opacity: 1;
+  }
+}
+
+.card-index {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: rgb(var(--physics));
+}
+
+/* Modul-Kachel für die interaktiven Simulationen. */
+.lab-module {
+  position: relative;
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  box-shadow: var(--lift-1);
+  overflow: hidden;
+}
+
+.lab-module::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--accent-rgb, var(--physics))) 30%,
+    rgb(var(--accent-rgb, var(--physics))) 70%,
+    transparent
+  );
+  opacity: 0.7;
+}
+
+.lab-module.is-market {
+  --accent-rgb: var(--market);
+}
+
+.lab-canvas {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--hairline);
+  background:
+    radial-gradient(
+      120% 100% at 50% 0%,
+      color-mix(in srgb, rgb(var(--accent-rgb, var(--physics))) 7%, transparent),
+      transparent 65%
+    ),
+    var(--surface-solid);
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Auswahl-Chips unter den Simulationen. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-strong);
+  background: transparent;
+  color: var(--gray-11);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.chip:hover {
+  border-color: rgb(var(--accent-rgb, var(--physics)));
+  color: var(--foreground);
+}
+
+.chip[aria-pressed="true"] {
+  background: rgb(var(--accent-rgb, var(--physics)));
+  border-color: rgb(var(--accent-rgb, var(--physics)));
+  color: #fff;
+}
+
+html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
+  color: #0b0d10;
+}
+
+.chip:focus-visible {
+  outline: 2px solid rgb(var(--accent-rgb, var(--physics)));
+  outline-offset: 2px;
+}
+
+/* Messwert-Anzeige (Live-Readout einer Simulation). */
+.readout {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--surface-solid) 70%, transparent);
+  min-width: 104px;
+}
+
+.readout dt {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-10);
+}
+
+.readout dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.site-header[data-scrolled="true"] {
+  border-bottom-color: var(--hairline);
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+}
+
+.nav-link {
+  position: relative;
+  padding: 6px 2px;
+  color: var(--gray-11);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.5px;
+  border-radius: 2px;
+  background: rgb(var(--physics));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link:hover {
+  color: var(--foreground);
+}
+
+.nav-link:hover::after,
+.nav-link[data-active="true"]::after {
+  transform: scaleX(1);
+}
+
+.nav-link[data-active="true"] {
+  color: var(--foreground);
+}
+
+/* Lesefortschritt als Haarlinie unter dem Header. */
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+  background: linear-gradient(90deg, rgb(var(--physics)), rgb(var(--market)));
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  background:
+    radial-gradient(
+      110% 90% at 50% -10%,
+      color-mix(in srgb, rgb(var(--physics)) 14%, transparent) 0%,
+      transparent 62%
+    ),
+    var(--surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--lift-2);
+}
+
+/* Weiches Zentrum, damit die Typo über dem Partikelfeld lesbar bleibt. */
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 58% at 50% 46%,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 55%, transparent) 45%,
+    transparent 78%
+  );
+}
+
+.hero-metric {
+  display: grid;
+  gap: 2px;
+  padding-inline: 18px;
+  border-left: 1px solid var(--hairline);
+}
+
+.hero-metric:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.hero-metric-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.hero-metric-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-10);
+}
+
+/* --------------------------------------------------------------------------
+   Auftritts-Animation beim Scrollen (progressive Verbesserung)
+   -------------------------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 22%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cursor
+   -------------------------------------------------------------------------- */
 :root {
   --cursor-button: pointer;
   --cursor-checkbox: pointer;
@@ -449,22 +1011,111 @@ body {
   }
 }
 
-.feature-card {
+
+/* --------------------------------------------------------------------------
+   Blog-Karten
+   -------------------------------------------------------------------------- */
+.post-card {
+  position: relative;
+  overflow: hidden;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  height: 100%;
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.post-card::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgb(var(--physics)), rgb(var(--market)));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (hover: hover) {
-  .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px -12px var(--accent-a7);
+  .post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--lift-2);
+  }
+
+  .post-card:hover::before {
+    transform: scaleY(1);
   }
 }
 
+.post-meta {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--gray-10);
+}
+
+/* --------------------------------------------------------------------------
+   Vorstand
+   -------------------------------------------------------------------------- */
+.person-avatar {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-strong);
+  background: radial-gradient(
+    100% 100% at 30% 20%,
+    color-mix(in srgb, rgb(var(--physics)) 24%, transparent),
+    color-mix(in srgb, rgb(var(--market)) 14%, transparent)
+  );
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: var(--foreground);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+  position: relative;
+  margin-top: auto;
+  border-top: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--background) 80%, transparent);
+}
+
+.site-footer a {
+  color: var(--gray-11);
+  text-decoration: none;
+  transition: color 0.16s ease;
+}
+
+.site-footer a:hover {
+  color: var(--foreground);
+}
+
+.footer-heading {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-10);
+}
+
+/* Signatur-Gleichung als letzte Zeile der Seite. */
+.footer-signature {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--gray-9);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .feature-card {
+  .feature-card,
+  .post-card,
+  .nav-link::after,
+  .post-card::before {
     transition: none;
   }
 }

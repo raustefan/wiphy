@@ -8,8 +8,12 @@ import { JetBrains_Mono } from "next/font/google";
 import { Space_Grotesk } from "next/font/google";
 
 export const metadata = {
-  title: "WirtschaftsPhysik Alumni e.V.",
-  description: "Die offizielle Vereinswebsite des WirtschaftsPhysik Alumni e.V.",
+  title: {
+    default: "WirtschaftsPhysik Alumni e.V.",
+    template: "%s — WirtschaftsPhysik Alumni e.V.",
+  },
+  description:
+    "Verein für Physik- und Wirtschaftsphysik-Alumni sowie Studierende der Universität Ulm. Statistische Physik, Modellbildung und Datenanalyse — angewendet auf reale Systeme.",
   icons: {
     icon: "/logo-plain.png",
   },
@@ -18,7 +22,7 @@ export const metadata = {
 const serif = Fraunces({
   subsets: ["latin"],
   variable: "--font-serif",
-  weight: ["400", "600"],
+  weight: ["400", "600", "700"],
   style: ["italic", "normal"],
 });
 
@@ -51,11 +55,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ margin: 0 }} suppressHydrationWarning>
         <AppThemeProvider>
-          <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          {/* Millimeterpapier, Aurora und Korn liegen hinter der gesamten Seite. */}
+          <div className="site-backdrop" aria-hidden="true">
+            <div className="aurora" />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+            }}
+          >
             <Header />
-            <main style={{ flex: 1, padding: "24px 16px" }}>
-              {children}
-            </main>
+            <main style={{ flex: 1, padding: "24px 16px" }}>{children}</main>
             <Footer />
           </div>
         </AppThemeProvider>
