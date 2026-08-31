@@ -7,7 +7,18 @@ import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { executeAction } from "@/lib/server/errors";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
+import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { sendUserRegistrationConfirmationEmail } from "@/lib/mail";
+import { createAltchaChallenge } from "@/lib/server/altcha";
+
+/**
+ * Mints a replacement ALTCHA challenge for the login form. A solved challenge
+ * is single-use server-side, so the form needs a fresh one after every failed
+ * attempt.
+ */
+export async function createLoginChallenge(): Promise<string> {
+    return JSON.stringify(await createAltchaChallenge());
+}
 
 // Admins must always be able to log in, even while LOGIN is disabled, so they
 // can get back in and re-enable it. Only an email lookup (no password check)
@@ -15,7 +26,7 @@ import { sendUserRegistrationConfirmationEmail } from "@/lib/mail";
 export async function checkLoginFeatureEnabled(email: string): Promise<boolean> {
     if (await isFeatureEnabled("LOGIN")) return true;
 
-    const trimmedEmail = email.trim();
+    const trimmedEmail = normalizeEmail(email);
     if (!trimmedEmail) return false;
 
     const user = await prisma.user.findUnique({
@@ -37,7 +48,7 @@ export async function resendVerificationEmail(email: string) {
     return executeAction(async () => {
         await requireFeatureEnabled("EMAIL_VERIFICATION");
 
-        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedEmail = normalizeEmail(email);
         const requestHeaders = await headers();
         const clientIp = extractClientIp(requestHeaders);
 

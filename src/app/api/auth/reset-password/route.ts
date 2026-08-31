@@ -63,9 +63,22 @@ export async function POST(request: Request) {
 
     // Update the User record matched by resetToken.email.
     // Bumping passwordChangedAt invalidates any session/JWT issued before this reset.
+    // Clicking a link that was mailed to this address proves the user controls
+    // it, so mark it verified too — otherwise someone who never confirmed their
+    // address resets their password and is still locked out at login with no
+    // way to tell why.
     await prisma.user.update({
       where: { email: resetToken.email },
-      data: { password: hashedPassword, passwordChangedAt: new Date() },
+      data: {
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+        emailVerified: true,
+      },
+    });
+
+    // Any outstanding confirmation link is redundant now.
+    await prisma.emailVerificationToken.deleteMany({
+      where: { email: resetToken.email },
     });
 
     // Delete the used PasswordResetToken

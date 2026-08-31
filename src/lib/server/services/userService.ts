@@ -9,6 +9,7 @@ import {
 } from "@/lib/server/repositories/userRepository";
 import bcrypt from "bcryptjs";
 import { buildUserUpdateData, type UpdateUserInput } from "./userUpdateData";
+import { normalizeEmail } from "@/lib/server/normalizeEmail";
 
 export async function getDashboardUsers(userId: string, role: Role) {
   return findUsersForDashboard(userId, role);
@@ -30,13 +31,16 @@ export async function updateUserProfile(input: UpdateUserInput) {
   const isSelf = input.idToEdit === input.currentUserId;
   const isMember = input.currentUserRole !== "ADMIN";
 
-  if ((isSelf || isMember) && input.email && input.email.trim().toLowerCase() !== user.email.trim().toLowerCase()) {
-    const newEmail = input.email.trim().toLowerCase();
+  if ((isSelf || isMember) && input.email && normalizeEmail(input.email) !== normalizeEmail(user.email)) {
+    const newEmail = normalizeEmail(input.email);
 
     const { prisma } = await import("@/lib/prisma");
     const existing = await prisma.user.findUnique({ where: { email: newEmail } });
     if (existing) {
-      throw new Error("EMAIL_ALREADY_EXISTS");
+      // Reported as a result, not thrown: the caller is a plain form action, so
+      // a throw would replace the page with the generic error screen and lose
+      // everything the user typed.
+      return { ok: false as const, reason: "email_taken" as const };
     }
 
     emailChanged = true;

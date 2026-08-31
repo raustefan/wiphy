@@ -166,3 +166,15 @@ model EmailVerificationToken {
   @@index([email])
   @@index([userId])
 }
+
+/// One row per successfully verified ALTCHA solution, keyed by the challenge's
+/// HMAC signature. Inserting is what "spends" a solution: the unique constraint
+/// makes a replay of the same payload fail, so a single solve can't be reused
+/// for the rest of the challenge's validity window.
+model SolvedAltchaChallenge {
+  signature String   @id
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}

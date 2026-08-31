@@ -30,7 +30,7 @@ export default async function Header() {
                     </Link>
 
                     {/* Navigation (Desktop) */}
-                    <Flex gap="4" align="center" display={{ initial: "none", sm: "flex" }}>
+                    <Flex className="site-nav" gap="4" align="center" display={{ initial: "none", sm: "flex" }}>
                         <Link href="/blog" style={{ textDecoration: "none", color: "var(--gray-11)", fontWeight: 500 }}>
                             Blog
                         </Link>

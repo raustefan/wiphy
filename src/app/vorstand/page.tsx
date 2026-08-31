@@ -53,7 +53,7 @@ export default function VorstandPage() {
       <Flex direction="column" align="center" gap="2" mb={{ initial: "6", sm: "7" }}>
         <Flex align="center" gap="2">
           <Users size={16} color="var(--accent-9)" />
-          <Text size="2" weight="medium" color="blue">
+          <Text className="eyebrow" size="2" weight="medium" color="blue">
             Der Verein
           </Text>
         </Flex>

@@ -10,17 +10,91 @@ html[data-theme-appearance="dark"] {
   --foreground: #ededed;
 }
 
+/*
+ * Typography.
+ *
+ * `--font-serif` (Fraunces) and `--font-mono` (JetBrains Mono) are injected on
+ * <html> by next/font in app/layout.tsx. There is no webfont for body copy on
+ * purpose: the native UI stack renders instantly, costs nothing to download,
+ * and keeps Fraunces as the distinctive voice for headings rather than making
+ * every paragraph serif.
+ */
+:root {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/*
+ * Hand the same three stacks to Radix Themes, which otherwise ships its own
+ * defaults and would ignore the fonts entirely.
+ */
+.radix-themes {
+  --default-font-family: var(--font-sans);
+  --heading-font-family: var(--font-serif);
+  --strong-font-family: var(--font-sans);
+  --em-font-family: var(--font-serif);
+  --quote-font-family: var(--font-serif);
+  --code-font-family: var(--font-mono);
+}
+
+/* Headings carry the serif; tighten the tracking a little at display sizes. */
+.radix-themes :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Fonts define the site's voice: Fraunces (serif) for headings and anything
+ * editorial, Space Grotesk (--font-display) for functional UI chrome —
+ * eyebrows, nav, buttons, kickers. Extending them past headings is what gives
+ * the site its distinctive look. JetBrains Mono stays reserved for tabular
+ * figures (member IDs, timeline years).
+ */
+
+/* Editorial lead-ins above a heading. */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Primary nav, footer links and call-to-action buttons share the display face. */
+.radix-themes .site-nav a,
+.radix-themes .site-footer a {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.radix-themes :where(button.rt-Button, a.rt-Button) {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+/* Card / section kickers that use the blue accent get the display treatment too. */
+.radix-themes .dashboard-kicker,
+.radix-themes .history-kicker {
+  font-family: var(--font-display);
+}
+
+/* Member IDs, fees and years line up only in a tabular face. */
+.dashboard-table :where(td, th),
+.dashboard-numeric {
+  font-variant-numeric: tabular-nums;
 }
 
 :root {

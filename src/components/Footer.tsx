@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
     return (
-        <footer style={{ borderTop: "1px solid var(--gray-5)", padding: "32px 0", marginTop: "auto" }}>
+        <footer className="site-footer" style={{ borderTop: "1px solid var(--gray-5)", padding: "32px 0", marginTop: "auto" }}>
             <Container size="4">
                 <Flex direction="column" align="center" gap="2">
                     <Text size="2" style={{ color: "var(--gray-11)" }}>

@@ -111,7 +111,10 @@ async function updateUser(formData: FormData) {
         mitgliedId: parsed.mitgliedId,
     });
 
-    if (!result.ok && result.reason === "mitgliedId_conflict") {
+    if (!result.ok) {
+        if (result.reason === "email_taken") {
+            redirect(`${editPath}?emailTakenError=1`);
+        }
         redirect(`/dashboard/users/${parsed.id}?mitgliedIdError=1`);
     }
 
@@ -141,7 +144,11 @@ export default async function EditUserPage({
     searchParams,
 }: {
     params: Promise<{ id: string }>;
-    searchParams?: Promise<{ mitgliedIdError?: string; validationError?: string }>;
+    searchParams?: Promise<{
+        mitgliedIdError?: string;
+        validationError?: string;
+        emailTakenError?: string;
+    }>;
 }) {
     const resolvedParams = await params;
     const resolvedSearchParams = searchParams ? await searchParams : undefined;
@@ -185,6 +192,17 @@ export default async function EditUserPage({
                             </Text>
                             <Text size="2" color="red">
                                 Ein oder mehrere Felder sind ungültig oder fehlen.
+                            </Text>
+                        </Card>
+                    )}
+
+                    {resolvedSearchParams?.emailTakenError === "1" && (
+                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
+                            <Text weight="bold" color="red" size="2">
+                                Diese E-Mail-Adresse wird bereits verwendet.
+                            </Text>
+                            <Text size="2" color="red">
+                                Bitte wähle eine andere Adresse. Deine übrigen Änderungen wurden nicht gespeichert.
                             </Text>
                         </Card>
                     )}

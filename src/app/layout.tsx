@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Fraunces } from "next/font/google";
 import { JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 
 export const metadata = {
   title: "WirtschaftsPhysik Alumni e.V.",
@@ -13,8 +14,6 @@ export const metadata = {
     icon: "/logo-plain.png",
   },
 };
-
-// app/layout.tsx (Ausschnitt)
 
 const serif = Fraunces({
   subsets: ["latin"],
@@ -29,11 +28,19 @@ const mono = JetBrains_Mono({
   weight: ["400", "500", "700"],
 });
 
-// im <html> oder <body>: className={`${serif.variable} ${mono.variable}`}
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
+});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html
+      lang="de"
+      className={`${serif.variable} ${mono.variable} ${display.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           // Sets the appearance attribute before hydration to avoid a flash of the wrong theme.

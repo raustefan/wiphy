@@ -43,7 +43,7 @@ export default function GeschichtePage() {
             py={{ initial: "8", sm: "9" }}
             style={{ textAlign: "center" }}
           >
-            <Text size="2" color="blue" weight="medium">
+            <Text className="eyebrow" size="2" color="blue" weight="medium">
               Seit 1960 gewachsen, seit 2004 organisiert
             </Text>
 

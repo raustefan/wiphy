@@ -1,4 +1,16 @@
 import { z } from "zod";
+import { normalizeEmail } from "@/lib/server/normalizeEmail";
+
+/**
+ * Email addresses are always stored lowercased — `User.email` is case-sensitive
+ * and unique, so writes and lookups must agree on one canonical form.
+ */
+const emailField = z
+  .string()
+  .trim()
+  .email("Bitte eine gültige E-Mail-Adresse angeben.")
+  .max(320, "E-Mail ist zu lang.")
+  .transform(normalizeEmail);
 
 /** Trim empty strings to undefined for optional fields */
 const optionalString = (max: number) =>
@@ -62,11 +74,7 @@ export const registerSchema = z.object({
     .trim()
     .min(1, "Bitte einen Namen angeben.")
     .max(200, "Name ist zu lang."),
-  email: z
-    .string()
-    .trim()
-    .email("Bitte eine gültige E-Mail-Adresse angeben.")
-    .max(320, "E-Mail ist zu lang."),
+  email: emailField,
   password: z
     .string()
     .min(8, "Passwort muss mindestens 8 Zeichen haben.")
@@ -196,11 +204,7 @@ export const userUpdateSchema = z.object({
     .min(1, "Bitte einen Namen angeben.")
     .max(200, "Name ist zu lang."),
   vorname: optionalString(200),
-  email: z
-    .string()
-    .trim()
-    .email("Bitte eine gültige E-Mail-Adresse angeben.")
-    .max(320, "E-Mail ist zu lang."),
+  email: emailField,
   titel: optionalString(120),
 
   // kontakt & adresse

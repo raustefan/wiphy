@@ -152,7 +152,7 @@ export default async function HomePage() {
       {/* ---------- Features ---------- */}
       <Container size="4" px="4" mb="9">
         <Flex direction="column" align="center" gap="2" mb="6">
-          <Text size="2" color="blue" weight="medium">
+          <Text className="eyebrow" size="2" color="blue" weight="medium">
             Was der Verein leistet
           </Text>
           <Heading as="h2" size={{ initial: "6", sm: "7" }} align="center">
@@ -179,7 +179,7 @@ export default async function HomePage() {
         <Card size={{ initial: "3", sm: "4" }}>
           <Flex direction="column" gap="5">
             <Flex direction="column" gap="2">
-              <Text size="2" color="blue" weight="medium">
+              <Text className="eyebrow" size="2" color="blue" weight="medium">
                 Warum Physik?
               </Text>
               <Heading as="h2" size={{ initial: "5", sm: "6" }}>

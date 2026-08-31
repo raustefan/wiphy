@@ -5,6 +5,7 @@ import { sendPasswordResetEmail } from "@/lib/mail";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
+import { normalizeEmail } from "@/lib/server/normalizeEmail";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "E-Mail ist erforderlich" }, { status: 400 });
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedEmail = normalizeEmail(email);
     const clientIp = extractClientIp(request.headers);
 
     try {
