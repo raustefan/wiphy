@@ -7,7 +7,7 @@ export async function GET() {
     await requireAdmin();
 
     const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true, status: true },
       orderBy: { name: "asc" },
     });
 

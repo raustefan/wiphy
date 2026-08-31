@@ -14,7 +14,6 @@ import {
     Button,
     Container,
     Card,
-    Table,
     Badge,
     Separator,
     Box,
@@ -27,24 +26,18 @@ import {
     UserCircle,
     IdCard,
     Calendar,
-    CheckCircle2,
-    Clock,
-    Mail,
     SlidersHorizontal,
     Send,
-    Pencil,
     BookOpen,
     Rows3,
-    Star,
     ToggleLeft,
     UserCog,
     ArrowRight,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
-import { DashboardUserActions } from "./DashboardUserActions";
+import { DashboardUsersTable } from "./DashboardUsersTable";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import { formatStatus, getStatusTone } from "@/lib/statusLabels";
-import type { Status } from "@prisma/client";
+import { formatStatus } from "@/lib/statusLabels";
 
 function formatDate(d?: string | Date | null) {
     if (!d) return "—";
@@ -54,18 +47,6 @@ function formatDate(d?: string | Date | null) {
         month: "long",
         day: "numeric",
     });
-}
-
-function getStatusIcon(status?: Status | string) {
-    switch (status) {
-        case "EHRENMITGLIED":
-            return <Star size={14} />;
-        case "ORDENTLICHES_MITGLIED":
-            return <CheckCircle2 size={14} />;
-        case "KEIN_MITGLIED":
-        default:
-            return <Clock size={14} />;
-    }
 }
 
 export default async function DashboardPage() {
@@ -352,100 +333,19 @@ export default async function DashboardPage() {
 
                     <Separator size="4" mb="4" />
 
-                    <Box style={{ overflowX: "auto" }} mx={{ initial: "-4", sm: "0" }}>
-                        <Table.Root variant="surface" style={{ minWidth: 640 }}>
-                            <Table.Header>
-                                <Table.Row>
-                                    {isAdmin && (
-                                        <Table.ColumnHeaderCell>
-                                            <Flex align="center" gap="2">
-                                                <IdCard size={14} />
-                                                ID
-                                            </Flex>
-                                        </Table.ColumnHeaderCell>
-                                    )}
-                                    <Table.ColumnHeaderCell>
-                                        <Flex align="center" gap="2">
-                                            <User size={14} />
-                                            Name
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>
-                                        <Flex align="center" gap="2">
-                                            <UserCircle size={14} />
-                                            Rolle
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>
-                                        <Flex align="center" gap="2">
-                                            <CheckCircle2 size={14} />
-                                            Mitgliedschaft
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>
-                                        <Flex align="center" gap="2">
-                                            <Mail size={14} />
-                                            E-Mail-Status
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell align="right">
-                                        <Flex align="center" gap="2" justify="end">
-                                            <Pencil size={14} />
-                                            Aktion
-                                        </Flex>
-                                    </Table.ColumnHeaderCell>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                {users.map((u) => (
-                                    <Table.Row key={u.id}>
-                                        {isAdmin && (
-                                            <Table.Cell>
-                                                <Text>{u.mitgliedId || "—"}</Text>
-                                            </Table.Cell>
-                                        )}
-                                        <Table.Cell>
-                                            <Text weight="medium">
-                                                {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
-                                            </Text>
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <Badge color={u.role === "ADMIN" ? "red" : "blue"} variant="soft">
-                                                {u.role === "ADMIN" ? "Admin" : "Member"}
-                                            </Badge>
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <Badge color={getStatusTone(u.status)} variant="soft">
-                                                {getStatusIcon(u.status)}
-                                                {formatStatus(u.status)}
-                                            </Badge>
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <Badge color={(u as any).emailVerified ? "green" : "orange"} variant="soft">
-                                                {(u as any).emailVerified ? (
-                                                    <CheckCircle2 size={14} />
-                                                ) : (
-                                                    <Clock size={14} />
-                                                )}
-                                                {(u as any).emailVerified ? "Verifiziert" : "Nicht verifiziert"}
-                                            </Badge>
-                                        </Table.Cell>
-                                        <Table.Cell align="right">
-                                            <DashboardUserActions
-                                                user={{
-                                                    id: u.id,
-                                                    email: u.email,
-                                                    vorname: u.vorname,
-                                                    name: u.name,
-                                                }}
-                                                isAdmin={isAdmin}
-                                            />
-                                        </Table.Cell>
-                                    </Table.Row>
-                                ))}
-                            </Table.Body>
-                        </Table.Root>
-                    </Box>
+                    <DashboardUsersTable
+                        users={users.map((u) => ({
+                            id: u.id,
+                            email: u.email,
+                            vorname: u.vorname,
+                            name: u.name,
+                            mitgliedId: u.mitgliedId,
+                            role: u.role,
+                            status: u.status,
+                            emailVerified: u.emailVerified,
+                        }))}
+                        isAdmin={isAdmin}
+                    />
                 </Card>
             </Container>
         </Box>

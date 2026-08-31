@@ -28,6 +28,7 @@ export function RegSuccessDialog() {
                 <AlertDialog.Title>Account beantragt!</AlertDialog.Title>
                 <AlertDialog.Description size="2" mb="3">
                     Die Registierung war erfolgreich. Unser Vorstand wird sich bald bei dir melden!
+                    Du kannst bereits jetzt deine E-Mail-Adresse bestätigen, um den Prozess zu beschleunigen.   
                 </AlertDialog.Description>
                 <Flex gap="3" justify="end" mt="2">
                     <AlertDialog.Action>

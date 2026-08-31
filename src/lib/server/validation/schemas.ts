@@ -81,9 +81,12 @@ export const adminCreateUserSchema = registerSchema.extend({
 /** Rundmail: Gruppen oder einzeln ausgewählte Nutzer (IDs per FormData getAll) */
 export const mailSendSchema = z
   .object({
-    target: z.enum(["ALL", "MEMBER", "ADMIN", "SELECTED"], {
-      message: "Ungültige Empfänger-Gruppe.",
-    }),
+    target: z.enum(
+      ["ALL", "EHRENMITGLIED", "ORDENTLICHES_MITGLIED", "KEIN_MITGLIED", "SELECTED"],
+      {
+        message: "Ungültige Empfänger-Gruppe.",
+      },
+    ),
     subject: z
       .string()
       .trim()

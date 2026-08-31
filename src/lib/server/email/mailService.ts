@@ -29,18 +29,20 @@ export async function resolveUsersByIds(userIds: string[]) {
   return found;
 }
 
-export async function resolveUsersByTarget(target: "ALL" | "MEMBER" | "ADMIN") {
+type StatusTarget = "EHRENMITGLIED" | "ORDENTLICHES_MITGLIED" | "KEIN_MITGLIED";
+
+export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
   if (target === "ALL") {
     return prisma.user.findMany({ select: { email: true, vorname: true, name: true } });
   }
   return prisma.user.findMany({
-    where: { role: target },
+    where: { status: target },
     select: { email: true, vorname: true, name: true },
   });
 }
 
 export async function resolveRecipientEmails(input: {
-  target: "ALL" | "MEMBER" | "ADMIN" | "SELECTED";
+  target: "ALL" | StatusTarget | "SELECTED";
   selectedUserIds: string[];
 }) {
   if (input.target === "SELECTED") {
@@ -160,7 +162,7 @@ export async function sendMailToUsers(input: {
   });
 }
 
-export type MailTarget = "ALL" | "MEMBER" | "ADMIN" | "SELECTED";
+export type MailTarget = "ALL" | StatusTarget | "SELECTED";
 
 export async function sendMailForTarget(input: {
   target: MailTarget;

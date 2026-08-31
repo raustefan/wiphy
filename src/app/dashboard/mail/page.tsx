@@ -71,14 +71,15 @@ export default function MailDashboardPage() {
 
     return (
         <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
-            <Container size="4" px={{ initial: "4", sm: "5" }}>
+            <Container size="3" px={{ initial: "4", sm: "5" }}>
                 <DashboardPageHeader
                     eyebrow="Internbereich"
                     title="Rundmail verschicken"
+                    description="Wähle eine Empfängergruppe nach Mitgliedsstatus oder einzelne Nutzer aus."
                     backHref="/dashboard"
                 />
 
-                <Card size="3">
+                <Card size={{ initial: "3", sm: "4" }}>
                     <MailForm users={users} onSuccess={(count) => {
                         setSentCount(count);
                         setSuccess(true);

@@ -5,7 +5,7 @@ export function findUsersForDashboard(userId: string, role: Role) {
   const where: Prisma.UserWhereInput | undefined = role === "ADMIN" ? undefined : { id: userId };
   return prisma.user.findMany({
     where,
-    orderBy: [{ mitgliedId: "asc" }, { name: "asc" }],
+    orderBy: [{ mitgliedId: { sort: "asc", nulls: "last" } }, { name: "asc" }],
   });
 }
 

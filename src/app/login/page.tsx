@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Suspense, useState, useEffect, type CSSProperties } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RegSuccessDialog } from "./RegSuccessDialog";
 import { checkLoginFeatureEnabled } from "./actions";
@@ -23,11 +23,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [featureDisabled, setFeatureDisabled] = useState(false);
-    const [captchaRef, setCaptchaRef] = useState<HTMLElement | null>(null);
-
-    useEffect(() => {
-        import("altcha");
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,19 +32,6 @@ export default function LoginPage() {
         if (!loginEnabled) {
             setFeatureDisabled(true);
             return;
-        }
-
-        if (captchaRef) {
-            const formData = new FormData();
-            formData.append("email", email);
-            formData.append("password", password);
-            const altchaInput = captchaRef.querySelector('input[name="altcha"]') as HTMLInputElement;
-            if (altchaInput?.value) {
-                formData.append("altcha", altchaInput.value);
-            } else {
-                setError("Bitte löse die Captcha-Aufgabe.");
-                return;
-            }
         }
 
         const res = await signIn("credentials", {
@@ -79,7 +61,7 @@ export default function LoginPage() {
             />
 
             <Card size="4" style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)" }}>
-                <form onSubmit={handleSubmit} ref={setCaptchaRef}>
+                <form onSubmit={handleSubmit}>
                     <Flex direction="column" gap="5">
                         <Flex direction="column" gap="2" align="center">
                             <Heading as="h1" size="7" align="center">
@@ -136,26 +118,6 @@ export default function LoginPage() {
                                     required
                                 />
                             </Flex>
-                        </Flex>
-
-                        <Flex direction="column" gap="2">
-                            <Text as="label" size="2" weight="bold">
-                                Sicherheitsüberprüfung
-                            </Text>
-                            <altcha-widget
-                                challenge="/api/altcha/challenge"
-                                name="altcha"
-                                style={{
-                                    display: "block",
-                                    width: "100%",
-                                    "--altcha-max-width": "100%",
-                                    "--altcha-border-radius": "var(--radius-3)",
-                                    "--altcha-border-color": "var(--gray-a7)",
-                                    "--altcha-color-base": "var(--color-panel)",
-                                    "--altcha-color-base-content": "var(--gray-12)",
-                                    "--altcha-color-primary": "var(--accent-9)",
-                                } as CSSProperties}
-                            />
                         </Flex>
 
                         <Button type="submit" size="3">
