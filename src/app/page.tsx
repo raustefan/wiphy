@@ -262,11 +262,11 @@ export default async function HomePage() {
             {/* ─── Modul 2: geometrische Brownsche Bewegung ─── */}
             <Box className="lab-module is-market">
               <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap="6" p={{ initial: "4", sm: "6" }}>
-                <Box order={{ initial: "2", md: "1" }}>
+                <Box style={{ order: 2 }} className="order-md-1">
                   <MarketDiffusion />
                 </Box>
 
-                <Flex direction="column" gap="4" order={{ initial: "1", md: "2" }}>
+                <Flex direction="column" gap="4" style={{ order: 1 }} className="order-md-2">
                   <Flex direction="column" gap="2">
                     <Text className="eyebrow" style={{ color: "rgb(var(--market))" }}>
                       Modul II · Statistische Physik

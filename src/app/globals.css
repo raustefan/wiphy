@@ -1119,3 +1119,13 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
     transition: none;
   }
 }
+
+.order-md-1 {
+  order: 2;
+}
+
+@media (min-width: 768px) {
+  .order-md-1 {
+    order: 1;
+  }
+}
