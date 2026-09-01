@@ -1232,6 +1232,167 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   color: var(--gray-10);
 }
 
+/* Kleines Kapitälchen-Label über Überschriften und in der Meta-Karte. */
+.post-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-10);
+}
+
+/* Vorspann: etwas größer und ruhiger als der Fließtext, wie im Zeitungslayout. */
+.post-lede {
+  font-family: var(--font-serif);
+  line-height: 1.6;
+  color: var(--gray-11);
+  text-wrap: pretty;
+  max-width: 62ch;
+}
+
+.post-excerpt {
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .post-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+.post-card--lead::before {
+  transform: scaleY(1);
+  width: 3px;
+}
+
+/* Vorschaubild in der Meta-Zeile (kleines Vereinsfoto neben Datum/Autor). */
+.post-meta-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+
+.post-card-lead-image {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  margin-bottom: 4px;
+}
+
+.post-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  margin-bottom: 8px;
+}
+
+/* Vorschaubild in der Neuigkeiten-Karte auf der Startseite: bewusst klein und
+   mit fester Größe, damit die Karte durch das Bild nicht wächst. */
+.home-post-thumb {
+  width: 92px;
+  height: 92px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+}
+
+@media (min-width: 640px) {
+  .home-post-thumb {
+    width: 132px;
+    height: 132px;
+  }
+}
+
+.article-meta-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+}
+
+/* --------------------------------------------------------------------------
+   Artikelansicht
+   -------------------------------------------------------------------------- */
+
+/* Kopfbereich: Titel/Vorspann und Steckbrief stehen im Markup untereinander
+   (Steckbrief zuerst gelesen wirkt auf dem Telefon aufdringlich), deshalb
+   stapelt es dort in Leserichtung. Ab Tablet wandert der Steckbrief per Grid
+   fest neben den Vorspann — nicht sticky, er bleibt am Kopf der Seite. */
+.article-header {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.article-header-separator {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .article-header {
+    grid-template-columns: 70% auto 1fr;
+    align-items: stretch;
+    gap: 28px;
+  }
+
+  .article-header-separator {
+    display: block;
+    height: auto;
+  }
+}
+
+/* Kein `order` nötig: Die Markup-Reihenfolge (Vorspann, Trenner, Steckbrief)
+   entspricht bereits der Spaltenfolge. */
+.article-intro {
+  min-width: 0;
+}
+
+.article-meta-card {
+  width: 100%;
+}
+
+.article-body {
+  min-width: 0;
+}
+
+.article-body--full {
+  max-width: 70ch;
+}
+
+.article-body .markdown-content {
+  font-size: 1.05rem;
+}
+
+/* Erster Absatz mit Initial — die Zeitungsanmutung, die den Einstieg markiert. */
+.article-body .markdown-content > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-serif);
+  font-size: 3.2em;
+  line-height: 0.82;
+  padding: 0.08em 0.09em 0 0;
+  color: rgb(var(--physics));
+}
+
 /* --------------------------------------------------------------------------
    Vorstand
    -------------------------------------------------------------------------- */

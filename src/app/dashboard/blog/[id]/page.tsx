@@ -55,6 +55,19 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                             </label>
 
                             <label>
+                                <Text size="2" weight="bold">Bildvorschau (URL)</Text>
+                                <TextField.Root
+                                    name="imageUrl"
+                                    type="url"
+                                    defaultValue={post?.imageUrl || ""}
+                                    placeholder="https://.../vorschaubild.jpg"
+                                />
+                                <Text size="1" color="gray">
+                                    Wird auf der Blog-Übersicht und beim Beitrag selbst als Vorschaubild angezeigt.
+                                </Text>
+                            </label>
+
+                            <label>
                                 <Text size="2" weight="bold">Kurze Textpreview (Vorschau-Snippet)</Text>
                                 <TextArea name="preview" defaultValue={post?.preview || ""} placeholder="Kurze Zusammenfassung für die Blog-Übersichtsseite..." required style={{ minHeight: "80px" }} />
                             </label>

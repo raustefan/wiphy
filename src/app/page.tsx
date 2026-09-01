@@ -283,7 +283,8 @@ export default async function HomePage() {
                 href={`/blog/${latestPost.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <Flex direction="column" gap="3" p={{ initial: "1", sm: "2" }}>
+                <Flex gap="4" align="start" p={{ initial: "1", sm: "2" }}>
+                <Flex direction="column" gap="3" style={{ flex: 1, minWidth: 0 }}>
                   <Flex gap="4" align="center" wrap="wrap" className="post-meta">
                     <Flex gap="1" align="center">
                       <CalendarDays size={14} />
@@ -304,6 +305,14 @@ export default async function HomePage() {
                   <Text color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.75 }} as="div">
                     {latestPost.preview}
                   </Text>
+                </Flex>
+
+                  {/* Kleines Vorschaubild rechts — feste Größe, damit die Karte
+                      nicht höher wird als ohne Bild. */}
+                  {latestPost.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={latestPost.imageUrl} alt="" className="home-post-thumb" />
+                  )}
                 </Flex>
               </Link>
 

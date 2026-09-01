@@ -188,6 +188,13 @@ export const blogSaveSchema = z.object({
     .max(200, "Autor ist zu lang."),
   publishedAt: z.coerce.date().default(() => new Date()),
   published: z.boolean(),
+  imageUrl: z
+    .string()
+    .trim()
+    .max(2000, "Bild-URL ist zu lang.")
+    .optional()
+    .or(z.literal(""))
+    .transform((value) => (value ? value : null)),
 });
 
 export const blogDeleteSchema = z.object({

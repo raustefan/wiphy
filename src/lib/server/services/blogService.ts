@@ -32,6 +32,7 @@ export async function saveAdminPost(input: {
   author: string;
   publishedAt: Date;
   published: boolean;
+  imageUrl?: string | null;
 }) {
   if (input.id === "new") {
     await createPost({
@@ -41,6 +42,7 @@ export async function saveAdminPost(input: {
       author: input.author,
       publishedAt: input.publishedAt,
       published: input.published,
+      imageUrl: input.imageUrl,
     });
     return;
   }
@@ -52,6 +54,7 @@ export async function saveAdminPost(input: {
     author: input.author,
     publishedAt: input.publishedAt,
     published: input.published,
+    imageUrl: input.imageUrl,
   });
 }
 

@@ -21,6 +21,7 @@ export async function savePost(formData: FormData) {
             author: String(formData.get("author") ?? ""),
             publishedAt: String(formData.get("publishedAt") ?? ""),
             published: formData.get("published") === "on",
+            imageUrl: String(formData.get("imageUrl") ?? ""),
         };
         const parsed = blogSaveSchema.safeParse(raw);
         if (!parsed.success) {

@@ -28,6 +28,7 @@ export function createPost(data: {
   author: string;
   publishedAt: Date;
   published: boolean;
+  imageUrl?: string | null;
 }) {
   return prisma.blogPost.create({ data });
 }
@@ -41,6 +42,7 @@ export function updatePost(
     author: string;
     publishedAt: Date;
     published: boolean;
+    imageUrl?: string | null;
   },
 ) {
   return prisma.blogPost.update({
