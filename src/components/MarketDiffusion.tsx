@@ -343,7 +343,7 @@ export default function MarketDiffusion() {
 
   return (
     <Flex direction="column" gap="3">
-      <div className="lab-canvas" style={{ height: 320 }}>
+      <div className="lab-canvas">
         <canvas
           ref={canvasRef}
           style={{ width: "100%", height: "100%", display: "block" }}
@@ -376,7 +376,7 @@ export default function MarketDiffusion() {
         ))}
       </Flex>
 
-      <Flex gap="3" wrap="wrap">
+      <div className="readout-grid">
         <dl className="readout">
           <dt>Drift μ</dt>
           <dd>{(MU * 100).toFixed(0)} %</dd>
@@ -394,17 +394,16 @@ export default function MarketDiffusion() {
           <dd>
             {probe
               ? `${probe.lo.toFixed(2)}–${probe.hi.toFixed(2)}×`
-              : "Zeiger in die Zukunft"}
+              : "In die Zukunft tippen"}
           </dd>
         </dl>
-      </Flex>
+      </div>
 
       <Text size="1" color="gray" style={{ lineHeight: 1.65 }}>
-        Teal: der realisierte Kurs. Rechts vom Jetzt-Strich die vollständige
-        Verteilung — 68-%- und 95-%-Band, gestrichelt der Median, gepunktet der
-        Erwartungswert. Dass beide auseinanderlaufen, ist der σ²/2-Term aus Itôs
-        Lemma. Zeiger in den Prognosebereich bewegen, um die Dichte von ln S an
-        einem Horizont zu sehen.
+        Links vom Jetzt-Strich der realisierte Kurs, rechts davon die
+        Verteilung: 68-%- und 95-%-Band, gestrichelt der Median, gepunktet der
+        Erwartungswert. In den Prognosebereich tippen zeigt die Dichte an einem
+        Horizont.
       </Text>
     </Flex>
   );

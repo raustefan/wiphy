@@ -3,9 +3,11 @@ import "./globals.css";
 import AppThemeProvider from "@/components/AppThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Fraunces } from "next/font/google";
-import { JetBrains_Mono } from "next/font/google";
-import { Space_Grotesk } from "next/font/google";
+import type { Viewport } from "next";
+import { Newsreader } from "next/font/google";
+import { Bricolage_Grotesque } from "next/font/google";
+import { Instrument_Sans } from "next/font/google";
+import { Spline_Sans_Mono } from "next/font/google";
 
 export const metadata = {
   title: {
@@ -19,37 +21,60 @@ export const metadata = {
   },
 };
 
-const serif = Fraunces({
+/**
+ * `themeColor` färbt in iOS-Safari die Browserleiste. Der Wert hier ist nur
+ * der Startwert für den hellen Modus — das eigentliche Umschalten übernimmt
+ * das Inline-Skript unten bzw. `AppThemeProvider`, weil ein Media-Query-
+ * basiertes theme-color den manuellen Umschalter ignorieren würde.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#fbfbfa",
+};
+
+/* Fraunces/Space Grotesk wurden ersetzt: Newsreader (Editorial-Serif mit
+   eigenwilliger Kursiven), Bricolage Grotesque (leicht schräge Grotesk fürs
+   UI-Chrome), Instrument Sans für den Fließtext und Spline Sans Mono für
+   Messwerte. */
+const serif = Newsreader({
   subsets: ["latin"],
   variable: "--font-serif",
-  weight: ["400", "600", "700"],
-  style: ["italic", "normal"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const mono = JetBrains_Mono({
+const mono = Spline_Sans_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-  weight: ["400", "500", "700"],
+  display: "swap",
 });
 
-const display = Space_Grotesk({
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const body = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="de"
-      className={`${serif.variable} ${mono.variable} ${display.variable}`}
+      className={`${serif.variable} ${mono.variable} ${display.variable} ${body.variable}`}
       suppressHydrationWarning
     >
       <head>
         <script
-          // Sets the appearance attribute before hydration to avoid a flash of the wrong theme.
+          // Setzt Appearance *und* theme-color vor der Hydration, damit weder
+          // die Seite noch die iOS-Browserleiste kurz falsch eingefärbt sind.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem("theme-appearance");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme-appearance",t);}catch(e){}})();`,
+            __html: `(function(){try{var s=localStorage.getItem("theme-appearance");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme-appearance",t);document.documentElement.style.colorScheme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="dark"?"#0b0d10":"#fbfbfa");}catch(e){}})();`,
           }}
         />
       </head>
@@ -60,15 +85,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="aurora" />
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "100vh",
-            }}
-          >
+          <div className="site-shell">
             <Header />
-            <main style={{ flex: 1, padding: "24px 16px" }}>{children}</main>
+            <main className="site-main">{children}</main>
             <Footer />
           </div>
         </AppThemeProvider>

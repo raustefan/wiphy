@@ -123,15 +123,7 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
     };
 
     return (
-        <Container
-            size="4"
-            style={{
-                paddingTop: "5vh",
-                paddingBottom: "5vh",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-            }}
-        >
+        <Container size="4" px="0" py={{ initial: "4", sm: "7" }}>
             <Suspense fallback={null}>
                 <RegSuccessDialog />
             </Suspense>

@@ -3,10 +3,16 @@ import Link from "next/link";
 
 export default function ImpressumPage() {
     return (
-        <Container size="3" mt="6" mb="9">
-            <Flex justify="between" mb="6" align="center">
-                <Heading as="h1" size="8">Impressum</Heading>
-                <Button variant="soft" asChild>
+        <Container size="3" px="0" pt={{ initial: "4", sm: "6" }} pb="9">
+            <Flex
+                direction={{ initial: "column", xs: "row" }}
+                justify="between"
+                align={{ initial: "start", xs: "center" }}
+                gap="3"
+                mb={{ initial: "5", sm: "6" }}
+            >
+                <Heading as="h1" size={{ initial: "7", sm: "8" }} className="display-title">Impressum</Heading>
+                <Button variant="soft" radius="full" asChild>
                     <Link href="/">← Zurück zur Startseite</Link>
                 </Button>
             </Flex>
@@ -15,7 +21,7 @@ export default function ImpressumPage() {
                 <Text size="4" weight="bold">
                     Wirtschaftsphysik Alumni e.V.
                 </Text>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     c/o Universität Ulm
                     <br />
                     Studienkommission Physik
@@ -25,7 +31,7 @@ export default function ImpressumPage() {
                     D – 89081 Ulm
                 </Text>
 
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     E-Mail:{" "}
                     <a href="mailto:info@wirtschaftsphysik.de">
                         info@wirtschaftsphysik.de
@@ -38,7 +44,7 @@ export default function ImpressumPage() {
                 <Text size="4" weight="bold">
                     Vertretungsberechtigter Vorstand
                 </Text>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Nikolas Tomek (1. Vorsitzender)
                     <br />
                     Jannes Weghake (2. Vorsitzender)
@@ -46,7 +52,7 @@ export default function ImpressumPage() {
 
                 <Separator size="4" my="2" />
 
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Registergericht: Amtsgericht Ulm
                     <br />
                     Registernummer: VR 1891
@@ -57,7 +63,7 @@ export default function ImpressumPage() {
                 <Text size="4" weight="bold">
                     Bankverbindung
                 </Text>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Kontoinhaber: Wirtschaftsphysik Alumni e.V.
                     <br />
                     IBAN: DE23 6305 0000 0021 0300 28
@@ -69,7 +75,7 @@ export default function ImpressumPage() {
 
                 <Separator size="4" my="2" />
 
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Homepage gestaltet von: Stefan Rau
                 </Text>
 
@@ -78,7 +84,7 @@ export default function ImpressumPage() {
                 <Text size="4" weight="bold">
                     Haftungshinweis
                 </Text>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine
                     Haftung für die Inhalte externer Links. Für den Inhalt der
                     verlinkten Seiten sind ausschließlich deren Betreiber

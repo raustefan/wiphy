@@ -5,8 +5,12 @@
    --------------------------------------------------------------------------
    Bildsprache: Laborheft trifft Editorial. Millimeterpapier-Raster, feines
    Korn und ein ruhiges Aurora-Feld im Hintergrund; darüber eine strenge
-   typografische Hierarchie aus Fraunces (Serif, Stimme), Space Grotesk
-   (Display, UI-Chrome) und JetBrains Mono (Messwerte, Formeln, Marker).
+   typografische Hierarchie aus Newsreader (Serif, Stimme), Bricolage Grotesque
+   (Display, UI-Chrome), Instrument Sans (Fließtext) und Spline Sans Mono
+   (Messwerte, Formeln, Marker).
+
+   Alle Größen und Abstände sind mobile-first notiert: der Grundwert gilt fürs
+   Telefon, Media-Queries bauen nach oben aus.
    Zwei Akzente tragen die inhaltliche Dualität des Vereins:
      · Teal  = Physik / Quantenmechanik
      · Ruby  = Ökonomie / Märkte — beide Farben stammen aus dem Vereinslogo.
@@ -38,11 +42,23 @@
   --lift-2: 0 1px 2px rgba(16, 24, 32, 0.06), 0 24px 60px -28px rgba(16, 24, 32, 0.45);
 
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+    var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Seitenrand: eine Variable, damit Header, Main und Footer bündig laufen. */
+  --gutter: 16px;
+
+  color-scheme: light;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
 }
 
 html[data-theme-appearance="dark"] {
+  color-scheme: dark;
   --background: #0b0d10;
   --foreground: #e8eaed;
 
@@ -71,6 +87,9 @@ html[data-theme-appearance="dark"] {
 
 html {
   scroll-behavior: smooth;
+  /* Verhindert, dass iOS beim Drehen die Schrift eigenmächtig hochskaliert. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -85,6 +104,38 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* `clip` statt `hidden`: kappt seitliche Ausreißer, ohne position:sticky
+     im Header zu brechen. */
+  overflow-x: clip;
+}
+
+/* Gerüst: Header — Inhalt — Footer, Footer klebt unten. 100dvh, damit die
+   ein- und ausfahrende Adressleiste in iOS nicht am Layout zerrt. */
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.site-main {
+  flex: 1;
+  width: 100%;
+  padding: 16px var(--gutter) 32px;
+}
+
+@media (min-width: 640px) {
+  .site-main {
+    padding: 24px var(--gutter) 48px;
+  }
+}
+
+/* Bilder und Medien brechen nie aus ihrem Container aus. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
 }
 
 /* --------------------------------------------------------------------------
@@ -166,12 +217,16 @@ body {
   letter-spacing: -0.015em;
 }
 
-/* Display-Überschriften: optischer Ausgleich bei großen Graden. */
+/* Display-Überschriften: optischer Ausgleich bei großen Graden. Newsreader
+   läuft enger als Fraunces, deshalb weniger negatives Tracking. */
 .display-title {
   font-family: var(--font-serif);
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  letter-spacing: -0.018em;
+  line-height: 1.08;
   text-wrap: balance;
+  /* Lange Komposita („Wirtschaftsphysik“) dürfen auf schmalen Displays
+     notfalls umbrechen statt zu überlaufen. */
+  overflow-wrap: break-word;
 }
 
 /* Verlaufstext für einzelne Wörter in Headlines. */
@@ -196,10 +251,18 @@ body {
 
 .eyebrow {
   font-family: var(--font-display);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 640px) {
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+  }
 }
 
 .radix-themes .site-nav a,
@@ -230,15 +293,24 @@ body {
 .formula {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
+  font-size: 0.9em;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  /* Auf dem Telefon darf eine Inline-Formel umbrechen — sonst schiebt sie den
+     ganzen Absatz seitlich aus dem Viewport. */
+  white-space: normal;
+}
+
+@media (min-width: 640px) {
+  .formula {
+    white-space: nowrap;
+  }
 }
 
 .formula-block {
   display: block;
   overflow-x: auto;
-  padding: 14px 18px;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px;
   border-left: 2px solid rgb(var(--physics));
   background: linear-gradient(
     90deg,
@@ -247,9 +319,16 @@ body {
   );
   border-radius: 0 8px 8px 0;
   font-family: var(--font-mono);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   line-height: 1.7;
   color: var(--foreground);
+}
+
+@media (min-width: 640px) {
+  .formula-block {
+    padding: 14px 18px;
+    font-size: 0.92rem;
+  }
 }
 
 .formula-block.is-market {
@@ -273,17 +352,17 @@ body {
    -------------------------------------------------------------------------- */
 .section {
   position: relative;
-  padding-block: clamp(56px, 9vw, 112px);
+  padding-block: clamp(40px, 9vw, 112px);
 }
 
 /* Kapitelmarke: Mono-Nummer + Haarlinie, wie eine Laborheft-Seitenzahl. */
 .section-marker {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 16px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gray-10);
@@ -307,12 +386,18 @@ body {
 .panel {
   position: relative;
   border: 1px solid var(--hairline);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--surface);
   backdrop-filter: blur(14px) saturate(1.3);
   -webkit-backdrop-filter: blur(14px) saturate(1.3);
   box-shadow: var(--lift-1);
   overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .panel {
+    border-radius: 18px;
+  }
 }
 
 /* Eckmarken wie auf einem Messblatt. */
@@ -388,7 +473,7 @@ body {
 .lab-module {
   position: relative;
   border: 1px solid var(--hairline);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--surface);
   backdrop-filter: blur(16px) saturate(1.25);
   -webkit-backdrop-filter: blur(16px) saturate(1.25);
@@ -412,6 +497,12 @@ body {
   opacity: 0.7;
 }
 
+@media (min-width: 640px) {
+  .lab-module {
+    border-radius: 20px;
+  }
+}
+
 .lab-module.is-market {
   --accent-rgb: var(--market);
 }
@@ -419,7 +510,10 @@ body {
 .lab-canvas {
   position: relative;
   width: 100%;
-  border-radius: 14px;
+  /* Höhe skaliert mit dem Viewport statt fix 320px — auf dem Telefon bleibt
+     die Grafik so lesbar, ohne den halben Bildschirm zu verschlucken. */
+  height: clamp(200px, 46vw, 320px);
+  border-radius: 12px;
   border: 1px solid var(--hairline);
   background:
     radial-gradient(
@@ -429,15 +523,20 @@ body {
     ),
     var(--surface-solid);
   overflow: hidden;
-  touch-action: none;
+  /* pan-y statt none: der Finger darf über der Grafik weiterscrollen und
+     zugleich horizontal den Prognosehorizont abtasten. */
+  touch-action: pan-y;
 }
 
 /* Auswahl-Chips unter den Simulationen. */
 .chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 4px 11px;
+  /* 36px hoch: erreicht die Mindestgröße für Fingerziele. */
+  min-height: 36px;
+  padding: 6px 13px;
   border-radius: 999px;
   border: 1px solid var(--hairline-strong);
   background: transparent;
@@ -445,16 +544,20 @@ body {
   font-family: var(--font-mono);
   font-size: 0.74rem;
   line-height: 1.5;
+  white-space: nowrap;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background 0.16s ease,
     color 0.16s ease,
     border-color 0.16s ease;
 }
 
-.chip:hover {
-  border-color: rgb(var(--accent-rgb, var(--physics)));
-  color: var(--foreground);
+@media (hover: hover) {
+  .chip:hover {
+    border-color: rgb(var(--accent-rgb, var(--physics)));
+    color: var(--foreground);
+  }
 }
 
 .chip[aria-pressed="true"] {
@@ -473,14 +576,28 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 }
 
 /* Messwert-Anzeige (Live-Readout einer Simulation). */
+/* Messwerte liegen in einem Raster statt in einer Zeile: auf dem Telefon zwei
+   Spalten, ab Tablet so viele wie hineinpassen. */
+.readout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .readout-grid {
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  }
+}
+
 .readout {
   display: grid;
   gap: 2px;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid var(--hairline);
   background: color-mix(in srgb, var(--surface-solid) 70%, transparent);
-  min-width: 104px;
+  min-width: 0;
 }
 
 .readout dt {
@@ -495,7 +612,7 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   margin: 0;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--foreground);
 }
@@ -516,9 +633,34 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
     background 0.2s ease;
 }
 
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px var(--gutter);
+}
+
+@media (min-width: 640px) {
+  .header-bar {
+    padding: 12px var(--gutter);
+  }
+}
+
 .site-header[data-scrolled="true"] {
   border-bottom-color: var(--hairline);
   background: color-mix(in srgb, var(--background) 88%, transparent);
+}
+
+/* Mobiles Menü: Einträge groß genug, um sie mit dem Daumen zu treffen. */
+.mobile-menu {
+  min-width: 200px;
+}
+
+.mobile-menu .rt-BaseMenuItem {
+  min-height: 42px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
 }
 
 .nav-link {
@@ -576,7 +718,7 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 18px;
   border: 1px solid var(--hairline);
   background:
     radial-gradient(
@@ -603,22 +745,37 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   );
 }
 
+@media (min-width: 640px) {
+  .hero {
+    border-radius: 24px;
+  }
+}
+
+/* Kennzahlen: auf dem Telefon drei gleich breite Spalten (statt umbrechender
+   Flex-Zeile, die die Trennlinien an unsinnige Stellen setzt). */
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  max-width: 420px;
+}
+
 .hero-metric {
   display: grid;
   gap: 2px;
-  padding-inline: 18px;
+  padding-inline: 10px;
   border-left: 1px solid var(--hairline);
+  text-align: center;
 }
 
 .hero-metric:first-child {
   border-left: 0;
-  padding-left: 0;
 }
 
 .hero-metric-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--foreground);
@@ -626,10 +783,25 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 
 .hero-metric-label {
   font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--gray-10);
+}
+
+@media (min-width: 640px) {
+  .hero-metric {
+    padding-inline: 18px;
+  }
+
+  .hero-metric-value {
+    font-size: 1.35rem;
+  }
+
+  .hero-metric-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -979,8 +1151,15 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 }
 
 .history-fact {
-  min-height: 190px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .history-fact {
+    /* Erst ab Tablet gleiche Kachelhöhe — auf dem Telefon stapeln sie
+       untereinander und dürfen so hoch sein wie ihr Text. */
+    min-height: 190px;
+  }
 }
 
 @media (hover: hover) {
@@ -1081,6 +1260,7 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 .site-footer {
   position: relative;
   margin-top: auto;
+  padding-inline: var(--gutter);
   border-top: 1px solid var(--hairline);
   background: color-mix(in srgb, var(--background) 80%, transparent);
 }
@@ -1103,12 +1283,39 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   color: var(--gray-10);
 }
 
-/* Signatur-Gleichung als letzte Zeile der Seite. */
-.footer-signature {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: var(--gray-9);
+/* Footer-Links sind auf dem Telefon Fingerziele, keine Textzeilen. */
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+/* Spaltenraster: eine Spalte fürs Telefon, zwei ab 480px, vier ab Tablet. */
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+
+@media (min-width: 480px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 32px;
+  }
+
+  .footer-grid > :first-child {
+    grid-column: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1120,12 +1327,57 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
   }
 }
 
-.order-md-1 {
-  order: 2;
+/* Im Labormodul steht der Text vor der Grafik: gestapelt auf dem Telefon
+   (erst wissen, was man sieht — dann sehen), nebeneinander ab Tablet, wo der
+   Text links und die Grafik rechts landet. Die Grafik steht im Markup zuerst,
+   deshalb dreht `order` sie um. */
+.lab-copy {
+  order: 1;
 }
 
-@media (min-width: 768px) {
-  .order-md-1 {
-    order: 1;
+.lab-figure {
+  order: 2;
+}
+/* --------------------------------------------------------------------------
+   Mobile-Feinschliff
+   -------------------------------------------------------------------------- */
+
+/* iOS zoomt beim Fokussieren in jedes Feld, dessen Schrift kleiner als 16px
+   ist. Auf schmalen Viewports werden Eingaben deshalb grundsätzlich auf 16px
+   gesetzt — sichtbar ändert sich fast nichts, das Springen hört auf. */
+@media (max-width: 639px) {
+  input,
+  textarea,
+  select,
+  .rt-TextFieldInput,
+  .rt-TextAreaInput {
+    font-size: 16px;
   }
+}
+
+/* Fingerziele: alles Klickbare ist mindestens 40px hoch. Radix-Buttons in
+   Größe 1/2 liegen darunter. */
+@media (pointer: coarse) {
+  .radix-themes :where(button.rt-Button, a.rt-Button, button.rt-IconButton) {
+    min-height: 40px;
+  }
+
+  .radix-themes .rt-IconButton {
+    min-width: 40px;
+  }
+}
+
+/* Auf dem Telefon füllen Buttons in gestapelten Aktionsleisten die Breite —
+   sonst stehen sie als schmale Inseln im Layout. */
+@media (max-width: 519px) {
+  .radix-themes .rt-Flex[data-accent-color] > a.rt-Button,
+  .stack-actions > * {
+    width: 100%;
+  }
+}
+
+/* Radix-Container haben eigene Innenabstände; die Seiten setzen px="0" und
+   überlassen den Rand `--gutter` am .site-main. */
+.radix-themes .rt-Container {
+  max-width: 100%;
 }

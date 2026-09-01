@@ -13,7 +13,6 @@ import {
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PenLine } from "lucide-react";
 import PhysicsHero from "@/components/PhysicsHero";
-import QuantumOscillator from "@/components/QuantumOscillator";
 import MarketDiffusion from "@/components/MarketDiffusion";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 
@@ -67,12 +66,12 @@ export default async function HomePage() {
           <PhysicsHero />
           <div className="hero-veil" aria-hidden="true" />
 
-          <Container size="3" px="5" style={{ position: "relative" }}>
+          <Container size="3" px="4" style={{ position: "relative" }}>
             <Flex
               direction="column"
               align="center"
-              gap="6"
-              py={{ initial: "8", sm: "9" }}
+              gap={{ initial: "5", sm: "6" }}
+              py={{ initial: "7", sm: "9" }}
               style={{ textAlign: "center" }}
             >
               <Text className="eyebrow" style={{ color: "rgb(var(--physics))" }}>
@@ -90,9 +89,9 @@ export default async function HomePage() {
               </Heading>
 
               <Text
-                size={{ initial: "3", sm: "4" }}
+                size={{ initial: "2", sm: "4" }}
                 color="gray"
-                style={{ maxWidth: 620, lineHeight: 1.7 }}
+                style={{ maxWidth: 620, lineHeight: 1.75 }}
               >
                 Ein gemeinnütziger Verein für Physik- und
                 Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die{" "}
@@ -107,11 +106,11 @@ export default async function HomePage() {
                 justify="center"
                 width={{ initial: "100%", xs: "auto" }}
               >
-                <Button size="4" radius="full" asChild>
+                <Button size={{ initial: "3", sm: "4" }} radius="full" asChild>
                   <Link href="/blog">Neuigkeiten &amp; Blog</Link>
                 </Button>
                 <Button
-                  size="4"
+                  size={{ initial: "3", sm: "4" }}
                   radius="full"
                   variant="soft"
                   color="gray"
@@ -124,14 +123,14 @@ export default async function HomePage() {
                 </Button>
               </Flex>
 
-              <Flex gap="0" mt="2" wrap="wrap" justify="center">
+              <div className="hero-metrics">
                 {heroMetrics.map((metric) => (
                   <div key={metric.label} className="hero-metric">
                     <span className="hero-metric-value">{metric.value}</span>
                     <span className="hero-metric-label">{metric.label}</span>
                   </div>
                 ))}
-              </Flex>
+              </div>
             </Flex>
           </Container>
         </Box>
@@ -146,16 +145,16 @@ export default async function HomePage() {
             <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
               Drei Säulen, ein Netzwerk
             </Heading>
-            <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+            <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
               Was in Ulm im Hörsaal beginnt, hört dort nicht auf. Der Verein
               hält die Verbindung zwischen Studium, Forschung und Berufspraxis
               offen — in beide Richtungen.
             </Text>
           </Flex>
 
-          <Grid columns={{ initial: "1", sm: "3" }} gap="4">
+          <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "3", sm: "4" }}>
             {pillars.map((pillar) => (
-              <Card key={pillar.title} size="3" className="feature-card panel panel-ticks">
+              <Card key={pillar.title} size={{ initial: "2", sm: "3" }} className="feature-card panel panel-ticks">
                 <Flex direction="column" gap="3" height="100%" p="2">
                   <span className="card-index">{pillar.index}</span>
                   <Heading as="h3" size="4">
@@ -176,160 +175,68 @@ export default async function HomePage() {
         <section className="section reveal">
           <SectionMarker index="02" label="Die Physik dahinter" />
 
-          <Flex direction="column" gap="3" mb="7" style={{ maxWidth: 760 }}>
+          <Flex direction="column" gap="3" mb="6" style={{ maxWidth: 720 }}>
             <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
-              Zwei Gleichungen, <span className="voice">ein Werkzeugkasten</span>
+              Eine Gleichung, <span className="voice">zwei Welten</span>
             </Heading>
-            <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+            <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
               Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
-              Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Die
-              beiden folgenden Modelle laufen live im Browser und zeigen, wo
-              sich Quantenmechanik und Kapitalmarkt derselben Mathematik
-              bedienen. Beide sind vollständig durchgerechnet, nicht
-              nachgezeichnet.
+              Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Das
+              folgende Modell läuft live im Browser: vollständig durchgerechnet,
+              nicht nachgezeichnet.
             </Text>
           </Flex>
 
-          <Flex direction="column" gap="6">
-            {/* ─── Modul 1: harmonischer Oszillator ─── */}
-            <Box className="lab-module">
-              <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap="6" p={{ initial: "4", sm: "6" }}>
-                <Flex direction="column" gap="4">
-                  <Flex direction="column" gap="2">
-                    <Text
-                      className="eyebrow"
-                      style={{ color: "rgb(var(--physics))" }}
-                    >
-                      Modul I · Quantenmechanik
-                    </Text>
-                    <Heading as="h3" size={{ initial: "5", sm: "6" }}>
-                      Der harmonische Oszillator
-                    </Heading>
-                  </Flex>
+          {/* ─── Geometrische Brownsche Bewegung ─── */}
+          <Box className="lab-module is-market">
+            <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap={{ initial: "5", md: "6" }} p={{ initial: "3", sm: "5", md: "6" }}>
+              <Box className="lab-figure">
+                <MarketDiffusion />
+              </Box>
 
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    Warum ausgerechnet eine Parabel? Weil jedes System, das um
-                    eine stabile Ruhelage schwingt, in erster Näherung gleich
-                    aussieht. Entwickelt man ein beliebiges Potential um sein
-                    Minimum, verschwindet der lineare Term — übrig bleibt ein
-                    quadratischer. Deshalb beschreibt derselbe Hamiltonoperator
-                    ein Molekülgitter, eine Mode des elektromagnetischen Feldes
-                    und das Rauschen eines Regelkreises gleichermaßen.
+              <Flex direction="column" gap="4" className="lab-copy">
+                <Flex direction="column" gap="2">
+                  <Text className="eyebrow" style={{ color: "rgb(var(--market))" }}>
+                    Statistische Physik
                   </Text>
-
-                  <code className="formula-block">
-                    H = p²/2m + ½ mω²x²
-                    <br />
-                    E<sub>n</sub> = ħω (n + ½) &nbsp; n = 0, 1, 2, …
-                    <br />
-                  </code>
-
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    Die Lösung liefert das bekannteste Spektrum der
-                    Quantenmechanik: Die Energie ist quantisiert, die Niveaus
-                    sind äquidistant — und selbst der Grundzustand behält{" "}
-                    <span className="formula">½ħω</span>. Diese
-                    Nullpunktsenergie ist keine Rechenkuriosität, sondern eine
-                    Folge der Unschärferelation{" "}
-                    <span className="formula">Δx·Δp ≥ ħ/2</span>: ein Teilchen
-                    kann nicht gleichzeitig ruhen und exakt im Minimum sitzen.
-                  </Text>
-
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    Interessanter noch sind die <em>kohärenten Zustände</em>{" "}
-                    <span className="formula">|α⟩</span> — Überlagerungen mit
-                    poissonverteilten Gewichten. Ihr Wellenpaket zerfließt
-                    nicht, sondern schwingt als Ganzes: der Schwerpunkt folgt
-                    exakt der klassischen Bahn und
-                    das Unschärfeprodukt bleibt bei minimalen{" "}
-                    <span className="formula">½</span>. Genau hier schlägt die
-                    Quantenmechanik in klassische Mechanik um — und genau dieses
-                    Objekt beschreibt auch das Licht eines Lasers.
-                  </Text>
-
-                  <Text size="1" color="gray" className="formula-legend">
-                    Simulation in natürlichen Einheiten ħ = m = ω = 1.
-                    Zeitentwicklung ψ(x,t) = Σ c<sub>n</sub> ψ<sub>n</sub>(x)
-                    e<sup>−iE<sub>n</sub>t</sup>; Δx·Δp wird pro Bild numerisch
-                    aus dem Gitter bestimmt.
-                  </Text>
+                  <Heading as="h3" size={{ initial: "5", sm: "6" }}>
+                    Vom Pollenkorn zum Kurszettel
+                  </Heading>
                 </Flex>
 
-                <QuantumOscillator />
-              </Grid>
-            </Box>
+                <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                  Ein Pollenkorn im Wasser zittert, weil unzählige Moleküle
+                  dagegenstoßen. Ein Kurs zittert aus demselben Grund — nur
+                  heißen die Stöße hier Kauf und Verkauf. Bachelier schrieb die
+                  Diffusionsgleichung 1900 für die Pariser Börse auf, fünf Jahre
+                  bevor Einstein sie für die Brownsche Bewegung herleitete.
+                </Text>
 
-            {/* ─── Modul 2: geometrische Brownsche Bewegung ─── */}
-            <Box className="lab-module is-market">
-              <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap="6" p={{ initial: "4", sm: "6" }}>
-                <Box style={{ order: 2 }} className="order-md-1">
-                  <MarketDiffusion />
-                </Box>
+                <code className="formula-block is-market">
+                  dS = μS dt + σS dW
+                  <br />
+                  S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW<sub>t</sub></sup>
+                </code>
 
-                <Flex direction="column" gap="4" style={{ order: 1 }} className="order-md-2">
-                  <Flex direction="column" gap="2">
-                    <Text className="eyebrow" style={{ color: "rgb(var(--market))" }}>
-                      Modul II · Statistische Physik
-                    </Text>
-                    <Heading as="h3" size={{ initial: "5", sm: "6" }}>
-                      Vom Pollenkorn zum Kurszettel
-                    </Heading>
-                  </Flex>
+                <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                  Der Term <span className="formula">−σ²/2</span> ist der
+                  aufschlussreichste: Volatilität kostet Rendite. Und die Breite
+                  der Verteilung wächst mit <span className="formula">σ√t</span>,
+                  nicht linear. Deshalb ist eine ehrliche Prognose keine Linie,
+                  sondern ein Kegel.
+                </Text>
 
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    1827 beobachtete Robert Brown, wie Pollenkörner im Wasser
-                    ruckartig zittern. Erst Einstein lieferte 1905 die Erklärung:
-                    unzählige Stöße einzelner Moleküle, deren Summe eine Diffusion
-                    mit <span className="formula">⟨x²⟩ = 2Dt</span> ergibt. Fünf
-                    Jahre zuvor hatte Louis Bachelier in seiner Dissertation
-                    <em> Théorie de la spéculation</em> exakt dieselbe Mathematik
-                    für die Pariser Börse aufgeschrieben — die Diffusions&shy;gleichung
-                    hatte ihren ökonomischen Auftritt vor ihrem physikalischen.
-                  </Text>
+                <Text size="1" color="gray" className="formula-legend">
+                  Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind die
+                  analytischen Quantile der Log-Normalverteilung.
+                </Text>
+              </Flex>
+            </Grid>
+          </Box>
 
-                  <code className="formula-block is-market">
-                    dS = μS dt + σS dW
-                    <br />
-                    d ln S = (μ − σ²/2) dt + σ dW &nbsp; (Itô)
-                    <br />
-                    S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW
-                    <sub>t</sub></sup>
-                  </code>
-
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    Ein Kurs kann allerdings nicht negativ werden, und seine
-                    Ausschläge wachsen mit dem Niveau. Man ersetzt das additive
-                    Rauschen also durch ein multiplikatives — und erhält eine
-                    Langevin-Gleichung mit demselben Wiener-Prozess{" "}
-                    <span className="formula">W</span> wie beim Pollenkorn. Das
-                    Lemma von Itô macht daraus eine gewöhnliche Diffusion in{" "}
-                    <span className="formula">ln S</span>: der Logarithmus des
-                    Kurses ist normalverteilt, der Kurs selbst log-normal.
-                  </Text>
-
-                  <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
-                    Der Term <span className="formula">−σ²/2</span> ist dabei der
-                    aufschlussreichste: Volatilität kostet Rendite. Median und
-                    Erwartungswert der Prognose laufen deshalb sichtbar
-                    auseinander. Und die Breite der Verteilung wächst mit{" "}
-                    <span className="formula">σ√t</span> — nicht linear in der
-                    Zeit. Diese √t-Skalierung ist der Grund, warum eine
-                    ehrliche Prognose keine Linie ist, sondern ein Kegel.
-                  </Text>
-
-                  <Text size="1" color="gray" className="formula-legend">
-                    Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind
-                    keine gefitteten Hüllkurven, sondern die analytischen
-                    Quantile der Log-Normalverteilung.
-                  </Text>
-                </Flex>
-              </Grid>
-            </Box>
-          </Flex>
-
-          <Box mt="7">
-            <Separator size="4" mb="6" />
-            <Grid columns={{ initial: "1", sm: "3" }} gap="6">
+          <Box mt={{ initial: "6", sm: "7" }}>
+            <Separator size="4" mb={{ initial: "5", sm: "6" }} />
+            <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "5", sm: "6" }}>
               {[
                 {
                   k: "Ökonophysik",
@@ -371,12 +278,12 @@ export default async function HomePage() {
           <section className="section reveal">
             <SectionMarker index="03" label="Aus dem Verein" />
 
-            <Card size={{ initial: "3", sm: "4" }} className="post-card panel">
+            <Card size={{ initial: "2", sm: "4" }} className="post-card panel">
               <Link
                 href={`/blog/${latestPost.id}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
-                <Flex direction="column" gap="4" p="2">
+                <Flex direction="column" gap="3" p={{ initial: "1", sm: "2" }}>
                   <Flex gap="4" align="center" wrap="wrap" className="post-meta">
                     <Flex gap="1" align="center">
                       <CalendarDays size={14} />
@@ -394,13 +301,13 @@ export default async function HomePage() {
                     {latestPost.title}
                   </Heading>
 
-                  <Text color="gray" size="3" style={{ lineHeight: 1.75 }} as="div">
+                  <Text color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.75 }} as="div">
                     {latestPost.preview}
                   </Text>
                 </Flex>
               </Link>
 
-              <Flex justify="end" mt="4">
+              <Flex justify={{ initial: "start", sm: "end" }} mt="4">
                 <Button size="3" variant="soft" radius="full" asChild>
                   <Link href="/blog">
                     Alle Beiträge <ArrowRight size={16} />
@@ -429,13 +336,13 @@ export default async function HomePage() {
               align={{ initial: "start", md: "center" }}
               justify="between"
               gap="5"
-              p={{ initial: "5", sm: "8" }}
+              p={{ initial: "4", sm: "6", md: "8" }}
             >
               <Flex direction="column" gap="3" style={{ maxWidth: 560 }}>
                 <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
                   Mitglied werden
                 </Heading>
-                <Text size="3" color="gray" style={{ lineHeight: 1.75 }}>
+                <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
                   Offen für Alumni und Studierende der Physik und
                   Wirtschaftsphysik an der Universität Ulm. Die Registrierung
                   dauert wenige Minuten — den Rest übernehmen wir.
@@ -447,12 +354,12 @@ export default async function HomePage() {
                 gap="3"
                 width={{ initial: "100%", md: "auto" }}
               >
-                <Button size="4" radius="full" asChild>
+                <Button size={{ initial: "3", sm: "4" }} radius="full" asChild>
                   <Link href="/register">
                     Jetzt registrieren <ArrowRight size={16} />
                   </Link>
                 </Button>
-                <Button size="4" radius="full" variant="soft" color="gray" highContrast asChild>
+                <Button size={{ initial: "3", sm: "4" }} radius="full" variant="soft" color="gray" highContrast asChild>
                   <Link href="/vorstand">Unser Vorstand </Link>
                 </Button>
               </Flex>

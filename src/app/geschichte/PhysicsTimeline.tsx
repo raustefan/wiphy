@@ -224,8 +224,8 @@ export function PhysicsTimeline() {
 
   return (
     <Box className="history-shell">
-      <Grid columns={{ initial: "1", lg: "1.1fr 0.9fr" }} gap="5" align="start">
-        <Card size="4" className="history-panel">
+      <Grid columns={{ initial: "1", lg: "1.1fr 0.9fr" }} gap={{ initial: "4", sm: "5" }} align="start">
+        <Card size={{ initial: "2", sm: "4" }} className="history-panel">
           <Flex direction="column" gap="4">
             <Flex justify="between" gap="3" align={{ initial: "start", sm: "center" }} wrap="wrap">
               <Box>
@@ -235,7 +235,9 @@ export function PhysicsTimeline() {
                     Chronologie
                   </Text>
                 </Flex>
-                <Heading as="h2" size="6">Meilensteine seit 1960</Heading>
+                <Heading as="h2" size={{ initial: "5", sm: "6" }} className="display-title">
+                  Meilensteine seit 1960
+                </Heading>
               </Box>
 
               <Flex gap="2" wrap="wrap">
@@ -244,6 +246,7 @@ export function PhysicsTimeline() {
                     key={category.id}
                     type="button"
                     size="2"
+                    radius="full"
                     variant={filter === category.id ? "solid" : "soft"}
                     color={filter === category.id ? undefined : "gray"}
                     onClick={() => selectFilter(category.id)}
@@ -275,7 +278,7 @@ export function PhysicsTimeline() {
           </Flex>
         </Card>
 
-        <Card size="4" className="history-detail">
+        <Card size={{ initial: "2", sm: "4" }} className="history-detail">
           <Flex direction="column" gap="4">
             <Flex justify="between" align="start" gap="3">
               <Box>
@@ -283,10 +286,10 @@ export function PhysicsTimeline() {
                   {categoryIcon(activeEvent.category)}
                   {categoryLabel(activeEvent.category)}
                 </Badge>
-                <Heading as="h2" size="7" mt="3" mb="2">
+                <Heading as="h2" size={{ initial: "5", sm: "7" }} mt="3" mb="2" className="display-title">
                   {activeEvent.title}
                 </Heading>
-                <Text size="5" color="gray" className="history-summary">
+                <Text size={{ initial: "3", sm: "5" }} color="gray" className="history-summary">
                   {activeEvent.summary}
                 </Text>
               </Box>
@@ -297,7 +300,7 @@ export function PhysicsTimeline() {
               {activeEvent.details.map((detail) => (
                 <Flex key={detail} gap="2" align="start">
                   <CheckCircledIcon className="history-check" />
-                  <Text size="3">{detail}</Text>
+                  <Text size={{ initial: "2", sm: "3" }}>{detail}</Text>
                 </Flex>
               ))}
             </Flex>
@@ -305,22 +308,22 @@ export function PhysicsTimeline() {
         </Card>
       </Grid>
 
-      <Grid columns={{ initial: "1", md: "3" }} gap="4" mt="5">
-        <Card size="3" className="history-fact">
+      <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "3", sm: "4" }} mt="5">
+        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
           <HomeIcon className="history-fact-icon" />
           <Heading as="h2" size="4" mb="2">Verein im Register</Heading>
           <Text color="gray" size="2">
             Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulmil eingetragen.
           </Text>
         </Card>
-        <Card size="3" className="history-fact">
+        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
           <BackpackIcon className="history-fact-icon" />
           <Heading as="h2" size="4" mb="2">NC-frei</Heading>
           <Text color="gray" size="2">
             Wirtschaftsphysik ist aktuell weiterhin ohne Numerus Clausus und startet jeweils zum Wintersemester.
           </Text>
         </Card>
-        <Card size="3" className="history-fact">
+        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
           <StarIcon className="history-fact-icon" />
           <Heading as="h2" size="4" mb="2">Drei Jubiläen</Heading>
           <Text color="gray" size="2">

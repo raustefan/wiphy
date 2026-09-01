@@ -1,4 +1,4 @@
-import { Container, Flex, Grid, Separator, Text } from "@radix-ui/themes";
+import { Container, Flex, Separator, Text } from "@radix-ui/themes";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,8 +31,8 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
 export default function Footer() {
   return (
     <footer className="site-footer">
-      <Container size="4" px="4" py="8">
-        <Grid columns={{ initial: "1", sm: "2fr 1fr 1fr 1fr" }} gap="6" mb="7">
+      <Container size="4" px="0" py={{ initial: "6", sm: "8" }}>
+        <div className="footer-grid">
           <Flex direction="column" gap="3" align="start">
             <Image
               src="/logo-plain.png"
@@ -57,23 +57,13 @@ export default function Footer() {
               ))}
             </Flex>
           ))}
-        </Grid>
+        </div>
 
-        <Separator size="4" />
+        <Separator size="4" mt="6" />
 
-        <Flex
-          justify="between"
-          align={{ initial: "start", sm: "center" }}
-          direction={{ initial: "column", sm: "row" }}
-          gap="3"
-          pt="5"
-        >
+        <Flex pt="5">
           <Text size="2" color="gray">
             © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
-          </Text>
-          {/* Signatur: die Bewegungsgleichung, die dieser Seite zugrunde liegt. */}
-          <Text className="footer-signature">
-            iħ ∂ψ/∂t = Ĥψ &nbsp;·&nbsp; dS = μS dt + σS dW
           </Text>
         </Flex>
       </Container>

@@ -7,10 +7,18 @@ export default async function BlogIndexPage() {
     const posts = await getPublishedPosts();
 
     return (
-        <Container size="3" mt="6" mb="6">
-            <Flex justify="between" mb="6" align="center">
-                <Heading as="h1" size="8">Vereins-Blog</Heading>
-                <Button variant="soft" asChild>
+        <Container size="3" px="0" py={{ initial: "4", sm: "6" }}>
+            <Flex
+                direction={{ initial: "column", xs: "row" }}
+                justify="between"
+                align={{ initial: "start", xs: "center" }}
+                gap="3"
+                mb={{ initial: "5", sm: "6" }}
+            >
+                <Heading as="h1" size={{ initial: "7", sm: "8" }} className="display-title">
+                    Vereins-Blog
+                </Heading>
+                <Button variant="soft" radius="full" asChild>
                     <Link href="/">← Zurück zur Startseite</Link>
                 </Button>
             </Flex>
@@ -24,14 +32,14 @@ export default async function BlogIndexPage() {
                     posts.map((post) => (
                         <Card
                             key={post.id}
-                            size={{ initial: "3", sm: "4" }}
-                            className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                            size={{ initial: "2", sm: "4" }}
+                            className="post-card panel"
                         >
                             <Link
                                 href={`/blog/${post.id}`}
                                 style={{ textDecoration: "none", color: "inherit" }}
                             >
-                                <Flex direction="column" gap="4">
+                                <Flex direction="column" gap="3">
                                     <Flex
                                         direction={{ initial: "column", sm: "row" }}
                                         justify="between"
@@ -42,7 +50,7 @@ export default async function BlogIndexPage() {
                                             {post.title}
                                         </Heading>
 
-                                        <Flex gap="4" align="center" className="flex-shrink-0">
+                                        <Flex gap="4" align="center" wrap="wrap" className="post-meta">
                                             <Flex gap="1" align="center">
                                                 <Calendar
                                                     size={16}
@@ -66,7 +74,7 @@ export default async function BlogIndexPage() {
 
                                     <Text
                                         color="gray"
-                                        size="3"
+                                        size={{ initial: "2", sm: "3" }}
                                         style={{ lineHeight: 1.7 }}
                                         as="div"
                                     >

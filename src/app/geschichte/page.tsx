@@ -15,8 +15,8 @@ export default function GeschichtePage() {
         style={{
           position: "relative",
           overflow: "hidden",
-          borderRadius: "var(--radius-5)",
-          marginBottom: "48px",
+          borderRadius: "18px",
+          marginBottom: "40px",
           background:
             "radial-gradient(120% 120% at 50% 0%, var(--accent-4) 0%, var(--accent-3) 45%, var(--color-panel-solid) 100%)",
           border: "1px solid var(--accent-6)",
@@ -39,24 +39,20 @@ export default function GeschichtePage() {
           <Flex
             direction="column"
             align="center"
-            gap="5"
-            py={{ initial: "8", sm: "9" }}
+            gap={{ initial: "4", sm: "5" }}
+            py={{ initial: "7", sm: "9" }}
             style={{ textAlign: "center" }}
           >
             <Text className="eyebrow" size="2" color="blue" weight="medium">
               Seit 1960 gewachsen, seit 2004 organisiert
             </Text>
 
-            <Heading
-              as="h1"
-              size={{ initial: "8", sm: "9" }}
-              style={{ letterSpacing: "-0.02em", lineHeight: 1.08 }}
-            >
-              <span style={{ fontFamily: "var(--font-serif)" }}>Unsere Geschichte</span>
+            <Heading as="h1" size={{ initial: "7", sm: "9" }} className="display-title">
+              Unsere Geschichte
             </Heading>
 
             <Text
-              size={{ initial: "3", sm: "5" }}
+              size={{ initial: "2", sm: "5" }}
               color="gray"
               style={{ maxWidth: "640px", lineHeight: 1.65 }}
             >
@@ -70,7 +66,7 @@ export default function GeschichtePage() {
       </Box>
 
       {/* ---------- Timeline ---------- */}
-      <Container size="4" px="4" mb="9">
+      <Container size="4" px="0" mb={{ initial: "7", sm: "9" }}>
         <PhysicsTimeline />
       </Container>
     </Box>

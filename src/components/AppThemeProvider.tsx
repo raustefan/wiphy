@@ -1,11 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Theme } from "@radix-ui/themes";
 
 type Appearance = "light" | "dark";
 
 const STORAGE_KEY = "theme-appearance";
+
+/** Muss mit --background aus globals.css übereinstimmen. */
+const BAR_COLOR: Record<Appearance, string> = {
+    light: "#fbfbfa",
+    dark: "#0b0d10",
+};
 
 const ThemeContext = createContext<{ appearance: Appearance; toggleAppearance: () => void }>({
     appearance: "light",
@@ -14,6 +20,21 @@ const ThemeContext = createContext<{ appearance: Appearance; toggleAppearance: (
 
 export function useAppearance() {
     return useContext(ThemeContext);
+}
+
+/**
+ * Schreibt die Erscheinung an alle Stellen, die sie brauchen:
+ * `data-theme-appearance` fürs eigene CSS, `color-scheme` für native
+ * Bedienelemente und Scrollbars, und `<meta name="theme-color">` für die
+ * Browserleiste in iOS-Safari — die reagiert auf nichts anderes.
+ */
+function applyAppearance(next: Appearance) {
+    const root = document.documentElement;
+    root.setAttribute("data-theme-appearance", next);
+    root.style.colorScheme = next;
+    document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", BAR_COLOR[next]);
 }
 
 export default function AppThemeProvider({ children }: { children: React.ReactNode }) {
@@ -31,18 +52,19 @@ export default function AppThemeProvider({ children }: { children: React.ReactNo
                 : window.matchMedia("(prefers-color-scheme: dark)").matches
                   ? "dark"
                   : "light";
+        applyAppearance(initial);
         // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with browser storage/media query on mount, not derivable from props/state
         setAppearance(initial);
     }, []);
 
-    const toggleAppearance = () => {
+    const toggleAppearance = useCallback(() => {
         setAppearance((prev) => {
             const next: Appearance = prev === "dark" ? "light" : "dark";
             window.localStorage.setItem(STORAGE_KEY, next);
-            document.documentElement.setAttribute("data-theme-appearance", next);
+            applyAppearance(next);
             return next;
         });
-    };
+    }, []);
 
     return (
         <ThemeContext.Provider value={{ appearance, toggleAppearance }}>

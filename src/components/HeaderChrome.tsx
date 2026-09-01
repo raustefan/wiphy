@@ -47,20 +47,20 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
 
   return (
     <header className="site-header" data-scrolled={scrolled}>
-      <Container size="4">
-        <Flex justify="between" align="center" px="4" py="3">
+      <Container size="4" px="0">
+        <div className="header-bar">
           {/* Wortmarke */}
           <Link
             href="/"
             aria-label="Zur Startseite"
-            style={{ display: "flex", alignItems: "center", gap: 12 }}
+            style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}
           >
             <Image
               src="/logo-plain.png"
               alt="WirtschaftsPhysik Alumni e.V."
               width={54}
               height={28}
-              style={{ objectFit: "contain" }}
+              style={{ objectFit: "contain", flexShrink: 0 }}
               priority
             />
             <Flex
@@ -125,7 +125,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                   <Menu size={18} />
                 </IconButton>
               </DropdownMenu.Trigger>
-              <DropdownMenu.Content align="end">
+              <DropdownMenu.Content align="end" size="2" className="mobile-menu">
                 {links.map((link) => (
                   <DropdownMenu.Item key={link.href} asChild>
                     <Link href={link.href}>{link.label}</Link>
@@ -138,7 +138,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           </Flex>
-        </Flex>
+        </div>
       </Container>
 
       <div

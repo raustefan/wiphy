@@ -3,16 +3,22 @@ import Link from "next/link";
 
 export default function DatenschutzPage() {
     return (
-        <Container size="3" mt="6" mb="9">
-            <Flex justify="between" mb="6" align="center">
-                <Heading as="h1" size="8">Datenschutzerklärung</Heading>
-                <Button variant="soft" asChild>
+        <Container size="3" px="0" pt={{ initial: "4", sm: "6" }} pb="9">
+            <Flex
+                direction={{ initial: "column", xs: "row" }}
+                justify="between"
+                align={{ initial: "start", xs: "center" }}
+                gap="3"
+                mb={{ initial: "5", sm: "6" }}
+            >
+                <Heading as="h1" size={{ initial: "7", sm: "8" }} className="display-title">Datenschutzerklärung</Heading>
+                <Button variant="soft" radius="full" asChild>
                     <Link href="/">← Zurück zur Startseite</Link>
                 </Button>
             </Flex>
 
             <Flex direction="column" gap="4">
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und
                     Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend
                     kurz „Daten") innerhalb unseres Onlineangebotes und der mit ihm
@@ -27,7 +33,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Verantwortlicher</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Wirtschaftsphysik Alumni e.V.
                     <br />
                     c/o Universität Ulm
@@ -40,7 +46,7 @@ export default function DatenschutzPage() {
                     <br />
                     Deutschland
                 </Text>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     E-Mailadresse:{" "}
                     <a href="mailto:info@wirtschaftsphysik.de">
                         info@wirtschaftsphysik.de
@@ -53,7 +59,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Arten der verarbeiteten Daten</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     – Bestandsdaten (z.B., Namen, Adressen).
                     <br />
                     – Kontaktdaten (z.B., E-Mail, Telefonnummern).
@@ -70,7 +76,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Kategorien betroffener Personen</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen
                     wir die betroffenen Personen zusammenfassend auch als „Nutzer").
                 </Text>
@@ -78,7 +84,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Zweck der Verarbeitung</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     – Zurverfügungstellung des Onlineangebotes, seiner Funktionen und
                     Inhalte.
                     <br />
@@ -92,7 +98,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Verwendete Begrifflichkeiten</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     „Personenbezogene Daten" sind alle Informationen, die sich auf
                     eine identifizierte oder identifizierbare natürliche Person (im
                     Folgenden „betroffene Person") beziehen; als identifizierbar
@@ -148,7 +154,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Maßgebliche Rechtsgrundlagen</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Nach Maßgabe des Art. 13 DSGVO teilen wir Ihnen die
                     Rechtsgrundlagen unserer Datenverarbeitungen mit. Sofern die
                     Rechtsgrundlage in der Datenschutzerklärung nicht genannt wird,
@@ -170,7 +176,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Sicherheitsmaßnahmen</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Wir treffen nach Maßgabe des Art. 32 DSGVO unter Berücksichtigung
                     des Stands der Technik, der Implementierungskosten und der Art,
                     des Umfangs, der Umstände und der Zwecke der Verarbeitung sowie
@@ -199,7 +205,7 @@ export default function DatenschutzPage() {
                 <Heading as="h2" size="5">
                     Zusammenarbeit mit Auftragsverarbeitern und Dritten
                 </Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Sofern wir im Rahmen unserer Verarbeitung Daten gegenüber anderen
                     Personen und Unternehmen (Auftragsverarbeitern oder Dritten)
                     offenbaren, sie an diese übermitteln oder ihnen sonst Zugriff auf
@@ -220,7 +226,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Übermittlungen in Drittländer</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Sofern wir Daten in einem Drittland (d.h. außerhalb der
                     Europäischen Union (EU) oder des Europäischen Wirtschaftsraums
                     (EWR)) verarbeiten oder dies im Rahmen der Inanspruchnahme von
@@ -243,7 +249,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Rechte der betroffenen Personen</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob
                     betreffende Daten verarbeitet werden und auf Auskunft über diese
                     Daten sowie auf weitere Informationen und Kopie der Daten
@@ -274,7 +280,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Widerrufsrecht</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Sie haben das Recht, erteilte Einwilligungen gem. Art. 7 Abs. 3
                     DSGVO mit Wirkung für die Zukunft zu widerrufen
                 </Text>
@@ -282,7 +288,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Widerspruchsrecht</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Sie können der künftigen Verarbeitung der Sie betreffenden Daten
                     nach Maßgabe des Art. 21 DSGVO jederzeit widersprechen. Der
                     Widerspruch kann insbesondere gegen die Verarbeitung für Zwecke
@@ -294,7 +300,7 @@ export default function DatenschutzPage() {
                 <Heading as="h2" size="5">
                     Cookies und Widerspruchsrecht bei Direktwerbung
                 </Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Als „Cookies" werden kleine Dateien bezeichnet, die auf Rechnern
                     der Nutzer gespeichert werden. Innerhalb der Cookies können
                     unterschiedliche Angaben gespeichert werden. Ein Cookie dient
@@ -359,7 +365,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Löschung von Daten</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Die von uns verarbeiteten Daten werden nach Maßgabe der Art. 17
                     und 18 DSGVO gelöscht oder in ihrer Verarbeitung eingeschränkt.
                     Sofern nicht im Rahmen dieser Datenschutzerklärung ausdrücklich
@@ -399,7 +405,7 @@ export default function DatenschutzPage() {
                 <Heading as="h2" size="5">
                     Erbringung unserer satzungs- und geschäftsgemäßen Leistungen
                 </Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Wir verarbeiten die Daten unserer Mitglieder, Unterstützer,
                     Interessenten, Kunden oder sonstiger Personen entsprechend Art. 6
                     Abs. 1 lit. b. DSGVO, sofern wir ihnen gegenüber vertragliche
@@ -439,7 +445,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Registrierfunktion</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Nutzer können ein Nutzerkonto anlegen. Im Rahmen der Registrierung
                     werden die erforderlichen Pflichtangaben den Nutzern mitgeteilt
                     und auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO zu Zwecken der
@@ -477,7 +483,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Kommentare und Beiträge</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Wenn Nutzer Kommentare oder sonstige Beiträge hinterlassen,
                     können ihre IP-Adressen auf Grundlage unserer berechtigten
                     Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO für 7 Tage
@@ -502,7 +508,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Abruf von Emojis und Smilies</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Innerhalb unseres WordPress-Blogs werden grafische Emojis (bzw.
                     Smilies), d.h. kleine grafische Dateien, die Gefühle ausdrücken,
                     eingesetzt, die von externen Servern bezogen werden. Hierbei
@@ -534,7 +540,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Kontaktaufnahme</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Bei der Kontaktaufnahme mit uns (z.B. per Kontaktformular,
                     E-Mail, Telefon oder via sozialer Medien) werden die Angaben des
                     Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung
@@ -552,7 +558,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Newsletter</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Mit den nachfolgenden Hinweisen informieren wir Sie über die
                     Inhalte unseres Newsletters sowie das Anmelde-, Versand- und das
                     statistische Auswertungsverfahren sowie Ihre Widerspruchsrechte
@@ -623,7 +629,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Newsletter – Versanddienstleister</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Der Versand der Newsletter erfolgt mittels des
                     Versanddienstleisters MailPoet, Wysija SARL, 6 rue Dieudé, 13006,
                     Marseille, FRANCE. Die Datenschutzbestimmungen des
@@ -654,7 +660,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Hosting und E-Mail-Versand</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Die von uns in Anspruch genommenen Hosting-Leistungen dienen der
                     Zurverfügungstellung der folgenden Leistungen: Infrastruktur- und
                     Plattformdienstleistungen, Rechenkapazität, Speicherplatz und
@@ -676,7 +682,7 @@ export default function DatenschutzPage() {
                 <Separator size="4" my="2" />
 
                 <Heading as="h2" size="5">Erhebung von Zugriffsdaten und Logfiles</Heading>
-                <Text as="div" color="gray" size="3" style={{ lineHeight: 1.7 }}>
+                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
                     Wir, bzw. unser Hostinganbieter, erhebt auf Grundlage unserer
                     berechtigten Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO
                     Daten über jeden Zugriff auf den Server, auf dem sich dieser

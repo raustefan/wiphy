@@ -12,13 +12,15 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
     if (!post) return notFound();
 
     return (
-        <Container size="3" mt="6" mb="6">
-            <Button variant="soft" mb="4" asChild>
+        <Container size="3" px="0" py={{ initial: "4", sm: "6" }}>
+            <Button variant="soft" radius="full" mb="4" asChild>
                 <Link href="/blog">← Zurück zur Übersicht</Link>
             </Button>
 
-            <Card size="4">
-                <Heading as="h1" size="8" mb="2">{post.title}</Heading>
+            <Card size={{ initial: "2", sm: "4" }} className="panel">
+                <Heading as="h1" size={{ initial: "6", sm: "8" }} mb="2" className="display-title">
+                    {post.title}
+                </Heading>
                 <Text color="gray" size="2" mb="6" as="div">
                     Veröffentlicht {post.author ? `von ${post.author}` : ""} am {post.publishedAt.toLocaleDateString('de-DE')}
                 </Text>

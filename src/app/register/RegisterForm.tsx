@@ -27,17 +27,17 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
     }
 
     return (
-        <Container size="1" style={{ paddingTop: "12vh", paddingBottom: "8vh" }}>
+        <Container size="1" px="0" py={{ initial: "4", sm: "8" }}>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Registrierung"
                 onOpenChange={setFeatureDisabled}
             />
-            <Card size="4" style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)" }}>
+            <Card size={{ initial: "3", sm: "4" }} className="panel">
                 <form action={handleAction}>
                     <Flex direction="column" gap="5">
                         <Flex direction="column" gap="2" align="center">
-                            <Heading as="h1" size="7" align="center">
+                            <Heading as="h1" size={{ initial: "6", sm: "7" }} align="center" className="display-title">
                                 Neues Konto erstellen
                             </Heading>
                             <Text size="2" color="gray" align="center">
