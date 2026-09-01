@@ -31,6 +31,7 @@ import {
     BookOpen,
     Rows3,
     ToggleLeft,
+    Mail,
     UserCog,
     ArrowRight,
 } from "lucide-react";
@@ -221,6 +222,12 @@ export default async function DashboardPage() {
                                     <Link href="/dashboard/fees">
                                         <IdCard size={16} />
                                         Beiträge
+                                    </Link>
+                                </Button>
+                                <Button size="3" variant="soft" asChild>
+                                    <Link href="/dashboard/kontakt">
+                                        <Mail size={16} />
+                                        Kontaktanfragen
                                     </Link>
                                 </Button>
                                 <Button size="3" variant="soft" asChild>

@@ -19,6 +19,7 @@ const links = [
   { href: "/blog", label: "Blog" },
   { href: "/geschichte", label: "Geschichte" },
   { href: "/vorstand", label: "Vorstand" },
+  { href: "/kontakt", label: "Kontakt" },
 ];
 
 export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {

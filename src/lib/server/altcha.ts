@@ -11,10 +11,25 @@ import { getAltchaHmacKey } from "./env";
  */
 const CHALLENGE_TTL_MS = 30 * 60 * 1000;
 
-export async function createAltchaChallenge() {
+/**
+ * Solving cost, expressed as the upper bound of the search space.
+ *
+ * `interactive` keeps login and registration snappy. `unauthenticated` is an
+ * order of magnitude higher and is meant for fully public endpoints, where a
+ * second or two of client-side work is invisible to a human but multiplies the
+ * cost of bulk submission for a spammer.
+ */
+export const ALTCHA_COMPLEXITY = {
+    interactive: 100_000,
+    unauthenticated: 1_000_000,
+} as const;
+
+export async function createAltchaChallenge(
+    maxNumber: number = ALTCHA_COMPLEXITY.interactive,
+) {
     return createChallenge({
         hmacKey: getAltchaHmacKey(),
-        maxNumber: 100_000,
+        maxNumber,
         expires: new Date(Date.now() + CHALLENGE_TTL_MS),
     });
 }

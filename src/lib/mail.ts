@@ -83,3 +83,37 @@ export async function sendAdminCreatedUserEmail(email: string, verificationUrl: 
     encoding: "utf-8",
   });
 }
+
+/**
+ * Notification for a public contact-form submission.
+ *
+ * The visitor's address is deliberately *not* used as `From` — that would fail
+ * our own SPF/DKIM/DMARC and land the mail in spam. It goes into `Reply-To`
+ * instead, so "Antworten" in the admin's client still reaches the sender.
+ */
+export async function sendContactRequestEmail(
+  adminEmails: string[],
+  request: { name: string; email: string; subject: string; message: string },
+) {
+  if (adminEmails.length === 0) return;
+
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  const name = escapeHtml(request.name);
+  const email = escapeHtml(request.email);
+  const subject = escapeHtml(request.subject);
+  // Preserve the visitor's line breaks without letting their text become markup.
+  const message = escapeHtml(request.message).replace(/\n/g, "<br>");
+
+  await transporter.sendMail({
+    from,
+    // BCC keeps the admin distribution list out of the visible headers.
+    bcc: adminEmails.join(","),
+    replyTo: `${request.name} <${request.email}>`,
+    subject: `[Kontakt] ${request.subject}`,
+    text: `Neue Anfrage über das Kontaktformular:\n\nName: ${request.name}\nE-Mail: ${request.email}\nBetreff: ${request.subject}\n\n${request.message}\n\n---\nAntworten geht direkt an den Absender (Reply-To).`,
+    html: `<p>Neue Anfrage über das Kontaktformular:</p><p><strong>Name:</strong> ${name}<br><strong>E-Mail:</strong> <a href="mailto:${email}">${email}</a><br><strong>Betreff:</strong> ${subject}</p><hr><p>${message}</p><hr><p style="color:#666;font-size:12px">Antworten geht direkt an den Absender (Reply-To).</p>`,
+    encoding: "utf-8",
+  });
+}

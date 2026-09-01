@@ -124,6 +124,9 @@ enum FeatureFlagKey {
   USER_DELETION
   BLOG_MANAGEMENT
   EMAIL_VERIFICATION
+  CONTACT_FORM
+  CONTACT_FORM_MAIL
+  CONTACT_FORM_STORAGE
 }
 
 model FeatureFlag {
@@ -177,4 +180,27 @@ model SolvedAltchaChallenge {
   createdAt DateTime @default(now())
 
   @@index([expiresAt])
+}
+
+/// A submission from the public contact form. Persisted before the notification
+/// mail is attempted, so an SMTP outage never loses an enquiry.
+model ContactRequest {
+  id      String @id @default(cuid())
+  name    String
+  email   String
+  subject String
+  message String
+
+  /// SHA-256 of the client IP — enough to correlate abuse, not personal data at rest.
+  ipHash    String?
+  userAgent String?
+
+  /// 0 = clean. Anything above SPAM_SCORE_MAIL_THRESHOLD is stored but not mailed.
+  spamScore Int       @default(0)
+  mailedAt  DateTime?
+  handledAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([handledAt])
 }

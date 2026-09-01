@@ -12,6 +12,9 @@ export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = [
   "USER_DELETION",
   "BLOG_MANAGEMENT",
   "EMAIL_VERIFICATION",
+  "CONTACT_FORM",
+  "CONTACT_FORM_MAIL",
+  "CONTACT_FORM_STORAGE",
 ];
 
 export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
@@ -26,6 +29,9 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   USER_DELETION: "Nutzer löschen",
   BLOG_MANAGEMENT: "Blog-Verwaltung",
   EMAIL_VERIFICATION: "E-Mail-Verifizierung",
+  CONTACT_FORM: "Kontaktformular",
+  CONTACT_FORM_MAIL: "Kontaktformular: Benachrichtigung per Mail",
+  CONTACT_FORM_STORAGE: "Kontaktformular: Speicherung in der Datenbank",
 };
 
 export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
@@ -40,6 +46,12 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
   USER_DELETION: "Erlaubt Admins, Benutzerkonten unwiderruflich zu löschen.",
   BLOG_MANAGEMENT: "Erlaubt Admins, Blogbeiträge zu erstellen, zu bearbeiten oder zu löschen.",
   EMAIL_VERIFICATION: "Erlaubt Nutzern, ihre E-Mail-Adresse über den Bestätigungslink zu verifizieren.",
+  CONTACT_FORM:
+    "Schaltet das öffentliche Kontaktformular unter /kontakt komplett ein oder aus.",
+  CONTACT_FORM_MAIL:
+    "Verschickt bei jeder Anfrage eine Benachrichtigung an alle Admins. Aus: Anfragen werden nur noch im Dashboard gesammelt.",
+  CONTACT_FORM_STORAGE:
+    "Speichert eingehende Anfragen in der Datenbank. Aus: Anfragen werden nur noch per Mail zugestellt und sind später nicht mehr einsehbar.",
 };
 
 export function isFeatureFlagKey(value: string | null): value is FeatureFlagKey {

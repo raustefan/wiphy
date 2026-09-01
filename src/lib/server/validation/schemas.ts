@@ -81,6 +81,35 @@ export const registerSchema = z.object({
     .max(128, "Passwort ist zu lang."),
 });
 
+/**
+ * A header-injectable value must never reach nodemailer's `Reply-To`/`Subject`.
+ * Zod's email check already rejects CR/LF in the address, but the free-text
+ * fields need it spelled out.
+ */
+const noNewlines = (max: number, label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `Bitte ${label} angeben.`)
+    .max(max, `${label.charAt(0).toUpperCase()}${label.slice(1)} ist zu lang.`)
+    .refine((v) => !/[\r\n]/.test(v), `${label} enthält ungültige Zeichen.`);
+
+export const contactSchema = z.object({
+  name: noNewlines(120, "einen Namen"),
+  email: emailField,
+  subject: noNewlines(200, "einen Betreff"),
+  message: z
+    .string()
+    .trim()
+    .min(20, "Bitte schreibe mindestens 20 Zeichen, damit wir dir helfen können.")
+    .max(5000, "Nachricht ist zu lang (max. 5000 Zeichen)."),
+  // Honeypot: hidden in the UI, so any value at all means a bot filled it in.
+  website: z.string().max(200).optional(),
+  // Milliseconds the form was on screen before submit; forged trivially, but it
+  // costs nothing and catches the naive "POST immediately" bots.
+  renderedAt: z.string().optional(),
+});
+
 export const adminCreateUserSchema = registerSchema.extend({
   role: roleEnum.default("MEMBER"),
   status: statusEnum.default("KEIN_MITGLIED"),

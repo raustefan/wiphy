@@ -1542,3 +1542,17 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 .radix-themes .rt-Container {
   max-width: 100%;
 }
+
+/*
+ * Contact-form honeypot. Positioned off-canvas rather than `display: none` —
+ * bots that skip hidden inputs generally test for `display`/`visibility`, and
+ * `aria-hidden` + `tabIndex={-1}` already keep it away from real users.
+ */
+.contact-honeypot {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -9,6 +9,7 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
       { href: "/geschichte", label: "Geschichte" },
       { href: "/vorstand", label: "Vorstand" },
       { href: "/blog", label: "Blog" },
+      { href: "/kontakt", label: "Kontakt" },
     ],
   },
   {

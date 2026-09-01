@@ -10,6 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${baseUrl}/blog` },
         { url: `${baseUrl}/geschichte` },
         { url: `${baseUrl}/vorstand` },
+        { url: `${baseUrl}/kontakt` },
         { url: `${baseUrl}/impressum` },
         { url: `${baseUrl}/datenschutz` },
         ...posts.map((post) => ({
