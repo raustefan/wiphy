@@ -1,20 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Send, X, List } from "lucide-react";
 import {
-    Flex,
-    Text,
-    TextField,
-    Button,
     Badge,
-    Box,
-    Card,
+    Button,
+    ButtonLink,
+    Checkbox,
     Dialog,
+    DialogFooter,
+    Field,
+    Input,
     Select,
     Separator,
-} from "@radix-ui/themes";
-import { PaperPlaneIcon, MinusIcon, ListBulletIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+} from "@/components/ui";
 import { sendEmailAction } from "./actions";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -66,6 +65,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
     const [featureDisabled, setFeatureDisabled] = useState(false);
+    const [showRecipients, setShowRecipients] = useState(false);
 
     const editor = useEditor({
         extensions: [
@@ -73,14 +73,15 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
             TiptapLink.configure({
                 openOnClick: false,
                 HTMLAttributes: {
-                    class: "text-blue-600 underline cursor-pointer",
+                    class: "text-physics underline cursor-pointer",
                 },
             }),
         ],
         content: "",
         editorProps: {
             attributes: {
-                class: "prose prose-sm max-w-none focus:outline-none min-h-[250px] p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
+                class:
+                    "max-w-none min-h-[250px] p-4 text-sm leading-relaxed focus:outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2",
             },
         },
     });
@@ -176,238 +177,187 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
             />
             <input type="hidden" name="target" value={target} />
 
-            <Flex direction="column" gap="5">
+            <div className="grid gap-5">
                 {error && (
-                    <Text size="2" color="red" role="alert">
+                    <p role="alert" className="text-sm text-negative">
                         {error}
-                    </Text>
+                    </p>
                 )}
 
                 {/* Empfängergruppe */}
-                <Flex direction="column" gap="2">
-                    <Text size="2" weight="bold" as="label" htmlFor="mail-target">
-                        Empfänger
-                    </Text>
-                    <Select.Root value={target} onValueChange={setTarget} size="3">
-                        <Select.Trigger id="mail-target" style={{ width: "100%" }} />
-                        <Select.Content position="popper">
-                            {TARGET_OPTIONS.map((opt) => (
-                                <Select.Item key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </Select.Item>
-                            ))}
-                        </Select.Content>
-                    </Select.Root>
-                    {target !== "SELECTED" && (
-                        <Text size="1" color="gray">
-                            {recipients.length}{" "}
-                            {recipients.length === 1 ? "Empfänger" : "Empfänger"} in dieser Gruppe.
-                        </Text>
-                    )}
-                </Flex>
+                <Field
+                    label="Empfänger"
+                    htmlFor="mail-target"
+                    hint={
+                        target !== "SELECTED"
+                            ? `${recipients.length} ${
+                                  recipients.length === 1 ? "Empfänger" : "Empfänger"
+                              } in dieser Gruppe.`
+                            : undefined
+                    }
+                >
+                    <Select
+                        id="mail-target"
+                        value={target}
+                        onChange={(e) => setTarget(e.target.value)}
+                    >
+                        {TARGET_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
 
                 {target === "SELECTED" && (
-                    <Card variant="surface">
-                        <Flex direction="column" gap="4">
-                            <Flex justify="between" align="center" gap="2" wrap="wrap">
-                                <Text size="2" weight="bold">
-                                    Empfänger auswählen
-                                </Text>
-                                <Badge size="1" variant="soft">
-                                    {selectedIds.size} ausgewählt
-                                </Badge>
-                            </Flex>
+                    <div className="grid gap-4 rounded-2xl border border-line bg-raised/40 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-semibold">Empfänger auswählen</p>
+                            <Badge>{selectedIds.size} ausgewählt</Badge>
+                        </div>
 
-                            <Flex direction="column" gap="2">
-                                <Text size="1" weight="medium" color="gray">
-                                    Ausgewählt
-                                </Text>
-                                {selectedUsers.length === 0 ? (
-                                    <Text size="2" color="gray">
-                                        Noch niemand ausgewählt. Suche unten und setze Häkchen bei
-                                        den gewünschten Personen.
-                                    </Text>
-                                ) : (
-                                    <Flex direction="column" gap="2">
-                                        {selectedUsers.map((u) => (
-                                            <Flex
-                                                key={u.id}
-                                                align="center"
-                                                justify="between"
-                                                gap="3"
-                                                p="2"
-                                                style={{
-                                                    borderRadius: "var(--radius-2)",
-                                                    backgroundColor: "var(--gray-3)",
-                                                }}
-                                            >
-                                                <Flex
-                                                    direction="column"
-                                                    style={{ flex: 1, minWidth: 0 }}
-                                                >
-                                                    <Text size="2" weight="medium" truncate>
-                                                        {u.name || "—"}
-                                                    </Text>
-                                                    <Text size="1" color="gray" truncate>
-                                                        {u.email}
-                                                    </Text>
-                                                </Flex>
-                                                <Badge
-                                                    size="1"
-                                                    variant="soft"
-                                                    color={getStatusTone(u.status)}
-                                                >
-                                                    {formatStatus(u.status)}
-                                                </Badge>
-                                                <Button
-                                                    size="1"
-                                                    variant="ghost"
-                                                    color="red"
-                                                    type="button"
-                                                    onClick={() => removeFromSelection(u.id)}
-                                                >
-                                                    Entfernen
-                                                </Button>
-                                            </Flex>
-                                        ))}
-                                        <Box>
+                        <div className="grid gap-2">
+                            <p className="text-xs font-medium text-faint">Ausgewählt</p>
+                            {selectedUsers.length === 0 ? (
+                                <p className="text-sm text-muted">
+                                    Noch niemand ausgewählt. Suche unten und setze Häkchen bei den
+                                    gewünschten Personen.
+                                </p>
+                            ) : (
+                                <div className="grid gap-2">
+                                    {selectedUsers.map((u) => (
+                                        <div
+                                            key={u.id}
+                                            className="flex items-center justify-between gap-3 rounded-xl bg-surface p-2"
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium">
+                                                    {u.name || "—"}
+                                                </p>
+                                                <p className="truncate text-xs text-muted">
+                                                    {u.email}
+                                                </p>
+                                            </div>
+                                            <Badge tone={getStatusTone(u.status)}>
+                                                {formatStatus(u.status)}
+                                            </Badge>
                                             <Button
-                                                size="2"
-                                                variant="outline"
-                                                color="gray"
+                                                size="sm"
+                                                variant="ghost"
+                                                color="danger"
                                                 type="button"
-                                                onClick={clearSelection}
+                                                onClick={() => removeFromSelection(u.id)}
                                             >
-                                                Alle entfernen
+                                                Entfernen
                                             </Button>
-                                        </Box>
-                                    </Flex>
+                                        </div>
+                                    ))}
+                                    <div>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            color="neutral"
+                                            type="button"
+                                            onClick={clearSelection}
+                                        >
+                                            Alle entfernen
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <Separator />
+
+                        <div className="grid gap-2">
+                            <label
+                                htmlFor="mail-search"
+                                className="text-xs font-medium text-faint"
+                            >
+                                Suche (min. {MIN_SEARCH_LEN} Zeichen)
+                            </label>
+                            <Input
+                                id="mail-search"
+                                placeholder="Name, E-Mail oder Mitgliedsstatus…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                autoComplete="off"
+                            />
+
+                            {search.trim().length > 0 &&
+                                search.trim().length < MIN_SEARCH_LEN && (
+                                    <p className="text-xs text-faint">
+                                        Bitte noch {MIN_SEARCH_LEN - search.trim().length} Zeichen
+                                        eingeben, damit wir Treffer anzeigen.
+                                    </p>
                                 )}
-                            </Flex>
 
-                            <Separator size="4" />
-
-                            <Flex direction="column" gap="2">
-                                <Text size="1" weight="medium" color="gray">
-                                    Suche (min. {MIN_SEARCH_LEN} Zeichen)
-                                </Text>
-                                <TextField.Root
-                                    placeholder="Name, E-Mail oder Mitgliedsstatus…"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    autoComplete="off"
-                                    size="3"
-                                />
-
-                                {search.trim().length > 0 &&
-                                    search.trim().length < MIN_SEARCH_LEN && (
-                                        <Text size="1" color="gray">
-                                            Bitte noch{" "}
-                                            {MIN_SEARCH_LEN - search.trim().length} Zeichen
-                                            eingeben, damit wir Treffer anzeigen.
-                                        </Text>
+                            {search.trim().length >= MIN_SEARCH_LEN && (
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <p className="text-xs text-faint">
+                                        {searchResults.length === MAX_SEARCH_RESULTS
+                                            ? `Erste ${MAX_SEARCH_RESULTS} Treffer (Suche ggf. verfeinern)`
+                                            : `${searchResults.length} Treffer`}
+                                    </p>
+                                    {searchResults.length > 0 && (
+                                        <Button
+                                            size="sm"
+                                            variant="soft"
+                                            type="button"
+                                            onClick={addAllSearchResults}
+                                        >
+                                            Alle Treffer übernehmen
+                                        </Button>
                                     )}
+                                </div>
+                            )}
 
-                                {search.trim().length >= MIN_SEARCH_LEN && (
-                                    <Flex gap="3" wrap="wrap" align="center">
-                                        <Text size="1" color="gray">
-                                            {searchResults.length === MAX_SEARCH_RESULTS
-                                                ? `Erste ${MAX_SEARCH_RESULTS} Treffer (Suche ggf. verfeinern)`
-                                                : `${searchResults.length} Treffer`}
-                                        </Text>
-                                        {searchResults.length > 0 && (
-                                            <Button
-                                                size="1"
-                                                variant="soft"
-                                                type="button"
-                                                onClick={addAllSearchResults}
-                                            >
-                                                Alle Treffer übernehmen
-                                            </Button>
+                            {search.trim().length >= MIN_SEARCH_LEN && (
+                                <div className="max-h-70 overflow-x-hidden overflow-y-auto">
+                                    <div className="grid gap-1">
+                                        {searchResults.length === 0 ? (
+                                            <p className="text-sm text-muted">
+                                                Keine Treffer. Passe die Suche an.
+                                            </p>
+                                        ) : (
+                                            searchResults.map((u) => {
+                                                const isSelected = selectedIds.has(u.id);
+                                                return (
+                                                    <label
+                                                        key={u.id}
+                                                        className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition-colors ${
+                                                            isSelected
+                                                                ? "bg-physics/12"
+                                                                : "hover:bg-surface"
+                                                        }`}
+                                                    >
+                                                        {/* Nur die Checkbox schaltet die Auswahl (natives input — vermeidet Update-Loops) */}
+                                                        <Checkbox
+                                                            className="size-5"
+                                                            checked={isSelected}
+                                                            onChange={() => toggle(u.id)}
+                                                            aria-label={`${u.name || u.email} auswählen`}
+                                                        />
+                                                        <span className="min-w-0 flex-1">
+                                                            <span className="block truncate text-sm font-medium">
+                                                                {u.name || "—"}
+                                                            </span>
+                                                            <span className="block truncate text-xs text-muted">
+                                                                {u.email}
+                                                            </span>
+                                                        </span>
+                                                        <Badge tone={getStatusTone(u.status)}>
+                                                            {formatStatus(u.status)}
+                                                        </Badge>
+                                                    </label>
+                                                );
+                                            })
                                         )}
-                                    </Flex>
-                                )}
-
-                                {search.trim().length >= MIN_SEARCH_LEN && (
-                                    <Box
-                                        style={{
-                                            maxHeight: 280,
-                                            overflowY: "auto",
-                                            overflowX: "hidden",
-                                        }}
-                                    >
-                                        <Flex direction="column" gap="1">
-                                            {searchResults.length === 0 ? (
-                                                <Text size="2" color="gray">
-                                                    Keine Treffer. Passe die Suche an.
-                                                </Text>
-                                            ) : (
-                                                searchResults.map((u) => {
-                                                    const isSelected = selectedIds.has(u.id);
-                                                    return (
-                                                        <Flex
-                                                            key={u.id}
-                                                            align="center"
-                                                            gap="3"
-                                                            p="2"
-                                                            onClick={() => toggle(u.id)}
-                                                            style={{
-                                                                borderRadius: "var(--radius-2)",
-                                                                cursor: "pointer",
-                                                                backgroundColor: isSelected
-                                                                    ? "var(--accent-3)"
-                                                                    : undefined,
-                                                            }}
-                                                        >
-                                                            {/* Nur die Checkbox schaltet die Auswahl (kein Radix-Checkbox — vermeidet Update-Loops) */}
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isSelected}
-                                                                onChange={() => toggle(u.id)}
-                                                                onClick={(e) =>
-                                                                    e.stopPropagation()
-                                                                }
-                                                                style={{
-                                                                    width: 20,
-                                                                    height: 20,
-                                                                    flexShrink: 0,
-                                                                    cursor: "pointer",
-                                                                    accentColor: "var(--accent-9)",
-                                                                }}
-                                                                aria-label={`${u.name || u.email} auswählen`}
-                                                            />
-                                                            <Flex
-                                                                direction="column"
-                                                                style={{ flex: 1, minWidth: 0 }}
-                                                            >
-                                                                <Text
-                                                                    size="2"
-                                                                    weight="medium"
-                                                                    truncate
-                                                                >
-                                                                    {u.name || "—"}
-                                                                </Text>
-                                                                <Text size="1" color="gray" truncate>
-                                                                    {u.email}
-                                                                </Text>
-                                                            </Flex>
-                                                            <Badge
-                                                                size="1"
-                                                                variant="outline"
-                                                                color={getStatusTone(u.status)}
-                                                            >
-                                                                {formatStatus(u.status)}
-                                                            </Badge>
-                                                        </Flex>
-                                                    );
-                                                })
-                                            )}
-                                        </Flex>
-                                    </Box>
-                                )}
-                            </Flex>
-                        </Flex>
-                    </Card>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
 
                 {Array.from(selectedIds).map((id) => (
@@ -415,134 +365,106 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                 ))}
 
                 {/* Betreff */}
-                <Flex direction="column" gap="2">
-                    <Text size="2" weight="bold" as="label" htmlFor="mail-subject">
-                        Betreff
-                    </Text>
-                    <TextField.Root
+                <Field label="Betreff" htmlFor="mail-subject">
+                    <Input
                         id="mail-subject"
                         name="subject"
                         required
-                        size="3"
                         placeholder="Wichtige Info zum Sommerfest…"
                     />
-                </Flex>
+                </Field>
 
                 {/* Nachricht */}
-                <Flex direction="column" gap="2">
-                    <Text size="2" weight="bold" as="label">
-                        Nachricht
-                    </Text>
-                    <Text size="1" color="gray">
+                <div className="grid gap-1.5">
+                    <span className="text-sm font-semibold text-foreground">Nachricht</span>
+                    <p className="text-sm text-faint">
                         Verfügbare Platzhalter: $Vorname, $Nachname, $Name
-                    </Text>
-                    <Box
-                        style={{
-                            border: "1px solid var(--gray-6)",
-                            borderRadius: "var(--radius-3)",
-                            overflow: "hidden",
-                        }}
-                    >
+                    </p>
+                    <div className="overflow-hidden rounded-xl border border-line-strong bg-surface">
                         <EmailEditorToolbar editor={editor} />
                         <EditorContent editor={editor} />
-                    </Box>
-                </Flex>
+                    </div>
+                </div>
 
-                <Separator size="4" />
+                <Separator />
 
                 {/* Aktionen */}
-                <Flex direction="column" gap="4">
-                    <Flex align="center" gap="2" asChild>
-                        <label htmlFor="mail-bcc-self" style={{ cursor: "pointer" }}>
-                            <input
-                                type="checkbox"
-                                id="mail-bcc-self"
-                                name="bccToSelf"
-                                value="on"
-                                style={{
-                                    width: 20,
-                                    height: 20,
-                                    cursor: "pointer",
-                                    accentColor: "var(--accent-9)",
-                                }}
-                            />
-                            <Text size="2">Kopie an mich senden (BCC)</Text>
-                        </label>
-                    </Flex>
-
-                    <Dialog.Root>
-                        <Dialog.Trigger>
-                            <Button size="2" variant="ghost" color="gray" type="button">
-                                <ListBulletIcon /> Empfängerliste anzeigen ({recipients.length})
-                            </Button>
-                        </Dialog.Trigger>
-                        <Dialog.Content maxWidth="480px">
-                            <Dialog.Title>Empfängerliste ({recipients.length})</Dialog.Title>
-                            <Dialog.Description size="2" mb="4" color="gray">
-                                Sortiert nach Mitgliedsstatus. Die E-Mail wird an folgende
-                                Empfänger gesendet:
-                            </Dialog.Description>
-                            <Box style={{ maxHeight: 320, overflowY: "auto" }}>
-                                <Flex direction="column" gap="2">
-                                    {recipients.map((u) => (
-                                        <Flex
-                                            key={u.id}
-                                            justify="between"
-                                            align="center"
-                                            gap="3"
-                                            py="2"
-                                            style={{
-                                                borderBottom: "1px solid var(--gray-4)",
-                                            }}
-                                        >
-                                            <Box style={{ minWidth: 0 }}>
-                                                <Text size="2" weight="medium" truncate as="div">
-                                                    {u.name || "—"}
-                                                </Text>
-                                                <Text size="1" color="gray" truncate as="div">
-                                                    {u.email}
-                                                </Text>
-                                            </Box>
-                                            <Badge
-                                                size="1"
-                                                variant="soft"
-                                                color={getStatusTone(u.status)}
-                                            >
-                                                {formatStatus(u.status)}
-                                            </Badge>
-                                        </Flex>
-                                    ))}
-                                </Flex>
-                            </Box>
-                            <Flex justify="end" mt="4">
-                                <Dialog.Close>
-                                    <Button size="2" variant="soft" color="gray">
-                                        Schließen
-                                    </Button>
-                                </Dialog.Close>
-                            </Flex>
-                        </Dialog.Content>
-                    </Dialog.Root>
-
-                    <Flex
-                        gap="3"
-                        direction={{ initial: "column", xs: "row" }}
-                        align={{ initial: "stretch", xs: "center" }}
+                <div className="grid gap-4">
+                    <label
+                        htmlFor="mail-bcc-self"
+                        className="flex cursor-pointer items-center gap-2"
                     >
-                        <Button size="3" type="submit" color="blue" disabled={pending}>
-                            <PaperPlaneIcon />{" "}
+                        <Checkbox
+                            className="size-5"
+                            id="mail-bcc-self"
+                            name="bccToSelf"
+                            value="on"
+                        />
+                        <span className="text-sm">Kopie an mich senden (BCC)</span>
+                    </label>
+
+                    <div>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            color="neutral"
+                            type="button"
+                            onClick={() => setShowRecipients(true)}
+                        >
+                            <List size={16} aria-hidden="true" /> Empfängerliste anzeigen (
+                            {recipients.length})
+                        </Button>
+                    </div>
+
+                    <Dialog
+                        open={showRecipients}
+                        onClose={() => setShowRecipients(false)}
+                        title={`Empfängerliste (${recipients.length})`}
+                        description="Sortiert nach Mitgliedsstatus. Die E-Mail wird an folgende Empfänger gesendet:"
+                    >
+                        <div className="max-h-80 divide-y divide-line overflow-y-auto">
+                            {recipients.map((u) => (
+                                <div
+                                    key={u.id}
+                                    className="flex items-center justify-between gap-3 py-2"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium">
+                                            {u.name || "—"}
+                                        </p>
+                                        <p className="truncate text-xs text-muted">{u.email}</p>
+                                    </div>
+                                    <Badge tone={getStatusTone(u.status)}>
+                                        {formatStatus(u.status)}
+                                    </Badge>
+                                </div>
+                            ))}
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                size="sm"
+                                variant="soft"
+                                color="neutral"
+                                onClick={() => setShowRecipients(false)}
+                            >
+                                Schließen
+                            </Button>
+                        </DialogFooter>
+                    </Dialog>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <Button size="lg" type="submit" loading={pending}>
+                            <Send size={16} aria-hidden="true" />{" "}
                             {pending
                                 ? "Wird gesendet…"
                                 : `An ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
                         </Button>
-                        <Button size="3" variant="soft" color="gray" asChild>
-                            <Link href="/dashboard">
-                                <MinusIcon /> Abbrechen
-                            </Link>
-                        </Button>
-                    </Flex>
-                </Flex>
-            </Flex>
+                        <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
+                            <X size={16} aria-hidden="true" /> Abbrechen
+                        </ButtonLink>
+                    </div>
+                </div>
+            </div>
         </form>
     );
 }

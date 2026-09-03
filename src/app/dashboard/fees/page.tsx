@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { getFeeDashboardUsers, getDatabaseYearRange } from "@/lib/server/services/feeService";
-import { Container, Card, Heading, Text, Flex, Box, Separator } from "@radix-ui/themes";
+import { Card, Container, Separator } from "@/components/ui";
 import { FeesTable } from "./FeesTable";
 import type { User, MemberFee } from "@prisma/client";
 import { Suspense } from "react";
@@ -51,54 +51,44 @@ export default async function FeesDashboardPage({
   }));
 
   return (
-    <Box
-      py={{ initial: "6", sm: "8" }}
-      style={{
-        minHeight: "100%",
-      }}
-    >
+    <Container size="4" className="py-8 sm:py-12">
       <Suspense fallback={null}>
         <FeatureDisabledQueryDialog />
       </Suspense>
-      <Container size="4" px={{ initial: "4", sm: "5" }}>
-        <DashboardPageHeader
-          eyebrow="Internbereich"
-          title={isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
-          description={`Beiträge für ${selectedYear}`}
-          backHref="/dashboard"
+
+      <DashboardPageHeader
+        eyebrow="Internbereich"
+        title={isAdmin ? "Zahlungsübersicht aller Mitglieder" : "Meine Mitgliedsbeiträge"}
+        description={`Beiträge für ${selectedYear}`}
+        backHref="/dashboard"
+      />
+
+      <Card className="p-4 sm:p-6">
+        <div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-baseline">
+          <div>
+            <p className="text-sm text-muted">
+              {isAdmin
+                ? "Admin-Sicht: Alle Benutzer und Jahresbeiträge"
+                : "Nur deine eigenen Beiträge, lesend"}
+            </p>
+            <h2 className="text-lg font-bold tracking-tight">
+              Jahresbeiträge {selectedYear}
+            </h2>
+          </div>
+          <p className="text-sm text-muted">
+            {users.length} {users.length === 1 ? "Mitglied" : "Mitglieder"}
+          </p>
+        </div>
+
+        <Separator className="mb-3" />
+
+        <FeesTable
+          users={tableUsers}
+          selectedYear={selectedYear}
+          isAdmin={isAdmin}
+          availableYears={availableYears}
         />
-
-        <Card size="3">
-          <Flex
-            justify="between"
-            align={{ initial: "start", sm: "baseline" }}
-            direction={{ initial: "column", sm: "row" }}
-            gap="2"
-            mb="3"
-          >
-            <Box>
-              <Text size="2" color="gray">
-                {isAdmin
-                  ? "Admin-Sicht: Alle Benutzer und Jahresbeiträge"
-                  : "Nur deine eigenen Beiträge, lesend"}
-              </Text>
-              <Heading as="h2" size="4">Jahresbeiträge {selectedYear}</Heading>
-            </Box>
-            <Text size="2" color="gray">
-              {users.length} {users.length === 1 ? "Mitglied" : "Mitglieder"}
-            </Text>
-          </Flex>
-
-          <Separator mb="3" />
-
-          <FeesTable
-            users={tableUsers}
-            selectedYear={selectedYear}
-            isAdmin={isAdmin}
-            availableYears={availableYears}
-          />
-        </Card>
-      </Container>
-    </Box>
+      </Card>
+    </Container>
   );
 }
