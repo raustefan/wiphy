@@ -1,12 +1,20 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
-import { Flex, Text, Button, Container, Card, TextField, TextArea, Checkbox, Box } from "@radix-ui/themes";
-import { CheckIcon, MinusIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+import { Check, X } from "lucide-react";
 import { savePost } from "../actions";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { auth } from "@/auth";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
+import {
+    Button,
+    ButtonLink,
+    Card,
+    Checkbox,
+    Container,
+    Field,
+    Input,
+    TextArea,
+} from "@/components/ui";
 
 export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -18,86 +26,116 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
     let post = null;
     if (!isNew) {
         post = await getPostForEdit(resolvedParams.id);
-        if (!post) return <Text>Beitrag nicht gefunden</Text>;
+        if (!post) {
+            return (
+                <Container size="2" className="py-16 text-center text-muted">
+                    Beitrag nicht gefunden
+                </Container>
+            );
+        }
     }
 
     const defaultDate = (post?.publishedAt || new Date()).toISOString().split("T")[0];
     const defaultAuthor = post?.author || session?.user?.name || "";
 
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
-            <Container size="3" px={{ initial: "4", sm: "5" }}>
-                <DashboardPageHeader
-                    eyebrow="Internbereich"
-                    title={isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}
-                    backHref="/dashboard/blog"
-                    backLabel="Zurück zur Übersicht"
-                />
+        <Container size="3" className="py-8 sm:py-12">
+            <DashboardPageHeader
+                eyebrow="Internbereich"
+                title={isNew ? "Neuen Beitrag erstellen" : "Beitrag bearbeiten"}
+                backHref="/dashboard/blog"
+                backLabel="Zurück zur Übersicht"
+            />
 
-                <Card size="3">
-                    <form action={savePost}>
-                        <input type="hidden" name="id" value={isNew ? "new" : post?.id} />
+            <Card className="p-5 sm:p-6">
+                <form action={savePost} className="grid gap-4">
+                    <input type="hidden" name="id" value={isNew ? "new" : post?.id} />
 
-                        <Flex direction="column" gap="4">
-                            <label>
-                                <Text size="2" weight="bold">Titel</Text>
-                                <TextField.Root name="title" defaultValue={post?.title || ""} required />
-                            </label>
+                    <Field label="Titel" htmlFor="post-title">
+                        <Input
+                            id="post-title"
+                            name="title"
+                            defaultValue={post?.title || ""}
+                            required
+                        />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">Autor</Text>
-                                <TextField.Root name="author" defaultValue={defaultAuthor} required />
-                            </label>
+                    <Field label="Autor" htmlFor="post-author">
+                        <Input
+                            id="post-author"
+                            name="author"
+                            defaultValue={defaultAuthor}
+                            required
+                        />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">Veröffentlichungsdatum</Text>
-                                <TextField.Root type="date" name="publishedAt" defaultValue={defaultDate} required />
-                            </label>
+                    <Field label="Veröffentlichungsdatum" htmlFor="post-published-at">
+                        <Input
+                            id="post-published-at"
+                            type="date"
+                            name="publishedAt"
+                            defaultValue={defaultDate}
+                            required
+                        />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">Bildvorschau (URL)</Text>
-                                <TextField.Root
-                                    name="imageUrl"
-                                    type="url"
-                                    defaultValue={post?.imageUrl || ""}
-                                    placeholder="https://.../vorschaubild.jpg"
-                                />
-                                <Text size="1" color="gray">
-                                    Wird auf der Blog-Übersicht und beim Beitrag selbst als Vorschaubild angezeigt.
-                                </Text>
-                            </label>
+                    <Field
+                        label="Bildvorschau (URL)"
+                        htmlFor="post-image-url"
+                        hint="Wird auf der Blog-Übersicht und beim Beitrag selbst als Vorschaubild angezeigt."
+                    >
+                        <Input
+                            id="post-image-url"
+                            name="imageUrl"
+                            type="url"
+                            defaultValue={post?.imageUrl || ""}
+                            placeholder="https://.../vorschaubild.jpg"
+                        />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">Kurze Textpreview (Vorschau-Snippet)</Text>
-                                <TextArea name="preview" defaultValue={post?.preview || ""} placeholder="Kurze Zusammenfassung für die Blog-Übersichtsseite..." required style={{ minHeight: "80px" }} />
-                            </label>
+                    <Field label="Kurze Textpreview (Vorschau-Snippet)" htmlFor="post-preview">
+                        <TextArea
+                            id="post-preview"
+                            name="preview"
+                            defaultValue={post?.preview || ""}
+                            placeholder="Kurze Zusammenfassung für die Blog-Übersichtsseite …"
+                            required
+                        />
+                    </Field>
 
-                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                                <Text size="2" weight="bold">Inhalt (Markdown)</Text>
-                                <MarkdownEditor initialValue={post?.content || ""} />
-                            </div>
+                    <div className="grid gap-2">
+                        <span className="text-sm font-semibold text-foreground">
+                            Inhalt (Markdown)
+                        </span>
+                        <MarkdownEditor initialValue={post?.content || ""} />
+                    </div>
 
-                            <Text as="label" size="2">
-                                <Flex gap="2" align="center">
-                                    <Checkbox name="published" defaultChecked={post?.published || false} />
-                                    Beitrag veröffentlichen (sichtbar für alle)
-                                </Flex>
-                            </Text>
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            id="post-published"
+                            name="published"
+                            defaultChecked={post?.published || false}
+                        />
+                        <label htmlFor="post-published" className="cursor-pointer text-sm">
+                            Beitrag veröffentlichen (sichtbar für alle)
+                        </label>
+                    </div>
 
-                            <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="4">
-                                <Button size="3" type="submit">
-                                    <CheckIcon /> Speichern
-                                </Button>
-                                <Button size="3" variant="soft" color="gray" asChild>
-                                    <Link href="/dashboard/blog">
-                                        <MinusIcon /> Abbrechen
-                                    </Link>
-                                </Button>
-                            </Flex>
-                        </Flex>
-                    </form>
-                </Card>
-            </Container>
-        </Box>
+                    <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                        <Button size="lg" type="submit">
+                            <Check size={16} aria-hidden="true" /> Speichern
+                        </Button>
+                        <ButtonLink
+                            href="/dashboard/blog"
+                            size="lg"
+                            variant="soft"
+                            color="neutral"
+                        >
+                            <X size={16} aria-hidden="true" /> Abbrechen
+                        </ButtonLink>
+                    </div>
+                </form>
+            </Card>
+        </Container>
     );
 }

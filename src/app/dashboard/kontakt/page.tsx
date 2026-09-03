@@ -1,10 +1,10 @@
-import { Box, Callout, Card, Container, Flex, Text } from "@radix-ui/themes";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getContactRequests } from "@/lib/server/services/contactService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ContactRequestList } from "./ContactRequestList";
+import { Callout, Card, Container } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -18,52 +18,38 @@ export default async function ContactRequestsPage() {
     ]);
 
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
-            <Container size="3" px={{ initial: "4", sm: "5" }}>
-                <DashboardPageHeader
-                    eyebrow="Admin"
-                    title="Kontaktanfragen"
-                    description="Eingegangene Nachrichten über das öffentliche Kontaktformular."
-                    backHref="/dashboard"
-                />
+        <Container size="3" className="py-8 sm:py-12">
+            <DashboardPageHeader
+                eyebrow="Admin"
+                title="Kontaktanfragen"
+                description="Eingegangene Nachrichten über das öffentliche Kontaktformular."
+                backHref="/dashboard"
+            />
 
-                {!storageEnabled && (
-                    <Callout.Root color="amber" mb="4">
-                        <Callout.Icon>
-                            <InfoCircledIcon />
-                        </Callout.Icon>
-                        <Callout.Text>
-                            Die Speicherung neuer Anfragen ist deaktiviert. Diese Liste zeigt nur
-                            noch ältere Einträge — neue Anfragen werden{" "}
-                            {mailEnabled ? "ausschließlich per Mail zugestellt" : "nicht angenommen"}.
-                        </Callout.Text>
-                    </Callout.Root>
-                )}
+            {!storageEnabled && (
+                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                    Die Speicherung neuer Anfragen ist deaktiviert. Diese Liste zeigt nur noch
+                    ältere Einträge — neue Anfragen werden{" "}
+                    {mailEnabled ? "ausschließlich per Mail zugestellt" : "nicht angenommen"}.
+                </Callout>
+            )}
 
-                {!mailEnabled && storageEnabled && (
-                    <Callout.Root color="amber" mb="4">
-                        <Callout.Icon>
-                            <InfoCircledIcon />
-                        </Callout.Icon>
-                        <Callout.Text>
-                            Der Mailversand für Kontaktanfragen ist deaktiviert. Neue Anfragen
-                            landen nur hier — bitte regelmäßig prüfen.
-                        </Callout.Text>
-                    </Callout.Root>
-                )}
+            {!mailEnabled && storageEnabled && (
+                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                    Der Mailversand für Kontaktanfragen ist deaktiviert. Neue Anfragen landen nur
+                    hier — bitte regelmäßig prüfen.
+                </Callout>
+            )}
 
-                {requests.length === 0 ? (
-                    <Card size="3">
-                        <Flex justify="center" py="6">
-                            <Text size="2" color="gray">
-                                Noch keine Kontaktanfragen.
-                            </Text>
-                        </Flex>
-                    </Card>
-                ) : (
-                    <ContactRequestList requests={requests} />
-                )}
-            </Container>
-        </Box>
+            {requests.length === 0 ? (
+                <Card className="p-6">
+                    <p className="py-8 text-center text-sm text-muted">
+                        Noch keine Kontaktanfragen.
+                    </p>
+                </Card>
+            ) : (
+                <ContactRequestList requests={requests} />
+            )}
+        </Container>
     );
 }

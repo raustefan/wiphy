@@ -2,21 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Check, Mail, Info } from "lucide-react";
 import {
-    Flex,
-    Heading,
-    Text,
     Button,
-    Card,
-    TextField,
+    Checkbox,
+    Dialog,
+    DialogFooter,
+    Input,
     Select,
-    Box,
-    Grid,
-    AlertDialog,
     Separator,
-} from "@radix-ui/themes";
-import { ArrowLeftIcon, CheckIcon } from "@radix-ui/react-icons";
-import { Mail, Info } from "lucide-react";
+} from "@/components/ui";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 
 type UserData = {
@@ -284,185 +279,183 @@ export function EditUserForm({
             <form ref={formRef} action={action} onSubmit={handleFormSubmit} onChange={computeDirty}>
                 <input type="hidden" name="id" value={user.id} />
 
-                <Flex direction="column" gap="6">
+                <div className="grid gap-6">
                     {/* Persönliche Daten */}
                     <Section title="Persönliche Daten" description="Wie du angesprochen werden möchtest.">
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Vorname">
-                                <TextField.Root name="vorname" defaultValue={initialValues.vorname} />
+                                <Input name="vorname" defaultValue={initialValues.vorname} />
                             </Field>
                             <Field label="Name" required>
-                                <TextField.Root name="name" defaultValue={initialValues.name} required />
+                                <Input name="name" defaultValue={initialValues.name} required />
                             </Field>
-                        </Grid>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Titel">
-                                <TextField.Root name="titel" defaultValue={initialValues.titel} />
+                                <Input name="titel" defaultValue={initialValues.titel} />
                             </Field>
                             <Field label="Geburtsdatum">
-                                <TextField.Root
+                                <Input
                                     name="geburtsdatum"
                                     type="date"
                                     defaultValue={initialValues.geburtsdatum}
                                 />
                             </Field>
-                        </Grid>
+                        </div>
                     </Section>
 
-                    <Separator size="4" />
+                    <Separator />
 
                     {/* Kontakt */}
                     <Section title="Kontakt" description="Wie wir dich erreichen können.">
                         <Field label="E-Mail" required>
-                            <TextField.Root
+                            <Input
                                 name="email"
                                 type="email"
                                 defaultValue={initialValues.email}
                                 required
                             />
                             {emailDirty && (
-                                <Flex align="center" gap="2" mt="1">
-                                    <Mail size={14} color="var(--amber-9)" />
-                                    <Text size="1" color="amber">
-                                        Nach dem Speichern erhältst du eine Bestätigungs-E-Mail an die
-                                        neue Adresse. Die Änderung wird erst nach Bestätigung wirksam.
-                                    </Text>
-                                </Flex>
+                                <p className="mt-1 flex items-start gap-2 text-xs text-warning">
+                                    <Mail size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+                                    Nach dem Speichern erhältst du eine Bestätigungs-E-Mail an die
+                                    neue Adresse. Die Änderung wird erst nach Bestätigung wirksam.
+                                </p>
                             )}
                         </Field>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
-                                <TextField.Root name="telefon" defaultValue={initialValues.telefon} />
+                                <Input name="telefon" defaultValue={initialValues.telefon} />
                             </Field>
                             <Field label="Website">
-                                <TextField.Root name="website" defaultValue={initialValues.website} />
+                                <Input name="website" defaultValue={initialValues.website} />
                             </Field>
-                        </Grid>
+                        </div>
                     </Section>
 
-                    <Separator size="4" />
+                    <Separator />
 
                     {/* Adresse */}
                     <Section title="Adresse">
                         <Field label="Straße">
-                            <TextField.Root name="strasse" defaultValue={initialValues.strasse} />
+                            <Input name="strasse" defaultValue={initialValues.strasse} />
                         </Field>
-                        <Grid columns={{ initial: "1", sm: "3" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-3">
                             <Field label="PLZ">
-                                <TextField.Root name="plz" defaultValue={initialValues.plz} />
+                                <Input name="plz" defaultValue={initialValues.plz} />
                             </Field>
                             <Field label="Stadt">
-                                <TextField.Root name="stadt" defaultValue={initialValues.stadt} />
+                                <Input name="stadt" defaultValue={initialValues.stadt} />
                             </Field>
                             <Field label="Land">
-                                <TextField.Root name="land" defaultValue={initialValues.land} />
+                                <Input name="land" defaultValue={initialValues.land} />
                             </Field>
-                        </Grid>
+                        </div>
                     </Section>
 
-                    <Separator size="4" />
+                    <Separator />
 
                     {/* Studium */}
                     <Section title="Studium">
                         <Field label="Studiengang">
-                            <TextField.Root name="studiengang" defaultValue={initialValues.studiengang} />
+                            <Input name="studiengang" defaultValue={initialValues.studiengang} />
                         </Field>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Studienbeginn">
-                                <TextField.Root
+                                <Input
                                     name="studienbeginn"
                                     type="date"
                                     defaultValue={initialValues.studienbeginn}
                                 />
                             </Field>
                             <Field label="Studienende">
-                                <TextField.Root
+                                <Input
                                     name="studienende"
                                     type="date"
                                     defaultValue={initialValues.studienende}
                                 />
                             </Field>
-                        </Grid>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Diplomarbeit">
-                                <TextField.Root name="diplomarbeit" defaultValue={initialValues.diplomarbeit} />
+                                <Input name="diplomarbeit" defaultValue={initialValues.diplomarbeit} />
                             </Field>
                             <Field label="Bachelorarbeit">
-                                <TextField.Root name="bachelorarbeit" defaultValue={initialValues.bachelorarbeit} />
+                                <Input name="bachelorarbeit" defaultValue={initialValues.bachelorarbeit} />
                             </Field>
-                        </Grid>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Masterarbeit">
-                                <TextField.Root name="masterarbeit" defaultValue={initialValues.masterarbeit} />
+                                <Input name="masterarbeit" defaultValue={initialValues.masterarbeit} />
                             </Field>
                             <Field label="Dissertation">
-                                <TextField.Root name="dissertation" defaultValue={initialValues.dissertation} />
+                                <Input name="dissertation" defaultValue={initialValues.dissertation} />
                             </Field>
-                        </Grid>
+                        </div>
                     </Section>
 
-                    <Separator size="4" />
+                    <Separator />
 
                     {/* Beruf */}
                     <Section title="Beruf">
                         <Field label="Arbeitgeber">
-                            <TextField.Root name="arbeitgeber" defaultValue={initialValues.arbeitgeber} />
+                            <Input name="arbeitgeber" defaultValue={initialValues.arbeitgeber} />
                         </Field>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Berufsstand">
-                                <TextField.Root name="berufsstand" defaultValue={initialValues.berufsstand} />
+                                <Input name="berufsstand" defaultValue={initialValues.berufsstand} />
                             </Field>
                             <Field label="Berufszweig">
-                                <TextField.Root name="berufszweig" defaultValue={initialValues.berufszweig} />
+                                <Input name="berufszweig" defaultValue={initialValues.berufszweig} />
                             </Field>
-                        </Grid>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Position">
-                                <TextField.Root name="position" defaultValue={initialValues.position} />
+                                <Input name="position" defaultValue={initialValues.position} />
                             </Field>
                             <Field label="Praktika">
-                                <TextField.Root name="praktika" defaultValue={initialValues.praktika} />
+                                <Input name="praktika" defaultValue={initialValues.praktika} />
                             </Field>
-                        </Grid>
+                        </div>
                         <Field label="Berufserfahrung">
-                            <TextField.Root name="berufserfahrung" defaultValue={initialValues.berufserfahrung} />
+                            <Input name="berufserfahrung" defaultValue={initialValues.berufserfahrung} />
                         </Field>
                     </Section>
 
-                    <Separator size="4" />
+                    <Separator />
 
                     {/* Zahlungsdaten */}
                     <Section
                         title="Zahlungsdaten"
                         description="Deine Bankverbindung für den Mitgliedsbeitrag."
                     >
-                        <Grid columns={{ initial: "1", sm: "3" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-3">
                             <Field label="Bank">
-                                <TextField.Root name="bank" defaultValue={initialValues.bank} />
+                                <Input name="bank" defaultValue={initialValues.bank} />
                             </Field>
                             <Field label="BLZ">
-                                <TextField.Root name="BLZ" defaultValue={initialValues.BLZ} />
+                                <Input name="BLZ" defaultValue={initialValues.BLZ} />
                             </Field>
                             <Field label="Kontonummer">
-                                <TextField.Root name="KTO" defaultValue={initialValues.KTO} />
+                                <Input name="KTO" defaultValue={initialValues.KTO} />
                             </Field>
-                        </Grid>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="IBAN">
-                                <TextField.Root name="IBAN" defaultValue={initialValues.IBAN} />
+                                <Input name="IBAN" defaultValue={initialValues.IBAN} />
                             </Field>
                             <Field label="BIC">
-                                <TextField.Root name="BIC" defaultValue={initialValues.BIC} />
+                                <Input name="BIC" defaultValue={initialValues.BIC} />
                             </Field>
-                        </Grid>
+                        </div>
                         <Field label="Mandatserteilung">
-                            <TextField.Root
+                            <Input
                                 name="mandatserteilung"
                                 type="date"
                                 defaultValue={initialValues.mandatserteilung}
                             />
                         </Field>
-                        <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                        <div className="grid gap-3 sm:grid-cols-2">
                             <CheckboxField
                                 label="Bankeinzug"
                                 name="bankeinzug"
@@ -473,49 +466,43 @@ export function EditUserForm({
                                 name="zuwendungsbesch"
                                 defaultChecked={Boolean(user.zuwendungsbesch)}
                             />
-                        </Grid>
+                        </div>
                     </Section>
 
                     {isAdmin && (
                         <>
-                            <Separator size="4" />
+                            <Separator />
 
                             {/* Mitgliedschaft & Rolle */}
                             <Section title="Mitgliedschaft & Rolle" description="Nur für Administratoren sichtbar.">
-                                <Grid columns={{ initial: "1", sm: "3" }} gap="3">
+                                <div className="grid gap-3 sm:grid-cols-3">
                                     <Field label="Mitglieds-ID">
-                                        <TextField.Root
+                                        <Input
                                             name="mitgliedId"
                                             type="number"
                                             defaultValue={initialValues.mitgliedId}
                                         />
                                     </Field>
                                     <Field label="Rolle">
-                                        <Select.Root name="role" defaultValue={initialValues.role}>
-                                            <Select.Trigger />
-                                            <Select.Content>
-                                                {ROLE_OPTIONS.map((o) => (
-                                                    <Select.Item key={o.value} value={o.value}>
-                                                        {o.label}
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Root>
+                                        <Select name="role" defaultValue={initialValues.role}>
+                                            {ROLE_OPTIONS.map((o) => (
+                                                <option key={o.value} value={o.value}>
+                                                    {o.label}
+                                                </option>
+                                            ))}
+                                        </Select>
                                     </Field>
                                     <Field label="Status">
-                                        <Select.Root name="status" defaultValue={initialValues.status}>
-                                            <Select.Trigger />
-                                            <Select.Content>
-                                                {STATUS_OPTIONS.map((o) => (
-                                                    <Select.Item key={o.value} value={o.value}>
-                                                        {o.label}
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Root>
+                                        <Select name="status" defaultValue={initialValues.status}>
+                                            {STATUS_OPTIONS.map((o) => (
+                                                <option key={o.value} value={o.value}>
+                                                    {o.label}
+                                                </option>
+                                            ))}
+                                        </Select>
                                     </Field>
-                                </Grid>
-                                <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2">
                                     <CheckboxField
                                         label="Datensperren"
                                         name="datensperren"
@@ -526,129 +513,126 @@ export function EditUserForm({
                                         name="ausschluss"
                                         defaultChecked={Boolean(user.ausschluss)}
                                     />
-                                </Grid>
+                                </div>
                             </Section>
 
-                            <Separator size="4" />
+                            <Separator />
 
                             {/* Admin-interne Zahlungsvermerke */}
                             <Section
                                 title="Interne Zahlungsvermerke"
                                 description="Nur für Administratoren sichtbar."
                             >
-                                <Grid columns={{ initial: "1", sm: "2" }} gap="3">
+                                <div className="grid gap-3 sm:grid-cols-2">
                                     <Field label="Zahlungs-Kommentar">
-                                        <TextField.Root
+                                        <Input
                                             name="zahlungsKommentar"
                                             defaultValue={initialValues.zahlungsKommentar}
                                         />
                                     </Field>
                                     <Field label="Mahnung">
-                                        <TextField.Root name="mahnung" defaultValue={initialValues.mahnung} />
+                                        <Input name="mahnung" defaultValue={initialValues.mahnung} />
                                     </Field>
-                                </Grid>
+                                </div>
                             </Section>
                         </>
                     )}
 
-                    <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="2" wrap="wrap" align={{ initial: "stretch", xs: "center" }}>
-                        <Button size="3" type="submit">
-                            <CheckIcon /> Speichern
+                    <div className="mt-2 flex flex-col flex-wrap gap-3 sm:flex-row sm:items-center">
+                        <Button size="lg" type="submit">
+                            <Check size={16} aria-hidden="true" /> Speichern
                         </Button>
                         <Button
-                            size="3"
+                            size="lg"
                             variant="soft"
-                            color="gray"
+                            color="neutral"
                             type="button"
                             onClick={() => guardNavigate("/dashboard")}
                         >
-                            <ArrowLeftIcon /> Abbrechen
+                            <ArrowLeft size={16} aria-hidden="true" /> Abbrechen
                         </Button>
                         {isDirty && (
-                            <Flex align="center" gap="2">
-                                <Info size={14} color="var(--amber-9)" />
-                                <Text size="1" color="amber">
-                                    Ungespeicherte Änderungen
-                                </Text>
-                            </Flex>
+                            <p className="flex items-center gap-2 text-xs text-warning">
+                                <Info size={14} aria-hidden="true" />
+                                Ungespeicherte Änderungen
+                            </p>
                         )}
-                    </Flex>
-                </Flex>
+                    </div>
+                </div>
             </form>
 
             {/* Bestätigungsabfrage vor dem Speichern */}
-            <AlertDialog.Root open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-                <AlertDialog.Content maxWidth="480px">
-                    <AlertDialog.Title>Änderungen speichern?</AlertDialog.Title>
-                    <AlertDialog.Description size="2" mb="3">
-                        Bitte prüfe die folgenden {diff.length === 1 ? "Änderung" : "Änderungen"} und
-                        bestätige, dass du sie wirklich speichern möchtest:
-                    </AlertDialog.Description>
-                    <Flex direction="column" gap="2" mb="3" style={{ maxHeight: 320, overflowY: "auto" }}>
-                        {diff.map((d, i) => (
-                            <Card key={i} size="1" variant="surface">
-                                <Text size="2" weight="bold">
-                                    {d.label}
-                                </Text>
-                                <Flex gap="2" align="center" wrap="wrap">
-                                    <Text size="2" color="gray" style={{ textDecoration: "line-through" }}>
-                                        {d.from}
-                                    </Text>
-                                    <Text size="2" color="gray">
-                                        →
-                                    </Text>
-                                    <Text size="2" weight="medium">
-                                        {d.to}
-                                    </Text>
-                                </Flex>
-                            </Card>
-                        ))}
-                    </Flex>
-                    <Flex gap="3" justify="end" mt="2">
-                        <AlertDialog.Cancel>
-                            <Button size="3" variant="soft" color="gray" type="button">
-                                Abbrechen
-                            </Button>
-                        </AlertDialog.Cancel>
-                        <Button size="3" type="button" onClick={confirmAndSubmit}>
-                            <CheckIcon /> Ja, Änderungen speichern
-                        </Button>
-                    </Flex>
-                </AlertDialog.Content>
-            </AlertDialog.Root>
+            <Dialog
+                open={showConfirmDialog}
+                onClose={() => setShowConfirmDialog(false)}
+                title="Änderungen speichern?"
+                description={`Bitte prüfe die folgenden ${
+                    diff.length === 1 ? "Änderung" : "Änderungen"
+                } und bestätige, dass du sie wirklich speichern möchtest:`}
+            >
+                <div className="grid max-h-80 gap-2 overflow-y-auto">
+                    {diff.map((d, i) => (
+                        <div key={i} className="rounded-xl border border-line bg-raised/60 p-3">
+                            <p className="text-sm font-bold">{d.label}</p>
+                            <p className="flex flex-wrap items-center gap-2 text-sm">
+                                <span className="text-muted line-through">{d.from}</span>
+                                <span aria-hidden="true" className="text-faint">
+                                    →
+                                </span>
+                                <span className="font-medium">{d.to}</span>
+                            </p>
+                        </div>
+                    ))}
+                </div>
+                <DialogFooter>
+                    <Button
+                        variant="soft"
+                        color="neutral"
+                        type="button"
+                        onClick={() => setShowConfirmDialog(false)}
+                    >
+                        Abbrechen
+                    </Button>
+                    <Button type="button" onClick={confirmAndSubmit}>
+                        <Check size={16} aria-hidden="true" /> Ja, Änderungen speichern
+                    </Button>
+                </DialogFooter>
+            </Dialog>
 
             {/* Warnung bei Verlassen mit ungespeicherten Änderungen */}
-            <AlertDialog.Root open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
-                <AlertDialog.Content maxWidth="420px">
-                    <AlertDialog.Title>Ungespeicherte Änderungen</AlertDialog.Title>
-                    <AlertDialog.Description size="2" mb="3">
-                        Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden. Wenn du
-                        jetzt fortfährst, gehen diese Änderungen verloren.
-                    </AlertDialog.Description>
-                    <Flex gap="3" justify="end" mt="2">
-                        <AlertDialog.Cancel>
-                            <Button size="3" variant="soft" color="gray" type="button">
-                                Zurück zum Formular
-                            </Button>
-                        </AlertDialog.Cancel>
-                        <AlertDialog.Action>
-                            <Button
-                                size="3"
-                                color="red"
-                                type="button"
-                                onClick={() => {
-                                    if (pendingHref) {
-                                        setIsDirty(false);
-                                        router.push(pendingHref);
-                                    }
-                                }}
-                            >
-                                Änderungen verwerfen
-                            </Button>
-                        </AlertDialog.Action>
-                    </Flex>
-                </AlertDialog.Content>
-            </AlertDialog.Root>
+            <Dialog
+                open={showLeaveConfirm}
+                onClose={() => setShowLeaveConfirm(false)}
+                title="Ungespeicherte Änderungen"
+                size="sm"
+            >
+                <p className="text-sm leading-relaxed text-muted">
+                    Du hast Änderungen vorgenommen, die noch nicht gespeichert wurden. Wenn du
+                    jetzt fortfährst, gehen diese Änderungen verloren.
+                </p>
+                <DialogFooter>
+                    <Button
+                        variant="soft"
+                        color="neutral"
+                        type="button"
+                        onClick={() => setShowLeaveConfirm(false)}
+                    >
+                        Zurück zum Formular
+                    </Button>
+                    <Button
+                        color="danger"
+                        type="button"
+                        onClick={() => {
+                            if (pendingHref) {
+                                setIsDirty(false);
+                                router.push(pendingHref);
+                            }
+                        }}
+                    >
+                        Änderungen verwerfen
+                    </Button>
+                </DialogFooter>
+            </Dialog>
         </>
     );
 }
@@ -663,19 +647,13 @@ function Section({
     children: React.ReactNode;
 }) {
     return (
-        <Flex direction="column" gap="3">
-            <Box>
-                <Heading as="h2" size="4">{title}</Heading>
-                {description && (
-                    <Text size="2" color="gray">
-                        {description}
-                    </Text>
-                )}
-            </Box>
-            <Flex direction="column" gap="3">
-                {children}
-            </Flex>
-        </Flex>
+        <section className="grid gap-3">
+            <div>
+                <h2 className="text-base font-bold tracking-tight">{title}</h2>
+                {description && <p className="text-sm text-muted">{description}</p>}
+            </div>
+            <div className="grid gap-3">{children}</div>
+        </section>
     );
 }
 
@@ -689,16 +667,11 @@ function Field({
     children: React.ReactNode;
 }) {
     return (
-        <label>
-            <Text size="2" weight="bold" as="div" mb="1">
+        <label className="block">
+            <span className="mb-1 block text-sm font-semibold text-foreground">
                 {label}
-                {required && (
-                    <Text color="red">
-                        {" "}
-                        *
-                    </Text>
-                )}
-            </Text>
+                {required && <span className="text-negative"> *</span>}
+            </span>
             {children}
         </label>
     );
@@ -714,13 +687,9 @@ function CheckboxField({
     defaultChecked: boolean;
 }) {
     return (
-        <Flex asChild align="center" gap="2">
-            <label>
-                <input name={name} type="checkbox" defaultChecked={defaultChecked} />
-                <Text size="2" weight="bold">
-                    {label}
-                </Text>
-            </label>
-        </Flex>
+        <label className="flex cursor-pointer items-center gap-2">
+            <Checkbox name={name} defaultChecked={defaultChecked} />
+            <span className="text-sm font-semibold">{label}</span>
+        </label>
     );
 }

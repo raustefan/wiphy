@@ -11,7 +11,7 @@ import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import { Text, Container, Card, Box } from "@radix-ui/themes";
+import { Card, Container } from "@/components/ui";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 import { EditUserForm } from "./EditUserForm";
@@ -162,74 +162,78 @@ export default async function EditUserPage({
     }
 
     const user = await getEditableUser(resolvedParams.id);
-    if (!user) return <Text>User nicht gefunden</Text>;
+    if (!user) {
+        return (
+            <Container size="2" className="py-16 text-center text-muted">
+                User nicht gefunden
+            </Container>
+        );
+    }
 
     const canDelete = isAdmin && currentUser.id !== resolvedParams.id;
     const displayName = [user.vorname, user.name].filter(Boolean).join(" ") || user.email;
 
+    const formErrors: { title: string; detail: string }[] = [];
+    if (resolvedSearchParams?.validationError === "1") {
+        formErrors.push({
+            title: "Bitte prüfe deine Eingaben.",
+            detail: "Ein oder mehrere Felder sind ungültig oder fehlen.",
+        });
+    }
+    if (resolvedSearchParams?.emailTakenError === "1") {
+        formErrors.push({
+            title: "Diese E-Mail-Adresse wird bereits verwendet.",
+            detail:
+                "Bitte wähle eine andere Adresse. Deine übrigen Änderungen wurden nicht gespeichert.",
+        });
+    }
+    if (isAdmin && resolvedSearchParams?.mitgliedIdError === "1") {
+        formErrors.push({
+            title: "Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.",
+            detail: "Bitte wähle eine andere eindeutige Nummer.",
+        });
+    }
+
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
+        <Container size="2" className="py-8 sm:py-12">
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
             <Suspense fallback={null}>
                 <EmailChangeDialog />
             </Suspense>
-            <Container size="2" px={{ initial: "4", sm: "5" }}>
-                <DashboardPageHeader
-                    eyebrow="Mitgliederselbstverwaltung"
-                    title={isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
-                    description={!isAdmin ? "Halte deine persönlichen Angaben aktuell." : undefined}
-                    backHref="/dashboard"
-                    backAsPlainAnchor
+
+            <DashboardPageHeader
+                eyebrow="Mitgliederselbstverwaltung"
+                title={isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
+                description={!isAdmin ? "Halte deine persönlichen Angaben aktuell." : undefined}
+                backHref="/dashboard"
+                backAsPlainAnchor
+            />
+
+            <Card className="p-5 sm:p-6">
+                {formErrors.map((formError) => (
+                    <div
+                        key={formError.title}
+                        role="alert"
+                        className="mb-4 grid gap-0.5 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm text-negative"
+                    >
+                        <p className="font-bold">{formError.title}</p>
+                        <p>{formError.detail}</p>
+                    </div>
+                ))}
+
+                <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />
+            </Card>
+
+            {canDelete && (
+                <DeleteMemberSection
+                    userId={user.id}
+                    displayName={displayName}
+                    email={user.email}
+                    deleteAction={deleteUserAction}
                 />
-
-                <Card size="3">
-                    {resolvedSearchParams?.validationError === "1" && (
-                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                            <Text weight="bold" color="red" size="2">
-                                Bitte prüfe deine Eingaben.
-                            </Text>
-                            <Text size="2" color="red">
-                                Ein oder mehrere Felder sind ungültig oder fehlen.
-                            </Text>
-                        </Card>
-                    )}
-
-                    {resolvedSearchParams?.emailTakenError === "1" && (
-                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                            <Text weight="bold" color="red" size="2">
-                                Diese E-Mail-Adresse wird bereits verwendet.
-                            </Text>
-                            <Text size="2" color="red">
-                                Bitte wähle eine andere Adresse. Deine übrigen Änderungen wurden nicht gespeichert.
-                            </Text>
-                        </Card>
-                    )}
-
-                    {isAdmin && resolvedSearchParams?.mitgliedIdError === "1" && (
-                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                            <Text weight="bold" color="red" size="2">
-                                Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.
-                            </Text>
-                            <Text size="2" color="red">
-                                Bitte wähle eine andere eindeutige Nummer.
-                            </Text>
-                        </Card>
-                    )}
-
-                    <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />
-                </Card>
-
-                {canDelete && (
-                    <DeleteMemberSection
-                        userId={user.id}
-                        displayName={displayName}
-                        email={user.email}
-                        deleteAction={deleteUserAction}
-                    />
-                )}
-            </Container>
-        </Box>
+            )}
+        </Container>
     );
 }

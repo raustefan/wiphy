@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { adminCreateUser } from "@/lib/server/services/userService";
-import { Flex, Text, Button, Container, Card, TextField, Select, Box } from "@radix-ui/themes";
-import { CheckIcon, MinusIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
+import { Check, X } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { AppError } from "@/lib/server/errors";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
@@ -13,6 +11,15 @@ import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
+import {
+    Button,
+    ButtonLink,
+    Card,
+    Container,
+    Field,
+    Input,
+    Select,
+} from "@/components/ui";
 
 async function createUserAction(formData: FormData) {
     "use server";
@@ -51,102 +58,91 @@ async function createUserAction(formData: FormData) {
 export default async function NewUserPage({ searchParams }: { searchParams?: Promise<{ error?: string }> }) {
     const currentUser = await requireUser();
     if (currentUser.role !== "ADMIN") return redirect("/dashboard");
-    
+
     const resolvedSearchParams = searchParams ? await searchParams : undefined;
+    const errorMessage =
+        resolvedSearchParams?.error === "missing_fields"
+            ? "Bitte alle Pflichtfelder ausfüllen."
+            : resolvedSearchParams?.error === "creation_failed"
+              ? "Ein Fehler ist aufgetreten (evtl. existiert die E-Mail bereits)."
+              : null;
 
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
+        <Container size="2" className="py-8 sm:py-12">
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
-            <Container size="2" px={{ initial: "4", sm: "5" }}>
-                <DashboardPageHeader
-                    eyebrow="Internbereich"
-                    title="Benutzer hinzufügen"
-                    backHref="/dashboard"
-                />
 
-                <Card size="3">
-                    {resolvedSearchParams?.error === "missing_fields" && (
-                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                            <Text weight="bold" color="red" size="2">Bitte alle Pflichtfelder ausfüllen.</Text>
-                        </Card>
-                    )}
-                    {resolvedSearchParams?.error === "creation_failed" && (
-                        <Card mb="4" style={{ backgroundColor: "var(--red-3)" }}>
-                            <Text weight="bold" color="red" size="2">Ein Fehler ist aufgetreten (evtl. existiert die E-Mail bereits).</Text>
-                        </Card>
-                    )}
+            <DashboardPageHeader
+                eyebrow="Internbereich"
+                title="Benutzer hinzufügen"
+                backHref="/dashboard"
+            />
 
-                    <form action={createUserAction}>
-                        <Flex direction="column" gap="3">
-                            <label>
-                                <Text size="2" weight="bold">Vorname *</Text>
-                                <TextField.Root name="vorname" size="3" required />
-                            </label>
+            <Card className="p-5 sm:p-6">
+                {errorMessage && (
+                    <p
+                        role="alert"
+                        className="mb-4 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm font-semibold text-negative"
+                    >
+                        {errorMessage}
+                    </p>
+                )}
 
-                            <label>
-                                <Text size="2" weight="bold">Nachname *</Text>
-                                <TextField.Root name="name" size="3" required />
-                            </label>
+                <form action={createUserAction} className="grid gap-4">
+                    <Field label="Vorname *" htmlFor="new-user-vorname">
+                        <Input id="new-user-vorname" name="vorname" required />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">E-Mail *</Text>
-                                <TextField.Root name="email" type="email" size="3" required />
-                            </label>
+                    <Field label="Nachname *" htmlFor="new-user-name">
+                        <Input id="new-user-name" name="name" required />
+                    </Field>
 
-                            <label>
-                                <Text size="2" weight="bold">Passwort *</Text>
-                                <TextField.Root name="password" type="password" size="3" required />
-                            </label>
+                    <Field label="E-Mail *" htmlFor="new-user-email">
+                        <Input id="new-user-email" name="email" type="email" required />
+                    </Field>
 
-                            <Flex gap="3" direction={{ initial: "column", sm: "row" }}>
-                                <Box flexGrow="1">
-                                    <label>
-                                        <Text size="2" weight="bold" mb="1" as="div">Rolle</Text>
-                                        <Select.Root name="role" defaultValue="MEMBER" size="3">
-                                            <Select.Trigger style={{ width: "100%" }} />
-                                            <Select.Content>
-                                                {ROLE_OPTIONS.map((o) => (
-                                                    <Select.Item key={o.value} value={o.value}>
-                                                        {o.label}
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Root>
-                                    </label>
-                                </Box>
-                                <Box flexGrow="1">
-                                    <label>
-                                        <Text size="2" weight="bold" mb="1" as="div">Status</Text>
-                                        <Select.Root name="status" defaultValue="KEIN_MITGLIED" size="3">
-                                            <Select.Trigger style={{ width: "100%" }} />
-                                            <Select.Content>
-                                                {STATUS_OPTIONS.map((o) => (
-                                                    <Select.Item key={o.value} value={o.value}>
-                                                        {o.label}
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Root>
-                                    </label>
-                                </Box>
-                            </Flex>
+                    <Field label="Passwort *" htmlFor="new-user-password">
+                        <Input
+                            id="new-user-password"
+                            name="password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                        />
+                    </Field>
 
-                            <Flex direction={{ initial: "column", xs: "row" }} gap="3" mt="4">
-                                <Button size="3" type="submit">
-                                    <CheckIcon /> Hinzufügen
-                                </Button>
-                                <Button size="3" variant="soft" color="gray" asChild>
-                                    <Link href="/dashboard">
-                                        <MinusIcon /> Abbrechen
-                                    </Link>
-                                </Button>
-                            </Flex>
-                        </Flex>
-                    </form>
-                </Card>
-            </Container>
-        </Box>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Rolle" htmlFor="new-user-role">
+                            <Select id="new-user-role" name="role" defaultValue="MEMBER">
+                                {ROLE_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                        {o.label}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                        <Field label="Status" htmlFor="new-user-status">
+                            <Select id="new-user-status" name="status" defaultValue="KEIN_MITGLIED">
+                                {STATUS_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                        {o.label}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    </div>
+
+                    <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                        <Button size="lg" type="submit">
+                            <Check size={16} aria-hidden="true" /> Hinzufügen
+                        </Button>
+                        <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
+                            <X size={16} aria-hidden="true" /> Abbrechen
+                        </ButtonLink>
+                    </div>
+                </form>
+            </Card>
+        </Container>
     );
 }

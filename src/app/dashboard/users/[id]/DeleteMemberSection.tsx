@@ -1,18 +1,16 @@
 "use client";
 
 import { useId, useState } from "react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 import {
-    AlertDialog,
-    Box,
     Button,
     Callout,
     Card,
-    Flex,
-    Heading,
-    Text,
-    TextField,
-} from "@radix-ui/themes";
-import { ExclamationTriangleIcon, TrashIcon } from "@radix-ui/react-icons";
+    Dialog,
+    DialogFooter,
+    Field,
+    Input,
+} from "@/components/ui";
 
 type DeleteMemberSectionProps = {
     userId: string;
@@ -52,113 +50,88 @@ export function DeleteMemberSection({
     }
 
     return (
-        <Card size="3" mt="6" style={{ border: "1px solid var(--red-a6)", background: "var(--red-a2)" }}>
-            <Flex direction="column" gap="3" justify="center" align="center" py="4">
-                <Flex align="center" gap="2">
-                    <ExclamationTriangleIcon color="var(--red-11)" width={18} height={18} />
-                    <Heading as="h2" size="4" color="red">
-                        Gefahrenzone
-                    </Heading>
-                </Flex>
-                <Text size="2" color="gray">
+        <Card className="mt-8 border-negative/30 bg-negative/5 p-5 sm:p-6">
+            <div className="grid justify-items-center gap-3 py-2 text-center">
+                <p className="flex items-center gap-2 font-bold text-negative">
+                    <AlertTriangle size={18} aria-hidden="true" />
+                    Gefahrenzone
+                </p>
+                <p className="max-w-prose text-sm text-muted text-pretty">
                     Das endgültige Löschen dieses Mitglieds kann nicht rückgängig gemacht werden.
-                </Text>
-                <Box>
-                    <Button
-                        size="3"
-                        color="red"
-                        variant="solid"
-                        type="button"
-                        onClick={openStep1}
-                        style={{ width: "100%", maxWidth: 320, cursor: "pointer", justifyContent: "center" }}
-                    >
-                        <TrashIcon /> Mitglied löschen
-                    </Button>
-                </Box>
-            </Flex>
+                </p>
+                <Button
+                    size="lg"
+                    color="danger"
+                    type="button"
+                    onClick={openStep1}
+                    className="w-full max-w-xs"
+                >
+                    <Trash2 size={16} aria-hidden="true" /> Mitglied löschen
+                </Button>
+            </div>
 
             {/* Schritt 1: Warnung */}
-            <AlertDialog.Root
+            <Dialog
                 open={step1Open}
-                onOpenChange={(open) => {
-                    if (!open) closeAll();
-                }}
+                onClose={closeAll}
+                title="Mitglied unwiderruflich löschen?"
             >
-                <AlertDialog.Content maxWidth="480px">
-                    <AlertDialog.Title>Mitglied unwiderruflich löschen?</AlertDialog.Title>
-                    <Callout.Root color="red" mt="2" mb="3">
-                        <Callout.Icon>
-                            <ExclamationTriangleIcon />
-                        </Callout.Icon>
-                        <Callout.Text>
-                            <Text weight="bold">Achtung:</Text> Beim Löschen von{" "}
-                            <Text weight="bold">{displayName}</Text> ({email}) werden auch{" "}
-                            <Text weight="bold">alle Mitgliedsbeiträge (Zahlungshistorie)</Text> dieses
-                            Mitglieds unwiderruflich gelöscht. Dieser Vorgang kann{" "}
-                            <Text weight="bold">nicht rückgängig gemacht werden</Text>.
-                        </Callout.Text>
-                    </Callout.Root>
-                    <Flex gap="3" justify="end" mt="2">
-                        <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray" type="button">
-                                Abbrechen
-                            </Button>
-                        </AlertDialog.Cancel>
-                        <Button color="red" type="button" onClick={proceedToStep2}>
-                            Fortfahren
-                        </Button>
-                    </Flex>
-                </AlertDialog.Content>
-            </AlertDialog.Root>
+                <Callout tone="danger" icon={<AlertTriangle size={16} />}>
+                    <span className="font-bold text-foreground">Achtung:</span> Beim Löschen von{" "}
+                    <span className="font-bold text-foreground">{displayName}</span> ({email})
+                    werden auch{" "}
+                    <span className="font-bold text-foreground">
+                        alle Mitgliedsbeiträge (Zahlungshistorie)
+                    </span>{" "}
+                    dieses Mitglieds unwiderruflich gelöscht. Dieser Vorgang kann{" "}
+                    <span className="font-bold text-foreground">nicht rückgängig gemacht werden</span>.
+                </Callout>
+                <DialogFooter>
+                    <Button variant="soft" color="neutral" type="button" onClick={closeAll}>
+                        Abbrechen
+                    </Button>
+                    <Button color="danger" type="button" onClick={proceedToStep2}>
+                        Fortfahren
+                    </Button>
+                </DialogFooter>
+            </Dialog>
 
             {/* Schritt 2: Bestätigung per Texteingabe */}
-            <AlertDialog.Root
+            <Dialog
                 open={step2Open}
-                onOpenChange={(open) => {
-                    if (!open) closeAll();
-                }}
+                onClose={closeAll}
+                title="Bist du absolut sicher?"
+                description={`Um das endgültige Löschen von ${displayName} zu bestätigen, gib die E-Mail-Adresse ${email} unten ein.`}
             >
-                <AlertDialog.Content maxWidth="480px">
-                    <AlertDialog.Title>Bist du absolut sicher?</AlertDialog.Title>
-                    <AlertDialog.Description size="2" mb="3">
-                        Um das endgültige Löschen von <Text weight="bold">{displayName}</Text> zu
-                        bestätigen, gib die E-Mail-Adresse <Text weight="bold">{email}</Text> unten ein.
-                    </AlertDialog.Description>
-                    <form
-                        action={deleteAction}
-                        onSubmit={() => {
-                            // Zusätzliche Absicherung: nur absenden, wenn die Eingabe exakt passt.
-                            if (!canDelete) return;
-                        }}
-                    >
-                        <input type="hidden" name="id" value={userId} />
-                        <Text size="2" weight="bold" as="label" htmlFor={confirmInputId} mb="1">
-                            E-Mail-Adresse zur Bestätigung
-                        </Text>
-                        <TextField.Root
+                <form
+                    action={deleteAction}
+                    onSubmit={(event) => {
+                        // Zusätzliche Absicherung: nur absenden, wenn die Eingabe exakt passt.
+                        if (!canDelete) event.preventDefault();
+                    }}
+                >
+                    <input type="hidden" name="id" value={userId} />
+                    <Field label="E-Mail-Adresse zur Bestätigung" htmlFor={confirmInputId}>
+                        <Input
                             id={confirmInputId}
                             name="confirmEmail"
                             autoComplete="off"
                             placeholder={email}
                             value={confirmText}
                             onChange={(e) => setConfirmText(e.target.value)}
-                            mt="1"
-                            mb="4"
-                            color={confirmText.length > 0 && !canDelete ? "red" : undefined}
+                            invalid={confirmText.length > 0 && !canDelete}
                         />
-                        <Flex gap="3" justify="end">
-                            <AlertDialog.Cancel>
-                                <Button variant="soft" color="gray" type="button">
-                                    Abbrechen
-                                </Button>
-                            </AlertDialog.Cancel>
-                            <Button color="red" type="submit" disabled={!canDelete}>
-                                <TrashIcon /> Endgültig löschen
-                            </Button>
-                        </Flex>
-                    </form>
-                </AlertDialog.Content>
-            </AlertDialog.Root>
+                    </Field>
+                    <DialogFooter>
+                        <Button variant="soft" color="neutral" type="button" onClick={closeAll}>
+                            Abbrechen
+                        </Button>
+                        <Button color="danger" type="submit" disabled={!canDelete}>
+                            <Trash2 size={16} aria-hidden="true" /> Endgültig löschen
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Dialog>
         </Card>
     );
 }
