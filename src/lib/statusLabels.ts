@@ -13,15 +13,18 @@ export function formatStatus(status?: Status | string | null): string {
     }
 }
 
-export function getStatusTone(status?: Status | string | null): "red" | "blue" | "green" {
+/** Badge-Farbton des Mitgliedsstatus — die Werte sind `BadgeTone` des UI-Kits. */
+export function getStatusTone(
+    status?: Status | string | null,
+): "negative" | "info" | "positive" {
     switch (status) {
         case "EHRENMITGLIED":
-            return "green";
+            return "positive";
         case "ORDENTLICHES_MITGLIED":
-            return "blue";
+            return "info";
         case "KEIN_MITGLIED":
         default:
-            return "red";
+            return "negative";
     }
 }
 

@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Switch, Text } from "@radix-ui/themes";
 import type { FeatureFlagKey } from "@prisma/client";
+import { Switch } from "@/components/ui";
 import { setFeatureFlag } from "./actions";
 
 type FeatureFlagToggleProps = {
     flagKey: FeatureFlagKey;
+    label: string;
     enabled: boolean;
 };
 
-export function FeatureFlagToggle({ flagKey, enabled }: FeatureFlagToggleProps) {
+export function FeatureFlagToggle({ flagKey, label, enabled }: FeatureFlagToggleProps) {
     const [checked, setChecked] = useState(enabled);
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -33,13 +34,14 @@ export function FeatureFlagToggle({ flagKey, enabled }: FeatureFlagToggleProps) 
     }
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-            <Switch checked={checked} disabled={isPending} onCheckedChange={handleChange} size="3" />
-            {error && (
-                <Text size="1" color="red">
-                    {error}
-                </Text>
-            )}
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+            <Switch
+                checked={checked}
+                disabled={isPending}
+                onCheckedChange={handleChange}
+                aria-label={`${label} ${checked ? "deaktivieren" : "aktivieren"}`}
+            />
+            {error && <p className="text-xs text-negative">{error}</p>}
         </div>
     );
 }

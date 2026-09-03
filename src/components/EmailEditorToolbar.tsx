@@ -1,10 +1,44 @@
 "use client";
 
 import { Editor } from "@tiptap/react";
-import { Button, Flex } from "@radix-ui/themes";
+import { cn } from "@/lib/cn";
 
 interface EmailEditorToolbarProps {
   editor: Editor | null;
+}
+
+function ToolbarButton({
+  onClick,
+  active,
+  children,
+  title,
+}: {
+  onClick: () => void;
+  active: boolean;
+  children: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      aria-pressed={active}
+      className={cn(
+        "min-h-8 cursor-pointer rounded-md border border-line-strong px-2 py-1 text-sm transition-colors",
+        active
+          ? "border-physics bg-physics font-bold text-on-physics"
+          : "bg-surface text-foreground hover:bg-raised",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ToolbarDivider() {
+  return <div aria-hidden="true" className="mx-1 w-px self-stretch bg-line" />;
 }
 
 export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
@@ -12,48 +46,8 @@ export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
     return null;
   }
 
-  const ToolbarButton = ({
-    onClick,
-    active,
-    children,
-    title,
-  }: {
-    onClick: () => void;
-    active: boolean;
-    children: React.ReactNode;
-    title: string;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      style={{
-        padding: "4px 8px",
-        border: "1px solid var(--gray-6)",
-        borderRadius: "4px",
-        backgroundColor: active ? "var(--blue-9)" : "var(--gray-3)",
-        color: active ? "white" : "var(--gray-12)",
-        cursor: "pointer",
-        fontSize: "14px",
-        fontWeight: active ? "bold" : "normal",
-      }}
-    >
-      {children}
-    </button>
-  );
-
   return (
-    <div
-      style={{
-        borderBottom: "1px solid var(--gray-6)",
-        padding: "8px",
-        display: "flex",
-        gap: "4px",
-        flexWrap: "wrap",
-        backgroundColor: "var(--gray-3)",
-        borderRadius: "var(--radius-2) var(--radius-2) 0 0",
-      }}
-    >
+    <div className="flex flex-wrap items-center gap-1 rounded-t-xl border-b border-line bg-raised/60 p-2">
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         active={editor.isActive("bold")}
@@ -75,7 +69,7 @@ export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
       >
         <s>S</s>
       </ToolbarButton>
-      <div style={{ width: "1px", backgroundColor: "var(--gray-6)", margin: "0 4px" }} />
+      <ToolbarDivider />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         active={editor.isActive("bulletList")}
@@ -90,7 +84,7 @@ export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
       >
         1.
       </ToolbarButton>
-      <div style={{ width: "1px", backgroundColor: "var(--gray-6)", margin: "0 4px" }} />
+      <ToolbarDivider />
       <ToolbarButton
         onClick={() => {
           const url = window.prompt("Link URL eingeben:");
@@ -117,7 +111,7 @@ export function EmailEditorToolbar({ editor }: EmailEditorToolbarProps) {
           Link entfernen
         </ToolbarButton>
       )}
-      <div style={{ width: "1px", backgroundColor: "var(--gray-6)", margin: "0 4px" }} />
+      <ToolbarDivider />
       <ToolbarButton
         onClick={() => editor.chain().focus().unsetAllMarks().run()}
         active={false}

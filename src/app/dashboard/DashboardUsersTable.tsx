@@ -3,15 +3,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-    Badge,
-    Box,
-    Button,
-    Flex,
-    Separator,
-    Table,
-    Text,
-} from "@radix-ui/themes";
-import {
     User,
     UserCircle,
     IdCard,
@@ -22,10 +13,19 @@ import {
     Check,
     X,
 } from "lucide-react";
-import { Pencil2Icon } from "@radix-ui/react-icons";
 import { EmailComposerDialog } from "@/components/EmailComposerDialog";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 import type { Status } from "@prisma/client";
+import {
+    Badge,
+    Button,
+    IconButtonLink,
+    Separator,
+    Table,
+    TableWrap,
+    Td,
+    Th,
+} from "@/components/ui";
 
 const DEFAULT_VISIBLE = 5;
 
@@ -84,116 +84,124 @@ export function DashboardUsersTable({
 
     return (
         <>
-            <Box style={{ overflowX: "auto" }} mx={{ initial: "-4", sm: "0" }}>
-                <Table.Root variant="surface" style={{ minWidth: 640 }}>
-                    <Table.Header>
-                        <Table.Row>
+            <TableWrap>
+                <Table className="min-w-[640px]">
+                    <thead>
+                        <tr className="bg-raised/60">
                             {isAdmin && (
-                                <Table.ColumnHeaderCell>
-                                    <Flex align="center" gap="2">
-                                        <IdCard size={14} />
+                                <Th>
+                                    <span className="flex items-center gap-2">
+                                        <IdCard size={14} aria-hidden="true" />
                                         ID
-                                    </Flex>
-                                </Table.ColumnHeaderCell>
+                                    </span>
+                                </Th>
                             )}
-                            <Table.ColumnHeaderCell>
-                                <Flex align="center" gap="2">
-                                    <User size={14} />
+                            <Th>
+                                <span className="flex items-center gap-2">
+                                    <User size={14} aria-hidden="true" />
                                     Name
-                                </Flex>
-                            </Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell>
-                                <Flex align="center" gap="2">
-                                    <UserCircle size={14} />
+                                </span>
+                            </Th>
+                            <Th>
+                                <span className="flex items-center gap-2">
+                                    <UserCircle size={14} aria-hidden="true" />
                                     Rolle
-                                </Flex>
-                            </Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell>
-                                <Flex align="center" gap="2">
-                                    <CheckCircle2 size={14} />
+                                </span>
+                            </Th>
+                            <Th>
+                                <span className="flex items-center gap-2">
+                                    <CheckCircle2 size={14} aria-hidden="true" />
                                     Mitgliedschaft
-                                </Flex>
-                            </Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell>
-                                <Flex align="center" gap="2">
-                                    <Mail size={14} />
+                                </span>
+                            </Th>
+                            <Th>
+                                <span className="flex items-center gap-2">
+                                    <Mail size={14} aria-hidden="true" />
                                     E-Mail
-                                </Flex>
-                            </Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell align="right">
-                                <Flex align="center" gap="2" justify="end">
-                                    <Pencil size={14} />
+                                </span>
+                            </Th>
+                            <Th className="text-right">
+                                <span className="flex items-center justify-end gap-2">
+                                    <Pencil size={14} aria-hidden="true" />
                                     Bearbeiten
-                                </Flex>
-                            </Table.ColumnHeaderCell>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
+                                </span>
+                            </Th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {visibleUsers.map((u) => {
                             const verified = u.emailVerified;
-                            const color = verified ? "var(--green-11)" : "var(--red-11)";
+                            const mailColor = verified ? "text-positive" : "text-negative";
                             return (
-                                <Table.Row key={u.id}>
+                                <tr key={u.id} className="transition-colors hover:bg-raised/50">
                                     {isAdmin && (
-                                        <Table.Cell>
-                                            <Text>{u.mitgliedId ?? "—"}</Text>
-                                        </Table.Cell>
+                                        <Td className="font-mono tabular-nums">
+                                            {u.mitgliedId ?? "—"}
+                                        </Td>
                                     )}
-                                    <Table.Cell>
-                                        <Text weight="medium">
-                                            {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
-                                        </Text>
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                        <Badge color={u.role === "ADMIN" ? "red" : "blue"} variant="soft">
+                                    <Td className="font-medium">
+                                        {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
+                                    </Td>
+                                    <Td>
+                                        <Badge tone={u.role === "ADMIN" ? "market" : "info"}>
                                             {u.role === "ADMIN" ? "Admin" : "Member"}
                                         </Badge>
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                        <Badge color={getStatusTone(u.status)} variant="soft">
+                                    </Td>
+                                    <Td>
+                                        <Badge tone={getStatusTone(u.status)}>
                                             {getStatusIcon(u.status)}
                                             {formatStatus(u.status)}
                                         </Badge>
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                        <Flex
-                                            align="center"
-                                            gap="2"
-                                            onClick={isAdmin ? () => setMailUser(u) : undefined}
-                                            style={{
-                                                color,
-                                                cursor: isAdmin ? "pointer" : "default",
-                                            }}
-                                            title={isAdmin ? "E-Mail schreiben" : undefined}
-                                        >
-                                            {verified ? <Check size={16} /> : <X size={16} />}
-                                            <Text style={{ color }}>{u.email}</Text>
-                                        </Flex>
-                                    </Table.Cell>
-                                    <Table.Cell align="right">
-                                        <Flex gap="2" justify="end">
-                                            <Button size="2" variant="soft" asChild>
-                                                <Link href={`/dashboard/users/${u.id}`}>
-                                                    <Pencil2Icon />
-                                                </Link>
-                                            </Button>
-                                        </Flex>
-                                    </Table.Cell>
-                                </Table.Row>
+                                    </Td>
+                                    <Td>
+                                        {isAdmin ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => setMailUser(u)}
+                                                title="E-Mail schreiben"
+                                                className={`flex cursor-pointer items-center gap-2 rounded-md text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-physics ${mailColor}`}
+                                            >
+                                                {verified ? <Check size={16} /> : <X size={16} />}
+                                                {u.email}
+                                            </button>
+                                        ) : (
+                                            <span className={`flex items-center gap-2 ${mailColor}`}>
+                                                {verified ? <Check size={16} /> : <X size={16} />}
+                                                {u.email}
+                                            </span>
+                                        )}
+                                    </Td>
+                                    <Td className="text-right">
+                                        <div className="flex justify-end">
+                                            <IconButtonLink
+                                                href={`/dashboard/users/${u.id}`}
+                                                aria-label={`${
+                                                    [u.vorname, u.name].filter(Boolean).join(" ") ||
+                                                    u.email
+                                                } bearbeiten`}
+                                                variant="soft"
+                                                color="accent"
+                                                size="sm"
+                                            >
+                                                <Pencil size={15} aria-hidden="true" />
+                                            </IconButtonLink>
+                                        </div>
+                                    </Td>
+                                </tr>
                             );
                         })}
-                    </Table.Body>
-                </Table.Root>
-            </Box>
+                    </tbody>
+                </Table>
+            </TableWrap>
 
             {!showAll && sortedUsers.length > DEFAULT_VISIBLE && (
                 <>
-                    <Separator size="4" my="4" />
-                    <Flex justify="center">
-                        <Button variant="soft" onClick={() => setShowAll(true)}>
+                    <Separator className="my-4" />
+                    <div className="flex justify-center">
+                        <Button variant="soft" color="neutral" onClick={() => setShowAll(true)}>
                             Zeige alle ({sortedUsers.length} Nutzer)
                         </Button>
-                    </Flex>
+                    </div>
                 </>
             )}
 

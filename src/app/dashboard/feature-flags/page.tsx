@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
-import { Box, Container, Card, Flex, Text, Separator, Badge } from "@radix-ui/themes";
+import { Badge, Card, Container } from "@/components/ui";
 import { FeatureFlagToggle } from "./FeatureFlagToggle";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 
@@ -9,39 +9,37 @@ export default async function FeatureFlagsPage() {
     const flags = await getAllFeatureFlags();
 
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
-            <Container size="3" px={{ initial: "4", sm: "5" }}>
-                <DashboardPageHeader
-                    eyebrow="Admin"
-                    title="Feature Flags"
-                    description="Schalte einzelne Funktionen für alle Nutzer ein oder aus. Deaktivierte Funktionen zeigen betroffenen Nutzern einen Hinweis-Dialog an."
-                    backHref="/dashboard"
-                />
+        <Container size="3" className="py-8 sm:py-12">
+            <DashboardPageHeader
+                eyebrow="Admin"
+                title="Feature Flags"
+                description="Schalte einzelne Funktionen für alle Nutzer ein oder aus. Deaktivierte Funktionen zeigen betroffenen Nutzern einen Hinweis-Dialog an."
+                backHref="/dashboard"
+            />
 
-                <Card size="3">
-                    <Flex direction="column">
-                        {flags.map((flag, index) => (
-                            <Box key={flag.key}>
-                                {index > 0 && <Separator size="4" my="4" />}
-                                <Flex justify="between" align={{ initial: "start", sm: "center" }} direction={{ initial: "column", sm: "row" }} gap="4">
-                                    <Flex direction="column" gap="1" style={{ flex: 1, minWidth: 240 }}>
-                                        <Flex align="center" gap="2">
-                                            <Text weight="medium">{flag.label}</Text>
-                                            <Badge color={flag.enabled ? "green" : "red"} variant="soft">
-                                                {flag.enabled ? "Aktiv" : "Deaktiviert"}
-                                            </Badge>
-                                        </Flex>
-                                        <Text size="2" color="gray">
-                                            {flag.description}
-                                        </Text>
-                                    </Flex>
-                                    <FeatureFlagToggle flagKey={flag.key} enabled={flag.enabled} />
-                                </Flex>
-                            </Box>
-                        ))}
-                    </Flex>
-                </Card>
-            </Container>
-        </Box>
+            <Card className="divide-y divide-line">
+                {flags.map((flag) => (
+                    <div
+                        key={flag.key}
+                        className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:gap-6"
+                    >
+                        <div className="grid min-w-0 flex-1 gap-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-semibold">{flag.label}</span>
+                                <Badge tone={flag.enabled ? "positive" : "negative"}>
+                                    {flag.enabled ? "Aktiv" : "Deaktiviert"}
+                                </Badge>
+                            </div>
+                            <p className="text-sm text-muted text-pretty">{flag.description}</p>
+                        </div>
+                        <FeatureFlagToggle
+                            flagKey={flag.key}
+                            label={flag.label}
+                            enabled={flag.enabled}
+                        />
+                    </div>
+                ))}
+            </Card>
+        </Container>
     );
 }

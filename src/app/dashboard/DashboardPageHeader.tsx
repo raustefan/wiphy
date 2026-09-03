@@ -1,6 +1,6 @@
-import { Box, Flex, Heading, Text, Button } from "@radix-ui/themes";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { buttonClasses } from "@/components/ui";
 
 type DashboardPageHeaderProps = {
     eyebrow: string;
@@ -22,47 +22,44 @@ export function DashboardPageHeader({
     backAsPlainAnchor = false,
     children,
 }: DashboardPageHeaderProps) {
+    const backClass = buttonClasses({
+        variant: "soft",
+        color: "neutral",
+        size: "md",
+        className: "w-full sm:w-auto",
+    });
+    const backContent = (
+        <>
+            <ArrowLeft size={16} aria-hidden="true" />
+            {backLabel}
+        </>
+    );
+
     return (
-        <Flex
-            justify={{ initial: "start", sm: "between" }}
-            align={{ initial: "start", sm: "center" }}
-            direction={{ initial: "column", sm: "row" }}
-            gap="4"
-            mb={{ initial: "5", sm: "6" }}
-        >
-            <Box>
-                <Text size="2" color="gray">
-                    {eyebrow}
-                </Text>
-                <Heading as="h1" size={{ initial: "6", sm: "7" }}>
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
+            <div className="min-w-0">
+                <p className="text-sm text-muted">{eyebrow}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
                     {title}
-                </Heading>
+                </h1>
                 {description && (
-                    <Text size="2" color="gray">
+                    <p className="mt-1 max-w-prose text-sm text-muted text-pretty">
                         {description}
-                    </Text>
+                    </p>
                 )}
-            </Box>
-            <Flex gap="3" direction={{ initial: "column", xs: "row" }} width={{ initial: "100%", sm: "auto" }}>
-                <Button
-                    size="3"
-                    variant="soft"
-                    color="gray"
-                    asChild
-                    style={{ width: 220, justifyContent: "center", whiteSpace: "nowrap", flexShrink: 0, cursor: "pointer" }}
-                >
-                    {backAsPlainAnchor ? (
-                        <a href={backHref}>
-                            <ArrowLeftIcon width={16} height={16} /> {backLabel}
-                        </a>
-                    ) : (
-                        <Link href={backHref}>
-                            <ArrowLeftIcon width={16} height={16} /> {backLabel}
-                        </Link>
-                    )}
-                </Button>
+            </div>
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                {backAsPlainAnchor ? (
+                    <a href={backHref} className={backClass}>
+                        {backContent}
+                    </a>
+                ) : (
+                    <Link href={backHref} className={backClass}>
+                        {backContent}
+                    </Link>
+                )}
                 {children}
-            </Flex>
-        </Flex>
+            </div>
+        </div>
     );
 }

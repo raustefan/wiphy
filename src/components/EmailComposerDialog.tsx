@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  AlertDialog,
-  Button,
-  Flex,
-  Text,
-  TextField,
-  Box,
-} from "@radix-ui/themes";
-import { CheckCircledIcon } from "@radix-ui/react-icons";
+import { CheckCircle2 } from "lucide-react";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TiptapLink from "@tiptap/extension-link";
 import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogFooter,
+  Field,
+  Input,
+} from "@/components/ui";
 
 export type MailRecipient = {
   id: string;
@@ -58,14 +58,15 @@ export function EmailComposerDialog({
       TiptapLink.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-600 underline cursor-pointer',
+          class: "text-physics underline cursor-pointer",
         },
       }),
     ],
     content: defaultMessage,
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1",
+        class:
+          "max-w-none min-h-[200px] p-4 text-sm leading-relaxed focus:outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2",
       },
     },
   });
@@ -118,158 +119,111 @@ export function EmailComposerDialog({
     }
   }
 
-  function handleOpenChange(next: boolean) {
+  /** Abbrechen/Esc/Backdrop — während des Versands bleibt der Dialog offen. */
+  function handleClose() {
     if (pending) return;
-    if (!next) {
-      if (success) onSuccess?.();
-      setSuccess(false);
-    }
-    onOpenChange(next);
+    closeDialog();
+  }
+
+  if (success) {
+    return (
+      <Dialog open={open} onClose={closeDialog} size="sm">
+        <div className="grid justify-items-center gap-3 py-2 text-center">
+          <CheckCircle2 size={48} className="text-positive" aria-hidden="true" />
+          <h2 className="text-lg font-bold tracking-tight">E-Mail gesendet</h2>
+          <p className="text-sm text-muted">
+            Die Nachricht wurde an {sentCount} {sentCount === 1 ? "Empfänger" : "Empfänger"}{" "}
+            versendet.
+          </p>
+          <Button className="mt-2" onClick={closeDialog}>
+            Schließen
+          </Button>
+        </div>
+      </Dialog>
+    );
   }
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
-      <AlertDialog.Content maxWidth="520px">
-        {success ? (
-          <Flex direction="column" align="center" gap="3" py="4">
-            <CheckCircledIcon
-              width={56}
-              height={56}
-              color="var(--green-9)"
-              aria-hidden
-            />
-            <AlertDialog.Title mb="0">E-Mail gesendet</AlertDialog.Title>
-            <AlertDialog.Description size="2" align="center" mb="0">
-              Die Nachricht wurde an {sentCount}{" "}
-              {sentCount === 1 ? "Empfänger" : "Empfänger"} versendet.
-            </AlertDialog.Description>
-            <Flex justify="center" mt="2" width="100%">
-              <AlertDialog.Action>
-                <Button onClick={closeDialog}>Schließen</Button>
-              </AlertDialog.Action>
-            </Flex>
-          </Flex>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <AlertDialog.Title>{submitLabel}</AlertDialog.Title>
-            <AlertDialog.Description size="2" mb="3">
-              {recipients.length === 0
-                ? "Keine Empfänger ausgewählt."
-                : `${recipients.length} ${recipients.length === 1 ? "Empfänger" : "Empfänger"}`}
-            </AlertDialog.Description>
-
-            {recipients.length > 0 && (
-              <Box
-                mb="3"
-                p="2"
-                style={{
-                  maxHeight: 120,
-                  overflowY: "auto",
-                  borderRadius: "var(--radius-2)",
-                  backgroundColor: "var(--gray-3)",
-                }}
-              >
-                <Flex direction="column" gap="1">
-                  {recipients.map((r) => (
-                    <Flex key={r.id} direction="column" gap="0">
-                      <Text size="2" weight="medium">
-                        {r.name || "—"}
-                      </Text>
-                      <Text size="1" color="gray">
-                        {r.email}
-                      </Text>
-                    </Flex>
-                  ))}
-                </Flex>
-              </Box>
-            )}
-
-            {error && (
-              <Text size="2" color="red" mb="2" role="alert">
-                {error}
-              </Text>
-            )}
-
-            <Flex direction="column" gap="3" mb="4">
-              <label>
-                <Text size="2" weight="bold">
-                  Betreff
-                </Text>
-                <TextField.Root
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  required
-                  mt="1"
-                />
-              </label>
-              <label>
-                <Text size="2" weight="bold">
-                  Nachricht
-                </Text>
-                <Text size="1" color="gray" mb="2">
-                  Verfügbare Platzhalter: $Vorname, $Nachname, $Name
-                </Text>
-                <Box mt="1">
-                  <Box
-                    style={{
-                      border: "1px solid var(--gray-6)",
-                      borderRadius: "var(--radius-2)",
-                      minHeight: "200px",
-                    }}
-                  >
-                    <EmailEditorToolbar editor={editor} />
-                    <EditorContent editor={editor} />
-                  </Box>
-                </Box>
-              </label>
-              {showBccToSelf && (
-                <Flex align="center" gap="2">
-                  <input
-                    type="checkbox"
-                    id="email-composer-bcc-self"
-                    checked={bccToSelf}
-                    onChange={(e) => setBccToSelf(e.target.checked)}
-                    style={{
-                      width: 18,
-                      height: 18,
-                      cursor: "pointer",
-                      accentColor: "var(--accent-9)",
-                    }}
-                  />
-                  <Text
-                    size="2"
-                    as="label"
-                    htmlFor="email-composer-bcc-self"
-                    style={{ cursor: "pointer" }}
-                  >
-                    BCC an mich
-                  </Text>
-                </Flex>
-              )}
-            </Flex>
-
-            <Flex gap="3" justify="end">
-              <AlertDialog.Cancel>
-                <Button variant="soft" color="gray" type="button" disabled={pending}>
-                  Abbrechen
-                </Button>
-              </AlertDialog.Cancel>
-              <Flex direction="column" align="end" gap="1">
-                <Button
-                  type="submit"
-                  color="blue"
-                  disabled={pending || recipients.length === 0}
-                >
-                  {pending ? "Wird gesendet…" : submitLabel}
-                </Button>
-                <Text size="1" color="gray">
-                  E-Mail an {recipients.length} {recipients.length === 1 ? "Person" : "Personen"} senden
-                </Text>
-              </Flex>
-            </Flex>
-          </form>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      title={submitLabel}
+      description={
+        recipients.length === 0
+          ? "Keine Empfänger ausgewählt."
+          : `${recipients.length} ${recipients.length === 1 ? "Empfänger" : "Empfänger"}`
+      }
+      size="lg"
+    >
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        {recipients.length > 0 && (
+          <div className="grid max-h-32 gap-1 overflow-y-auto rounded-xl bg-raised p-3">
+            {recipients.map((r) => (
+              <div key={r.id}>
+                <p className="text-sm font-medium">{r.name || "—"}</p>
+                <p className="text-xs text-muted">{r.email}</p>
+              </div>
+            ))}
+          </div>
         )}
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+
+        {error && (
+          <p role="alert" className="text-sm text-negative">
+            {error}
+          </p>
+        )}
+
+        <Field label="Betreff" htmlFor="email-composer-subject">
+          <Input
+            id="email-composer-subject"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            required
+          />
+        </Field>
+
+        <div className="grid gap-1.5">
+          <span className="text-sm font-semibold text-foreground">Nachricht</span>
+          <p className="text-sm text-faint">
+            Verfügbare Platzhalter: $Vorname, $Nachname, $Name
+          </p>
+          <div className="overflow-hidden rounded-xl border border-line-strong bg-surface">
+            <EmailEditorToolbar editor={editor} />
+            <EditorContent editor={editor} />
+          </div>
+        </div>
+
+        {showBccToSelf && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="email-composer-bcc-self"
+              checked={bccToSelf}
+              onChange={(e) => setBccToSelf(e.target.checked)}
+            />
+            <label
+              htmlFor="email-composer-bcc-self"
+              className="cursor-pointer text-sm text-foreground"
+            >
+              BCC an mich
+            </label>
+          </div>
+        )}
+
+        <DialogFooter className="sm:items-end">
+          <Button variant="soft" color="neutral" type="button" disabled={pending} onClick={handleClose}>
+            Abbrechen
+          </Button>
+          <div className="grid gap-1 sm:justify-items-end">
+            <Button type="submit" loading={pending} disabled={recipients.length === 0}>
+              {pending ? "Wird gesendet…" : submitLabel}
+            </Button>
+            <p className="text-xs text-faint">
+              E-Mail an {recipients.length} {recipients.length === 1 ? "Person" : "Personen"}{" "}
+              senden
+            </p>
+          </div>
+        </DialogFooter>
+      </form>
+    </Dialog>
   );
 }

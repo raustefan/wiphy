@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { requireUser } from "@/lib/server/authz";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { EmailChangeDialog } from "./EmailChangeDialog";
@@ -7,20 +8,7 @@ import {
     getDashboardUsers,
     getEditableUser,
 } from "@/lib/server/services/userService";
-import {
-    Flex,
-    Heading,
-    Text,
-    Button,
-    Container,
-    Card,
-    Badge,
-    Separator,
-    Box,
-    Grid,
-} from "@radix-ui/themes";
 import { getFeeDashboardUsers } from "@/lib/server/services/feeService";
-import Link from "next/link";
 import {
     User,
     UserCircle,
@@ -39,6 +27,8 @@ import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { formatStatus } from "@/lib/statusLabels";
+import { Badge, ButtonLink, Card, Container, Separator } from "@/components/ui";
+import { SectionHeader } from "./SectionHeader";
 
 function formatDate(d?: string | Date | null) {
     if (!d) return "—";
@@ -49,6 +39,15 @@ function formatDate(d?: string | Date | null) {
         day: "numeric",
     });
 }
+
+const ADMIN_ACTIONS = [
+    { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
+    { href: "/dashboard/users/new", label: "Neuer User", Icon: User },
+    { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
+    { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
+    { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
+    { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
+];
 
 export default async function DashboardPage() {
     const currentUser = await requireUser();
@@ -68,7 +67,7 @@ export default async function DashboardPage() {
     const memberSince = profile?.createdAt ?? null;
 
     return (
-        <Box py={{ initial: "6", sm: "8" }} style={{ minHeight: "100%" }}>
+        <Container size="4" className="py-8 sm:py-12">
             <Suspense fallback={null}>
                 <MailSuccessDialog />
             </Suspense>
@@ -79,282 +78,193 @@ export default async function DashboardPage() {
                 <FeatureDisabledQueryDialog />
             </Suspense>
 
-            <Container size="4" px={{ initial: "4", sm: "5" }}>
-                {/* ---------- Header ---------- */}
-                <Flex
-                    justify="between"
-                    align={{ initial: "start", sm: "center" }}
-                    direction={{ initial: "column", sm: "row" }}
-                    gap="4"
-                    mb={{ initial: "6", sm: "7" }}
-                >
-                    <Flex direction="column" gap="1">
-                        <Flex align="center" gap="2">
-                            <User size={16} color="var(--accent-9)" />
-                            <Text size="2" weight="medium" color="blue">
-                                Mitgliederbereich
-                            </Text>
-                        </Flex>
-                        <Heading as="h1" size={{ initial: "7", sm: "8" }} style={{ letterSpacing: "-0.03em" }}>
-                            Hallo, {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
-                        </Heading>
-                    </Flex>
-                    <LogoutButton />
-                </Flex>
+            {/* ---------- Header ---------- */}
+            <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:mb-10 sm:flex-row sm:items-center">
+                <div className="grid min-w-0 gap-1">
+                    <p className="flex items-center gap-2 text-sm font-medium text-physics">
+                        <User size={16} aria-hidden="true" />
+                        Mitgliederbereich
+                    </p>
+                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                        Hallo, {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
+                    </h1>
+                </div>
+                <LogoutButton />
+            </div>
 
-                {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
-                <Box asChild mb={{ initial: "5", sm: "6" }}>
-                    <Link
-                        href={`/dashboard/users/${currentUser.id}`}
-                        style={{
-                            display: "block",
-                            borderRadius: "var(--radius-4)",
-                            padding: "var(--space-4) var(--space-5)",
-                            background:
-                                "linear-gradient(135deg, var(--accent-9), var(--accent-10))",
-                            boxShadow: "var(--shadow-3)",
-                            width: "100%",
-                            textDecoration: "none",
-                            color: "inherit",
-                            cursor: "pointer",
-                        }}
-                    >
-                        <Flex
-                            direction="column"
-                            gap="3"
-                            width="100%"
-                        >
-                            <Flex align="center" gap="2">
-                                <UserCog size={18} color="white" />
-                                <Text size="2" weight="medium" style={{ color: "white", opacity: 0.85 }}>
-                                    Mitgliederselbstverwaltung
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size={{ initial: "4", sm: "5" }} style={{ color: "white", margin: 0 }}>
-                                Verwalte deine Mitgliedsdaten
-                            </Heading>
-                            <Text size="2" style={{ color: "white", opacity: 0.85 }}>
-                                Persönliche Daten, Kontakt, Studium und Beruf jederzeit
-                                selbst einsehen und aktualisieren.
-                            </Text>
-                            <Flex align="center" gap="2" style={{ color: "white", marginTop: "var(--space-2)" }}>
-                                Zu meinem Profil <ArrowRight size={16} />
-                            </Flex>
-                        </Flex>
-                    </Link>
-                </Box>
+            {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
+            <Link
+                href={`/dashboard/users/${currentUser.id}`}
+                className="group mb-6 grid gap-2 rounded-2xl bg-physics px-5 py-5 text-on-physics transition-shadow hover:shadow-lg sm:mb-8 sm:px-6"
+            >
+                <span className="flex items-center gap-2 text-sm font-medium opacity-85">
+                    <UserCog size={18} aria-hidden="true" />
+                    Mitgliederselbstverwaltung
+                </span>
+                <span className="text-lg font-bold tracking-tight sm:text-xl">
+                    Verwalte deine Mitgliedsdaten
+                </span>
+                <span className="max-w-prose text-sm opacity-85 text-pretty">
+                    Persönliche Daten, Kontakt, Studium und Beruf jederzeit selbst einsehen und
+                    aktualisieren.
+                </span>
+                <span className="mt-1 flex items-center gap-2 text-sm font-semibold">
+                    Zu meinem Profil
+                    <ArrowRight
+                        size={16}
+                        aria-hidden="true"
+                        className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                    />
+                </span>
+            </Link>
 
-                {/* ---------- Profile summary ---------- */}
-                <Card size="3" mb={{ initial: "5", sm: "6" }}>
-                    <Grid columns={{ initial: "1", xs: "3" }} gap="5">
-                        <Flex direction="column" gap="1">
-                            <Flex align="center" gap="2">
-                                <IdCard size={16} color="var(--gray-9)" />
-                                <Text size="2" color="gray">
-                                    Mitgliedschaft
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size="4">{formatStatus(userStatus)}</Heading>
-                        </Flex>
+            {/* ---------- Profile summary ---------- */}
+            <Card className="mb-6 grid gap-5 p-5 sm:mb-8 sm:grid-cols-3 sm:p-6">
+                <div className="grid gap-1">
+                    <p className="flex items-center gap-2 text-sm text-muted">
+                        <IdCard size={16} className="text-faint" aria-hidden="true" />
+                        Mitgliedschaft
+                    </p>
+                    <p className="text-base font-bold">{formatStatus(userStatus)}</p>
+                </div>
 
-                        <Flex direction="column" gap="1">
-                            <Flex align="center" gap="2">
-                                <Calendar size={16} color="var(--gray-9)" />
-                                <Text size="2" color="gray">
-                                    Account seit
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size="4">{formatDate(memberSince)}</Heading>
-                        </Flex>
+                <div className="grid gap-1">
+                    <p className="flex items-center gap-2 text-sm text-muted">
+                        <Calendar size={16} className="text-faint" aria-hidden="true" />
+                        Account seit
+                    </p>
+                    <p className="text-base font-bold">{formatDate(memberSince)}</p>
+                </div>
 
-                        <Flex direction="column" gap="1">
-                            <Flex align="center" gap="2">
-                                <UserCircle size={16} color="var(--gray-9)" />
-                                <Text size="2" color="gray">
-                                    Rolle
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size="4">
-                                {currentUser.role === "ADMIN" ? "Administrator" : "Mitglied"}
-                            </Heading>
-                        </Flex>
-                    </Grid>
+                <div className="grid gap-1">
+                    <p className="flex items-center gap-2 text-sm text-muted">
+                        <UserCircle size={16} className="text-faint" aria-hidden="true" />
+                        Rolle
+                    </p>
+                    <p className="text-base font-bold">
+                        {currentUser.role === "ADMIN" ? "Administrator" : "Mitglied"}
+                    </p>
+                </div>
+            </Card>
+
+            {/* ---------- Admin actions ---------- */}
+            {isAdmin && (
+                <Card className="mb-6 p-5 sm:mb-8 sm:p-6">
+                    <SectionHeader
+                        icon={<SlidersHorizontal size={16} />}
+                        eyebrow="Admin-Aktionen"
+                        title="Verwaltung auf einen Blick"
+                        description="Pflege Inhalte, lege neue Nutzer an und bearbeite Zahlungs- oder Mail-Aufgaben direkt aus dem Dashboard."
+                    />
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {ADMIN_ACTIONS.map(({ href, label, Icon }) => (
+                            <ButtonLink
+                                key={href}
+                                href={href}
+                                variant="soft"
+                                color="neutral"
+                                className="w-full"
+                            >
+                                <Icon size={16} aria-hidden="true" />
+                                {label}
+                            </ButtonLink>
+                        ))}
+                    </div>
                 </Card>
+            )}
 
-                {/* ---------- Admin actions ---------- */}
-                {isAdmin && (
-                    <Card size="3" mb={{ initial: "5", sm: "6" }}>
-                        <Flex direction="column" gap="4">
-                            <Flex direction="column" gap="1">
-                                <Flex align="center" gap="2">
-                                    <SlidersHorizontal size={16} color="var(--gray-9)" />
-                                    <Text size="2" color="gray">
-                                        Admin-Aktionen
-                                    </Text>
-                                </Flex>
-                                <Heading as="h2" size="5">Verwaltung auf einen Blick</Heading>
-                                <Text size="2" color="gray" style={{ maxWidth: 640 }}>
-                                    Pflege Inhalte, lege neue Nutzer an und bearbeite
-                                    Zahlungs- oder Mail-Aufgaben direkt aus dem Dashboard.
-                                </Text>
-                            </Flex>
-
-                            <Grid columns={{ initial: "1", xs: "2", sm: "3" }} gap="3">
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/blog">
-                                        <BookOpen size={16} />
-                                        Blog
-                                    </Link>
-                                </Button>
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/users/new">
-                                        <User size={16} />
-                                        Neuer User
-                                    </Link>
-                                </Button>
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/mail">
-                                        <Send size={16} />
-                                        Rundmail
-                                    </Link>
-                                </Button>
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/fees">
-                                        <IdCard size={16} />
-                                        Beiträge
-                                    </Link>
-                                </Button>
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/kontakt">
-                                        <Mail size={16} />
-                                        Kontaktanfragen
-                                    </Link>
-                                </Button>
-                                <Button size="3" variant="soft" asChild>
-                                    <Link href="/dashboard/feature-flags">
-                                        <ToggleLeft size={16} />
-                                        Feature Flags
-                                    </Link>
-                                </Button>
-                            </Grid>
-                        </Flex>
-                    </Card>
-                )}
-
-                {/* ---------- Fees ---------- */}
-                <Card size="3" mb={{ initial: "5", sm: "6" }}>
-                    <Flex
-                        justify="between"
-                        align={{ initial: "start", sm: "baseline" }}
-                        direction={{ initial: "column", sm: "row" }}
-                        gap="2"
-                        mb="4"
-                    >
-                        <Flex direction="column" gap="1">
-                            <Flex align="center" gap="2">
-                                <IdCard size={16} color="var(--gray-9)" />
-                                <Text size="2" color="gray">
-                                    Zahlungsübersicht
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size="5">Meine Beiträge der letzten drei Jahre</Heading>
-                        </Flex>
-                        <Badge size="2" color="gray" variant="soft">
-                            <Rows3 size={14} />
+            {/* ---------- Fees ---------- */}
+            <Card className="mb-6 p-5 sm:mb-8 sm:p-6">
+                <SectionHeader
+                    icon={<IdCard size={16} />}
+                    eyebrow="Zahlungsübersicht"
+                    title="Meine Beiträge der letzten drei Jahre"
+                    aside={
+                        <Badge className="self-start">
+                            <Rows3 size={14} aria-hidden="true" />
                             {last3Years.length} Jahre
                         </Badge>
-                    </Flex>
+                    }
+                />
 
-                    <Separator size="4" mb="4" />
+                <Separator className="my-4" />
 
-                    <Grid columns={{ initial: "1", xs: "3" }} gap="3">
-                        {last3Years.map((year) => {
-                            const fee = myFees.find((f) => f.jahr === year);
-                            const isPaid = fee?.bezahlt ?? false;
-                            const isStudent = fee?.isStudent ?? false;
-                            const amount = fee?.beitrag ?? 0;
-                            return (
-                                <Card key={year} size="2" variant="surface">
-                                    <Flex direction="column" gap="2">
-                                        <Flex align="center" gap="2">
-                                            <Calendar size={14} color="var(--gray-9)" />
-                                            <Text size="2" color="gray">
-                                                Beitragsjahr
-                                            </Text>
-                                        </Flex>
-                                        <Heading as="h3" size="6">{year}</Heading>
-                                        <Flex gap="1" wrap="wrap">
-                                            <Badge color={isPaid ? "green" : "red"} size="1">
-                                                {isPaid ? "Bezahlt" : "Ausstehend"}
-                                            </Badge>
-                                            <Badge color={isStudent ? "blue" : "gray"} size="1">
-                                                {isStudent ? "Student" : "Regulär"}
-                                            </Badge>
-                                        </Flex>
-                                        <Text size="1" weight="medium" color="gray">
-                                            Betrag:{" "}
-                                            {amount.toLocaleString("de-DE", {
-                                                style: "currency",
-                                                currency: "EUR",
-                                            })}
-                                        </Text>
-                                    </Flex>
-                                </Card>
-                            );
-                        })}
-                    </Grid>
-                </Card>
+                <div className="grid gap-3 sm:grid-cols-3">
+                    {last3Years.map((year) => {
+                        const fee = myFees.find((f) => f.jahr === year);
+                        const isPaid = fee?.bezahlt ?? false;
+                        const isStudent = fee?.isStudent ?? false;
+                        const amount = fee?.beitrag ?? 0;
+                        return (
+                            <div
+                                key={year}
+                                className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4"
+                            >
+                                <p className="flex items-center gap-2 text-sm text-muted">
+                                    <Calendar size={14} className="text-faint" aria-hidden="true" />
+                                    Beitragsjahr
+                                </p>
+                                <p className="font-mono text-2xl font-bold tracking-tight">{year}</p>
+                                <div className="flex flex-wrap gap-1">
+                                    <Badge tone={isPaid ? "positive" : "negative"}>
+                                        {isPaid ? "Bezahlt" : "Ausstehend"}
+                                    </Badge>
+                                    <Badge tone={isStudent ? "info" : "neutral"}>
+                                        {isStudent ? "Student" : "Regulär"}
+                                    </Badge>
+                                </div>
+                                <p className="text-xs font-medium text-muted">
+                                    Betrag:{" "}
+                                    {amount.toLocaleString("de-DE", {
+                                        style: "currency",
+                                        currency: "EUR",
+                                    })}
+                                </p>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Card>
 
-                {/* ---------- Users table ---------- */}
-                <Card size="3">
-                    <Flex
-                        justify="between"
-                        align={{ initial: "start", sm: "baseline" }}
-                        direction={{ initial: "column", sm: "row" }}
-                        gap="3"
-                        mb="4"
-                    >
-                        <Flex direction="column" gap="1">
-                            <Flex align="center" gap="2">
-                                <BookOpen size={16} color="var(--gray-9)" />
-                                <Text size="2" color="gray">
-                                    {isAdmin
-                                        ? "Übersicht aller registrierten Nutzer"
-                                        : "Deine hinterlegten Daten"}
-                                </Text>
-                            </Flex>
-                            <Heading as="h2" size="5">
-                                {isAdmin ? "Benutzerverwaltung" : "Mein Profil"}
-                            </Heading>
-                            <Text size="2" color="gray">
-                                {isAdmin
-                                    ? "Alle Konten mit Rollen, Mitgliedsstatus und schnellen Aktionen."
-                                    : "Deine derzeit hinterlegten Kontodaten im Überblick."}
-                            </Text>
-                        </Flex>
-                        <Badge size="2" color="gray" variant="soft">
-                            <Rows3 size={14} />
+            {/* ---------- Users table ---------- */}
+            <Card className="p-5 sm:p-6">
+                <SectionHeader
+                    icon={<BookOpen size={16} />}
+                    eyebrow={
+                        isAdmin
+                            ? "Übersicht aller registrierten Nutzer"
+                            : "Deine hinterlegten Daten"
+                    }
+                    title={isAdmin ? "Benutzerverwaltung" : "Mein Profil"}
+                    description={
+                        isAdmin
+                            ? "Alle Konten mit Rollen, Mitgliedsstatus und schnellen Aktionen."
+                            : "Deine derzeit hinterlegten Kontodaten im Überblick."
+                    }
+                    aside={
+                        <Badge className="self-start">
+                            <Rows3 size={14} aria-hidden="true" />
                             {users.length} {users.length === 1 ? "Eintrag" : "Einträge"}
                         </Badge>
-                    </Flex>
+                    }
+                />
 
-                    <Separator size="4" mb="4" />
+                <Separator className="my-4" />
 
-                    <DashboardUsersTable
-                        users={users.map((u) => ({
-                            id: u.id,
-                            email: u.email,
-                            vorname: u.vorname,
-                            name: u.name,
-                            mitgliedId: u.mitgliedId,
-                            role: u.role,
-                            status: u.status,
-                            emailVerified: u.emailVerified,
-                        }))}
-                        isAdmin={isAdmin}
-                    />
-                </Card>
-            </Container>
-        </Box>
+                <DashboardUsersTable
+                    users={users.map((u) => ({
+                        id: u.id,
+                        email: u.email,
+                        vorname: u.vorname,
+                        name: u.name,
+                        mitgliedId: u.mitgliedId,
+                        role: u.role,
+                        status: u.status,
+                        emailVerified: u.emailVerified,
+                    }))}
+                    isAdmin={isAdmin}
+                />
+            </Card>
+        </Container>
     );
 }
