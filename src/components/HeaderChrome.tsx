@@ -58,7 +58,10 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b bg-background/95 backdrop-blur-sm transition-shadow",
+        // Deckende Fläche statt `backdrop-blur`: Der Filter wäre nicht nur
+        // teuer, er erzeugt auch einen Containing Block — das Drawer mit
+        // `position: fixed` würde dann auf Kopfzeilenhöhe zusammenschrumpfen.
+        "sticky top-0 z-40 border-b bg-background transition-shadow",
         scrolled ? "border-line shadow-sm" : "border-transparent",
       )}
     >
@@ -140,7 +143,10 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
         aria-modal="true"
         aria-label="Menü"
         className={cn(
-          "fixed inset-0 z-50 md:hidden",
+          // `overflow-hidden` klammert das ausgefahrene Panel ein: sonst
+          // meldet das Dokument im geschlossenen Zustand die Breite des
+          // off-canvas geschobenen Drawers.
+          "fixed inset-0 z-50 overflow-hidden md:hidden",
           menuOpen ? "visible" : "pointer-events-none invisible",
         )}
       >
