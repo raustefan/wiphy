@@ -11,16 +11,20 @@ import {
     resendVerificationEmail,
 } from "./actions";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
-import {
-    Container,
-    Card,
-    Heading,
-    Flex,
-    Text,
-    TextField,
-    Button,
-    Link,
-} from "@radix-ui/themes";
+import { AuthShell, AuthLink } from "@/components/AuthShell";
+import { Button, Container, Field, Input } from "@/components/ui";
+
+/** Altcha-Widget an die Design-Tokens angleichen. */
+const ALTCHA_STYLE = {
+    display: "block",
+    width: "100%",
+    "--altcha-max-width": "100%",
+    "--altcha-border-radius": "0.75rem",
+    "--altcha-border-color": "var(--line-strong)",
+    "--altcha-color-base": "var(--surface)",
+    "--altcha-color-base-content": "var(--foreground)",
+    "--altcha-color-primary": "var(--physics)",
+} as CSSProperties;
 
 export function LoginForm({ challengeJson }: { challengeJson: string }) {
     const router = useRouter();
@@ -123,7 +127,7 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
     };
 
     return (
-        <Container size="4" px="0" py={{ initial: "4", sm: "7" }}>
+        <Container size="4" className="py-8 sm:py-14">
             <Suspense fallback={null}>
                 <RegSuccessDialog />
             </Suspense>
@@ -133,179 +137,110 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                 onOpenChange={setFeatureDisabled}
             />
 
-            <Flex
-                direction={{ initial: "column", md: "row-reverse" }}
-                gap={{ initial: "4", md: "5" }}
-                align="center"
-                justify="center"
-            >
-                <Card
-                    size={{ initial: "3", md: "4" }}
-                    style={{
-                        boxShadow: "0 4px 6px var(--gray-a4)",
-                        width: "100%",
-                        maxWidth: "420px",
-                        flexShrink: 0,
-                    }}
-                >
-                    <form onSubmit={handleSubmit}>
-                        <Flex direction="column" gap="4" align="center">
-                            <Flex direction="column" gap="2" align="center">
-                                <Heading
-                                    as="h1"
-                                    size={{ initial: "6", sm: "7" }}
-                                    align="center"
-                                >
-                                    Mitgliederbereich
-                                </Heading>
-                                <Text size="2" color="gray" align="center">
-                                    Melde dich an um fortzufahren
-                                </Text>
-                            </Flex>
-
+            <div className="flex flex-col items-center justify-center gap-6 lg:flex-row-reverse lg:items-start lg:gap-10">
+                <div className="w-full max-w-md shrink-0">
+                    <AuthShell
+                        title="Mitgliederbereich"
+                        description="Melde dich an, um fortzufahren."
+                        footer={
+                            <>
+                                Noch nicht registriert?{" "}
+                                <AuthLink href="/register">Jetzt Konto erstellen</AuthLink>
+                            </>
+                        }
+                    >
+                        <form onSubmit={handleSubmit} className="grid gap-4">
                             {error && (
-                                <Flex
-                                    style={{
-                                        backgroundColor: "var(--red-a3)",
-                                        borderLeft: "4px solid var(--red-9)",
-                                        padding: "12px",
-                                        borderRadius: "var(--radius-2)",
-                                        width: "100%",
-                                    }}
+                                <div
+                                    role="alert"
+                                    className="grid gap-2 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3"
                                 >
-                                    <Flex direction="column" gap="2" style={{ width: "100%" }}>
-                                        <Text color="red" size="2">
-                                            {error}
-                                        </Text>
-                                        {emailUnverified && resendState !== "sent" && (
-                                            <Button
-                                                type="button"
-                                                variant="soft"
-                                                size="2"
-                                                onClick={handleResend}
-                                                disabled={resendState === "sending"}
-                                                style={{ width: "100%" }}
-                                            >
-                                                {resendState === "sending"
-                                                    ? "Wird gesendet..."
-                                                    : "Bestätigungs-E-Mail erneut senden"}
-                                            </Button>
-                                        )}
-                                        {resendMessage && (
-                                            <Text
-                                                size="2"
-                                                color={resendState === "error" ? "red" : "green"}
-                                            >
-                                                {resendMessage}
-                                            </Text>
-                                        )}
-                                    </Flex>
-                                </Flex>
+                                    <p className="text-sm text-negative">{error}</p>
+                                    {emailUnverified && resendState !== "sent" && (
+                                        <Button
+                                            type="button"
+                                            variant="soft"
+                                            color="neutral"
+                                            size="sm"
+                                            onClick={handleResend}
+                                            loading={resendState === "sending"}
+                                            className="w-full"
+                                        >
+                                            Bestätigungs-E-Mail erneut senden
+                                        </Button>
+                                    )}
+                                    {resendMessage && (
+                                        <p
+                                            className={
+                                                resendState === "error"
+                                                    ? "text-sm text-negative"
+                                                    : "text-sm text-positive"
+                                            }
+                                        >
+                                            {resendMessage}
+                                        </p>
+                                    )}
+                                </div>
                             )}
 
-                            <Flex direction="column" gap="4" style={{ width: "100%" }}>
-                                <Flex direction="column" gap="2">
-                                    <Text as="label" size="2" weight="bold">
-                                        E-Mail-Adresse
-                                    </Text>
-                                    <TextField.Root
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="mail@beispiel.de"
-                                        required
-                                        size="3"
-                                    />
-                                </Flex>
+                            <Field label="E-Mail-Adresse" htmlFor="login-email">
+                                <Input
+                                    id="login-email"
+                                    type="email"
+                                    autoComplete="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="mail@beispiel.de"
+                                    required
+                                />
+                            </Field>
 
-                                <Flex direction="column" gap="2">
-                                    <Flex
-                                        direction={{ initial: "column", sm: "row" }}
-                                        justify="between"
-                                        align={{ initial: "center", sm: "center" }}
-                                        gap="1"
+                            <div className="grid gap-1.5">
+                                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                    <label
+                                        htmlFor="login-password"
+                                        className="text-sm font-semibold text-foreground"
                                     >
-                                        <Text as="label" size="2" weight="bold">
-                                            Passwort
-                                        </Text>
-                                        <Link
-                                            href="/forgot-password"
-                                            size="1"
-                                            style={{
-                                                color: "var(--accent-9)",
-                                                textDecoration: "none",
-                                            }}
-                                        >
-                                            Passwort zurücksetzen
-                                        </Link>
-                                    </Flex>
-                                    <TextField.Root
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Dein Passwort"
-                                        required
-                                        size="3"
-                                    />
-                                </Flex>
+                                        Passwort
+                                    </label>
+                                    <AuthLink href="/forgot-password">
+                                        <span className="text-xs">Passwort zurücksetzen</span>
+                                    </AuthLink>
+                                </div>
+                                <Input
+                                    id="login-password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Dein Passwort"
+                                    required
+                                />
+                            </div>
 
-                                <Flex direction="column" gap="2">
-                                    <Text as="label" size="2" weight="bold">
-                                        Sicherheitsüberprüfung
-                                    </Text>
-                                    <altcha-widget
-                                        key={challenge}
-                                        challenge={challenge}
-                                        name="altcha"
-                                        style={{
-                                            display: "block",
-                                            width: "100%",
-                                            "--altcha-max-width": "100%",
-                                            "--altcha-border-radius": "var(--radius-3)",
-                                            "--altcha-border-color": "var(--gray-a7)",
-                                            "--altcha-color-base": "var(--color-panel)",
-                                            "--altcha-color-base-content": "var(--gray-12)",
-                                            "--altcha-color-primary": "var(--accent-9)",
-                                        } as CSSProperties}
-                                    />
-                                </Flex>
-                            </Flex>
+                            <div className="grid gap-1.5">
+                                <span className="text-sm font-semibold text-foreground">
+                                    Sicherheitsüberprüfung
+                                </span>
+                                <altcha-widget
+                                    key={challenge}
+                                    challenge={challenge}
+                                    name="altcha"
+                                    style={ALTCHA_STYLE}
+                                />
+                            </div>
 
-                            <Button
-                                type="submit"
-                                size="3"
-                                loading={submitting}
-                                style={{ minHeight: "44px", width: "100%" }}
-                            >
+                            <Button type="submit" size="lg" loading={submitting} className="w-full">
                                 Anmelden
                             </Button>
+                        </form>
+                    </AuthShell>
+                </div>
 
-                            <Flex direction="column" gap="2" align="center">
-                                <Text align="center" size="2" color="gray">
-                                    Noch nicht registriert?{" "}
-                                    <Link
-                                        href="/register"
-                                        style={{
-                                            color: "var(--accent-9)",
-                                            textDecoration: "none",
-                                            fontWeight: "500",
-                                        }}
-                                    >
-                                        Jetzt Konto erstellen
-                                    </Link>
-                                </Text>
-                            </Flex>
-                        </Flex>
-                    </form>
-                </Card>
-
-                <Flex
-                    style={{ width: "100%", maxWidth: "560px" }}
-                    justify="center"
-                >
+                <div className="w-full max-w-xl lg:mt-12">
                     <LoginFaq />
-                </Flex>
-            </Flex>
+                </div>
+            </div>
         </Container>
     );
 }

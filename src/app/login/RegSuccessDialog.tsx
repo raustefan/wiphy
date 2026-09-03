@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AlertDialog, Button, Flex } from "@radix-ui/themes";
-
+import { Button, Dialog, DialogFooter } from "@/components/ui";
 
 export function RegSuccessDialog() {
     const searchParams = useSearchParams();
@@ -15,27 +14,23 @@ export function RegSuccessDialog() {
         setOpen(searchParams.get("register") === "success");
     }, [searchParams]);
 
-    function handleOpenChange(next: boolean) {
-        setOpen(next);
-        if (!next) {
-            router.replace(pathname);
-        }
+    function handleClose() {
+        setOpen(false);
+        router.replace(pathname);
     }
 
     return (
-        <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
-            <AlertDialog.Content maxWidth="420px">
-                <AlertDialog.Title>Account beantragt!</AlertDialog.Title>
-                <AlertDialog.Description size="2" mb="3">
-                    Die Registierung war erfolgreich. Unser Vorstand wird sich bald bei dir melden!
-                    Du kannst bereits jetzt deine E-Mail-Adresse bestätigen, um den Prozess zu beschleunigen.   
-                </AlertDialog.Description>
-                <Flex gap="3" justify="end" mt="2">
-                    <AlertDialog.Action>
-                        <Button type="button">OK</Button>
-                    </AlertDialog.Action>
-                </Flex>
-            </AlertDialog.Content>
-        </AlertDialog.Root>
+        <Dialog open={open} onClose={handleClose} title="Account beantragt!" size="sm">
+            <p className="text-sm leading-relaxed text-muted">
+                Die Registrierung war erfolgreich. Unser Vorstand wird sich bald bei dir melden!
+                Du kannst bereits jetzt deine E-Mail-Adresse bestätigen, um den Prozess zu
+                beschleunigen.
+            </p>
+            <DialogFooter>
+                <Button type="button" onClick={handleClose}>
+                    OK
+                </Button>
+            </DialogFooter>
+        </Dialog>
     );
 }

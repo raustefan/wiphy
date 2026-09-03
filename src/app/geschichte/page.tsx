@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Heading, Text } from "@radix-ui/themes";
+import { Container } from "@/components/ui/Container";
 import PhysicsHero from "@/components/PhysicsHero";
 import { PhysicsTimeline } from "./PhysicsTimeline";
 
@@ -9,66 +9,43 @@ export const metadata = {
 
 export default function GeschichtePage() {
   return (
-    <Box>
+    <div className="grid gap-10 py-8 sm:gap-12 sm:py-12">
       {/* ---------- Hero ---------- */}
-      <Box
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          borderRadius: "18px",
-          marginBottom: "40px",
-          background:
-            "radial-gradient(120% 120% at 50% 0%, var(--accent-4) 0%, var(--accent-3) 45%, var(--color-panel-solid) 100%)",
-          border: "1px solid var(--accent-6)",
-        }}
-      >
-        <PhysicsHero />
+      <Container size="4">
+        <section className="relative overflow-hidden rounded-3xl border border-line bg-surface">
+          <PhysicsHero />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(62% 58% at 50% 46%, var(--background) 0%, color-mix(in srgb, var(--background) 55%, transparent) 45%, transparent 78%)",
+            }}
+          />
 
-        <Box
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(70% 60% at 50% 45%, var(--color-background) 0%, transparent 75%)",
-            opacity: 0.72,
-            pointerEvents: "none",
-          }}
-        />
-
-        <Container size="3" px="4" style={{ position: "relative" }}>
-          <Flex
-            direction="column"
-            align="center"
-            gap={{ initial: "4", sm: "5" }}
-            py={{ initial: "7", sm: "9" }}
-            style={{ textAlign: "center" }}
-          >
-            <Text className="eyebrow" size="2" color="blue" weight="medium">
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-14 text-center sm:py-20">
+            <p className="font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
               Seit 1960 gewachsen, seit 2004 organisiert
-            </Text>
+            </p>
 
-            <Heading as="h1" size={{ initial: "7", sm: "9" }} className="display-title">
+            <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-6xl">
               Unsere Geschichte
-            </Heading>
+            </h1>
 
-            <Text
-              size={{ initial: "2", sm: "5" }}
-              color="gray"
-              style={{ maxWidth: "640px", lineHeight: 1.65 }}
-            >
+            <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
               Von den ersten Bestrebungen für eine Universität in Ulm bis zum
               dreifachen Jubiläum 2024: eine interaktive Zeitleiste über die
               Universität Ulm, die Physik, die Wirtschaftsphysik und den
               Alumni-Verein.
-            </Text>
-          </Flex>
-        </Container>
-      </Box>
+            </p>
+          </div>
+        </section>
+      </Container>
 
       {/* ---------- Timeline ---------- */}
-      <Container size="4" px="0" mb={{ initial: "7", sm: "9" }}>
+      <Container size="4" className="pb-4">
         <PhysicsTimeline />
       </Container>
-    </Box>
+    </div>
   );
 }

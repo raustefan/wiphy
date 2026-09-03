@@ -2,9 +2,21 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { registerUser } from "./actions";
-import { Container, Card, Heading, Flex, Text, TextField, Button } from "@radix-ui/themes";
-import Link from "next/link";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { AuthShell, AuthLink } from "@/components/AuthShell";
+import { Button, Field, Input } from "@/components/ui";
+
+/** Altcha-Widget an die Design-Tokens angleichen. */
+const ALTCHA_STYLE = {
+    display: "block",
+    width: "100%",
+    "--altcha-max-width": "100%",
+    "--altcha-border-radius": "0.75rem",
+    "--altcha-border-color": "var(--line-strong)",
+    "--altcha-color-base": "var(--surface)",
+    "--altcha-color-base-content": "var(--foreground)",
+    "--altcha-color-primary": "var(--physics)",
+} as CSSProperties;
 
 export function RegisterForm({ challengeJson }: { challengeJson: string }) {
     const [error, setError] = useState("");
@@ -27,99 +39,95 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
     }
 
     return (
-        <Container size="1" px="0" py={{ initial: "4", sm: "8" }}>
+        <>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Registrierung"
                 onOpenChange={setFeatureDisabled}
             />
-            <Card size={{ initial: "3", sm: "4" }} className="panel">
-                <form action={handleAction}>
-                    <Flex direction="column" gap="5">
-                        <Flex direction="column" gap="2" align="center">
-                            <Heading as="h1" size={{ initial: "6", sm: "7" }} align="center" className="display-title">
-                                Neues Konto erstellen
-                            </Heading>
-                            <Text size="2" color="gray" align="center">
-                                Ein Nutzerkonto bestätigt noch nicht die Mitgliedschaft im WirtschaftsPhysik Alumni e.V.
-                            </Text>
-                        </Flex>
+            <AuthShell
+                title="Neues Konto erstellen"
+                description="Ein Nutzerkonto bestätigt noch nicht die Mitgliedschaft im WirtschaftsPhysik Alumni e.V."
+                footer={
+                    <>
+                        Du hast schon ein Konto? <AuthLink href="/login">Hier anmelden</AuthLink>
+                    </>
+                }
+            >
+                <form action={handleAction} className="grid gap-4">
+                    {error && (
+                        <div
+                            role="alert"
+                            className="rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm text-negative"
+                        >
+                            {error}
+                        </div>
+                    )}
 
-                        {error && (
-                            <Flex
-                                style={{
-                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                    borderLeft: "4px solid rgb(239, 68, 68)",
-                                    padding: "12px 16px",
-                                    borderRadius: "4px",
-                                }}
-                            >
-                                <Text color="red" size="2">
-                                    {error}
-                                </Text>
-                            </Flex>
-                        )}
-
-                        <Flex direction="column" gap="4">
-                            <Flex direction="column" gap="2">
-                                <label>
-                                    <Text size="2" weight="bold">Vorname</Text>
-                                    <TextField.Root name="vorname" required placeholder="Dein Vorname" mt="1" />
-                                </label>
-                                <label>
-                                    <Text size="2" weight="bold">Nachname</Text>
-                                    <TextField.Root name="name" required placeholder="Dein Nachname" mt="1" />
-                                </label>
-                            </Flex>
-
-                            <label>
-                                <Text size="2" weight="bold">E-Mail-Adresse</Text>
-                                <TextField.Root name="email" type="email" required placeholder="mail@beispiel.de" mt="1" />
-                            </label>
-
-                            <label>
-                                <Text size="2" weight="bold">Passwort</Text>
-                                <TextField.Root name="password" type="password" required minLength={8} placeholder="Mindestens 8 Zeichen" mt="1" />
-                                <Text size="1" color="gray" mt="1">
-                                    Verwende eine starke Kombination aus Buchstaben, Zahlen und Sonderzeichen
-                                </Text>
-                            </label>
-                        </Flex>
-
-                        <label>
-                            <Text size="2" weight="bold">Sicherheitsüberprüfung</Text>
-                            <altcha-widget
-                                challenge={challengeJson}
-                                name="altcha"
-                                style={{
-                                    display: "block",
-                                    width: "100%",
-                                    marginTop: "4px",
-                                    "--altcha-max-width": "100%",
-                                    "--altcha-border-radius": "var(--radius-3)",
-                                    "--altcha-border-color": "var(--gray-a7)",
-                                    "--altcha-color-base": "var(--color-panel)",
-                                    "--altcha-color-base-content": "var(--gray-12)",
-                                    "--altcha-color-primary": "var(--accent-9)",
-                                } as CSSProperties}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Vorname" htmlFor="register-vorname">
+                            <Input
+                                id="register-vorname"
+                                name="vorname"
+                                autoComplete="given-name"
+                                required
+                                placeholder="Dein Vorname"
                             />
-                        </label>
+                        </Field>
+                        <Field label="Nachname" htmlFor="register-name">
+                            <Input
+                                id="register-name"
+                                name="name"
+                                autoComplete="family-name"
+                                required
+                                placeholder="Dein Nachname"
+                            />
+                        </Field>
+                    </div>
 
-                        <Button type="submit" size="3">
-                            Konto erstellen
-                        </Button>
+                    <Field label="E-Mail-Adresse" htmlFor="register-email">
+                        <Input
+                            id="register-email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            placeholder="mail@beispiel.de"
+                        />
+                    </Field>
 
-                        <Flex direction="column" gap="2" align="center">
-                            <Text align="center" size="2" color="gray">
-                                Du hast schon ein Konto?{" "}
-                                <Link href="/login" style={{ color: "var(--accent-9)", textDecoration: "none", fontWeight: "500" }}>
-                                    Hier anmelden
-                                </Link>
-                            </Text>
-                        </Flex>
-                    </Flex>
+                    <Field
+                        label="Passwort"
+                        htmlFor="register-password"
+                        hint="Verwende eine starke Kombination aus Buchstaben, Zahlen und Sonderzeichen."
+                    >
+                        <Input
+                            id="register-password"
+                            name="password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            minLength={8}
+                            placeholder="Mindestens 8 Zeichen"
+                        />
+                    </Field>
+
+                    <div className="grid gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">
+                            Sicherheitsüberprüfung
+                        </span>
+                        <altcha-widget
+                            challenge={challengeJson}
+                            name="altcha"
+                            style={ALTCHA_STYLE}
+                        />
+                    </div>
+
+                    <Button type="submit" size="lg" className="w-full">
+                        Konto erstellen
+                    </Button>
                 </form>
-            </Card>
-        </Container>
+            </AuthShell>
+        </>
     );
 }

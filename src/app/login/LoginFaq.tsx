@@ -1,10 +1,13 @@
-import { Card, Heading, Text, Flex, Link } from "@radix-ui/themes";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import { Card } from "@/components/ui";
 
 type FaqItem = {
     question: string;
     answer: React.ReactNode;
 };
+
+const linkClass = "font-semibold text-physics underline-offset-4 hover:underline";
 
 const SECTIONS: { title: string; items: FaqItem[] }[] = [
     {
@@ -15,8 +18,8 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
                 answer: (
                     <>
                         Über{" "}
-                        <Link href="/register" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
-                            „Jetzt Konto erstellen"
+                        <Link href="/register" className={linkClass}>
+                            „Jetzt Konto erstellen“
                         </Link>{" "}
                         gibst du Vorname, Nachname, E-Mail-Adresse und ein Passwort ein. Danach
                         schicken wir dir eine E-Mail mit einem Bestätigungslink. Erst wenn du diesen
@@ -31,7 +34,7 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
                         Schau bitte zuerst in deinem Spam- bzw. Werbung-Ordner nach. Wenn du dich
                         mit einer noch nicht bestätigten Adresse anzumelden versuchst, erscheint auf
                         dieser Seite ein Hinweis mit der Schaltfläche „Bestätigungs-E-Mail erneut
-                        senden". Der Link in der E-Mail ist 24 Stunden gültig; danach kannst du dir
+                        senden“. Der Link in der E-Mail ist 24 Stunden gültig; danach kannst du dir
                         auf demselben Weg einfach einen neuen zuschicken lassen.
                     </>
                 ),
@@ -41,8 +44,8 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
                 answer: (
                     <>
                         Klicke im Anmeldeformular auf{" "}
-                        <Link href="/forgot-password" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
-                            „Passwort zurücksetzen"
+                        <Link href="/forgot-password" className={linkClass}>
+                            „Passwort zurücksetzen“
                         </Link>{" "}
                         und gib deine E-Mail-Adresse ein. Wir senden dir einen Link, über den du ein
                         neues Passwort vergeben kannst. Dieser Link ist aus Sicherheitsgründen nur
@@ -70,20 +73,17 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
                 answer: (
                     <>
                         Nein. Ein Account ist nur ein Zugang zu diesem Online-Bereich. Er bedeutet{" "}
-                        <Text weight="bold">nicht</Text>, dass du Mitglied im WirtschaftsPhysik
-                        Alumni e.V. bist. Die Vereinsmitgliedschaft ist ein eigener, formaler Schritt
-                        mit Aufnahme durch den Verein und dem jährlichen Mitgliedsbeitrag. Du kannst
-                        also einen Account haben, ohne Vereinsmitglied zu sein.
+                        <strong className="font-semibold text-foreground">nicht</strong>, dass du
+                        Mitglied im WirtschaftsPhysik Alumni e.V. bist. Die Vereinsmitgliedschaft
+                        ist ein eigener, formaler Schritt mit Aufnahme durch den Verein und dem
+                        jährlichen Mitgliedsbeitrag. Du kannst also einen Account haben, ohne
+                        Vereinsmitglied zu sein.
                     </>
                 ),
             },
             {
                 question: "Wie werde ich Vereinsmitglied?",
-                answer: (
-                    <>
-                        Das ist eine gute Frage.
-                    </>
-                ),
+                answer: <>Das ist eine gute Frage.</>,
             },
             {
                 question: "Wofür ist das Dashboard da?",
@@ -102,78 +102,40 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
 
 export function LoginFaq() {
     return (
-        <Card size="4" style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)", width: "100%" }}>
-            <style>{`
-                .login-faq details {
-                    border-bottom: 1px solid var(--gray-a5);
-                }
-                .login-faq details:last-child {
-                    border-bottom: none;
-                }
-                .login-faq summary {
-                    list-style: none;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 12px;
-                    padding: 14px 4px;
-                    font-weight: 500;
-                    color: var(--gray-12);
-                    transition: color 0.15s ease;
-                }
-                .login-faq summary::-webkit-details-marker {
-                    display: none;
-                }
-                .login-faq summary:hover {
-                    color: var(--accent-11);
-                }
-                .login-faq summary .login-faq-chevron {
-                    flex-shrink: 0;
-                    transition: transform 0.2s ease;
-                    color: var(--gray-9);
-                }
-                .login-faq details[open] summary .login-faq-chevron {
-                    transform: rotate(180deg);
-                }
-                .login-faq .login-faq-answer {
-                    padding: 0 4px 16px;
-                }
-            `}</style>
+        <Card className="p-6 sm:p-8">
+            <div className="grid gap-1">
+                <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Häufige Fragen</h2>
+                <p className="text-sm text-muted">
+                    Rund um Account, Anmeldung und Mitgliedschaft
+                </p>
+            </div>
 
-            <Flex direction="column" gap="5" className="login-faq">
-                <Flex direction="column" gap="1">
-                    <Heading as="h2" size="6">
-                        Häufige Fragen
-                    </Heading>
-                    <Text size="2" color="gray">
-                        Rund um Account, Anmeldung und Mitgliedschaft
-                    </Text>
-                </Flex>
-
+            <div className="mt-6 grid gap-6">
                 {SECTIONS.map((section) => (
-                    <Flex key={section.title} direction="column" gap="1">
-                        <Text size="2" weight="bold" color="gray" style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    <section key={section.title} className="grid gap-1">
+                        <h3 className="text-xs font-bold tracking-wider text-faint uppercase">
                             {section.title}
-                        </Text>
-                        <div>
+                        </h3>
+                        <div className="divide-y divide-line">
                             {section.items.map((item) => (
-                                <details key={item.question}>
-                                    <summary>
+                                <details key={item.question} className="group">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3.5 text-sm font-medium transition-colors hover:text-physics [&::-webkit-details-marker]:hidden">
                                         <span>{item.question}</span>
-                                        <ChevronDownIcon className="login-faq-chevron" width="18" height="18" />
+                                        <ChevronDown
+                                            size={18}
+                                            aria-hidden="true"
+                                            className="shrink-0 text-faint transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+                                        />
                                     </summary>
-                                    <div className="login-faq-answer">
-                                        <Text size="2" color="gray" style={{ lineHeight: 1.6 }}>
-                                            {item.answer}
-                                        </Text>
+                                    <div className="pb-4 text-sm leading-relaxed text-muted">
+                                        {item.answer}
                                     </div>
                                 </details>
                             ))}
                         </div>
-                    </Flex>
+                    </section>
                 ))}
-            </Flex>
+            </div>
         </Card>
     );
 }

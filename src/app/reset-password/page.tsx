@@ -2,17 +2,9 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import {
-    Container,
-    Card,
-    Heading,
-    Flex,
-    Text,
-    TextField,
-    Button,
-} from "@radix-ui/themes";
+import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { Button, ButtonLink, Callout, Field, Input, Spinner } from "@/components/ui";
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -78,98 +70,92 @@ function ResetPasswordForm() {
 
     if (!token) {
         return (
-            <Flex direction="column" gap="4">
-                <Heading as="h1" size="6" align="center">
-                    Passwort zurücksetzen
-                </Heading>
-                <Text color="red" size="3" align="center">
-                    Der Link zum Zurücksetzen des Passworts ist ungültig oder unvollständig. Bitte fordern Sie einen neuen Link an.
-                </Text>
-                <Text align="center" size="2" color="gray" mt="2">
-                    <Link href="/forgot-password" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
-                        Neuen Link anfordern
-                    </Link>
-                </Text>
-            </Flex>
+            <AuthShell
+                title="Passwort zurücksetzen"
+                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+            >
+                <Callout tone="danger">
+                    Der Link zum Zurücksetzen deines Passworts ist ungültig oder unvollständig.
+                    Bitte fordere einen neuen Link an.
+                </Callout>
+                <ButtonLink href="/forgot-password" size="lg" className="w-full">
+                    Neuen Link anfordern
+                </ButtonLink>
+            </AuthShell>
         );
     }
 
     if (status === "success") {
         return (
-            <Flex direction="column" gap="4">
-                <Heading as="h1" size="6" align="center">
-                    Erfolgreich!
-                </Heading>
-                <Text color="green" size="3" align="center">
-                    Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich nun mit Ihrem neuen Passwort anmelden.
-                </Text>
-                <Button asChild size="3" mt="2">
-                    <Link href="/login" style={{ textDecoration: "none", color: "white", textAlign: "center" }}>
-                        Zum Login
-                    </Link>
-                </Button>
-            </Flex>
+            <AuthShell title="Erfolgreich!">
+                <Callout tone="success">
+                    Dein Passwort wurde zurückgesetzt. Du kannst dich jetzt mit deinem neuen
+                    Passwort anmelden.
+                </Callout>
+                <ButtonLink href="/login" size="lg" className="w-full">
+                    Zum Login
+                </ButtonLink>
+            </AuthShell>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Passwort zurücksetzen"
                 onOpenChange={setFeatureDisabled}
             />
-            <Flex direction="column" gap="4">
-                <Heading as="h1" size="6" align="center">
-                    Neues Passwort festlegen
-                </Heading>
+            <AuthShell
+                title="Neues Passwort festlegen"
+                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+            >
+                <form onSubmit={handleSubmit} className="grid gap-4">
+                    {status === "error" && errorMessage && (
+                        <Callout tone="danger">{errorMessage}</Callout>
+                    )}
 
-                {status === "error" && errorMessage && (
-                    <Text color="red" size="2" align="center">
-                        {errorMessage}
-                    </Text>
-                )}
+                    <Field label="Neues Passwort" htmlFor="reset-password" hint="Mindestens 8 Zeichen.">
+                        <Input
+                            id="reset-password"
+                            type="password"
+                            autoComplete="new-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </Field>
 
-                <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="bold">
-                        Neues Passwort (mind. 8 Zeichen)
-                    </Text>
-                    <TextField.Root
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </Flex>
+                    <Field label="Passwort bestätigen" htmlFor="reset-password-confirm">
+                        <Input
+                            id="reset-password-confirm"
+                            type="password"
+                            autoComplete="new-password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                        />
+                    </Field>
 
-                <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="bold">
-                        Passwort bestätigen
-                    </Text>
-                    <TextField.Root
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                    />
-                </Flex>
-
-                <Button type="submit" size="3" mt="2" loading={status === "loading"}>
-                    Passwort speichern
-                </Button>
-            </Flex>
-        </form>
+                    <Button type="submit" size="lg" loading={status === "loading"} className="w-full">
+                        Passwort speichern
+                    </Button>
+                </form>
+            </AuthShell>
+        </>
     );
 }
 
 export default function ResetPasswordPage() {
     return (
-        <Container size="1" style={{ paddingTop: "20vh" }}>
-            <Card size="4">
-                <Suspense fallback={<Text align="center">Laden...</Text>}>
-                    <ResetPasswordForm />
-                </Suspense>
-            </Card>
-        </Container>
+        <Suspense
+            fallback={
+                <div className="grid place-items-center py-24 text-muted">
+                    <Spinner className="size-6" />
+                </div>
+            }
+        >
+            <ResetPasswordForm />
+        </Suspense>
     );
 }

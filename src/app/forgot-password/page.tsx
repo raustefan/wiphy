@@ -1,17 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-    Container,
-    Card,
-    Heading,
-    Flex,
-    Text,
-    TextField,
-    Button,
-    Link,
-} from "@radix-ui/themes";
+import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { Button, Callout, Field, Input } from "@/components/ui";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -52,69 +44,50 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <Container size="1" style={{ paddingTop: "20vh" }}>
+        <>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Passwort zurücksetzen"
                 onOpenChange={setFeatureDisabled}
             />
-            <Card size="4">
-                <Flex direction="column" gap="4">
-                    <Heading as="h1" size="6" align="center">
-                        Passwort vergessen
-                    </Heading>
+            <AuthShell
+                title="Passwort vergessen"
+                description={
+                    status === "success"
+                        ? undefined
+                        : "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link, um dein Passwort zurückzusetzen."
+                }
+                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+            >
+                {status === "success" ? (
+                    <Callout tone="success">
+                        Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen
+                        Link zum Zurücksetzen geschickt.
+                    </Callout>
+                ) : (
+                    <form onSubmit={handleSubmit} className="grid gap-4">
+                        {status === "error" && errorMessage && (
+                            <Callout tone="danger">{errorMessage}</Callout>
+                        )}
 
-                    {status === "success" ? (
-                        <Flex direction="column" gap="3">
-                            <Text color="green" size="3" align="center">
-                                Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen gesendet.
-                            </Text>
-                            <Text align="center" size="2" color="gray" mt="2">
-                                <Link href="/login" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
-                                    Zurück zum Login
-                                </Link>
-                            </Text>
-                        </Flex>
-                    ) : (
-                        <form onSubmit={handleSubmit}>
-                            <Flex direction="column" gap="4">
-                                <Text size="2" color="gray" align="center">
-                                    Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link, um Ihr Passwort zurückzusetzen.
-                                </Text>
+                        <Field label="E-Mail" htmlFor="forgot-email">
+                            <Input
+                                id="forgot-email"
+                                type="email"
+                                autoComplete="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                placeholder="beispiel@domain.de"
+                            />
+                        </Field>
 
-                                {status === "error" && errorMessage && (
-                                    <Text color="red" size="2" align="center">
-                                        {errorMessage}
-                                    </Text>
-                                )}
-
-                                <Flex direction="column" gap="1">
-                                    <Text as="label" size="2" weight="bold">
-                                        E-Mail
-                                    </Text>
-                                    <TextField.Root
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        placeholder="beispiel@domain.de"
-                                    />
-                                </Flex>
-
-                                <Button type="submit" size="3" mt="2" loading={status === "loading"}>
-                                    Link anfordern
-                                </Button>
-
-                                <Text align="center" size="2" color="gray" mt="3">
-                                    <Link href="/login" style={{ color: "var(--accent-9)", textDecoration: "none" }}>
-                                        Zurück zum Login
-                                    </Link>
-                                </Text>
-                            </Flex>
-                        </form>
-                    )}
-                </Flex>
-            </Card>
-        </Container>
+                        <Button type="submit" size="lg" loading={status === "loading"} className="w-full">
+                            Link anfordern
+                        </Button>
+                    </form>
+                )}
+            </AuthShell>
+        </>
     );
 }

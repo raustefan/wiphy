@@ -1,17 +1,10 @@
 import { auth } from "@/auth";
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  Flex,
-  Grid,
-  Heading,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PenLine } from "lucide-react";
+import { Container } from "@/components/ui/Container";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { ButtonLink } from "@/components/ui/Button";
 import PhysicsHero from "@/components/PhysicsHero";
 import MarketDiffusion from "@/components/MarketDiffusion";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
@@ -43,12 +36,13 @@ const heroMetrics = [
   { value: "e. V.", label: "gemeinnützig" },
 ];
 
-/** Kleiner Kapitelkopf im Stil einer Laborheft-Seitenmarke. */
+/** Kleiner Kapitelkopf: Mono-Nummer + Label + Haarlinie. */
 function SectionMarker({ index, label }: { index: string; label: string }) {
   return (
-    <div className="section-marker">
-      <span className="marker-index">{index}</span>
+    <div className="mb-6 flex items-center gap-3 font-mono text-[0.68rem] tracking-[0.16em] text-faint uppercase">
+      <span className="font-bold text-physics">{index}</span>
       <span>{label}</span>
+      <span className="h-px flex-1 bg-line" aria-hidden="true" />
     </div>
   );
 }
@@ -59,158 +53,137 @@ export default async function HomePage() {
   const latestPost = posts.length > 0 ? posts[0] : null;
 
   return (
-    <Box>
+    <div className="grid gap-14 py-8 sm:gap-20 sm:py-12">
       {/* ═══════════════════ Hero ═══════════════════ */}
-      <Container size="4" px="0">
-        <Box className="hero">
+      <Container size="4">
+        <section className="relative overflow-hidden rounded-3xl border border-line bg-surface">
           <PhysicsHero />
-          <div className="hero-veil" aria-hidden="true" />
+          {/* Weiches Zentrum, damit die Typo über dem Partikelfeld lesbar bleibt. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(62% 58% at 50% 46%, var(--background) 0%, color-mix(in srgb, var(--background) 55%, transparent) 45%, transparent 78%)",
+            }}
+          />
 
-          <Container size="3" px="4" style={{ position: "relative" }}>
-            <Flex
-              direction="column"
-              align="center"
-              gap={{ initial: "5", sm: "6" }}
-              py={{ initial: "7", sm: "9" }}
-              style={{ textAlign: "center" }}
-            >
-              <Text className="eyebrow" style={{ color: "rgb(var(--physics))" }}>
-                Universität Ulm · Alumni &amp; Studierende
-              </Text>
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5 px-4 py-14 text-center sm:gap-6 sm:py-20">
+            <p className="font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+              Universität Ulm · Alumni &amp; Studierende
+            </p>
 
-              <Heading
-                as="h1"
-                size={{ initial: "8", sm: "9" }}
-                className="display-title"
-              >
-                Wirtschafts<span className="grad-text">Physik</span>
-                <br />
-                Alumni e.&nbsp;V.
-              </Heading>
+            <h1 className="text-4xl font-bold tracking-tight text-balance [overflow-wrap:break-word] sm:text-6xl">
+              Wirtschafts<span className="text-physics">Physik</span> Alumni
+              e.&nbsp;V.
+            </h1>
 
-              <Text
-                size={{ initial: "2", sm: "4" }}
-                color="gray"
-                style={{ maxWidth: 620, lineHeight: 1.75 }}
-              >
-                Ein gemeinnütziger Verein für Physik- und
-                Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die{" "}
-                <span className="voice">Physik</span> — ihre Methoden der
-                statistischen Mechanik, Modellbildung und Datenanalyse,
-                angewendet auf wirtschaftliche Systeme.
-              </Text>
+            <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+              Ein gemeinnütziger Verein für Physik- und
+              Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die
+              Physik — ihre Methoden der statistischen Mechanik, Modellbildung
+              und Datenanalyse, angewendet auf wirtschaftliche Systeme.
+            </p>
 
-              <Flex
-                gap="3"
-                direction={{ initial: "column", xs: "row" }}
-                justify="center"
-                width={{ initial: "100%", xs: "auto" }}
-              >
-                <Button size={{ initial: "3", sm: "4" }} radius="full" asChild>
-                  <Link href="/blog">Neuigkeiten &amp; Blog</Link>
-                </Button>
-                <Button
-                  size={{ initial: "3", sm: "4" }}
-                  radius="full"
-                  variant="soft"
-                  color="gray"
-                  highContrast
-                  asChild
+            <div className="flex w-full flex-col justify-center gap-3 min-[420px]:w-auto min-[420px]:flex-row">
+              <ButtonLink href="/blog" size="lg">
+                Neuigkeiten &amp; Blog
+              </ButtonLink>
+              <ButtonLink href={session ? "/dashboard" : "/login"} size="lg" variant="soft" color="neutral">
+                {session ? "Zum Dashboard" : "Mitgliederbereich"}
+              </ButtonLink>
+            </div>
+
+            <dl className="mt-2 grid w-full max-w-md grid-cols-3">
+              {heroMetrics.map((metric, i) => (
+                <div
+                  key={metric.label}
+                  className={`grid gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
                 >
-                  <Link href={session ? "/dashboard" : "/login"}>
-                    {session ? "Zum Dashboard" : "Mitgliederbereich"}
-                  </Link>
-                </Button>
-              </Flex>
-
-              <div className="hero-metrics">
-                {heroMetrics.map((metric) => (
-                  <div key={metric.label} className="hero-metric">
-                    <span className="hero-metric-value">{metric.value}</span>
-                    <span className="hero-metric-label">{metric.label}</span>
-                  </div>
-                ))}
-              </div>
-            </Flex>
-          </Container>
-        </Box>
+                  <dd className="font-mono text-base font-bold tracking-tight sm:text-xl">
+                    {metric.value}
+                  </dd>
+                  <dt className="font-mono text-[0.58rem] tracking-[0.12em] text-faint uppercase sm:text-[0.65rem]">
+                    {metric.label}
+                  </dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
       </Container>
 
       {/* ═══════════════════ Der Verein ═══════════════════ */}
-      <Container size="4" px="0">
-        <section className="section reveal">
+      <Container size="4">
+        <section>
           <SectionMarker index="01" label="Der Verein" />
 
-          <Flex direction="column" gap="3" mb="6" style={{ maxWidth: 720 }}>
-            <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
+          <div className="mb-8 grid max-w-2xl gap-3">
+            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
               Drei Säulen, ein Netzwerk
-            </Heading>
-            <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
+            </h2>
+            <p className="text-base leading-relaxed text-muted sm:text-lg">
               Was in Ulm im Hörsaal beginnt, hört dort nicht auf. Der Verein
               hält die Verbindung zwischen Studium, Forschung und Berufspraxis
               offen — in beide Richtungen.
-            </Text>
-          </Flex>
+            </p>
+          </div>
 
-          <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "3", sm: "4" }}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {pillars.map((pillar) => (
-              <Card key={pillar.title} size={{ initial: "2", sm: "3" }} className="feature-card panel panel-ticks">
-                <Flex direction="column" gap="3" height="100%" p="2">
-                  <span className="card-index">{pillar.index}</span>
-                  <Heading as="h3" size="4">
-                    {pillar.title}
-                  </Heading>
-                  <Text color="gray" size="2" style={{ lineHeight: 1.7 }}>
-                    {pillar.body}
-                  </Text>
-                </Flex>
+              <Card key={pillar.title} className="flex flex-col gap-3 p-6 sm:p-7">
+                <span className="font-mono text-xs font-bold tracking-[0.16em] text-physics">
+                  {pillar.index}
+                </span>
+                <h3 className="text-lg font-bold tracking-tight">{pillar.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{pillar.body}</p>
               </Card>
             ))}
-          </Grid>
+          </div>
         </section>
       </Container>
 
       {/* ═══════════════════ Physik dahinter ═══════════════════ */}
-      <Container size="4" px="0">
-        <section className="section reveal">
+      <Container size="4">
+        <section>
           <SectionMarker index="02" label="Die Physik dahinter" />
 
-          <Flex direction="column" gap="3" mb="6" style={{ maxWidth: 720 }}>
-            <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
-              Eine Gleichung, <span className="voice">zwei Welten</span>
-            </Heading>
-            <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
+          <div className="mb-8 grid max-w-2xl gap-3">
+            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+              Eine Gleichung, zwei Welten
+            </h2>
+            <p className="text-base leading-relaxed text-muted sm:text-lg">
               Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
               Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Das
               folgende Modell läuft live im Browser: vollständig durchgerechnet,
               nicht nachgezeichnet.
-            </Text>
-          </Flex>
+            </p>
+          </div>
 
           {/* ─── Geometrische Brownsche Bewegung ─── */}
-          <Box className="lab-module is-market">
-            <Grid columns={{ initial: "1", md: "1fr 1fr" }} gap={{ initial: "5", md: "6" }} p={{ initial: "3", sm: "5", md: "6" }}>
-              <Box className="lab-figure">
+          <Card className="overflow-hidden p-5 sm:p-8 lg:p-10">
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+              <div className="order-2 min-w-0 lg:order-1">
                 <MarketDiffusion />
-              </Box>
+              </div>
 
-              <Flex direction="column" gap="4" className="lab-copy">
-                <Flex direction="column" gap="2">
-                  <Text className="eyebrow" style={{ color: "rgb(var(--market))" }}>
+              <div className="order-1 flex flex-col gap-4 lg:order-2">
+                <div className="grid gap-2">
+                  <p className="font-mono text-xs font-semibold tracking-[0.16em] text-market uppercase">
                     Statistische Physik
-                  </Text>
-                  <Heading as="h3" size={{ initial: "5", sm: "6" }}>
+                  </p>
+                  <h3 className="text-2xl font-bold tracking-tight sm:text-3xl">
                     Vom Pollenkorn zum Kurszettel
-                  </Heading>
-                </Flex>
+                  </h3>
+                </div>
 
-                <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                <p className="text-sm leading-relaxed text-muted sm:text-base">
                   Ein Pollenkorn im Wasser zittert, weil unzählige Moleküle
                   dagegenstoßen. Ein Kurs zittert aus demselben Grund — nur
                   heißen die Stöße hier Kauf und Verkauf. Bachelier schrieb die
                   Diffusionsgleichung 1900 für die Pariser Börse auf, fünf Jahre
                   bevor Einstein sie für die Brownsche Bewegung herleitete.
-                </Text>
+                </p>
 
                 <code className="formula-block is-market">
                   dS = μS dt + σS dW
@@ -218,164 +191,146 @@ export default async function HomePage() {
                   S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW<sub>t</sub></sup>
                 </code>
 
-                <Text size="2" color="gray" style={{ lineHeight: 1.8 }}>
+                <p className="text-sm leading-relaxed text-muted sm:text-base">
                   Der Term <span className="formula">−σ²/2</span> ist der
                   aufschlussreichste: Volatilität kostet Rendite. Und die Breite
                   der Verteilung wächst mit <span className="formula">σ√t</span>,
                   nicht linear. Deshalb ist eine ehrliche Prognose keine Linie,
                   sondern ein Kegel.
-                </Text>
+                </p>
 
-                <Text size="1" color="gray" className="formula-legend">
+                <p className="formula-legend">
                   Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind die
                   analytischen Quantile der Log-Normalverteilung.
-                </Text>
-              </Flex>
-            </Grid>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </Card>
 
-          <Box mt={{ initial: "6", sm: "7" }}>
-            <Separator size="4" mb={{ initial: "5", sm: "6" }} />
-            <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "5", sm: "6" }}>
-              {[
-                {
-                  k: "Ökonophysik",
-                  v: "Methoden aus Thermodynamik und Vielteilchenphysik, angewendet auf Systeme mit vielen wechselwirkenden Akteuren: Märkte, Netzwerke, Verkehr.",
-                },
-                {
-                  k: "Skalengesetze",
-                  v: "Fette Verteilungsränder, Volatilitäts-Cluster und Potenzgesetze tauchen an der Börse genauso auf wie in der Nähe eines Phasenübergangs.",
-                },
-                {
-                  k: "Modellbildung",
-                  v: "Stochastische Differentialgleichungen, Monte-Carlo-Simulation und numerische Analysis bilden das gemeinsame Handwerkszeug beider Welten.",
-                },
-              ].map((row) => (
-                <Flex key={row.k} direction="column" gap="2">
-                  <Text
-                    size="2"
-                    weight="bold"
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      color: "rgb(var(--physics))",
-                    }}
-                  >
-                    {row.k}
-                  </Text>
-                  <Text size="2" color="gray" style={{ lineHeight: 1.7 }}>
-                    {row.v}
-                  </Text>
-                </Flex>
-              ))}
-            </Grid>
-          </Box>
+          <div className="mt-10 grid grid-cols-1 gap-8 border-t border-line pt-8 sm:grid-cols-3 sm:gap-10">
+            {[
+              {
+                k: "Ökonophysik",
+                v: "Methoden aus Thermodynamik und Vielteilchenphysik, angewendet auf Systeme mit vielen wechselwirkenden Akteuren: Märkte, Netzwerke, Verkehr.",
+              },
+              {
+                k: "Skalengesetze",
+                v: "Fette Verteilungsränder, Volatilitäts-Cluster und Potenzgesetze tauchen an der Börse genauso auf wie in der Nähe eines Phasenübergangs.",
+              },
+              {
+                k: "Modellbildung",
+                v: "Stochastische Differentialgleichungen, Monte-Carlo-Simulation und numerische Analysis bilden das gemeinsame Handwerkszeug beider Welten.",
+              },
+            ].map((row) => (
+              <div key={row.k} className="grid gap-2">
+                <span className="font-mono text-sm font-bold text-physics">{row.k}</span>
+                <p className="text-sm leading-relaxed text-muted">{row.v}</p>
+              </div>
+            ))}
+          </div>
         </section>
       </Container>
 
       {/* ═══════════════════ Neuigkeiten ═══════════════════ */}
       {latestPost && (
-        <Container size="4" px="0">
-          <section className="section reveal">
+        <Container size="4">
+          <section>
             <SectionMarker index="03" label="Aus dem Verein" />
 
-            <Card size={{ initial: "2", sm: "4" }} className="post-card panel">
+            <Card className="p-5 sm:p-8 lg:p-10">
               <Link
                 href={`/blog/${latestPost.id}`}
-                style={{ textDecoration: "none", color: "inherit" }}
+                className="grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
               >
-                <Flex gap="4" align="start" p={{ initial: "1", sm: "2" }}>
-                <Flex direction="column" gap="3" style={{ flex: 1, minWidth: 0 }}>
-                  <Flex gap="4" align="center" wrap="wrap" className="post-meta">
-                    <Flex gap="1" align="center">
-                      <CalendarDays size={14} />
-                      {latestPost.publishedAt.toLocaleDateString("de-DE")}
-                    </Flex>
-                    {latestPost.author && (
-                      <Flex gap="1" align="center">
-                        <PenLine size={14} />
-                        {latestPost.author}
-                      </Flex>
-                    )}
-                  </Flex>
+                <Badge tone="market" className="w-fit">
+                  Neuigkeiten
+                </Badge>
 
-                  <Heading as="h2" size={{ initial: "5", sm: "7" }} className="display-title">
-                    {latestPost.title}
-                  </Heading>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+                  <div className="grid min-w-0 flex-1 gap-3">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays size={13} aria-hidden="true" />
+                        {latestPost.publishedAt.toLocaleDateString("de-DE")}
+                      </span>
+                      {latestPost.author && (
+                        <span className="inline-flex items-center gap-1.5">
+                          <PenLine size={13} aria-hidden="true" />
+                          {latestPost.author}
+                        </span>
+                      )}
+                    </div>
 
-                  <Text color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.75 }} as="div">
-                    {latestPost.preview}
-                  </Text>
-                </Flex>
+                    <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-4xl">
+                      {latestPost.title}
+                    </h2>
 
-                  {/* Kleines Vorschaubild rechts — feste Größe, damit die Karte
-                      nicht höher wird als ohne Bild. */}
+                    <p className="text-base leading-relaxed text-muted sm:text-lg">
+                      {latestPost.preview}
+                    </p>
+                  </div>
+
                   {latestPost.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={latestPost.imageUrl} alt="" className="home-post-thumb" />
+                    <img
+                      src={latestPost.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="size-24 shrink-0 rounded-xl border border-line object-cover sm:size-32"
+                    />
                   )}
-                </Flex>
+                </div>
               </Link>
 
-              <Flex justify={{ initial: "start", sm: "end" }} mt="4">
-                <Button size="3" variant="soft" radius="full" asChild>
-                  <Link href="/blog">
-                    Alle Beiträge <ArrowRight size={16} />
-                  </Link>
-                </Button>
-              </Flex>
+              <div className="mt-6 flex justify-start sm:justify-end">
+                <ButtonLink href="/blog" variant="soft" color="neutral">
+                  Alle Beiträge <ArrowRight size={16} aria-hidden="true" />
+                </ButtonLink>
+              </div>
             </Card>
           </section>
         </Container>
       )}
 
       {/* ═══════════════════ Mitglied werden ═══════════════════ */}
-      <Container size="4" px="0">
-        <section className="section reveal" style={{ paddingBottom: 24 }}>
+      <Container size="4">
+        <section className="pb-4">
           <SectionMarker index="04" label="Mitmachen" />
 
-          <Box
-            className="panel"
-            style={{
-              background:
-                "radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, rgb(var(--physics)) 16%, transparent), transparent 60%), radial-gradient(120% 140% at 85% 100%, color-mix(in srgb, rgb(var(--market)) 14%, transparent), transparent 60%), var(--surface)",
-            }}
-          >
-            <Flex
-              direction={{ initial: "column", md: "row" }}
-              align={{ initial: "start", md: "center" }}
-              justify="between"
-              gap="5"
-              p={{ initial: "4", sm: "6", md: "8" }}
-            >
-              <Flex direction="column" gap="3" style={{ maxWidth: 560 }}>
-                <Heading as="h2" size={{ initial: "6", sm: "8" }} className="display-title">
+          <div className="relative overflow-hidden rounded-3xl border border-line bg-surface">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(90% 120% at 12% 0%, color-mix(in srgb, var(--physics) 10%, transparent), transparent 55%), radial-gradient(90% 120% at 88% 100%, color-mix(in srgb, var(--market) 9%, transparent), transparent 55%)",
+              }}
+            />
+            <div className="relative flex flex-col items-start justify-between gap-6 p-6 sm:p-10 md:flex-row md:items-center lg:p-14">
+              <div className="grid max-w-xl gap-3">
+                <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
                   Mitglied werden
-                </Heading>
-                <Text size={{ initial: "2", sm: "3" }} color="gray" style={{ lineHeight: 1.75 }}>
+                </h2>
+                <p className="text-base leading-relaxed text-muted sm:text-lg">
                   Offen für Alumni und Studierende der Physik und
                   Wirtschaftsphysik an der Universität Ulm. Die Registrierung
                   dauert wenige Minuten — den Rest übernehmen wir.
-                </Text>
-              </Flex>
+                </p>
+              </div>
 
-              <Flex
-                direction={{ initial: "column", xs: "row" }}
-                gap="3"
-                width={{ initial: "100%", md: "auto" }}
-              >
-                <Button size={{ initial: "3", sm: "4" }} radius="full" asChild>
-                  <Link href="/register">
-                    Jetzt registrieren <ArrowRight size={16} />
-                  </Link>
-                </Button>
-                <Button size={{ initial: "3", sm: "4" }} radius="full" variant="soft" color="gray" highContrast asChild>
-                  <Link href="/vorstand">Unser Vorstand </Link>
-                </Button>
-              </Flex>
-            </Flex>
-          </Box>
+              <div className="flex w-full flex-col gap-3 md:w-auto min-[420px]:flex-row">
+                <ButtonLink href="/register" size="lg">
+                  Jetzt registrieren <ArrowRight size={16} aria-hidden="true" />
+                </ButtonLink>
+                <ButtonLink href="/vorstand" size="lg" variant="soft" color="neutral">
+                  Unser Vorstand
+                </ButtonLink>
+              </div>
+            </div>
+          </div>
         </section>
       </Container>
-    </Box>
+    </div>
   );
 }

@@ -1,44 +1,40 @@
 "use client";
 
-import { ExitIcon } from "@radix-ui/react-icons";
-import { AlertDialog, Button, Flex } from "@radix-ui/themes";
+import { useState } from "react";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
+import { Dialog, DialogFooter } from "@/components/ui/Dialog";
 
 export default function LogoutButton() {
+    const [open, setOpen] = useState(false);
+
     const handleLogout = () => {
         // Führt den Logout aus und leitet danach auf die Startseite (/) um
         signOut({ callbackUrl: "/" });
     };
 
     return (
-        <AlertDialog.Root>
-            <AlertDialog.Trigger>
-                <Button size="3" color="red" variant="soft" style={{ cursor: "pointer" }}>
-                    <ExitIcon />
-                    Logout
-                </Button>
-            </AlertDialog.Trigger>
+        <>
+            <Button color="danger" variant="soft" onClick={() => setOpen(true)}>
+                <LogOut size={16} aria-hidden="true" />
+                Logout
+            </Button>
 
-            <AlertDialog.Content maxWidth="400px">
-                <AlertDialog.Title>Abmelden</AlertDialog.Title>
-                <AlertDialog.Description size="2" mb="4">
+            <Dialog open={open} onClose={() => setOpen(false)} title="Abmelden" size="sm">
+                <p className="text-sm leading-relaxed text-muted">
                     Bist du sicher, dass du dich abmelden möchtest?
-                </AlertDialog.Description>
-
-                <Flex gap="3" justify="end">
-                    <AlertDialog.Cancel>
-                        <Button size="3" variant="soft" color="gray" style={{ cursor: "pointer" }}>
-                            Abbrechen
-                        </Button>
-                    </AlertDialog.Cancel>
-                    <AlertDialog.Action>
-                        <Button size="3" variant="solid" color="red" onClick={handleLogout} style={{ cursor: "pointer" }}>
-                            <ExitIcon />
-                            Ja, abmelden
-                        </Button>
-                    </AlertDialog.Action>
-                </Flex>
-            </AlertDialog.Content>
-        </AlertDialog.Root>
+                </p>
+                <DialogFooter>
+                    <Button variant="soft" color="neutral" onClick={() => setOpen(false)}>
+                        Abbrechen
+                    </Button>
+                    <Button color="danger" onClick={handleLogout}>
+                        <LogOut size={16} aria-hidden="true" />
+                        Ja, abmelden
+                    </Button>
+                </DialogFooter>
+            </Dialog>
+        </>
     );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertDialog, Button, Flex } from "@radix-ui/themes";
+import { Dialog, DialogFooter } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
 
 type FeatureDisabledDialogProps = {
     open: boolean;
@@ -9,24 +10,25 @@ type FeatureDisabledDialogProps = {
 };
 
 /**
- * Generic "feature disabled by an admin" popup, styled like the other AlertDialog
- * popups in the app (see MailSuccessDialog / EmailChangeDialog).
+ * Generic "feature disabled by an admin" popup.
  */
 export function FeatureDisabledDialog({ open, featureLabel, onOpenChange }: FeatureDisabledDialogProps) {
     return (
-        <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-            <AlertDialog.Content maxWidth="420px">
-                <AlertDialog.Title>Funktion deaktiviert</AlertDialog.Title>
-                <AlertDialog.Description size="2" mb="3">
-                    {featureLabel ? `„${featureLabel}“ wurde` : "Diese Funktion wurde"} von einem
-                    Administrator deaktiviert. Bitte versuche es später erneut.
-                </AlertDialog.Description>
-                <Flex gap="3" justify="end" mt="2">
-                    <AlertDialog.Action>
-                        <Button type="button">OK</Button>
-                    </AlertDialog.Action>
-                </Flex>
-            </AlertDialog.Content>
-        </AlertDialog.Root>
+        <Dialog
+            open={open}
+            onClose={() => onOpenChange(false)}
+            title="Funktion deaktiviert"
+            size="sm"
+        >
+            <p className="text-sm leading-relaxed text-muted">
+                {featureLabel ? `„${featureLabel}“ wurde` : "Diese Funktion wurde"} von einem
+                Administrator deaktiviert. Bitte versuche es später erneut.
+            </p>
+            <DialogFooter>
+                <Button type="button" onClick={() => onOpenChange(false)}>
+                    OK
+                </Button>
+            </DialogFooter>
+        </Dialog>
     );
 }

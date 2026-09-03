@@ -3,300 +3,155 @@
 /* ==========================================================================
    WirtschaftsPhysik Alumni e.V. — Design-System
    --------------------------------------------------------------------------
-   Bildsprache: Laborheft trifft Editorial. Millimeterpapier-Raster, feines
-   Korn und ein ruhiges Aurora-Feld im Hintergrund; darüber eine strenge
-   typografische Hierarchie aus Newsreader (Serif, Stimme), Bricolage Grotesque
-   (Display, UI-Chrome), Instrument Sans (Fließtext) und Spline Sans Mono
-   (Messwerte, Formeln, Marker).
-
-   Alle Größen und Abstände sind mobile-first notiert: der Grundwert gilt fürs
-   Telefon, Media-Queries bauen nach oben aus.
-   Zwei Akzente tragen die inhaltliche Dualität des Vereins:
-     · Teal  = Physik / Quantenmechanik
-     · Ruby  = Ökonomie / Märkte — beide Farben stammen aus dem Vereinslogo.
+   Klar, ruhig, leicht: flache Flächen, Haarlinien, viel Weißraum.
+   Zwei Akzente tragen die Dualität des Vereins:
+     · Teal  = Physik
+     · Ruby  = Ökonomie — beide Farben stammen aus dem Vereinslogo.
+   Alle Bausteine sind mobile-first: der Grundwert gilt fürs Telefon,
+   Tailwind-Breakpoints bauen nach oben aus.
    ========================================================================== */
 
 :root {
-  --background: #fbfbfa;
-  --foreground: #16181d;
+  --background: #fafafa;
+  --surface: #ffffff;
+  --raised: #f4f4f5;
+  --foreground: #18181b;
+  --muted: #52525b;
+  --faint: #71717a;
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
 
-  /* Flächen */
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-solid: #ffffff;
-  --hairline: rgba(16, 24, 32, 0.1);
-  --hairline-strong: rgba(16, 24, 32, 0.18);
+  --physics: #0f766e;
+  --physics-strong: #00a896;
+  --market: #a81a52;
+  --market-strong: #ec5c86;
 
-  /* Akzente (fix, damit Canvas-Zeichnungen dieselben Werte nutzen können) */
-  --physics: 0, 168, 150; /* Logo-Teal   */
-  --market: 168, 26, 82; /* Logo-Ruby   */
+  --positive: #15803d;
+  --negative: #dc2626;
+  --warning: #b45309;
+  --info: #1d4ed8;
 
-  /* Hintergrundfeld */
-  --aurora-a: rgba(0, 168, 150, 0.16);
-  --aurora-b: rgba(168, 26, 82, 0.1);
-  --aurora-c: rgba(104, 92, 168, 0.1);
-  --grid-line: rgba(16, 24, 32, 0.045);
-  --grain-opacity: 0.035;
-
-  /* Erhebung */
-  --lift-1: 0 1px 2px rgba(16, 24, 32, 0.05), 0 8px 24px -16px rgba(16, 24, 32, 0.4);
-  --lift-2: 0 1px 2px rgba(16, 24, 32, 0.06), 0 24px 60px -28px rgba(16, 24, 32, 0.45);
-
-  --font-sans:
-    var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-
-  /* Seitenrand: eine Variable, damit Header, Main und Footer bündig laufen. */
-  --gutter: 16px;
+  /* Text auf gefüllten Akzentflächen */
+  --on-physics: #ffffff;
+  --on-market: #ffffff;
+  --on-negative: #ffffff;
 
   color-scheme: light;
 }
 
-@media (min-width: 640px) {
-  :root {
-    --gutter: 24px;
-  }
-}
-
 html[data-theme-appearance="dark"] {
   color-scheme: dark;
-  --background: #0b0d10;
-  --foreground: #e8eaed;
+  --background: #0a0a0b;
+  --surface: #131316;
+  --raised: #1d1d21;
+  --foreground: #f4f4f5;
+  --muted: #b4b4bd;
+  --faint: #8b8b96;
+  --line: #26262b;
+  --line-strong: #3a3a41;
 
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-solid: #12151a;
-  --hairline: rgba(255, 255, 255, 0.09);
-  --hairline-strong: rgba(255, 255, 255, 0.16);
+  --physics: #2dd4bf;
+  --physics-strong: #2dd4bf;
+  --market: #ec5c86;
+  --market-strong: #ec5c86;
 
-  --physics: 45, 212, 191;
-  --market: 236, 92, 134;
+  --positive: #4ade80;
+  --negative: #f87171;
+  --warning: #fbbf24;
+  --info: #93c5fd;
 
-  --aurora-a: rgba(45, 212, 191, 0.14);
-  --aurora-b: rgba(236, 92, 134, 0.1);
-  --aurora-c: rgba(140, 128, 220, 0.12);
-  --grid-line: rgba(255, 255, 255, 0.04);
-  --grain-opacity: 0.05;
-
-  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
-  --lift-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 24px 60px -28px rgba(0, 0, 0, 0.9);
+  /* Text auf gefüllten Akzentflächen */
+  --on-physics: #052e2b;
+  --on-market: #ffffff;
+  --on-negative: #450a0a;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-physics: var(--physics);
+  --color-market: var(--market);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-on-physics: var(--on-physics);
+  --color-on-market: var(--on-market);
+  --color-on-negative: var(--on-negative);
+
+  --font-sans:
+    var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    var(--font-code), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-html {
-  scroll-behavior: smooth;
-  /* Verhindert, dass iOS beim Drehen die Schrift eigenmächtig hochskaliert. */
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
 
-@media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  /* `clip` statt `hidden`: kappt seitliche Ausreißer, ohne position:sticky
-     im Header zu brechen. */
-  overflow-x: clip;
-}
-
-/* Gerüst: Header — Inhalt — Footer, Footer klebt unten. 100dvh, damit die
-   ein- und ausfahrende Adressleiste in iOS nicht am Layout zerrt. */
-.site-shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-.site-main {
-  flex: 1;
-  width: 100%;
-  padding: 16px var(--gutter) 32px;
-}
-
-@media (min-width: 640px) {
-  .site-main {
-    padding: 24px var(--gutter) 48px;
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
-}
 
-/* Bilder und Medien brechen nie aus ihrem Container aus. */
-img,
-svg,
-video,
-canvas {
-  max-width: 100%;
-}
-
-/* --------------------------------------------------------------------------
-   Hintergrundfeld: Millimeterpapier + Aurora + Korn.
-   Drei fixierte Layer hinter allem, komplett ohne Layout-Kosten.
-   -------------------------------------------------------------------------- */
-.site-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.site-backdrop::before {
-  /* Millimeterpapier — 8px Feinraster über 64px Grobraster */
-  content: "";
-  position: absolute;
-  inset: -10%;
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 64px 64px, 64px 64px, 8px 8px, 8px 8px;
-  mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 78%);
-}
-
-.site-backdrop::after {
-  /* Korn: prozedural, kein Bild-Request */
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: var(--grain-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-}
-
-.aurora {
-  position: absolute;
-  inset: -20%;
-  filter: blur(70px);
-  background:
-    radial-gradient(38% 34% at 18% 12%, var(--aurora-a) 0%, transparent 70%),
-    radial-gradient(34% 30% at 84% 22%, var(--aurora-b) 0%, transparent 70%),
-    radial-gradient(46% 38% at 52% 88%, var(--aurora-c) 0%, transparent 72%);
-  animation: aurora-drift 42s ease-in-out infinite alternate;
-}
-
-@keyframes aurora-drift {
-  from {
-    transform: translate3d(-2%, -1%, 0) scale(1);
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
-  to {
-    transform: translate3d(3%, 2%, 0) scale(1.12);
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .aurora {
-    animation: none;
+  ::selection {
+    background: color-mix(in oklab, var(--physics) 22%, transparent);
+  }
+
+  /* Bilder und Medien brechen nie aus ihrem Container aus. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  /* iOS zoomt beim Fokussieren in jedes Feld, dessen Schrift kleiner als
+     16px ist. Auf schmalen Viewports werden Eingaben deshalb grundsätzlich
+     auf 16px gesetzt. */
+  @media (max-width: 639px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
   }
 }
 
 /* --------------------------------------------------------------------------
-   Typografie
+   Formeln
    -------------------------------------------------------------------------- */
-.radix-themes {
-  --default-font-family: var(--font-sans);
-  --heading-font-family: var(--font-serif);
-  --strong-font-family: var(--font-sans);
-  --em-font-family: var(--font-serif);
-  --quote-font-family: var(--font-serif);
-  --code-font-family: var(--font-mono);
-}
-
-.radix-themes :where(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-serif);
-  letter-spacing: -0.015em;
-}
-
-/* Display-Überschriften: optischer Ausgleich bei großen Graden. Newsreader
-   läuft enger als Fraunces, deshalb weniger negatives Tracking. */
-.display-title {
-  font-family: var(--font-serif);
-  letter-spacing: -0.018em;
-  line-height: 1.08;
-  text-wrap: balance;
-  /* Lange Komposita („Wirtschaftsphysik“) dürfen auf schmalen Displays
-     notfalls umbrechen statt zu überlaufen. */
-  overflow-wrap: break-word;
-}
-
-/* Verlaufstext für einzelne Wörter in Headlines. */
-.grad-text {
-  background: linear-gradient(
-    100deg,
-    rgb(var(--physics)) 0%,
-    color-mix(in oklab, rgb(var(--physics)), rgb(var(--market)) 55%) 55%,
-    rgb(var(--market)) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Kursive Fraunces-Variante für eingestreute Betonungen. */
-.voice {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 400;
-}
-
-.eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  overflow-wrap: break-word;
-}
-
-@media (min-width: 640px) {
-  .eyebrow {
-    font-size: 0.72rem;
-    letter-spacing: 0.18em;
-  }
-}
-
-.radix-themes .site-nav a,
-.radix-themes .site-footer a {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
-}
-
-.radix-themes :where(button.rt-Button, a.rt-Button) {
-  font-family: var(--font-display);
-  letter-spacing: 0.01em;
-  font-weight: 600;
-}
-
-.radix-themes .dashboard-kicker,
-.radix-themes .history-kicker {
-  font-family: var(--font-display);
-}
-
-.dashboard-table :where(td, th),
-.dashboard-numeric,
-.tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Formeln: gesetzte Gleichungen im Fließtext bzw. als Block. */
 .formula {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.9em;
   letter-spacing: -0.01em;
-  /* Auf dem Telefon darf eine Inline-Formel umbrechen — sonst schiebt sie den
-     ganzen Absatz seitlich aus dem Viewport. */
   white-space: normal;
 }
 
@@ -311,13 +166,9 @@ canvas {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding: 12px 14px;
-  border-left: 2px solid rgb(var(--physics));
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, rgb(var(--physics)) 8%, transparent),
-    transparent 70%
-  );
-  border-radius: 0 8px 8px 0;
+  border-left: 2px solid var(--physics);
+  background: color-mix(in srgb, var(--physics) 6%, transparent);
+  border-radius: 0 10px 10px 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   line-height: 1.7;
@@ -332,619 +183,46 @@ canvas {
 }
 
 .formula-block.is-market {
-  border-left-color: rgb(var(--market));
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, rgb(var(--market)) 10%, transparent),
-    transparent 70%
-  );
+  border-left-color: var(--market);
+  background: color-mix(in srgb, var(--market) 6%, transparent);
 }
 
 .formula-legend {
   font-family: var(--font-mono);
   font-size: 0.76rem;
   line-height: 1.7;
-  color: var(--gray-11);
+  color: var(--faint);
 }
 
 /* --------------------------------------------------------------------------
-   Sektionsgerüst
+   Markdown-Inhalte (Blog-Artikel, gerendert über react-markdown)
    -------------------------------------------------------------------------- */
-.section {
-  position: relative;
-  padding-block: clamp(40px, 9vw, 112px);
-}
-
-/* Kapitelmarke: Mono-Nummer + Haarlinie, wie eine Laborheft-Seitenzahl. */
-.section-marker {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gray-10);
-}
-
-.section-marker::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--hairline-strong), transparent);
-}
-
-.section-marker .marker-index {
-  color: rgb(var(--physics));
-  font-weight: 700;
-}
-
-/* --------------------------------------------------------------------------
-   Karten & Panels
-   -------------------------------------------------------------------------- */
-.panel {
-  position: relative;
-  border: 1px solid var(--hairline);
-  border-radius: 14px;
-  background: var(--surface);
-  backdrop-filter: blur(14px) saturate(1.3);
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  box-shadow: var(--lift-1);
-  overflow: hidden;
-}
-
-@media (min-width: 640px) {
-  .panel {
-    border-radius: 18px;
-  }
-}
-
-/* Eckmarken wie auf einem Messblatt. */
-.panel-ticks::before,
-.panel-ticks::after {
-  content: "";
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-color: var(--hairline-strong);
-  border-style: solid;
-  pointer-events: none;
-}
-
-.panel-ticks::before {
-  top: 10px;
-  left: 10px;
-  border-width: 1px 0 0 1px;
-}
-
-.panel-ticks::after {
-  bottom: 10px;
-  right: 10px;
-  border-width: 0 1px 1px 0;
-}
-
-.feature-card {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  transition:
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.28s ease;
-}
-
-/* Wanderndes Licht am oberen Rand beim Hover. */
-.feature-card::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(var(--physics)),
-    transparent
-  );
-  opacity: 0;
-  transition: opacity 0.28s ease;
-}
-
-@media (hover: hover) {
-  .feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--lift-2);
-  }
-
-  .feature-card:hover::after {
-    opacity: 1;
-  }
-}
-
-.card-index {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  color: rgb(var(--physics));
-}
-
-/* Modul-Kachel für die interaktiven Simulationen. */
-.lab-module {
-  position: relative;
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
-  background: var(--surface);
-  backdrop-filter: blur(16px) saturate(1.25);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
-  box-shadow: var(--lift-1);
-  overflow: hidden;
-}
-
-.lab-module::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(var(--accent-rgb, var(--physics))) 30%,
-    rgb(var(--accent-rgb, var(--physics))) 70%,
-    transparent
-  );
-  opacity: 0.7;
-}
-
-@media (min-width: 640px) {
-  .lab-module {
-    border-radius: 20px;
-  }
-}
-
-.lab-module.is-market {
-  --accent-rgb: var(--market);
-}
-
-.lab-canvas {
-  position: relative;
-  width: 100%;
-  /* Höhe skaliert mit dem Viewport statt fix 320px — auf dem Telefon bleibt
-     die Grafik so lesbar, ohne den halben Bildschirm zu verschlucken. */
-  height: clamp(200px, 46vw, 320px);
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background:
-    radial-gradient(
-      120% 100% at 50% 0%,
-      color-mix(in srgb, rgb(var(--accent-rgb, var(--physics))) 7%, transparent),
-      transparent 65%
-    ),
-    var(--surface-solid);
-  overflow: hidden;
-  /* pan-y statt none: der Finger darf über der Grafik weiterscrollen und
-     zugleich horizontal den Prognosehorizont abtasten. */
-  touch-action: pan-y;
-}
-
-/* Auswahl-Chips unter den Simulationen. */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  /* 36px hoch: erreicht die Mindestgröße für Fingerziele. */
-  min-height: 36px;
-  padding: 6px 13px;
-  border-radius: 999px;
-  border: 1px solid var(--hairline-strong);
-  background: transparent;
-  color: var(--gray-11);
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  line-height: 1.5;
-  white-space: nowrap;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
-}
-
-@media (hover: hover) {
-  .chip:hover {
-    border-color: rgb(var(--accent-rgb, var(--physics)));
-    color: var(--foreground);
-  }
-}
-
-.chip[aria-pressed="true"] {
-  background: rgb(var(--accent-rgb, var(--physics)));
-  border-color: rgb(var(--accent-rgb, var(--physics)));
-  color: #fff;
-}
-
-html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
-  color: #0b0d10;
-}
-
-.chip:focus-visible {
-  outline: 2px solid rgb(var(--accent-rgb, var(--physics)));
-  outline-offset: 2px;
-}
-
-/* Messwert-Anzeige (Live-Readout einer Simulation). */
-/* Messwerte liegen in einem Raster statt in einer Zeile: auf dem Telefon zwei
-   Spalten, ab Tablet so viele wie hineinpassen. */
-.readout-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-@media (min-width: 640px) {
-  .readout-grid {
-    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  }
-}
-
-.readout {
-  display: grid;
-  gap: 2px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--hairline);
-  background: color-mix(in srgb, var(--surface-solid) 70%, transparent);
-  min-width: 0;
-}
-
-.readout dt {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gray-10);
-}
-
-.readout dd {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-/* --------------------------------------------------------------------------
-   Header
-   -------------------------------------------------------------------------- */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  border-bottom: 1px solid transparent;
-  background: color-mix(in srgb, var(--background) 72%, transparent);
-  backdrop-filter: blur(16px) saturate(1.6);
-  -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-}
-
-.header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px var(--gutter);
-}
-
-@media (min-width: 640px) {
-  .header-bar {
-    padding: 12px var(--gutter);
-  }
-}
-
-.site-header[data-scrolled="true"] {
-  border-bottom-color: var(--hairline);
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-}
-
-/* Mobiles Menü: Einträge groß genug, um sie mit dem Daumen zu treffen. */
-.mobile-menu {
-  min-width: 200px;
-}
-
-.mobile-menu .rt-BaseMenuItem {
-  min-height: 42px;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-}
-
-.nav-link {
-  position: relative;
-  padding: 6px 2px;
-  color: var(--gray-11);
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.18s ease;
-}
-
-.nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1.5px;
-  border-radius: 2px;
-  background: rgb(var(--physics));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.nav-link:hover {
-  color: var(--foreground);
-}
-
-.nav-link:hover::after,
-.nav-link[data-active="true"]::after {
-  transform: scaleX(1);
-}
-
-.nav-link[data-active="true"] {
-  color: var(--foreground);
-}
-
-/* Lesefortschritt als Haarlinie unter dem Header. */
-.scroll-progress {
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  height: 2px;
-  width: 100%;
-  transform-origin: left;
-  transform: scaleX(var(--progress, 0));
-  background: linear-gradient(90deg, rgb(var(--physics)), rgb(var(--market)));
-}
-
-/* --------------------------------------------------------------------------
-   Hero
-   -------------------------------------------------------------------------- */
-.hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid var(--hairline);
-  background:
-    radial-gradient(
-      110% 90% at 50% -10%,
-      color-mix(in srgb, rgb(var(--physics)) 14%, transparent) 0%,
-      transparent 62%
-    ),
-    var(--surface);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--lift-2);
-}
-
-/* Weiches Zentrum, damit die Typo über dem Partikelfeld lesbar bleibt. */
-.hero-veil {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    62% 58% at 50% 46%,
-    var(--background) 0%,
-    color-mix(in srgb, var(--background) 55%, transparent) 45%,
-    transparent 78%
-  );
-}
-
-@media (min-width: 640px) {
-  .hero {
-    border-radius: 24px;
-  }
-}
-
-/* Kennzahlen: auf dem Telefon drei gleich breite Spalten (statt umbrechender
-   Flex-Zeile, die die Trennlinien an unsinnige Stellen setzt). */
-.hero-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: 100%;
-  max-width: 420px;
-}
-
-.hero-metric {
-  display: grid;
-  gap: 2px;
-  padding-inline: 10px;
-  border-left: 1px solid var(--hairline);
-  text-align: center;
-}
-
-.hero-metric:first-child {
-  border-left: 0;
-}
-
-.hero-metric-value {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
-}
-
-.hero-metric-label {
-  font-family: var(--font-display);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gray-10);
-}
-
-@media (min-width: 640px) {
-  .hero-metric {
-    padding-inline: 18px;
-  }
-
-  .hero-metric-value {
-    font-size: 1.35rem;
-  }
-
-  .hero-metric-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   Auftritts-Animation beim Scrollen (progressive Verbesserung)
-   -------------------------------------------------------------------------- */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: reveal-in linear both;
-      animation-timeline: view();
-      animation-range: entry 5% cover 22%;
-    }
-  }
-}
-
-@keyframes reveal-in {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   Cursor
-   -------------------------------------------------------------------------- */
-:root {
-  --cursor-button: pointer;
-  --cursor-checkbox: pointer;
-  --cursor-radio: pointer;
-  --cursor-switch: pointer;
-  --cursor-link: pointer;
-  --cursor-menu-item: pointer;
-  --cursor-slider-thumb: pointer;
-}
-
-@layer base {
-  button:not(:disabled),
-  a[href],
-  [role="button"]:not([aria-disabled="true"]) {
-    cursor: pointer;
-  }
-}
-
-.dashboard-shell {
-  position: relative;
-}
-
-.dashboard-kicker {
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.dashboard-section-icon,
-.dashboard-card-icon {
-  flex: 0 0 auto;
-  color: var(--gray-11);
-}
-
-.dashboard-table-icon {
-  flex: 0 0 auto;
-  color: var(--gray-10);
-}
-
-.dashboard-cell-icon {
-  flex: 0 0 auto;
-  color: var(--gray-9);
-}
-
-.dashboard-cell-icon-top {
-  margin-top: 3px;
-}
-
-.dashboard-admin-actions a {
-  text-decoration: none;
-}
-
-.dashboard-admin-button {
-  min-width: 180px;
-  justify-content: center;
-  border: 1px solid var(--gray-a5);
-  background: var(--color-panel-solid);
-  color: var(--gray-12);
-  box-shadow: 0 10px 24px var(--gray-a3);
-  cursor: pointer;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
-}
-
-.dashboard-admin-button:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent-a6);
-  background: var(--accent-a3);
-  box-shadow: 0 16px 34px var(--accent-a4);
-}
-
-.dashboard-admin-button:focus-visible {
-  outline: 2px solid var(--accent-a6);
-  outline-offset: 2px;
-}
-
-.dashboard-fee-card {
-  background: var(--color-panel-solid);
-}
-
-.dashboard-table th {
-  white-space: nowrap;
-}
-
-.dashboard-table td {
-  vertical-align: middle;
-}
-
 .markdown-content {
-  line-height: 1.7;
+  line-height: 1.75;
+  overflow-wrap: break-word;
 }
 
 .markdown-content :where(h1, h2, h3, h4, h5, h6) {
-  line-height: 1.25;
-  margin: 1.5em 0 0.5em;
+  line-height: 1.3;
+  margin: 1.6em 0 0.6em;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .markdown-content h1 {
-  font-size: 1.8rem;
+  font-size: 1.7rem;
 }
 
 .markdown-content h2 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 .markdown-content h3 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .markdown-content h4 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
 .markdown-content :where(p, ul, ol, blockquote, pre, table) {
@@ -966,588 +244,119 @@ html[data-theme-appearance="dark"] .chip[aria-pressed="true"] {
 }
 
 .markdown-content blockquote {
-  border-left: 4px solid var(--accent-6);
+  border-left: 3px solid var(--physics);
   padding-left: 1rem;
-  color: var(--gray-11);
+  color: var(--muted);
   font-style: italic;
 }
 
 .markdown-content pre {
-  background-color: var(--gray-a3);
+  background-color: var(--raised);
+  border: 1px solid var(--line);
   padding: 1rem;
-  border-radius: 6px;
+  border-radius: 10px;
   overflow-x: auto;
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
 }
 
 .markdown-content code {
-  background-color: var(--gray-a3);
+  background-color: var(--raised);
   padding: 0.2rem 0.4rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.9em;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .markdown-content pre code {
   background-color: transparent;
   padding: 0;
-  font-size: 0.95em;
+  font-size: 1em;
 }
 
 .markdown-content table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   font-size: 0.95rem;
 }
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid var(--gray-a5);
+  border: 1px solid var(--line);
   padding: 0.5rem 0.75rem;
 }
 
 .markdown-content th {
-  background-color: var(--gray-a3);
+  background-color: var(--raised);
   font-weight: 600;
   text-align: left;
 }
 
 .markdown-content hr {
   border: 0;
-  border-top: 1px solid var(--gray-a5);
+  border-top: 1px solid var(--line);
   margin: 2rem 0;
 }
 
 .markdown-content a {
-  color: var(--accent-11);
+  color: var(--physics);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .markdown-content img {
   max-width: 100%;
   height: auto;
-}
-
-.history-shell {
-  position: relative;
-}
-
-.history-kicker {
-  color: var(--accent-11);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.history-summary {
-  line-height: 1.65;
-}
-
-.history-panel,
-.history-detail,
-.history-fact {
-  border: 1px solid var(--gray-a5);
-  box-shadow: 0 22px 60px -20px var(--gray-a8);
-  background: var(--color-panel-solid);
-}
-
-.history-icon,
-.history-check,
-.history-fact-icon {
-  flex: 0 0 auto;
-  color: var(--accent-11);
-}
-
-.history-track {
-  position: relative;
-  display: grid;
-  gap: 10px;
-  padding: 12px 0;
-}
-
-.history-track::before {
-  content: "";
-  position: absolute;
-  left: 15px;
-  top: 22px;
-  bottom: 22px;
-  width: 2px;
-  background: linear-gradient(180deg, var(--accent-6), var(--accent-9));
-}
-
-.history-event {
-  --event-progress: 0%;
-  position: relative;
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  gap: 8px 16px;
-  width: 100%;
-  min-height: 58px;
-  padding: 10px 12px 10px 42px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-3);
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.history-event:hover,
-.history-event-active {
-  background: var(--accent-a3);
-  border-color: var(--accent-a6);
-  transform: translateX(2px);
-}
-
-.history-event-dot {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  border: 3px solid var(--color-panel-solid);
-  border-radius: 999px;
-  background: var(--accent-9);
-  box-shadow: 0 0 0 1px var(--accent-a7);
-  transform: translateY(-50%);
-  transition: background 0.18s ease, box-shadow 0.18s ease;
-}
-
-.history-event-active .history-event-dot {
-  background: var(--accent-10);
-  box-shadow: 0 0 0 4px var(--accent-a5);
-}
-
-.history-event-year {
-  align-self: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--accent-11);
-  font-family: var(--font-mono);
-}
-
-.history-event-title {
-  align-self: center;
-  font-size: 0.96rem;
-  font-weight: 600;
-}
-
-.history-detail {
-  position: sticky;
-  top: 24px;
-  overflow: hidden;
-}
-
-.history-year {
-  flex: 0 0 auto;
-  color: var(--accent-a5);
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-  font-family: var(--font-mono);
-}
-
-.history-fact {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-@media (min-width: 640px) {
-  .history-fact {
-    /* Erst ab Tablet gleiche Kachelhöhe — auf dem Telefon stapeln sie
-       untereinander und dürfen so hoch sein wie ihr Text. */
-    min-height: 190px;
-  }
-}
-
-@media (hover: hover) {
-  .history-fact:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px -12px var(--accent-a7);
-  }
-}
-
-.history-fact-icon {
-  width: 28px;
-  height: 28px;
-  margin-bottom: 14px;
-}
-
-@media (max-width: 767px) {
-  .history-event {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .history-detail {
-    position: static;
-  }
-
-  .history-year {
-    font-size: 2rem;
-  }
-}
-
-
-/* --------------------------------------------------------------------------
-   Blog-Karten
-   -------------------------------------------------------------------------- */
-.post-card {
-  position: relative;
-  overflow: hidden;
-  transition:
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.post-card::before {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 2px;
-  background: linear-gradient(180deg, rgb(var(--physics)), rgb(var(--market)));
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (hover: hover) {
-  .post-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--lift-2);
-  }
-
-  .post-card:hover::before {
-    transform: scaleY(1);
-  }
-}
-
-.post-meta {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--gray-10);
-}
-
-/* Kleines Kapitälchen-Label über Überschriften und in der Meta-Karte. */
-.post-kicker {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gray-10);
-}
-
-/* Vorspann: etwas größer und ruhiger als der Fließtext, wie im Zeitungslayout. */
-.post-lede {
-  font-family: var(--font-serif);
-  line-height: 1.6;
-  color: var(--gray-11);
-  text-wrap: pretty;
-  max-width: 62ch;
-}
-
-.post-excerpt {
-  line-height: 1.65;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.post-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .post-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-}
-
-.post-card--lead::before {
-  transform: scaleY(1);
-  width: 3px;
-}
-
-/* Vorschaubild in der Meta-Zeile (kleines Vereinsfoto neben Datum/Autor). */
-.post-meta-thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid var(--hairline);
-  flex-shrink: 0;
-}
-
-.post-card-lead-image {
-  width: 100%;
-  aspect-ratio: 16 / 7;
-  object-fit: cover;
   border-radius: 10px;
-  border: 1px solid var(--hairline);
-  margin-bottom: 4px;
-}
-
-.post-card-image {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid var(--hairline);
-  margin-bottom: 8px;
-}
-
-/* Vorschaubild in der Neuigkeiten-Karte auf der Startseite: bewusst klein und
-   mit fester Größe, damit die Karte durch das Bild nicht wächst. */
-.home-post-thumb {
-  width: 92px;
-  height: 92px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid var(--hairline);
-}
-
-@media (min-width: 640px) {
-  .home-post-thumb {
-    width: 132px;
-    height: 132px;
-  }
-}
-
-.article-meta-image {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid var(--hairline);
 }
 
 /* --------------------------------------------------------------------------
-   Artikelansicht
+   Dialog (natives <dialog>)
    -------------------------------------------------------------------------- */
-
-/* Kopfbereich: Titel/Vorspann und Steckbrief stehen im Markup untereinander
-   (Steckbrief zuerst gelesen wirkt auf dem Telefon aufdringlich), deshalb
-   stapelt es dort in Leserichtung. Ab Tablet wandert der Steckbrief per Grid
-   fest neben den Vorspann — nicht sticky, er bleibt am Kopf der Seite. */
-.article-header {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
+.dialog-panel[open] {
+  animation: dialog-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.article-header-separator {
-  display: none;
+.dialog-panel[open]::backdrop {
+  animation: dialog-backdrop-in 0.18s ease;
 }
 
-@media (min-width: 700px) {
-  .article-header {
-    grid-template-columns: 70% auto 1fr;
-    align-items: stretch;
-    gap: 28px;
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
   }
-
-  .article-header-separator {
-    display: block;
-    height: auto;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-/* Kein `order` nötig: Die Markup-Reihenfolge (Vorspann, Trenner, Steckbrief)
-   entspricht bereits der Spaltenfolge. */
-.article-intro {
-  min-width: 0;
-}
-
-.article-meta-card {
-  width: 100%;
-}
-
-.article-body {
-  min-width: 0;
-}
-
-.article-body--full {
-  max-width: 70ch;
-}
-
-.article-body .markdown-content {
-  font-size: 1.05rem;
-}
-
-/* Erster Absatz mit Initial — die Zeitungsanmutung, die den Einstieg markiert. */
-.article-body .markdown-content > p:first-of-type::first-letter {
-  float: left;
-  font-family: var(--font-serif);
-  font-size: 3.2em;
-  line-height: 0.82;
-  padding: 0.08em 0.09em 0 0;
-  color: rgb(var(--physics));
-}
-
-/* --------------------------------------------------------------------------
-   Vorstand
-   -------------------------------------------------------------------------- */
-.person-avatar {
-  display: grid;
-  place-items: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 999px;
-  border: 1px solid var(--hairline-strong);
-  background: radial-gradient(
-    100% 100% at 30% 20%,
-    color-mix(in srgb, rgb(var(--physics)) 24%, transparent),
-    color-mix(in srgb, rgb(var(--market)) 14%, transparent)
-  );
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: 0.02em;
-  color: var(--foreground);
-}
-
-/* --------------------------------------------------------------------------
-   Footer
-   -------------------------------------------------------------------------- */
-.site-footer {
-  position: relative;
-  margin-top: auto;
-  padding-inline: var(--gutter);
-  border-top: 1px solid var(--hairline);
-  background: color-mix(in srgb, var(--background) 80%, transparent);
-}
-
-.site-footer a {
-  color: var(--gray-11);
-  text-decoration: none;
-  transition: color 0.16s ease;
-}
-
-.site-footer a:hover {
-  color: var(--foreground);
-}
-
-.footer-heading {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gray-10);
-}
-
-/* Footer-Links sind auf dem Telefon Fingerziele, keine Textzeilen. */
-.site-footer a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-}
-
-/* Spaltenraster: eine Spalte fürs Telefon, zwei ab 480px, vier ab Tablet. */
-.footer-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 28px;
-}
-
-@media (min-width: 480px) {
-  .footer-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@keyframes dialog-backdrop-in {
+  from {
+    opacity: 0;
   }
-
-  .footer-grid > :first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (min-width: 768px) {
-  .footer-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 32px;
-  }
-
-  .footer-grid > :first-child {
-    grid-column: auto;
+  to {
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feature-card,
-  .post-card,
-  .nav-link::after,
-  .post-card::before {
-    transition: none;
+  .dialog-panel[open],
+  .dialog-panel[open]::backdrop {
+    animation: none;
   }
 }
 
-/* Im Labormodul steht der Text vor der Grafik: gestapelt auf dem Telefon
-   (erst wissen, was man sieht — dann sehen), nebeneinander ab Tablet, wo der
-   Text links und die Grafik rechts landet. Die Grafik steht im Markup zuerst,
-   deshalb dreht `order` sie um. */
-.lab-copy {
-  order: 1;
-}
-
-.lab-figure {
-  order: 2;
-}
 /* --------------------------------------------------------------------------
-   Mobile-Feinschliff
-   -------------------------------------------------------------------------- */
-
-/* iOS zoomt beim Fokussieren in jedes Feld, dessen Schrift kleiner als 16px
-   ist. Auf schmalen Viewports werden Eingaben deshalb grundsätzlich auf 16px
-   gesetzt — sichtbar ändert sich fast nichts, das Springen hört auf. */
-@media (max-width: 639px) {
-  input,
-  textarea,
-  select,
-  .rt-TextFieldInput,
-  .rt-TextAreaInput {
-    font-size: 16px;
-  }
-}
-
-/* Fingerziele: alles Klickbare ist mindestens 40px hoch. Radix-Buttons in
-   Größe 1/2 liegen darunter. */
-@media (pointer: coarse) {
-  .radix-themes :where(button.rt-Button, a.rt-Button, button.rt-IconButton) {
-    min-height: 40px;
-  }
-
-  .radix-themes .rt-IconButton {
-    min-width: 40px;
-  }
-}
-
-/* Auf dem Telefon füllen Buttons in gestapelten Aktionsleisten die Breite —
-   sonst stehen sie als schmale Inseln im Layout. */
-@media (max-width: 519px) {
-  .radix-themes .rt-Flex[data-accent-color] > a.rt-Button,
-  .stack-actions > * {
-    width: 100%;
-  }
-}
-
-/* Radix-Container haben eigene Innenabstände; die Seiten setzen px="0" und
-   überlassen den Rand `--gutter` am .site-main. */
-.radix-themes .rt-Container {
-  max-width: 100%;
-}
-
-/*
- * Contact-form honeypot. Positioned off-canvas rather than `display: none` —
- * bots that skip hidden inputs generally test for `display`/`visibility`, and
- * `aria-hidden` + `tabIndex={-1}` already keep it away from real users.
- */
+   Kontaktformular-Honeypot
+   --------------------------------------------------------------------------
+   Off-canvas statt `display: none` — Bots, die versteckte Felder überspringen,
+   prüfen üblicherweise auf `display`/`visibility`. `aria-hidden` und
+   `tabIndex={-1}` halten das Feld von echten Nutzer:innen fern.
+   */
 .contact-honeypot {
   position: absolute;
   left: -9999px;

@@ -2,21 +2,32 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import {
-    Button,
-    Callout,
-    Card,
-    Container,
-    Flex,
-    Heading,
-    Text,
-    TextArea,
-    TextField,
-} from "@radix-ui/themes";
 import { CheckCircle2, Info } from "lucide-react";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { MAX_MESSAGE_LENGTH } from "@/lib/contact";
 import { submitContactRequest } from "./actions";
+import {
+    Button,
+    ButtonLink,
+    Callout,
+    Card,
+    Container,
+    Field,
+    Input,
+    TextArea,
+} from "@/components/ui";
+
+/** Altcha-Widget an die Design-Tokens angleichen. */
+const ALTCHA_STYLE = {
+    display: "block",
+    width: "100%",
+    "--altcha-max-width": "100%",
+    "--altcha-border-radius": "0.75rem",
+    "--altcha-border-color": "var(--line-strong)",
+    "--altcha-color-base": "var(--surface)",
+    "--altcha-color-base-content": "var(--foreground)",
+    "--altcha-color-primary": "var(--physics)",
+} as CSSProperties;
 
 export function ContactForm({
     challengeJson,
@@ -60,186 +71,161 @@ export function ContactForm({
 
     if (submitted) {
         return (
-            <Container size="1" px="0" py={{ initial: "4", sm: "8" }}>
-                <Card size={{ initial: "3", sm: "4" }} className="panel">
-                    <Flex direction="column" gap="4" align="center" py="4">
-                        <CheckCircle2 size={40} color="var(--green-9)" />
-                        <Heading as="h1" size="6" align="center" className="display-title">
-                            Nachricht verschickt
-                        </Heading>
-                        <Text size="2" color="gray" align="center">
-                            Vielen Dank für deine Anfrage. Der Vorstand meldet sich so bald wie
-                            möglich bei dir — in der Regel innerhalb weniger Tage.
-                        </Text>
-                        <Button variant="soft" asChild>
-                            <Link href="/">Zurück zur Startseite</Link>
-                        </Button>
-                    </Flex>
+            <Container size="1" className="py-8 sm:py-14">
+                <Card className="grid justify-items-center gap-4 p-6 text-center sm:p-8">
+                    <CheckCircle2 size={40} className="text-positive" aria-hidden="true" />
+                    <h1 className="text-2xl font-bold tracking-tight text-balance">
+                        Nachricht verschickt
+                    </h1>
+                    <p className="text-sm leading-relaxed text-muted text-pretty">
+                        Vielen Dank für deine Anfrage. Der Vorstand meldet sich so bald wie
+                        möglich bei dir — in der Regel innerhalb weniger Tage.
+                    </p>
+                    <ButtonLink href="/" variant="soft" color="neutral" className="mt-1">
+                        Zurück zur Startseite
+                    </ButtonLink>
                 </Card>
             </Container>
         );
     }
 
     return (
-        <Container size="1" px="0" py={{ initial: "4", sm: "8" }}>
+        <Container size="1" className="py-8 sm:py-14">
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Kontaktformular"
                 onOpenChange={setFeatureDisabled}
             />
-            <Card size={{ initial: "3", sm: "4" }} className="panel">
-                <form action={handleAction}>
-                    <Flex direction="column" gap="5">
-                        <Flex direction="column" gap="2" align="center">
-                            <Heading
-                                as="h1"
-                                size={{ initial: "6", sm: "7" }}
-                                align="center"
-                                className="display-title"
+            <Card className="p-6 sm:p-8">
+                <div className="grid gap-2 text-center">
+                    <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+                        Kontakt
+                    </h1>
+                    <p className="text-sm leading-relaxed text-muted text-pretty">
+                        Fragen zur Mitgliedschaft, zum Verein oder zu Veranstaltungen? Schreib
+                        uns — deine Nachricht geht direkt an den Vorstand.
+                    </p>
+                </div>
+
+                <form action={handleAction} className="mt-6 grid gap-4">
+                    {!enabled && (
+                        <Callout tone="warning" icon={<Info size={16} />}>
+                            Das Kontaktformular ist derzeit deaktiviert. Bitte wende dich
+                            vorübergehend über die Angaben im{" "}
+                            <Link
+                                href="/impressum"
+                                className="font-semibold text-physics underline-offset-4 hover:underline"
                             >
-                                Kontakt
-                            </Heading>
-                            <Text size="2" color="gray" align="center">
-                                Fragen zur Mitgliedschaft, zum Verein oder zu Veranstaltungen?
-                                Schreib uns — deine Nachricht geht direkt an den Vorstand.
-                            </Text>
-                        </Flex>
+                                Impressum
+                            </Link>{" "}
+                            an uns.
+                        </Callout>
+                    )}
 
-                        {!enabled && (
-                            <Callout.Root color="amber">
-                                <Callout.Icon>
-                                    <Info size={16} />
-                                </Callout.Icon>
-                                <Callout.Text>
-                                    Das Kontaktformular ist derzeit deaktiviert. Bitte wende dich
-                                    vorübergehend über die Angaben im{" "}
-                                    <Link href="/impressum">Impressum</Link> an uns.
-                                </Callout.Text>
-                            </Callout.Root>
-                        )}
-
-                        {error && (
-                            <Flex
-                                style={{
-                                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                                    borderLeft: "4px solid rgb(239, 68, 68)",
-                                    padding: "12px 16px",
-                                    borderRadius: "4px",
-                                }}
-                            >
-                                <Text color="red" size="2">
-                                    {error}
-                                </Text>
-                            </Flex>
-                        )}
-
-                        <Flex direction="column" gap="4">
-                            <label>
-                                <Text size="2" weight="bold">Name</Text>
-                                <TextField.Root
-                                    name="name"
-                                    required
-                                    maxLength={120}
-                                    placeholder="Vor- und Nachname"
-                                    mt="1"
-                                />
-                            </label>
-
-                            <label>
-                                <Text size="2" weight="bold">E-Mail-Adresse</Text>
-                                <TextField.Root
-                                    name="email"
-                                    type="email"
-                                    required
-                                    placeholder="mail@beispiel.de"
-                                    mt="1"
-                                />
-                                <Text size="1" color="gray" mt="1">
-                                    Wird nur für die Antwort auf deine Anfrage verwendet.
-                                </Text>
-                            </label>
-
-                            <label>
-                                <Text size="2" weight="bold">Betreff</Text>
-                                <TextField.Root
-                                    name="subject"
-                                    required
-                                    maxLength={200}
-                                    placeholder="Worum geht es?"
-                                    mt="1"
-                                />
-                            </label>
-
-                            <label>
-                                <Text size="2" weight="bold">Nachricht</Text>
-                                <TextArea
-                                    name="message"
-                                    required
-                                    minLength={20}
-                                    maxLength={MAX_MESSAGE_LENGTH}
-                                    rows={8}
-                                    placeholder="Deine Nachricht an den Vorstand …"
-                                    mt="1"
-                                    onChange={(e) => setMessageLength(e.currentTarget.value.length)}
-                                />
-                                <Text size="1" color="gray" mt="1">
-                                    {messageLength} / {MAX_MESSAGE_LENGTH} Zeichen
-                                </Text>
-                            </label>
-                        </Flex>
-
-                        {/*
-                          Honeypot. Kept in the accessibility tree's blind spot rather
-                          than `display: none`, which the more careful bots skip.
-                        */}
-                        <div aria-hidden="true" className="contact-honeypot">
-                            <label htmlFor="contact-website">
-                                Website (bitte freilassen)
-                                <input
-                                    id="contact-website"
-                                    type="text"
-                                    name="website"
-                                    tabIndex={-1}
-                                    autoComplete="off"
-                                />
-                            </label>
+                    {error && (
+                        <div
+                            role="alert"
+                            className="rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm text-negative"
+                        >
+                            {error}
                         </div>
+                    )}
 
-                        <label>
-                            <Text size="2" weight="bold">Sicherheitsüberprüfung</Text>
-                            <altcha-widget
-                                challenge={challengeJson}
-                                name="altcha"
-                                style={{
-                                    display: "block",
-                                    width: "100%",
-                                    marginTop: "4px",
-                                    "--altcha-max-width": "100%",
-                                    "--altcha-border-radius": "var(--radius-3)",
-                                    "--altcha-border-color": "var(--gray-a7)",
-                                    "--altcha-color-base": "var(--color-panel)",
-                                    "--altcha-color-base-content": "var(--gray-12)",
-                                    "--altcha-color-primary": "var(--accent-9)",
-                                } as CSSProperties}
+                    <Field label="Name" htmlFor="contact-name">
+                        <Input
+                            id="contact-name"
+                            name="name"
+                            autoComplete="name"
+                            required
+                            maxLength={120}
+                            placeholder="Vor- und Nachname"
+                        />
+                    </Field>
+
+                    <Field
+                        label="E-Mail-Adresse"
+                        htmlFor="contact-email"
+                        hint="Wird nur für die Antwort auf deine Anfrage verwendet."
+                    >
+                        <Input
+                            id="contact-email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            placeholder="mail@beispiel.de"
+                        />
+                    </Field>
+
+                    <Field label="Betreff" htmlFor="contact-subject">
+                        <Input
+                            id="contact-subject"
+                            name="subject"
+                            required
+                            maxLength={200}
+                            placeholder="Worum geht es?"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Nachricht"
+                        htmlFor="contact-message"
+                        hint={`${messageLength} / ${MAX_MESSAGE_LENGTH} Zeichen`}
+                    >
+                        <TextArea
+                            id="contact-message"
+                            name="message"
+                            required
+                            minLength={20}
+                            maxLength={MAX_MESSAGE_LENGTH}
+                            rows={8}
+                            placeholder="Deine Nachricht an den Vorstand …"
+                            onChange={(e) => setMessageLength(e.currentTarget.value.length)}
+                        />
+                    </Field>
+
+                    {/*
+                      Honeypot. Kept in the accessibility tree's blind spot rather
+                      than `display: none`, which the more careful bots skip.
+                    */}
+                    <div aria-hidden="true" className="contact-honeypot">
+                        <label htmlFor="contact-website">
+                            Website (bitte freilassen)
+                            <input
+                                id="contact-website"
+                                type="text"
+                                name="website"
+                                tabIndex={-1}
+                                autoComplete="off"
                             />
                         </label>
+                    </div>
 
-                        <Button type="submit" size="3" disabled={pending || !enabled}>
-                            {pending ? "Wird gesendet …" : "Nachricht senden"}
-                        </Button>
+                    <div className="grid gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">
+                            Sicherheitsüberprüfung
+                        </span>
+                        <altcha-widget
+                            challenge={challengeJson}
+                            name="altcha"
+                            style={ALTCHA_STYLE}
+                        />
+                    </div>
 
-                        <Text size="1" color="gray" align="center">
-                            Mit dem Absenden stimmst du der Verarbeitung deiner Angaben gemäß
-                            unserer{" "}
-                            <Link
-                                href="/datenschutz"
-                                style={{ color: "var(--accent-9)", textDecoration: "none" }}
-                            >
-                                Datenschutzerklärung
-                            </Link>{" "}
-                            zu.
-                        </Text>
-                    </Flex>
+                    <Button type="submit" size="lg" loading={pending} disabled={!enabled}>
+                        {pending ? "Wird gesendet …" : "Nachricht senden"}
+                    </Button>
+
+                    <p className="text-center text-xs text-faint">
+                        Mit dem Absenden stimmst du der Verarbeitung deiner Angaben gemäß unserer{" "}
+                        <Link
+                            href="/datenschutz"
+                            className="font-semibold text-physics underline-offset-4 hover:underline"
+                        >
+                            Datenschutzerklärung
+                        </Link>{" "}
+                        zu.
+                    </p>
                 </form>
             </Card>
         </Container>

@@ -1,16 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Badge, Box, Button, Card, Flex, Grid, Heading, Text } from "@radix-ui/themes";
 import {
-  BackpackIcon,
-  BarChartIcon,
-  CheckCircledIcon,
-  Component1Icon,
-  HomeIcon,
-  LapTimerIcon,
-  StarIcon,
-} from "@radix-ui/react-icons";
+  Atom,
+  Backpack,
+  CheckCircle2,
+  History,
+  Home,
+  Star,
+  TrendingUp,
+} from "lucide-react";
+import { cn } from "@/lib/cn";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 type TimelineCategory = "uni" | "physik" | "wirtschaftsphysik" | "alumni";
 
@@ -192,17 +194,11 @@ function categoryLabel(category: TimelineCategory) {
   return "Wirtschaftsphysik";
 }
 
-function categoryIcon(category: TimelineCategory) {
-  if (category === "uni") return <HomeIcon />;
-  if (category === "physik") return <Component1Icon />;
-  if (category === "alumni") return <StarIcon />;
-  return <BarChartIcon />;
-}
-
-function eventProgress(year: number) {
-  const min = 1960;
-  const max = 2024;
-  return ((year - min) / (max - min)) * 100;
+function categoryIcon(category: TimelineCategory, size = 13) {
+  if (category === "uni") return <Home size={size} aria-hidden="true" />;
+  if (category === "physik") return <Atom size={size} aria-hidden="true" />;
+  if (category === "alumni") return <Star size={size} aria-hidden="true" />;
+  return <TrendingUp size={size} aria-hidden="true" />;
 }
 
 export function PhysicsTimeline() {
@@ -223,114 +219,142 @@ export function PhysicsTimeline() {
   }
 
   return (
-    <Box className="history-shell">
-      <Grid columns={{ initial: "1", lg: "1.1fr 0.9fr" }} gap={{ initial: "4", sm: "5" }} align="start">
-        <Card size={{ initial: "2", sm: "4" }} className="history-panel">
-          <Flex direction="column" gap="4">
-            <Flex justify="between" gap="3" align={{ initial: "start", sm: "center" }} wrap="wrap">
-              <Box>
-                <Flex align="center" gap="2" mb="1">
-                  <LapTimerIcon className="history-icon" />
-                  <Text size="2" weight="bold" className="history-kicker">
-                    Chronologie
-                  </Text>
-                </Flex>
-                <Heading as="h2" size={{ initial: "5", sm: "6" }} className="display-title">
-                  Meilensteine seit 1960
-                </Heading>
-              </Box>
+    <div className="grid gap-5">
+      <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        {/* ---------- Chronologie ---------- */}
+        <Card className="p-5 sm:p-7">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="mb-1 flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.14em] text-physics uppercase">
+                <History size={14} aria-hidden="true" />
+                Chronologie
+              </div>
+              <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+                Meilensteine seit 1960
+              </h2>
+            </div>
 
-              <Flex gap="2" wrap="wrap">
-                {categories.map((category) => (
-                  <Button
-                    key={category.id}
-                    type="button"
-                    size="2"
-                    radius="full"
-                    variant={filter === category.id ? "solid" : "soft"}
-                    color={filter === category.id ? undefined : "gray"}
-                    onClick={() => selectFilter(category.id)}
-                  >
-                    {category.label}
-                  </Button>
-                ))}
-              </Flex>
-            </Flex>
-
-            <Box className="history-track" aria-label="Zeitleiste">
-              {visibleEvents.map((event) => {
-                const isActive = event.id === activeEvent.id;
-                return (
-                  <button
-                    key={event.id}
-                    type="button"
-                    className={`history-event ${isActive ? "history-event-active" : ""}`}
-                    style={{ "--event-progress": `${eventProgress(event.year)}%` } as React.CSSProperties}
-                    onClick={() => setActiveId(event.id)}
-                  >
-                    <span className="history-event-dot" />
-                    <span className="history-event-year">{event.label}</span>
-                    <span className="history-event-title">{event.title}</span>
-                  </button>
-                );
-              })}
-            </Box>
-          </Flex>
-        </Card>
-
-        <Card size={{ initial: "2", sm: "4" }} className="history-detail">
-          <Flex direction="column" gap="4">
-            <Flex justify="between" align="start" gap="3">
-              <Box>
-                <Badge color="blue" variant="soft" size="2">
-                  {categoryIcon(activeEvent.category)}
-                  {categoryLabel(activeEvent.category)}
-                </Badge>
-                <Heading as="h2" size={{ initial: "5", sm: "7" }} mt="3" mb="2" className="display-title">
-                  {activeEvent.title}
-                </Heading>
-                <Text size={{ initial: "3", sm: "5" }} color="gray" className="history-summary">
-                  {activeEvent.summary}
-                </Text>
-              </Box>
-              <Text className="history-year">{activeEvent.label}</Text>
-            </Flex>
-
-            <Flex direction="column" gap="3">
-              {activeEvent.details.map((detail) => (
-                <Flex key={detail} gap="2" align="start">
-                  <CheckCircledIcon className="history-check" />
-                  <Text size={{ initial: "2", sm: "3" }}>{detail}</Text>
-                </Flex>
+            <div className="flex flex-wrap gap-1.5">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  aria-pressed={filter === category.id}
+                  onClick={() => selectFilter(category.id)}
+                  className={cn(
+                    "min-h-9 cursor-pointer rounded-full border px-3.5 text-[13px] font-semibold transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+                    filter === category.id
+                      ? "border-physics bg-physics text-on-physics"
+                      : "border-line-strong bg-transparent text-muted hover:bg-raised hover:text-foreground",
+                  )}
+                >
+                  {category.label}
+                </button>
               ))}
-            </Flex>
-          </Flex>
-        </Card>
-      </Grid>
+            </div>
+          </div>
 
-      <Grid columns={{ initial: "1", sm: "3" }} gap={{ initial: "3", sm: "4" }} mt="5">
-        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
-          <HomeIcon className="history-fact-icon" />
-          <Heading as="h2" size="4" mb="2">Verein im Register</Heading>
-          <Text color="gray" size="2">
-            Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulmil eingetragen.
-          </Text>
+          {/* Zeitleiste */}
+          <div className="relative grid gap-1 py-1" aria-label="Zeitleiste">
+            <div
+              aria-hidden="true"
+              className="absolute top-4 bottom-4 left-[15px] w-0.5 rounded-full bg-gradient-to-b from-physics/40 via-physics to-market/60"
+            />
+            {visibleEvents.map((event) => {
+              const isActive = event.id === activeEvent.id;
+              return (
+                <button
+                  key={event.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setActiveId(event.id)}
+                  className={cn(
+                    "relative grid min-h-11 cursor-pointer grid-cols-1 gap-0 rounded-xl border py-2 pr-3 pl-10 text-left transition-colors sm:grid-cols-[88px_1fr] sm:items-center sm:gap-4",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+                    isActive
+                      ? "border-physics/40 bg-physics/8"
+                      : "border-transparent hover:bg-raised",
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute top-1/2 left-2 size-3.5 -translate-y-1/2 rounded-full border-2 border-surface transition-shadow",
+                      isActive
+                        ? "bg-physics ring-4 ring-physics/25"
+                        : "bg-line-strong",
+                    )}
+                  />
+                  <span className="font-mono text-xs font-bold text-physics">
+                    {event.label}
+                  </span>
+                  <span className="text-[15px] font-semibold">{event.title}</span>
+                </button>
+              );
+            })}
+          </div>
         </Card>
-        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
-          <BackpackIcon className="history-fact-icon" />
-          <Heading as="h2" size="4" mb="2">NC-frei</Heading>
-          <Text color="gray" size="2">
-            Wirtschaftsphysik ist aktuell weiterhin ohne Numerus Clausus und startet jeweils zum Wintersemester.
-          </Text>
+
+        {/* ---------- Detail ---------- */}
+        <Card className="p-5 sm:p-7 lg:sticky lg:top-24">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <Badge tone="physics">
+              {categoryIcon(activeEvent.category)}
+              {categoryLabel(activeEvent.category)}
+            </Badge>
+            <span className="font-mono text-2xl leading-none font-extrabold text-physics/60 sm:text-3xl">
+              {activeEvent.label}
+            </span>
+          </div>
+
+          <h2 className="mb-2 text-xl font-bold tracking-tight text-balance sm:text-3xl">
+            {activeEvent.title}
+          </h2>
+          <p className="mb-5 leading-relaxed text-muted">{activeEvent.summary}</p>
+
+          <ul className="grid gap-2.5">
+            {activeEvent.details.map((detail) => (
+              <li key={detail} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                <CheckCircle2
+                  size={16}
+                  aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-physics"
+                />
+                {detail}
+              </li>
+            ))}
+          </ul>
         </Card>
-        <Card size={{ initial: "2", sm: "3" }} className="history-fact">
-          <StarIcon className="history-fact-icon" />
-          <Heading as="h2" size="4" mb="2">Drei Jubiläen</Heading>
-          <Text color="gray" size="2">
-            2024 verband 55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre Alumni e.V.
-          </Text>
+      </div>
+
+      {/* ---------- Fakten ---------- */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="p-6">
+          <Home size={26} aria-hidden="true" className="mb-4 text-physics" />
+          <h3 className="mb-2 font-bold">Verein im Register</h3>
+          <p className="text-sm leading-relaxed text-muted">
+            Seit 2004 ist der Wirtschaftsphysik Alumni e.V. im Vereinsregister Ulm
+            eingetragen.
+          </p>
         </Card>
-      </Grid>
-    </Box>
+        <Card className="p-6">
+          <Backpack size={26} aria-hidden="true" className="mb-4 text-physics" />
+          <h3 className="mb-2 font-bold">NC-frei</h3>
+          <p className="text-sm leading-relaxed text-muted">
+            Wirtschaftsphysik ist aktuell weiterhin ohne Numerus Clausus und
+            startet jeweils zum Wintersemester.
+          </p>
+        </Card>
+        <Card className="p-6">
+          <Star size={26} aria-hidden="true" className="mb-4 text-physics" />
+          <h3 className="mb-2 font-bold">Drei Jubiläen</h3>
+          <p className="text-sm leading-relaxed text-muted">
+            2024 verband 55 Jahre Physik, 25 Jahre Wirtschaftsphysik und 20 Jahre
+            Alumni e.V.
+          </p>
+        </Card>
+      </div>
+    </div>
   );
 }

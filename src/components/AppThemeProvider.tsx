@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { Theme } from "@radix-ui/themes";
 
 type Appearance = "light" | "dark";
 
@@ -9,8 +8,8 @@ const STORAGE_KEY = "theme-appearance";
 
 /** Muss mit --background aus globals.css übereinstimmen. */
 const BAR_COLOR: Record<Appearance, string> = {
-    light: "#fbfbfa",
-    dark: "#0b0d10",
+    light: "#fafafa",
+    dark: "#0a0a0b",
 };
 
 const ThemeContext = createContext<{ appearance: Appearance; toggleAppearance: () => void }>({
@@ -68,9 +67,7 @@ export default function AppThemeProvider({ children }: { children: React.ReactNo
 
     return (
         <ThemeContext.Provider value={{ appearance, toggleAppearance }}>
-            <Theme accentColor="teal" grayColor="slate" radius="medium" appearance={appearance}>
-                {children}
-            </Theme>
+            {children}
         </ThemeContext.Provider>
     );
 }

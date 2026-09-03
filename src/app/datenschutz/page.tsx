@@ -1,24 +1,21 @@
-import { Container, Heading, Text, Flex, Button, Separator } from "@radix-ui/themes";
 import Link from "next/link";
+import { ButtonLink, Container, Separator } from "@/components/ui";
 
 export default function DatenschutzPage() {
     return (
-        <Container size="3" px="0" pt={{ initial: "4", sm: "6" }} pb="9">
-            <Flex
-                direction={{ initial: "column", xs: "row" }}
-                justify="between"
-                align={{ initial: "start", xs: "center" }}
-                gap="3"
-                mb={{ initial: "5", sm: "6" }}
-            >
-                <Heading as="h1" size={{ initial: "7", sm: "8" }} className="display-title">Datenschutzerklärung</Heading>
-                <Button variant="soft" radius="full" asChild>
-                    <Link href="/">← Zurück zur Startseite</Link>
-                </Button>
-            </Flex>
+        <Container size="2" className="pt-6 pb-16 sm:pt-10">
+            <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:mb-8">
+                <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                    Datenschutzerklärung
+                </h1>
+                <ButtonLink href="/" variant="soft" color="neutral" size="sm">
+                    ← Zurück zur Startseite
+                </ButtonLink>
+            </div>
 
-            <Flex direction="column" gap="4">
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+            <div className="grid gap-4 [&_a]:text-physics [&_a]:underline [&_a]:underline-offset-2">
+
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und
                     Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend
                     kurz „Daten") innerhalb unseres Onlineangebotes und der mit ihm
@@ -28,12 +25,12 @@ export default function DatenschutzPage() {
                     Hinblick auf die verwendeten Begrifflichkeiten, wie z.B.
                     „Verarbeitung" oder „Verantwortlicher" verweisen wir auf die
                     Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).
-                </Text>prisma migrate deploy
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Verantwortlicher</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Verantwortlicher</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Wirtschaftsphysik Alumni e.V.
                     <br />
                     c/o Universität Ulm
@@ -45,8 +42,8 @@ export default function DatenschutzPage() {
                     89081 Ulm
                     <br />
                     Deutschland
-                </Text>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                </div>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     E-Mailadresse:{" "}
                     <a href="mailto:info@wirtschaftsphysik.de">
                         info@wirtschaftsphysik.de
@@ -54,12 +51,12 @@ export default function DatenschutzPage() {
                     <br />
                     Link zum Impressum:{" "}
                     <Link href="/impressum">/impressum</Link>
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Arten der verarbeiteten Daten</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Arten der verarbeiteten Daten</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     – Bestandsdaten (z.B., Namen, Adressen).
                     <br />
                     – Kontaktdaten (z.B., E-Mail, Telefonnummern).
@@ -71,20 +68,20 @@ export default function DatenschutzPage() {
                     <br />
                     – Meta-/Kommunikationsdaten (z.B., Geräte-Informationen,
                     IP-Adressen).
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Kategorien betroffener Personen</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Kategorien betroffener Personen</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen
                     wir die betroffenen Personen zusammenfassend auch als „Nutzer").
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Zweck der Verarbeitung</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Zweck der Verarbeitung</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     – Zurverfügungstellung des Onlineangebotes, seiner Funktionen und
                     Inhalte.
                     <br />
@@ -93,12 +90,12 @@ export default function DatenschutzPage() {
                     – Sicherheitsmaßnahmen.
                     <br />
                     – Reichweitenmessung/Marketing
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Verwendete Begrifflichkeiten</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Verwendete Begrifflichkeiten</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     „Personenbezogene Daten" sind alle Informationen, die sich auf
                     eine identifizierte oder identifizierbare natürliche Person (im
                     Folgenden „betroffene Person") beziehen; als identifizierbar
@@ -149,12 +146,12 @@ export default function DatenschutzPage() {
                     „Auftragsverarbeiter" eine natürliche oder juristische Person,
                     Behörde, Einrichtung oder andere Stelle, die personenbezogene
                     Daten im Auftrag des Verantwortlichen verarbeitet.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Maßgebliche Rechtsgrundlagen</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Maßgebliche Rechtsgrundlagen</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Nach Maßgabe des Art. 13 DSGVO teilen wir Ihnen die
                     Rechtsgrundlagen unserer Datenverarbeitungen mit. Sofern die
                     Rechtsgrundlage in der Datenschutzerklärung nicht genannt wird,
@@ -171,12 +168,12 @@ export default function DatenschutzPage() {
                     einer anderen natürlichen Person eine Verarbeitung
                     personenbezogener Daten erforderlich machen, dient Art. 6 Abs. 1
                     lit. d DSGVO als Rechtsgrundlage.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Sicherheitsmaßnahmen</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Sicherheitsmaßnahmen</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Wir treffen nach Maßgabe des Art. 32 DSGVO unter Berücksichtigung
                     des Stands der Technik, der Implementierungskosten und der Art,
                     des Umfangs, der Umstände und der Zwecke der Verarbeitung sowie
@@ -198,14 +195,14 @@ export default function DatenschutzPage() {
                     bzw. Auswahl von Hardware, Software sowie Verfahren, entsprechend
                     dem Prinzip des Datenschutzes durch Technikgestaltung und durch
                     datenschutzfreundliche Voreinstellungen (Art. 25 DSGVO).
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">
+                <h2 className="mt-2 text-xl font-bold tracking-tight">
                     Zusammenarbeit mit Auftragsverarbeitern und Dritten
-                </Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                </h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Sofern wir im Rahmen unserer Verarbeitung Daten gegenüber anderen
                     Personen und Unternehmen (Auftragsverarbeitern oder Dritten)
                     offenbaren, sie an diese übermitteln oder ihnen sonst Zugriff auf
@@ -221,12 +218,12 @@ export default function DatenschutzPage() {
                     Sofern wir Dritte mit der Verarbeitung von Daten auf Grundlage
                     eines sog. „Auftragsverarbeitungsvertrages" beauftragen,
                     geschieht dies auf Grundlage des Art. 28 DSGVO.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Übermittlungen in Drittländer</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Übermittlungen in Drittländer</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Sofern wir Daten in einem Drittland (d.h. außerhalb der
                     Europäischen Union (EU) oder des Europäischen Wirtschaftsraums
                     (EWR)) verarbeiten oder dies im Rahmen der Inanspruchnahme von
@@ -244,12 +241,12 @@ export default function DatenschutzPage() {
                     „Privacy Shield") oder Beachtung offiziell anerkannter spezieller
                     vertraglicher Verpflichtungen (so genannte
                     „Standardvertragsklauseln").
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Rechte der betroffenen Personen</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Rechte der betroffenen Personen</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob
                     betreffende Daten verarbeitet werden und auf Auskunft über diese
                     Daten sowie auf weitere Informationen und Kopie der Daten
@@ -275,32 +272,32 @@ export default function DatenschutzPage() {
                     <br />
                     Sie haben ferner gem. Art. 77 DSGVO das Recht, eine Beschwerde
                     bei der zuständigen Aufsichtsbehörde einzureichen.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Widerrufsrecht</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Widerrufsrecht</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Sie haben das Recht, erteilte Einwilligungen gem. Art. 7 Abs. 3
                     DSGVO mit Wirkung für die Zukunft zu widerrufen
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Widerspruchsrecht</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Widerspruchsrecht</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Sie können der künftigen Verarbeitung der Sie betreffenden Daten
                     nach Maßgabe des Art. 21 DSGVO jederzeit widersprechen. Der
                     Widerspruch kann insbesondere gegen die Verarbeitung für Zwecke
                     der Direktwerbung erfolgen.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">
+                <h2 className="mt-2 text-xl font-bold tracking-tight">
                     Cookies und Widerspruchsrecht bei Direktwerbung
-                </Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                </h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Als „Cookies" werden kleine Dateien bezeichnet, die auf Rechnern
                     der Nutzer gespeichert werden. Innerhalb der Cookies können
                     unterschiedliche Angaben gespeichert werden. Ein Cookie dient
@@ -360,12 +357,12 @@ export default function DatenschutzPage() {
                     erreicht werden. Bitte beachten Sie, dass dann gegebenenfalls
                     nicht alle Funktionen dieses Onlineangebotes genutzt werden
                     können.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Löschung von Daten</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Löschung von Daten</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Die von uns verarbeiteten Daten werden nach Maßgabe der Art. 17
                     und 18 DSGVO gelöscht oder in ihrer Verarbeitung eingeschränkt.
                     Sofern nicht im Rahmen dieser Datenschutzerklärung ausdrücklich
@@ -398,14 +395,14 @@ export default function DatenschutzPage() {
                     Fernsehleistungen, die an Nichtunternehmer in EU-Mitgliedstaaten
                     erbracht werden und für die der Mini-One-Stop-Shop (MOSS) in
                     Anspruch genommen wird.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">
+                <h2 className="mt-2 text-xl font-bold tracking-tight">
                     Erbringung unserer satzungs- und geschäftsgemäßen Leistungen
-                </Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                </h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Wir verarbeiten die Daten unserer Mitglieder, Unterstützer,
                     Interessenten, Kunden oder sonstiger Personen entsprechend Art. 6
                     Abs. 1 lit. b. DSGVO, sofern wir ihnen gegenüber vertragliche
@@ -440,12 +437,12 @@ export default function DatenschutzPage() {
                     Die Erforderlichkeit der Aufbewahrung der Daten wird alle drei
                     Jahre überprüft; im Übrigen gelten die gesetzlichen
                     Aufbewahrungspflichten.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Registrierfunktion</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Registrierfunktion</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Nutzer können ein Nutzerkonto anlegen. Im Rahmen der Registrierung
                     werden die erforderlichen Pflichtangaben den Nutzern mitgeteilt
                     und auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO zu Zwecken der
@@ -478,12 +475,12 @@ export default function DatenschutzPage() {
                     hierzu besteht eine gesetzliche Verpflichtung gem. Art. 6 Abs. 1
                     lit. c DSGVO. Die IP-Adressen werden spätestens nach 7 Tagen
                     anonymisiert oder gelöscht.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Kommentare und Beiträge</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Kommentare und Beiträge</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Wenn Nutzer Kommentare oder sonstige Beiträge hinterlassen,
                     können ihre IP-Adressen auf Grundlage unserer berechtigten
                     Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO für 7 Tage
@@ -503,12 +500,12 @@ export default function DatenschutzPage() {
                     Die im Rahmen der Kommentare und Beiträge angegebenen Daten,
                     werden von uns bis zum Widerspruch der Nutzer dauerhaft
                     gespeichert.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Abruf von Emojis und Smilies</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Abruf von Emojis und Smilies</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Innerhalb unseres WordPress-Blogs werden grafische Emojis (bzw.
                     Smilies), d.h. kleine grafische Dateien, die Gefühle ausdrücken,
                     eingesetzt, die von externen Servern bezogen werden. Hierbei
@@ -535,12 +532,12 @@ export default function DatenschutzPage() {
                     Die Nutzung der Emojis erfolgt auf Grundlage unserer berechtigten
                     Interessen, d.h. Interesse an einer attraktiven Gestaltung
                     unseres Onlineangebotes gem. Art. 6 Abs. 1 lit. f. DSGVO.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Kontaktaufnahme</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Kontaktaufnahme</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Bei der Kontaktaufnahme mit uns (z.B. per Kontaktformular,
                     E-Mail, Telefon oder via sozialer Medien) werden die Angaben des
                     Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung
@@ -553,12 +550,12 @@ export default function DatenschutzPage() {
                     Wir löschen die Anfragen, sofern diese nicht mehr erforderlich
                     sind. Wir überprüfen die Erforderlichkeit alle zwei Jahre; Ferner
                     gelten die gesetzlichen Archivierungspflichten.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Newsletter</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Newsletter</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Mit den nachfolgenden Hinweisen informieren wir Sie über die
                     Inhalte unseres Newsletters sowie das Anmelde-, Versand- und das
                     statistische Auswertungsverfahren sowie Ihre Widerspruchsrechte
@@ -624,12 +621,12 @@ export default function DatenschutzPage() {
                     Abwehr von Ansprüchen beschränkt. Ein individueller
                     Löschungsantrag ist jederzeit möglich, sofern zugleich das
                     ehemalige Bestehen einer Einwilligung bestätigt wird.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Newsletter – Versanddienstleister</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Newsletter – Versanddienstleister</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Der Versand der Newsletter erfolgt mittels des
                     Versanddienstleisters MailPoet, Wysija SARL, 6 rue Dieudé, 13006,
                     Marseille, FRANCE. Die Datenschutzbestimmungen des
@@ -655,12 +652,12 @@ export default function DatenschutzPage() {
                     Versanddienstleister nutzt die Daten unserer Newsletterempfänger
                     jedoch nicht, um diese selbst anzuschreiben oder um die Daten an
                     Dritte weiterzugeben.
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Hosting und E-Mail-Versand</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Hosting und E-Mail-Versand</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Die von uns in Anspruch genommenen Hosting-Leistungen dienen der
                     Zurverfügungstellung der folgenden Leistungen: Infrastruktur- und
                     Plattformdienstleistungen, Rechenkapazität, Speicherplatz und
@@ -677,12 +674,12 @@ export default function DatenschutzPage() {
                     Zurverfügungstellung dieses Onlineangebotes gem. Art. 6 Abs. 1
                     lit. f DSGVO i.V.m. Art. 28 DSGVO (Abschluss
                     Auftragsverarbeitungsvertrag).
-                </Text>
+                </div>
 
-                <Separator size="4" my="2" />
+                <Separator className="my-2" />
 
-                <Heading as="h2" size="5">Erhebung von Zugriffsdaten und Logfiles</Heading>
-                <Text as="div" color="gray" size={{ initial: "2", sm: "3" }} style={{ lineHeight: 1.7 }}>
+                <h2 className="mt-2 text-xl font-bold tracking-tight">Erhebung von Zugriffsdaten und Logfiles</h2>
+                <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Wir, bzw. unser Hostinganbieter, erhebt auf Grundlage unserer
                     berechtigten Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO
                     Daten über jeden Zugriff auf den Server, auf dem sich dieser
@@ -700,8 +697,8 @@ export default function DatenschutzPage() {
                     weitere Aufbewahrung zu Beweiszwecken erforderlich ist, sind bis
                     zur endgültigen Klärung des jeweiligen Vorfalls von der Löschung
                     ausgenommen.
-                </Text>
-            </Flex>
+                </div>
+            </div>
         </Container>
     );
 }

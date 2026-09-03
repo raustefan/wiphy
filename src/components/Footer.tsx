@@ -1,4 +1,3 @@
-import { Container, Flex, Separator, Text } from "@radix-ui/themes";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,43 +30,47 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
-      <Container size="4" px="0" py={{ initial: "6", sm: "8" }}>
-        <div className="footer-grid">
-          <Flex direction="column" gap="3" align="start">
+    <footer className="mt-auto border-t border-line bg-surface">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <div className="grid grid-cols-1 gap-8 min-[480px]:grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-10">
+          <div className="flex flex-col gap-3 min-[480px]:col-span-2 md:col-span-1">
             <Image
               src="/logo-plain.png"
               alt="WirtschaftsPhysik Alumni e.V."
-              width={64}
-              height={34}
+              width={56}
+              height={30}
               style={{ objectFit: "contain" }}
             />
-            <Text size="2" color="gray" style={{ maxWidth: 320, lineHeight: 1.7 }}>
+            <p className="max-w-xs text-sm leading-relaxed text-muted">
               Gemeinnütziger Verein für Physik- und Wirtschaftsphysik-Alumni
               sowie Studierende der Universität Ulm.
-            </Text>
-          </Flex>
+            </p>
+          </div>
 
           {columns.map((column) => (
-            <Flex key={column.heading} direction="column" gap="2">
-              <Text className="footer-heading">{column.heading}</Text>
+            <div key={column.heading} className="flex flex-col gap-1.5">
+              <p className="mb-1 font-mono text-[0.68rem] font-semibold tracking-[0.16em] text-faint uppercase">
+                {column.heading}
+              </p>
               {column.links.map((link) => (
-                <Link key={link.href} href={link.href}>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="inline-flex min-h-9 items-center text-sm text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics rounded-sm"
+                >
                   {link.label}
                 </Link>
               ))}
-            </Flex>
+            </div>
           ))}
         </div>
 
-        <Separator size="4" mt="6" />
-
-        <Flex pt="5">
-          <Text size="2" color="gray">
+        <div className="mt-10 border-t border-line pt-6">
+          <p className="text-sm text-faint">
             © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
-          </Text>
-        </Flex>
-      </Container>
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

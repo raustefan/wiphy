@@ -2,16 +2,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import {
-    Container,
-    Card,
-    Heading,
-    Flex,
-    Text,
-    Button,
-} from "@radix-ui/themes";
+import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { ButtonLink, Callout, Spinner } from "@/components/ui";
 
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
@@ -58,83 +51,74 @@ function VerifyEmailContent() {
 
     if (!token) {
         return (
-            <Flex direction="column" gap="4">
-                <Heading as="h1" size="6" align="center">
-                    E-Mail bestätigen
-                </Heading>
-                <Text color="red" size="3" align="center">
-                    Der Bestätigungslink ist ungültig oder unvollständig. Bitte registriere dich erneut oder nutze den Link aus deiner E-Mail.
-                </Text>
-                <Button asChild size="3" mt="2">
-                    <Link href="/register" style={{ textDecoration: "none", color: "white", textAlign: "center" }}>
-                        Zur Registrierung
-                    </Link>
-                </Button>
-            </Flex>
+            <AuthShell title="E-Mail bestätigen">
+                <Callout tone="danger">
+                    Der Bestätigungslink ist ungültig oder unvollständig. Bitte registriere dich
+                    erneut oder nutze den Link aus deiner E-Mail.
+                </Callout>
+                <ButtonLink href="/register" size="lg" className="w-full">
+                    Zur Registrierung
+                </ButtonLink>
+            </AuthShell>
         );
     }
 
     if (status === "loading") {
         return (
-            <Flex direction="column" gap="4" align="center">
-                <Heading as="h1" size="6">
-                    E-Mail wird verifiziert...
-                </Heading>
-                <Text size="3" color="gray">
-                    Bitte habe einen Augenblick Geduld.
-                </Text>
-            </Flex>
+            <AuthShell
+                title="E-Mail wird verifiziert …"
+                description="Bitte habe einen Augenblick Geduld."
+            >
+                <div className="grid place-items-center py-2 text-muted">
+                    <Spinner className="size-6" />
+                </div>
+            </AuthShell>
         );
     }
 
     if (status === "success") {
         return (
-            <Flex direction="column" gap="4">
-                <Heading as="h1" size="6" align="center">
-                    Erfolgreich bestätigt!
-                </Heading>
-                <Text color="green" size="3" align="center">
-                    Deine E-Mail-Adresse wurde erfolgreich bestätigt.
-                </Text>
-                <Button asChild size="3" mt="2">
-                    <Link href="/login" style={{ textDecoration: "none", color: "white", textAlign: "center" }}>
-                        Zum Login
-                    </Link>
-                </Button>
-            </Flex>
+            <AuthShell title="Erfolgreich bestätigt!">
+                <Callout tone="success">Deine E-Mail-Adresse wurde bestätigt.</Callout>
+                <ButtonLink href="/login" size="lg" className="w-full">
+                    Zum Login
+                </ButtonLink>
+            </AuthShell>
         );
     }
 
     return (
-        <Flex direction="column" gap="4">
+        <>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="E-Mail-Verifizierung"
                 onOpenChange={setFeatureDisabled}
             />
-            <Heading as="h1" size="6" align="center">
-                Fehler bei der Verifizierung
-            </Heading>
-            <Text color="red" size="3" align="center">
-                {errorMessage || "Der Bestätigungslink ist ungültig oder abgelaufen."}
-            </Text>
-            <Button asChild size="3" mt="2" color="gray">
-                <Link href="/login" style={{ textDecoration: "none", color: "white", textAlign: "center" }}>
+            <AuthShell
+                title="Fehler bei der Verifizierung"
+                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+            >
+                <Callout tone="danger">
+                    {errorMessage || "Der Bestätigungslink ist ungültig oder abgelaufen."}
+                </Callout>
+                <ButtonLink href="/login" size="lg" color="neutral" variant="soft" className="w-full">
                     Zurück zum Login
-                </Link>
-            </Button>
-        </Flex>
+                </ButtonLink>
+            </AuthShell>
+        </>
     );
 }
 
 export default function VerifyEmailPage() {
     return (
-        <Container size="1" style={{ paddingTop: "20vh" }}>
-            <Card size="4">
-                <Suspense fallback={<Text align="center">Laden...</Text>}>
-                    <VerifyEmailContent />
-                </Suspense>
-            </Card>
-        </Container>
+        <Suspense
+            fallback={
+                <div className="grid place-items-center py-24 text-muted">
+                    <Spinner className="size-6" />
+                </div>
+            }
+        >
+            <VerifyEmailContent />
+        </Suspense>
     );
 }

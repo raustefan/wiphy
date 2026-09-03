@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { Container, Heading, Text, Card, Button, Box, Flex, Separator } from "@radix-ui/themes";
 import { Calendar, Clock, User } from "lucide-react";
 import Link from "next/link";
+import { Container } from "@/components/ui/Container";
+import { Card } from "@/components/ui/Card";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { getPublishedPost } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
@@ -21,91 +22,77 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
     });
 
     return (
-        <Container size="4" px="0" py={{ initial: "4", sm: "6" }}>
-            <Button variant="soft" radius="full" mb="4" asChild>
-                <Link href="/blog">← Zurück zur Übersicht</Link>
-            </Button>
+        <Container size="3" className="py-8 sm:py-12">
+            <Link
+                href="/blog"
+                className="mb-6 inline-flex h-9 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"
+            >
+                ← Zurück zur Übersicht
+            </Link>
 
-            {/* Kopfbereich: Titel und Vorspann links, Steckbrief rechts daneben —
-                fest an dieser Stelle, nicht sticky, und stapelt auf dem Telefon. */}
-            <Box className="article-header">
-                <Box className="article-intro">
-                    <Text className="post-kicker" as="div" mb="2">
+            <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <div className="min-w-0">
+                    <p className="mb-3 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
                         Vereins-Blog
-                    </Text>
-                    <Heading as="h1" size={{ initial: "7", sm: "9" }} className="display-title">
+                    </p>
+                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
                         {post.title}
-                    </Heading>
+                    </h1>
                     {post.preview && (
-                        <Text as="div" size={{ initial: "3", sm: "4" }} className="post-lede" mt="3">
+                        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
                             {post.preview}
-                        </Text>
+                        </p>
                     )}
-                </Box>
+                </div>
 
-                <Separator size="4" orientation="vertical" className="article-header-separator" />
+                <Card className="h-fit p-5 lg:sticky lg:top-24">
+                    {post.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={post.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="mb-5 aspect-[4/3] w-full rounded-lg border border-line object-cover"
+                        />
+                    )}
+                    <dl className="grid gap-4">
+                        <div className="grid gap-1">
+                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                                Autor
+                            </dt>
+                            <dd className="flex items-center gap-2 text-sm font-semibold">
+                                <User size={15} aria-hidden="true" className="text-faint" />
+                                {post.author || "Redaktion"}
+                            </dd>
+                        </div>
+                        <div className="grid gap-1 border-t border-line pt-4">
+                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                                Veröffentlicht
+                            </dt>
+                            <dd className="flex items-center gap-2 text-sm">
+                                <Calendar size={15} aria-hidden="true" className="text-faint" />
+                                {published}
+                            </dd>
+                        </div>
+                        <div className="grid gap-1 border-t border-line pt-4">
+                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                                Lesedauer
+                            </dt>
+                            <dd className="flex items-center gap-2 text-sm">
+                                <Clock size={15} aria-hidden="true" className="text-faint" />
+                                ca. {minutes} Min.
+                            </dd>
+                        </div>
+                    </dl>
+                </Card>
+            </header>
 
-                <Box asChild>
-                    <aside className="article-aside">
-                        <Card size="3" className="panel panel-ticks article-meta-card">
-                            <Flex direction="column" gap="4">
-                                {post.imageUrl && (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={post.imageUrl}
-                                        alt=""
-                                        className="article-meta-image"
-                                    />
-                                )}
+            <div className="my-8 h-px bg-line sm:my-10" aria-hidden="true" />
 
-                                <Box>
-                                    <Text className="post-kicker" as="div" mb="1">
-                                        Autor
-                                    </Text>
-                                    <Flex gap="2" align="center">
-                                        <User size={16} style={{ color: "var(--gray-10)" }} />
-                                        <Text size="2" weight="bold">
-                                            {post.author || "Redaktion"}
-                                        </Text>
-                                    </Flex>
-                                </Box>
-
-                                <Separator size="4" />
-
-                                <Box>
-                                    <Text className="post-kicker" as="div" mb="1">
-                                        Veröffentlicht
-                                    </Text>
-                                    <Flex gap="2" align="center">
-                                        <Calendar size={16} style={{ color: "var(--gray-10)" }} />
-                                        <Text size="2">{published}</Text>
-                                    </Flex>
-                                </Box>
-
-                                <Separator size="4" />
-
-                                <Box>
-                                    <Text className="post-kicker" as="div" mb="1">
-                                        Lesedauer
-                                    </Text>
-                                    <Flex gap="2" align="center">
-                                        <Clock size={16} style={{ color: "var(--gray-10)" }} />
-                                        <Text size="2">ca. {minutes} Min.</Text>
-                                    </Flex>
-                                </Box>
-                            </Flex>
-                        </Card>
-                    </aside>
-                </Box>
-            </Box>
-
-            <Separator size="4" my={{ initial: "4", sm: "5" }} />
-
-            <Box asChild>
-                <article className="article-body article-body--full">
-                    <MarkdownViewer content={post.content} />
-                </article>
-            </Box>
+            <article className="max-w-[70ch] text-[1.05rem]">
+                <MarkdownViewer content={post.content} />
+            </article>
         </Container>
     );
 }

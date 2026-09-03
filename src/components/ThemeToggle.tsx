@@ -1,22 +1,20 @@
 "use client";
 
-import { IconButton } from "@radix-ui/themes";
-import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
+import { Moon, Sun } from "lucide-react";
 import { useAppearance } from "@/components/AppThemeProvider";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className }: { className?: string }) {
     const { appearance, toggleAppearance } = useAppearance();
+    const dark = appearance === "dark";
 
     return (
-        <IconButton
-            variant="soft"
-            color="gray"
-            radius="full"
-            aria-label={appearance === "dark" ? "Zu hellem Modus wechseln" : "Zu dunklem Modus wechseln"}
+        <button
+            type="button"
+            aria-label={dark ? "Zu hellem Modus wechseln" : "Zu dunklem Modus wechseln"}
             onClick={toggleAppearance}
-            style={{ cursor: "pointer" }}
+            className={`grid size-10 cursor-pointer place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics ${className ?? ""}`}
         >
-            {appearance === "dark" ? <SunIcon /> : <MoonIcon />}
-        </IconButton>
+            {dark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
     );
 }
