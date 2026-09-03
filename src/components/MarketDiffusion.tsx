@@ -2,9 +2,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Flex, Text } from "@radix-ui/themes";
 import { useAppearance } from "@/components/AppThemeProvider";
 import { paletteFor, rgba } from "@/lib/palette";
+import { cappedDpr, createRenderLoop, isCompactViewport } from "@/lib/renderLoop";
 
 /**
  * Geometrische Brownsche Bewegung — dieselbe Mathematik wie beim Teilchen
@@ -38,6 +38,10 @@ const DT = 1 / 252; // ein Handelstag in Jahren
 const MU = 0.07; // Drift μ (7 % p. a.)
 const FRAMES_PER_STEP = 4;
 
+/** Auswählbare Pfadanzahlen — der Startwert muss einer davon entsprechen. */
+const PATH_COUNTS = [0, 3, 5] as const;
+const DEFAULT_PATH_COUNT = 5;
+
 const VOLATILITIES = [
   { label: "σ = 10 %", value: 0.1 },
   { label: "σ = 20 %", value: 0.2 },
@@ -54,7 +58,7 @@ function gauss(): number {
 export default function MarketDiffusion() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [sigma, setSigma] = useState(0.2);
-  const [pathCount, setPathCount] = useState(12);
+  const [pathCount, setPathCount] = useState<number>(DEFAULT_PATH_COUNT);
   const [probe, setProbe] = useState<{ days: number; lo: number; hi: number } | null>(
     null,
   );
@@ -72,16 +76,14 @@ export default function MarketDiffusion() {
     if (!ctx) return;
 
     const colors = paletteFor(appearance);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let w = 0;
     let h = 0;
     let dpr = 1;
-    let raf = 0;
     let frame = 0;
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = cappedDpr();
       w = canvas.clientWidth;
       h = canvas.clientHeight;
       canvas.width = Math.floor(w * dpr);
@@ -89,14 +91,20 @@ export default function MarketDiffusion() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
-    const ro = new ResizeObserver(resize);
+    const ro = new ResizeObserver(() => {
+      resize();
+      loop.redraw();
+    });
     ro.observe(canvas);
 
     // --- Zustand ---------------------------------------------------------
     // Vergangenheit als log-Kurs relativ zum Startwert.
     const history: number[] = [0];
     // Feste Zufalls-Inkremente je Monte-Carlo-Pfad; werden geschoben, nicht neu gezogen.
-    const shocks: number[][] = Array.from({ length: 24 }, () =>
+    // Auf schmalen Viewports weniger Reservepfade — mehr als angezeigt werden
+    // können, braucht niemand.
+    const shockPaths = isCompactViewport() ? 8 : 24;
+    const shocks: number[][] = Array.from({ length: shockPaths }, () =>
       Array.from({ length: HORIZON }, gauss),
     );
 
@@ -141,9 +149,9 @@ export default function MarketDiffusion() {
     canvas.addEventListener("touchmove", onTouch, { passive: true });
     canvas.addEventListener("touchend", onLeave);
 
-    const draw = () => {
+    const draw = ({ reducedMotion }: { reducedMotion: boolean }) => {
       frame++;
-      if (!reduce && frame % FRAMES_PER_STEP === 0) advance();
+      if (!reducedMotion && frame % FRAMES_PER_STEP === 0) advance();
       ctx.clearRect(0, 0, w, h);
 
       const padTop = 16;
@@ -218,7 +226,8 @@ export default function MarketDiffusion() {
           const tau = k * DT;
           const m = anchor + (MU - (sigma * sigma) / 2) * tau + offset(tau);
           const px = iToPx(PAST - 1 + k);
-          k === 0 ? ctx.moveTo(px, yToPx(m)) : ctx.lineTo(px, yToPx(m));
+          if (k === 0) ctx.moveTo(px, yToPx(m));
+          else ctx.lineTo(px, yToPx(m));
         }
         ctx.strokeStyle = rgba(colors.market, alpha);
         ctx.lineWidth = 1.5;
@@ -250,7 +259,8 @@ export default function MarketDiffusion() {
       history.forEach((v, i) => {
         const px = iToPx(i);
         const py = yToPx(v);
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
       });
       ctx.strokeStyle = rgba(colors.physics, 0.95);
       ctx.lineWidth = 2;
@@ -306,7 +316,8 @@ export default function MarketDiffusion() {
           const density = Math.exp(-((v - m) ** 2) / (2 * s * s));
           const py = yToPx(v);
           const dxPx = density * width;
-          i === 0 ? ctx.moveTo(px - dxPx, py) : ctx.lineTo(px - dxPx, py);
+          if (i === 0) ctx.moveTo(px - dxPx, py);
+          else ctx.lineTo(px - dxPx, py);
         }
         ctx.lineTo(px, yToPx(m + 3.2 * s));
         ctx.lineTo(px, yToPx(m - 3.2 * s));
@@ -326,13 +337,12 @@ export default function MarketDiffusion() {
         }
       }
 
-      raf = requestAnimationFrame(draw);
     };
 
-    raf = requestAnimationFrame(draw);
+    const loop = createRenderLoop(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      loop.stop();
       ro.disconnect();
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseleave", onLeave);
@@ -341,70 +351,79 @@ export default function MarketDiffusion() {
     };
   }, [sigma, appearance]);
 
+  const chipClass = (active: boolean) =>
+    [
+      "cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+      active
+        ? "border-market bg-market text-on-market"
+        : "border-line-strong text-muted hover:bg-raised hover:text-foreground",
+    ].join(" ");
+
   return (
-    <Flex direction="column" gap="3">
-      <div className="lab-canvas">
-        <canvas
-          ref={canvasRef}
-          style={{ width: "100%", height: "100%", display: "block" }}
-        />
+    <div className="grid gap-3">
+      <div className="h-64 overflow-hidden rounded-2xl border border-line bg-surface sm:h-80">
+        <canvas ref={canvasRef} className="block h-full w-full" />
       </div>
 
-      <Flex gap="2" wrap="wrap">
+      <div className="flex flex-wrap items-center gap-2">
         {VOLATILITIES.map((v) => (
           <button
             key={v.label}
             type="button"
-            className="chip"
+            className={chipClass(v.value === sigma)}
             aria-pressed={v.value === sigma}
             onClick={() => setSigma(v.value)}
           >
             {v.label}
           </button>
         ))}
-        <span style={{ width: 12 }} />
-        {[0, 3, 5].map((n) => (
+        <span aria-hidden="true" className="w-2" />
+        {PATH_COUNTS.map((n) => (
           <button
             key={n}
             type="button"
-            className="chip"
+            className={chipClass(n === pathCount)}
             aria-pressed={n === pathCount}
             onClick={() => setPathCount(n)}
           >
             {n === 0 ? "ohne Pfade" : `${n} Pfade`}
           </button>
         ))}
-      </Flex>
-
-      <div className="readout-grid">
-        <dl className="readout">
-          <dt>Drift μ</dt>
-          <dd>{(MU * 100).toFixed(0)} %</dd>
-        </dl>
-        <dl className="readout">
-          <dt>Vola σ</dt>
-          <dd>{(sigma * 100).toFixed(0)} %</dd>
-        </dl>
-        <dl className="readout">
-          <dt>σ · √T</dt>
-          <dd>{(sigma * Math.sqrt(HORIZON * DT) * 100).toFixed(1)} %</dd>
-        </dl>
-        <dl className="readout">
-          <dt>{probe ? `90 % nach ${probe.days} T` : "90 %-Band"}</dt>
-          <dd>
-            {probe
-              ? `${probe.lo.toFixed(2)}–${probe.hi.toFixed(2)}×`
-              : "In die Zukunft tippen"}
-          </dd>
-        </dl>
       </div>
 
-      <Text size="1" color="gray" style={{ lineHeight: 1.65 }}>
-        Links vom Jetzt-Strich der realisierte Kurs, rechts davon die
-        Verteilung: 68-%- und 95-%-Band, gestrichelt der Median, gepunktet der
-        Erwartungswert. In den Prognosebereich tippen zeigt die Dichte an einem
-        Horizont.
-      </Text>
-    </Flex>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[
+          { term: "Drift μ", value: `${(MU * 100).toFixed(0)} %` },
+          { term: "Vola σ", value: `${(sigma * 100).toFixed(0)} %` },
+          {
+            term: "σ · √T",
+            value: `${(sigma * Math.sqrt(HORIZON * DT) * 100).toFixed(1)} %`,
+          },
+          {
+            term: probe ? `90 % nach ${probe.days} T` : "90 %-Band",
+            value: probe
+              ? `${probe.lo.toFixed(2)}–${probe.hi.toFixed(2)}×`
+              : "In die Zukunft tippen",
+          },
+        ].map((item) => (
+          <dl
+            key={item.term}
+            className="grid gap-0.5 rounded-xl border border-line bg-raised/50 px-3 py-2"
+          >
+            <dt className="truncate text-[11px] tracking-wide text-faint uppercase">
+              {item.term}
+            </dt>
+            <dd className="formula text-sm font-semibold text-foreground">{item.value}</dd>
+          </dl>
+        ))}
+      </div>
+
+      <p className="text-xs leading-relaxed text-muted">
+        Links vom Jetzt-Strich der realisierte Kurs, rechts davon die Verteilung:
+        68-%- und 95-%-Band, gestrichelt der Median, gepunktet der Erwartungswert. In
+        den Prognosebereich tippen zeigt die Dichte an einem Horizont.
+      </p>
+    </div>
   );
 }

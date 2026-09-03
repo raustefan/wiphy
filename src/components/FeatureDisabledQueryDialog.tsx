@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { FEATURE_FLAG_LABELS, isFeatureFlagKey } from "@/lib/featureFlags";
@@ -14,15 +13,12 @@ export function FeatureDisabledQueryDialog() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    const [open, setOpen] = useState(false);
     const rawKey = searchParams.get("featureDisabled");
-
-    useEffect(() => {
-        setOpen(!!rawKey);
-    }, [rawKey]);
+    // Der Query-Parameter ist die einzige Quelle der Wahrheit: Schließen
+    // entfernt ihn aus der URL, wodurch der Dialog von selbst verschwindet.
+    const open = rawKey != null;
 
     function handleOpenChange(next: boolean) {
-        setOpen(next);
         if (!next) {
             router.replace(pathname);
         }

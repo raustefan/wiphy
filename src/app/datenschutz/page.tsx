@@ -18,12 +18,12 @@ export default function DatenschutzPage() {
                 <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und
                     Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend
-                    kurz „Daten") innerhalb unseres Onlineangebotes und der mit ihm
+                    kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm
                     verbundenen Webseiten, Funktionen und Inhalte sowie externen
                     Onlinepräsenzen, wie z.B. unser Social Media Profile auf
-                    (nachfolgend gemeinsam bezeichnet als „Onlineangebot"). Im
+                    (nachfolgend gemeinsam bezeichnet als „Onlineangebot“). Im
                     Hinblick auf die verwendeten Begrifflichkeiten, wie z.B.
-                    „Verarbeitung" oder „Verantwortlicher" verweisen wir auf die
+                    „Verarbeitung“ oder „Verantwortlicher“ verweisen wir auf die
                     Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).
                 </div>
 
@@ -75,7 +75,7 @@ export default function DatenschutzPage() {
                 <h2 className="mt-2 text-xl font-bold tracking-tight">Kategorien betroffener Personen</h2>
                 <div className="text-sm leading-relaxed text-muted sm:text-base">
                     Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen
-                    wir die betroffenen Personen zusammenfassend auch als „Nutzer").
+                    wir die betroffenen Personen zusammenfassend auch als „Nutzer“).
                 </div>
 
                 <Separator className="my-2" />
@@ -96,9 +96,9 @@ export default function DatenschutzPage() {
 
                 <h2 className="mt-2 text-xl font-bold tracking-tight">Verwendete Begrifflichkeiten</h2>
                 <div className="text-sm leading-relaxed text-muted sm:text-base">
-                    „Personenbezogene Daten" sind alle Informationen, die sich auf
+                    „Personenbezogene Daten“ sind alle Informationen, die sich auf
                     eine identifizierte oder identifizierbare natürliche Person (im
-                    Folgenden „betroffene Person") beziehen; als identifizierbar
+                    Folgenden „betroffene Person“) beziehen; als identifizierbar
                     wird eine natürliche Person angesehen, die direkt oder indirekt,
                     insbesondere mittels Zuordnung zu einer Kennung wie einem Namen,
                     zu einer Kennnummer, zu Standortdaten, zu einer
@@ -109,13 +109,13 @@ export default function DatenschutzPage() {
                     natürlichen Person sind.
                     <br />
                     <br />
-                    „Verarbeitung" ist jeder mit oder ohne Hilfe automatisierter
+                    „Verarbeitung“ ist jeder mit oder ohne Hilfe automatisierter
                     Verfahren ausgeführte Vorgang oder jede solche Vorgangsreihe im
                     Zusammenhang mit personenbezogenen Daten. Der Begriff reicht weit
                     und umfasst praktisch jeden Umgang mit Daten.
                     <br />
                     <br />
-                    „Pseudonymisierung" die Verarbeitung personenbezogener Daten in
+                    „Pseudonymisierung“ die Verarbeitung personenbezogener Daten in
                     einer Weise, dass die personenbezogenen Daten ohne Hinzuziehung
                     zusätzlicher Informationen nicht mehr einer spezifischen
                     betroffenen Person zugeordnet werden können, sofern diese
@@ -126,7 +126,7 @@ export default function DatenschutzPage() {
                     zugewiesen werden.
                     <br />
                     <br />
-                    „Profiling" jede Art der automatisierten Verarbeitung
+                    „Profiling“ jede Art der automatisierten Verarbeitung
                     personenbezogener Daten, die darin besteht, dass diese
                     personenbezogenen Daten verwendet werden, um bestimmte
                     persönliche Aspekte, die sich auf eine natürliche Person
@@ -137,13 +137,13 @@ export default function DatenschutzPage() {
                     vorherzusagen.
                     <br />
                     <br />
-                    Als „Verantwortlicher" wird die natürliche oder juristische
+                    Als „Verantwortlicher“ wird die natürliche oder juristische
                     Person, Behörde, Einrichtung oder andere Stelle, die allein oder
                     gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung
                     von personenbezogenen Daten entscheidet, bezeichnet.
                     <br />
                     <br />
-                    „Auftragsverarbeiter" eine natürliche oder juristische Person,
+                    „Auftragsverarbeiter“ eine natürliche oder juristische Person,
                     Behörde, Einrichtung oder andere Stelle, die personenbezogene
                     Daten im Auftrag des Verantwortlichen verarbeitet.
                 </div>
@@ -216,7 +216,7 @@ export default function DatenschutzPage() {
                     <br />
                     <br />
                     Sofern wir Dritte mit der Verarbeitung von Daten auf Grundlage
-                    eines sog. „Auftragsverarbeitungsvertrages" beauftragen,
+                    eines sog. „Auftragsverarbeitungsvertrages“ beauftragen,
                     geschieht dies auf Grundlage des Art. 28 DSGVO.
                 </div>
 
@@ -238,9 +238,9 @@ export default function DatenschutzPage() {
                     D.h. die Verarbeitung erfolgt z.B. auf Grundlage besonderer
                     Garantien, wie der offiziell anerkannten Feststellung eines der
                     EU entsprechenden Datenschutzniveaus (z.B. für die USA durch das
-                    „Privacy Shield") oder Beachtung offiziell anerkannter spezieller
+                    „Privacy Shield“) oder Beachtung offiziell anerkannter spezieller
                     vertraglicher Verpflichtungen (so genannte
-                    „Standardvertragsklauseln").
+                    „Standardvertragsklauseln“).
                 </div>
 
                 <Separator className="my-2" />
@@ -298,27 +298,27 @@ export default function DatenschutzPage() {
                     Cookies und Widerspruchsrecht bei Direktwerbung
                 </h2>
                 <div className="text-sm leading-relaxed text-muted sm:text-base">
-                    Als „Cookies" werden kleine Dateien bezeichnet, die auf Rechnern
+                    Als „Cookies“ werden kleine Dateien bezeichnet, die auf Rechnern
                     der Nutzer gespeichert werden. Innerhalb der Cookies können
                     unterschiedliche Angaben gespeichert werden. Ein Cookie dient
                     primär dazu, die Angaben zu einem Nutzer (bzw. dem Gerät auf dem
                     das Cookie gespeichert ist) während oder auch nach seinem Besuch
                     innerhalb eines Onlineangebotes zu speichern. Als temporäre
-                    Cookies, bzw. „Session-Cookies" oder „transiente Cookies", werden
+                    Cookies, bzw. „Session-Cookies“ oder „transiente Cookies“, werden
                     Cookies bezeichnet, die gelöscht werden, nachdem ein Nutzer ein
                     Onlineangebot verlässt und seinen Browser schließt. In einem
                     solchen Cookie kann z.B. der Inhalt eines Warenkorbs in einem
                     Onlineshop oder ein Login-Status gespeichert werden. Als
-                    „permanent" oder „persistent" werden Cookies bezeichnet, die auch
+                    „permanent“ oder „persistent“ werden Cookies bezeichnet, die auch
                     nach dem Schließen des Browsers gespeichert bleiben. So kann z.B.
                     der Login-Status gespeichert werden, wenn die Nutzer diese nach
                     mehreren Tagen aufsuchen. Ebenso können in einem solchen Cookie
                     die Interessen der Nutzer gespeichert werden, die für
                     Reichweitenmessung oder Marketingzwecke verwendet werden. Als
-                    „Third-Party-Cookie" werden Cookies bezeichnet, die von anderen
+                    „Third-Party-Cookie“ werden Cookies bezeichnet, die von anderen
                     Anbietern als dem Verantwortlichen, der das Onlineangebot
                     betreibt, angeboten werden (andernfalls, wenn es nur dessen
-                    Cookies sind spricht man von „First-Party Cookies").
+                    Cookies sind spricht man von „First-Party Cookies“).
                     <br />
                     <br />
                     Wir können temporäre und permanente Cookies einsetzen und klären
@@ -543,7 +543,7 @@ export default function DatenschutzPage() {
                     Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung
                     gem. Art. 6 Abs. 1 lit. b) DSGVO verarbeitet. Die Angaben der
                     Nutzer können in einem Customer-Relationship-Management System
-                    („CRM System") oder vergleichbarer Anfragenorganisation
+                    („CRM System“) oder vergleichbarer Anfragenorganisation
                     gespeichert werden.
                     <br />
                     <br />
@@ -565,7 +565,7 @@ export default function DatenschutzPage() {
                     <br />
                     <strong>Inhalt des Newsletters:</strong> Wir versenden
                     Newsletter, E-Mails und weitere elektronische Benachrichtigungen
-                    mit werblichen Informationen (nachfolgend „Newsletter") nur mit
+                    mit werblichen Informationen (nachfolgend „Newsletter“) nur mit
                     der Einwilligung der Empfänger oder einer gesetzlichen Erlaubnis.
                     Sofern im Rahmen einer Anmeldung zum Newsletter dessen Inhalte
                     konkret umschrieben werden, sind sie für die Einwilligung der

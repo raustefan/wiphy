@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button, Dialog, DialogFooter } from "@/components/ui";
 
@@ -24,15 +23,11 @@ export function QueryParamDialog({
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    const [open, setOpen] = useState(false);
-    const matches = searchParams.get(param) === value;
-
-    useEffect(() => {
-        setOpen(matches);
-    }, [matches]);
+    // Der Query-Parameter trägt den Zustand: Schließen entfernt ihn aus der
+    // URL, damit ein Reload den Dialog nicht erneut öffnet.
+    const open = searchParams.get(param) === value;
 
     function handleClose() {
-        setOpen(false);
         router.replace(pathname);
     }
 

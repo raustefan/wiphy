@@ -28,10 +28,14 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* Neuen Pfad anzeigen → Drawer schließen (z. B. nach Browser-Back). */
-  useEffect(() => {
+  /* Neuen Pfad anzeigen → Drawer schließen (z. B. nach Browser-Back).
+     Anpassung während des Renderns statt im Effekt: so wird das offene Drawer
+     nie für einen Frame auf der neuen Seite gezeigt. */
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
     setMenuOpen(false);
-  }, [pathname]);
+  }
 
   /* Scroll-Sperre und Esc-Handling, solange das Drawer offen ist. */
   useEffect(() => {

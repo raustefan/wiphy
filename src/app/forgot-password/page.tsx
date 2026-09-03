@@ -5,6 +5,10 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { Button, Callout, Field, Input } from "@/components/ui";
 
+/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
+function messageOf(error: unknown, fallback: string): string {
+    return error instanceof Error && error.message ? error.message : fallback;
+}
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -36,9 +40,9 @@ export default function ForgotPasswordPage() {
             }
 
             setStatus("success");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setErrorMessage(err.message || "Es gab ein Problem beim Senden der E-Mail.");
+            setErrorMessage(messageOf(err, "Es gab ein Problem beim Senden der E-Mail."));
             setStatus("error");
         }
     };

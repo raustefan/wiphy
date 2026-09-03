@@ -1,40 +1,42 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  Table,
-  Text,
-  Badge,
-  Flex,
-  Button,
-  IconButton,
-  ScrollArea,
-  TextArea,
-  TextField,
-  Select,
-  Tooltip,
-  Card,
-  AlertDialog,
-  Separator,
-} from "@radix-ui/themes";
-import {
-  CheckIcon,
-  PlusIcon,
-  IdCardIcon,
-  CheckCircledIcon,
-  TokensIcon,
-  CalendarIcon,
-  Pencil2Icon,
-  Cross2Icon,
-  MagnifyingGlassIcon,
-} from "@radix-ui/react-icons";
-import { CircleEuro, GraduationCap, MessageSquare } from "lucide-react";
+  Check,
+  Plus,
+  IdCard,
+  CheckCircle2,
+  Coins,
+  Calendar,
+  Pencil,
+  X,
+  Search,
+  CircleEuro,
+  GraduationCap,
+  MessageSquare,
+} from "lucide-react";
 import {
   EmailComposerDialog,
   type MailRecipient,
 } from "@/components/EmailComposerDialog";
 import { feeReminderTemplate } from "@/lib/email/templates";
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogFooter,
+  IconButton,
+  Input,
+  Select,
+  Separator,
+  Table,
+  TableWrap,
+  Td,
+  TextArea,
+  Th,
+} from "@/components/ui";
 import {
   updateFeeStatus,
   updateFeeAmount,
@@ -86,69 +88,63 @@ function formatCurrency(amount: number) {
   });
 }
 
-function IconHeader({ icon, label }: { icon: ReactNode; label: string }) {
+/**
+ * Spaltenkopf, der nur aus einem Icon besteht. Der Text steckt in `aria-label`
+ * und `title` — das ersetzt den früheren Radix-Tooltip.
+ */
+function IconHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <Tooltip content={label}>
-      <Flex align="center" justify="center" aria-label={label}>
-        {icon}
-      </Flex>
-    </Tooltip>
+    <span className="flex items-center justify-center" aria-label={label} title={label}>
+      {icon}
+    </span>
   );
 }
 
 function CommentDialog({
   user,
   open,
-  onOpenChange,
+  onClose,
 }: {
   user: FeesTableUser | null;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }) {
   if (!user) return null;
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-      <AlertDialog.Content maxWidth="480px">
-        <AlertDialog.Title>
-          Kommentar – {user.vorname} {user.name ?? ""}
-        </AlertDialog.Title>
-        <AlertDialog.Description size="2" mb="3">
-          Zahlungs- oder Mitgliedschaftshinweis für dieses Mitglied.
-        </AlertDialog.Description>
-        <form action={updateFeeComment}>
-          <input type="hidden" name="userId" value={user.id} />
-          <TextArea
-            name="comment"
-            rows={4}
-            defaultValue={user.zahlungsKommentar ?? ""}
-            placeholder="Kommentar eingeben…"
-            style={{ width: "100%" }}
-          />
-          <Flex gap="3" mt="4" justify="end">
-            <AlertDialog.Cancel>
-              <Button size="3" variant="soft" color="gray" type="button">
-                Abbrechen
-              </Button>
-            </AlertDialog.Cancel>
-            <Button size="3" type="submit" color="blue">
-              Speichern
-            </Button>
-          </Flex>
-        </form>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={`Kommentar – ${user.vorname} ${user.name ?? ""}`}
+      description="Zahlungs- oder Mitgliedschaftshinweis für dieses Mitglied."
+    >
+      <form action={updateFeeComment}>
+        <input type="hidden" name="userId" value={user.id} />
+        <TextArea
+          name="comment"
+          rows={4}
+          defaultValue={user.zahlungsKommentar ?? ""}
+          placeholder="Kommentar eingeben…"
+        />
+        <DialogFooter>
+          <Button variant="soft" color="neutral" type="button" onClick={onClose}>
+            Abbrechen
+          </Button>
+          <Button type="submit">Speichern</Button>
+        </DialogFooter>
+      </form>
+    </Dialog>
   );
 }
 
 function UserPaymentHistoryDialog({
   user,
   open,
-  onOpenChange,
+  onClose,
 }: {
   user: FeesTableUser | null;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }) {
   if (!user) return null;
 
@@ -156,90 +152,67 @@ function UserPaymentHistoryDialog({
   const openCount = sortedFees.filter((f) => !f.bezahlt).length;
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-      <AlertDialog.Content maxWidth="560px">
-        <Flex justify="between" align="start" mb="1">
-          <AlertDialog.Title mb="0">
-            {user.vorname} {user.name ?? ""}
-          </AlertDialog.Title>
-          {openCount > 0 && (
-            <Badge color="red" variant="soft">
-              {openCount} offen
-            </Badge>
-          )}
-        </Flex>
-        <AlertDialog.Description size="2" mb="3" color="gray">
-          {user.email}
-        </AlertDialog.Description>
+    <Dialog open={open} onClose={onClose} size="lg">
+      <div className="mb-1 flex items-start justify-between gap-3">
+        <h2 className="text-lg font-bold tracking-tight">
+          {user.vorname} {user.name ?? ""}
+        </h2>
+        {openCount > 0 && <Badge tone="negative">{openCount} offen</Badge>}
+      </div>
+      <p className="text-sm text-muted">{user.email}</p>
 
-        <Flex gap="2" align="center" mb="3">
-          <CalendarIcon
-            style={{ width: 16, height: 16, color: "var(--gray-9)" }}
-          />
-          <Text size="2">
-            Mitglied seit{" "}
-            <Text weight="medium">{formatDate(user.aufnahmedatum)}</Text>
-          </Text>
-        </Flex>
+      <p className="mt-3 flex items-center gap-2 text-sm">
+        <Calendar size={16} className="text-faint" aria-hidden="true" />
+        Mitglied seit <span className="font-medium">{formatDate(user.aufnahmedatum)}</span>
+      </p>
 
-        <Separator mb="3" size="4" />
+      <Separator className="my-3" />
 
-        {sortedFees.length === 0 ? (
-          <Text size="2" color="gray">
-            Keine Zahlungsdaten vorhanden.
-          </Text>
-        ) : (
-          <ScrollArea style={{ maxHeight: 320 }}>
-            <Table.Root variant="surface" size="1">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Jahr</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell align="center">
-                    <IconHeader icon={<GraduationCap size={16} />} label="Student" />
-                  </Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell align="center">
-                    <IconHeader icon={<CircleEuro size={16} />} label="Bezahlt" />
-                  </Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell align="right">
-                    Betrag
-                  </Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {sortedFees.map((fee) => (
-                  <Table.Row key={fee.jahr}>
-                    <Table.Cell>
-                      <Text weight="medium">{fee.jahr}</Text>
-                    </Table.Cell>
-                    <Table.Cell align="center">
-                      <Badge color={fee.isStudent ? "blue" : "gray"} size="1">
-                        {fee.isStudent ? "Ja" : "Nein"}
-                      </Badge>
-                    </Table.Cell>
-                    <Table.Cell align="center">
-                      <Badge color={fee.bezahlt ? "green" : "red"} size="1">
-                        {fee.bezahlt ? "Bezahlt" : "Offen"}
-                      </Badge>
-                    </Table.Cell>
-                    <Table.Cell align="right">
-                      <Text size="2">{formatCurrency(fee.beitrag)}</Text>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </ScrollArea>
-        )}
+      {sortedFees.length === 0 ? (
+        <p className="text-sm text-muted">Keine Zahlungsdaten vorhanden.</p>
+      ) : (
+        <div className="max-h-80 overflow-y-auto">
+          <Table>
+            <thead>
+              <tr className="bg-raised/60">
+                <Th>Jahr</Th>
+                <Th className="text-center">
+                  <IconHeader icon={<GraduationCap size={16} />} label="Student" />
+                </Th>
+                <Th className="text-center">
+                  <IconHeader icon={<CircleEuro size={16} />} label="Bezahlt" />
+                </Th>
+                <Th className="text-right">Betrag</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedFees.map((fee) => (
+                <tr key={fee.jahr}>
+                  <Td className="font-mono font-medium tabular-nums">{fee.jahr}</Td>
+                  <Td className="text-center">
+                    <Badge tone={fee.isStudent ? "info" : "neutral"}>
+                      {fee.isStudent ? "Ja" : "Nein"}
+                    </Badge>
+                  </Td>
+                  <Td className="text-center">
+                    <Badge tone={fee.bezahlt ? "positive" : "negative"}>
+                      {fee.bezahlt ? "Bezahlt" : "Offen"}
+                    </Badge>
+                  </Td>
+                  <Td className="text-right tabular-nums">{formatCurrency(fee.beitrag)}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      )}
 
-        <Flex mt="4" justify="end">
-          <AlertDialog.Action>
-            <Button size="3" variant="soft" color="gray">
-              Schließen
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
+      <DialogFooter>
+        <Button variant="soft" color="neutral" onClick={onClose}>
+          Schließen
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 }
 
@@ -346,133 +319,146 @@ export function FeesTable({
 
   return (
     <>
-      <Card mb="4" variant="surface">
-        <Flex justify="between" align="center" gap="3" wrap="wrap" direction={{ initial: "column", sm: "row" }}>
-          <Flex gap="3" align="center" wrap="wrap" width={{ initial: "100%", sm: "auto" }}>
-            <Flex gap="2" align="center">
-              <CalendarIcon style={{ width: 16, height: 16, color: "var(--gray-9)" }} />
-              <Text size="2" weight="medium">
+      <div className="mb-4 rounded-2xl border border-line bg-raised/40 p-4">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-faint" aria-hidden="true" />
+              <label htmlFor="fees-year" className="text-sm font-medium">
                 Jahr
-              </Text>
-              <Select.Root value={String(selectedYear)} onValueChange={handleYearChange}>
-                <Select.Trigger variant="surface" />
-                <Select.Content>
-                  {availableYears.map((y) => (
-                    <Select.Item key={y} value={String(y)}>
-                      {y}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
+              </label>
+              <Select
+                id="fees-year"
+                value={String(selectedYear)}
+                onChange={(e) => handleYearChange(e.target.value)}
+                className="py-2"
+              >
+                {availableYears.map((y) => (
+                  <option key={y} value={String(y)}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </div>
 
-            <TextField.Root
-              placeholder="Suche nach Name, E-Mail oder ID…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: "100%", maxWidth: 260 }}
-            >
-              <TextField.Slot>
-                <MagnifyingGlassIcon height="14" width="14" />
-              </TextField.Slot>
-            </TextField.Root>
-          </Flex>
+            <div className="relative w-full max-w-65">
+              <Search
+                size={14}
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint"
+              />
+              <Input
+                placeholder="Suche nach Name, E-Mail oder ID…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Mitglieder durchsuchen"
+                className="pl-9"
+              />
+            </div>
+          </div>
 
           {isAdmin && (
-            <form
-              action={initializeBillingYear}
-              style={{ display: "flex", gap: 6, alignItems: "center" }}
-            >
-              <Text size="1" color="gray">
+            <form action={initializeBillingYear} className="flex items-center gap-2">
+              <label htmlFor="fees-new-year" className="text-xs text-muted">
                 Neues Jahr anlegen:
-              </Text>
-              <TextField.Root
+              </label>
+              <Input
+                id="fees-new-year"
                 type="number"
                 name="year"
                 defaultValue={new Date().getFullYear() + 1}
-                style={{ width: 90 }}
-                size="2"
+                className="w-24 py-2"
               />
-              <Tooltip content="Jahr für alle Mitglieder anlegen">
-                <IconButton type="submit" size="2" color="green" variant="soft">
-                  <PlusIcon />
-                </IconButton>
-              </Tooltip>
+              <IconButton
+                type="submit"
+                variant="soft"
+                color="accent"
+                size="sm"
+                aria-label="Jahr für alle Mitglieder anlegen"
+              >
+                <Plus size={16} aria-hidden="true" />
+              </IconButton>
             </form>
           )}
-        </Flex>
+        </div>
 
         {isAdmin && (
           <>
-            <Separator my="3" size="4" />
-            <Flex justify="between" align="center" gap="3" wrap="wrap" direction={{ initial: "column", sm: "row" }}>
-              <Flex gap="2" align="center" wrap="wrap">
-                <Badge variant="soft" color={selectedIds.size > 0 ? "blue" : "gray"}>
+            <Separator className="my-3" />
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={selectedIds.size > 0 ? "info" : "neutral"}>
                   {selectedIds.size} ausgewählt
                 </Badge>
-                <Button size="2" variant="outline" type="button" onClick={selectAllWithOpenFees}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  color="neutral"
+                  type="button"
+                  onClick={selectAllWithOpenFees}
+                >
                   Alle mit offenen Beiträgen
                 </Button>
                 {selectedIds.size > 0 && (
-                  <Button size="2" variant="ghost" type="button" onClick={clearSelection}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    color="neutral"
+                    type="button"
+                    onClick={clearSelection}
+                  >
                     Auswahl leeren
                   </Button>
                 )}
-              </Flex>
+              </div>
 
               <Button
-                size="3"
-                color="blue"
                 disabled={selectedIds.size === 0}
                 type="button"
                 onClick={() => setMailOpen(true)}
-                style={{ width: "100%", maxWidth: 260 }}
+                className="w-full sm:w-auto"
               >
-                <MessageSquare size={16} />
+                <MessageSquare size={16} aria-hidden="true" />
                 Erinnerung senden
               </Button>
-            </Flex>
+            </div>
           </>
         )}
-      </Card>
+      </div>
 
-      <ScrollArea scrollbars="horizontal">
-        <Table.Root variant="surface" size="2" className="dashboard-table">
-          <Table.Header>
-            <Table.Row>
-              {isAdmin && <Table.ColumnHeaderCell style={{ width: 40 }} />}
-              <Table.ColumnHeaderCell style={{ width: 72 }}>
-                <IconHeader icon={<IdCardIcon />} label="Mitglieds-ID" />
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Vorname</Table.ColumnHeaderCell>
+      <TableWrap>
+        <Table className="min-w-[720px]">
+          <thead>
+            <tr className="bg-raised/60">
+              {isAdmin && <Th className="w-10" />}
+              <Th className="w-18">
+                <IconHeader icon={<IdCard size={16} />} label="Mitglieds-ID" />
+              </Th>
+              <Th>Name</Th>
+              <Th>Vorname</Th>
               {isAdmin && (
-                <Table.ColumnHeaderCell style={{ minWidth: 160 }}>
+                <Th className="min-w-40">
                   <IconHeader icon={<MessageSquare size={16} />} label="Kommentar" />
-                </Table.ColumnHeaderCell>
+                </Th>
               )}
-              <Table.ColumnHeaderCell align="center" style={{ width: 72 }}>
+              <Th className="w-18 text-center">
                 <IconHeader icon={<GraduationCap size={16} />} label="Student" />
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell align="center" style={{ width: 72 }}>
-                <IconHeader icon={<CheckCircledIcon />} label="Bezahlt" />
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell align="center" style={{ width: 130 }}>
-                <IconHeader icon={<TokensIcon />} label="Betrag" />
-              </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
+              </Th>
+              <Th className="w-18 text-center">
+                <IconHeader icon={<CheckCircle2 size={16} />} label="Bezahlt" />
+              </Th>
+              <Th className="w-33 text-center">
+                <IconHeader icon={<Coins size={16} />} label="Betrag" />
+              </Th>
+            </tr>
+          </thead>
+          <tbody>
             {filteredUsers.length === 0 && (
-              <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 8 : 6}>
-                  <Flex justify="center" py="6">
-                    <Text size="2" color="gray">
-                      Keine Mitglieder gefunden.
-                    </Text>
-                  </Flex>
-                </Table.Cell>
-              </Table.Row>
+              <tr>
+                <Td colSpan={isAdmin ? 8 : 6} className="py-10 text-center text-muted">
+                  Keine Mitglieder gefunden.
+                </Td>
+              </tr>
             )}
 
             {filteredUsers.map((user) => {
@@ -484,85 +470,64 @@ export function FeesTable({
               const beitrag = existing?.beitrag ?? 0;
 
               return (
-                <Table.Row
+                <tr
                   key={user.id}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: !paid ? "var(--red-2)" : undefined,
-                  }}
+                  className={`cursor-pointer transition-colors ${
+                    paid ? "hover:bg-raised/50" : "bg-negative/6 hover:bg-negative/10"
+                  }`}
                   onClick={() => openUserHistory(user)}
                 >
                   {isAdmin && (
-                    <Table.Cell onClick={stopRowClick}>
-                      <input
+                    <Td onClick={stopRowClick}>
+                      <Checkbox
                         id={checkboxId}
-                        type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelection(user.id)}
-                        style={{
-                          width: 18,
-                          height: 18,
-                          cursor: "pointer",
-                          accentColor: "var(--accent-9)",
-                        }}
                         aria-label={`${user.name || user.email} auswählen`}
                       />
-                    </Table.Cell>
+                    </Td>
                   )}
-                  <Table.Cell>
-                    <Badge variant="soft">{user.mitgliedId ?? "—"}</Badge>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text weight="medium">{user.name || "—"}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text>{user.vorname}</Text>
-                  </Table.Cell>
+                  <Td>
+                    <Badge className="font-mono">{user.mitgliedId ?? "—"}</Badge>
+                  </Td>
+                  <Td className="font-medium">{user.name || "—"}</Td>
+                  <Td>{user.vorname}</Td>
                   {isAdmin && (
-                    <Table.Cell onClick={stopRowClick}>
+                    <Td onClick={stopRowClick}>
                       {user.zahlungsKommentar ? (
-                        <Flex gap="1" align="center">
-                          <Text
-                            size="2"
-                            style={{
-                              flex: 1,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: 180,
-                            }}
+                        <div className="flex items-center gap-1">
+                          <span
+                            className="max-w-45 flex-1 truncate text-sm"
                             title={user.zahlungsKommentar}
                           >
                             {user.zahlungsKommentar}
-                          </Text>
-                          <Tooltip content="Kommentar bearbeiten">
-                            <IconButton
-                              size="2"
-                              variant="ghost"
-                              color="gray"
-                              type="button"
-                              onClick={() => setCommentUser(user)}
-                            >
-                              <Pencil2Icon />
-                            </IconButton>
-                          </Tooltip>
-                        </Flex>
-                      ) : (
-                        <Tooltip content="Kommentar hinzufügen">
+                          </span>
                           <IconButton
-                            size="2"
-                            variant="soft"
-                            color="gray"
+                            size="sm"
+                            variant="ghost"
+                            color="neutral"
                             type="button"
                             onClick={() => setCommentUser(user)}
+                            aria-label="Kommentar bearbeiten"
                           >
-                            <PlusIcon />
+                            <Pencil size={15} aria-hidden="true" />
                           </IconButton>
-                        </Tooltip>
+                        </div>
+                      ) : (
+                        <IconButton
+                          size="sm"
+                          variant="soft"
+                          color="neutral"
+                          type="button"
+                          onClick={() => setCommentUser(user)}
+                          aria-label="Kommentar hinzufügen"
+                        >
+                          <Plus size={15} aria-hidden="true" />
+                        </IconButton>
                       )}
-                    </Table.Cell>
+                    </Td>
                   )}
-                  <Table.Cell align="center" onClick={stopRowClick}>
+                  <Td className="text-center" onClick={stopRowClick}>
                     {isAdmin ? (
                       <form action={updateFeeStatus}>
                         <input type="hidden" name="userId" value={user.id} />
@@ -573,30 +538,27 @@ export function FeesTable({
                           name="value"
                           value={isStudent ? "false" : "true"}
                         />
-                        <Tooltip
-                          content={
+                        <IconButton
+                          type="submit"
+                          size="sm"
+                          variant={isStudent ? "solid" : "outline"}
+                          color={isStudent ? "accent" : "neutral"}
+                          aria-label={
                             isStudent
                               ? "Student (Klicken zum Ändern)"
                               : "Regulär (Klicken zum Ändern)"
                           }
                         >
-                          <IconButton
-                            type="submit"
-                            size="2"
-                            variant={isStudent ? "solid" : "outline"}
-                            color={isStudent ? "blue" : "gray"}
-                          >
-                            <GraduationCap size={16} />
-                          </IconButton>
-                        </Tooltip>
+                          <GraduationCap size={16} aria-hidden="true" />
+                        </IconButton>
                       </form>
                     ) : (
-                      <Badge color={isStudent ? "blue" : "gray"} size="1">
+                      <Badge tone={isStudent ? "info" : "neutral"}>
                         {isStudent ? "Ja" : "Nein"}
                       </Badge>
                     )}
-                  </Table.Cell>
-                  <Table.Cell align="center" onClick={stopRowClick}>
+                  </Td>
+                  <Td className="text-center" onClick={stopRowClick}>
                     {isAdmin ? (
                       <form
                         action={updateFeeStatus}
@@ -620,102 +582,104 @@ export function FeesTable({
                           name="value"
                           value={paid ? "false" : "true"}
                         />
-                        <Tooltip
-                          content={
+                        <IconButton
+                          type="submit"
+                          size="sm"
+                          variant={paid ? "solid" : "outline"}
+                          color={paid ? "accent" : "danger"}
+                          aria-label={
                             paid
                               ? "Bezahlt (Klicken zum Ändern)"
                               : "Offen (Klicken zum Ändern)"
                           }
                         >
-                          <IconButton
-                            type="submit"
-                            size="2"
-                            variant={paid ? "solid" : "outline"}
-                            color={paid ? "green" : "red"}
-                          >
-                            {paid ? <CheckIcon /> : <Cross2Icon />}
-                          </IconButton>
-                        </Tooltip>
+                          {paid ? (
+                            <Check size={16} aria-hidden="true" />
+                          ) : (
+                            <X size={16} aria-hidden="true" />
+                          )}
+                        </IconButton>
                       </form>
                     ) : (
-                      <Badge color={paid ? "green" : "red"} size="1">
+                      <Badge tone={paid ? "positive" : "negative"}>
                         {paid ? "Bezahlt" : "Offen"}
                       </Badge>
                     )}
-                  </Table.Cell>
-                  <Table.Cell align="center" onClick={stopRowClick}>
+                  </Td>
+                  <Td className="text-center" onClick={stopRowClick}>
                     {isAdmin ? (
                       <form action={updateFeeAmount}>
                         <input type="hidden" name="userId" value={user.id} />
                         <input type="hidden" name="year" value={selectedYear} />
-                        <Flex gap="1" align="center" justify="center">
-                          <TextField.Root
+                        <div className="flex items-center justify-center gap-1">
+                          <Input
                             type="number"
                             name="beitrag"
                             step="0.01"
                             min="0"
                             defaultValue={beitrag}
-                            size="2"
-                            style={{ width: 80, textAlign: "right" }}
+                            aria-label={`Beitrag ${selectedYear} für ${user.vorname} ${user.name ?? ""}`}
+                            className="w-22 px-2 py-1.5 text-right tabular-nums"
                           />
-                          <Tooltip content="Betrag speichern">
-                            <IconButton type="submit" size="2" variant="soft" color="blue">
-                              <CheckIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Flex>
+                          <IconButton
+                            type="submit"
+                            size="sm"
+                            variant="soft"
+                            color="accent"
+                            aria-label="Betrag speichern"
+                          >
+                            <Check size={15} aria-hidden="true" />
+                          </IconButton>
+                        </div>
                       </form>
                     ) : (
-                      <Text size="2" weight="medium">
+                      <span className="text-sm font-medium tabular-nums">
                         {formatCurrency(beitrag)}
-                      </Text>
+                      </span>
                     )}
-                  </Table.Cell>
-                </Table.Row>
+                  </Td>
+                </tr>
               );
             })}
-          </Table.Body>
-        </Table.Root>
-      </ScrollArea>
+          </tbody>
+        </Table>
+      </TableWrap>
 
-      <AlertDialog.Root
+      <Dialog
         open={revertConfirm != null}
-        onOpenChange={(open) => {
-          if (!open) setRevertConfirm(null);
-        }}
+        onClose={() => setRevertConfirm(null)}
+        title="Zahlung als offen markieren?"
+        size="sm"
       >
-        <AlertDialog.Content maxWidth="420px">
-          <AlertDialog.Title>Zahlung als offen markieren?</AlertDialog.Title>
-          <AlertDialog.Description size="2" mb="3">
-            Zahlung für {revertConfirm?.label} wirklich als offen markieren?
-          </AlertDialog.Description>
-          <Flex gap="3" justify="end">
-            <AlertDialog.Cancel>
-              <Button size="2" variant="soft" color="gray" type="button">
-                Abbrechen
-              </Button>
-            </AlertDialog.Cancel>
-            <Button size="2" color="red" type="button" onClick={confirmRevert}>
-              Als offen markieren
-            </Button>
-          </Flex>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
+        <p className="text-sm leading-relaxed text-muted">
+          Zahlung für {revertConfirm?.label} wirklich als offen markieren?
+        </p>
+        <DialogFooter>
+          <Button
+            size="sm"
+            variant="soft"
+            color="neutral"
+            type="button"
+            onClick={() => setRevertConfirm(null)}
+          >
+            Abbrechen
+          </Button>
+          <Button size="sm" color="danger" type="button" onClick={confirmRevert}>
+            Als offen markieren
+          </Button>
+        </DialogFooter>
+      </Dialog>
 
       <CommentDialog
         user={commentUser}
         open={commentUser != null}
-        onOpenChange={(open) => {
-          if (!open) setCommentUser(null);
-        }}
+        onClose={() => setCommentUser(null)}
       />
 
       <UserPaymentHistoryDialog
         user={historyUser}
         open={historyUser != null}
-        onOpenChange={(open) => {
-          if (!open) setHistoryUser(null);
-        }}
+        onClose={() => setHistoryUser(null)}
       />
 
       {isAdmin && (

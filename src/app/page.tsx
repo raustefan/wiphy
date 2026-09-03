@@ -5,8 +5,8 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
-import PhysicsHero from "@/components/PhysicsHero";
-import MarketDiffusion from "@/components/MarketDiffusion";
+import PhysicsHero from "@/components/PhysicsHeroLazy";
+import MarketDiffusion from "@/components/MarketDiffusionLazy";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 
 const pillars = [

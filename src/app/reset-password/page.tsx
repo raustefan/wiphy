@@ -6,6 +6,10 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { Button, ButtonLink, Callout, Field, Input, Spinner } from "@/components/ui";
 
+/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
+function messageOf(error: unknown, fallback: string): string {
+    return error instanceof Error && error.message ? error.message : fallback;
+}
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
@@ -61,9 +65,9 @@ function ResetPasswordForm() {
             }
 
             setStatus("success");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setErrorMessage(err.message || "Fehler beim Zurücksetzen des Passworts.");
+            setErrorMessage(messageOf(err, "Fehler beim Zurücksetzen des Passworts."));
             setStatus("error");
         }
     };

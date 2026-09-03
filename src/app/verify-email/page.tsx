@@ -6,22 +6,22 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
 
+/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
+function messageOf(error: unknown, fallback: string): string {
+    return error instanceof Error && error.message ? error.message : fallback;
+}
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
 
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("loading");
     const [errorMessage, setErrorMessage] = useState("");
     const [featureDisabled, setFeatureDisabled] = useState(false);
 
     useEffect(() => {
-        if (!token) {
-            setStatus("error");
-            setErrorMessage("Ungültiger oder fehlender Token.");
-            return;
-        }
-
-        setStatus("loading");
+        // Ohne Token wird gar nicht erst angefragt — das rendert unten den
+        // eigenen Hinweis.
+        if (!token) return;
 
         fetch("/api/auth/verify-email", {
             method: "POST",
@@ -42,9 +42,9 @@ function VerifyEmailContent() {
                 }
                 setStatus("success");
             })
-            .catch((err: any) => {
+            .catch((err: unknown) => {
                 console.error(err);
-                setErrorMessage(err.message || "Fehler bei der E-Mail-Bestätigung.");
+                setErrorMessage(messageOf(err, "Fehler bei der E-Mail-Bestätigung."));
                 setStatus("error");
             });
     }, [token]);

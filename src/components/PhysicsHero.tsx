@@ -4,6 +4,7 @@
 import { useEffect, useRef } from "react";
 import { useAppearance } from "@/components/AppThemeProvider";
 import { paletteFor, rgba } from "@/lib/palette";
+import { cappedDpr, createRenderLoop, isCompactViewport } from "@/lib/renderLoop";
 
 /**
  * Gitterschwingungen (Phononen) als Hintergrundfeld.
@@ -36,7 +37,9 @@ type Mode = {
   ey: number;
 };
 
-const LATTICE_SPACING = 44;
+/** Gitterkonstante a in Pixeln; auf schmalen Viewports weiter, das spart Atome. */
+const LATTICE_SPACING_WIDE = 44;
+const LATTICE_SPACING_COMPACT = 60;
 /** √(K/m) — setzt die Zeitskala der Schwingung. */
 const OMEGA_0 = 0.9;
 
@@ -52,12 +55,11 @@ export default function PhysicsHero() {
     if (!ctx) return;
 
     const colors = paletteFor(appearance);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let spacing = isCompactViewport() ? LATTICE_SPACING_COMPACT : LATTICE_SPACING_WIDE;
 
     let w = 0;
     let h = 0;
     let dpr = 1;
-    let raf = 0;
     let t = 0;
 
     let cols = 0;
@@ -67,14 +69,14 @@ export default function PhysicsHero() {
 
     // Drei Moden mit zufälligem k im ersten Brillouin-Zonen-Viertel.
     const modes: Mode[] = Array.from({ length: 3 }, (_, i) => {
-      const kx = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING;
-      const ky = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING;
+      const kx = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING_WIDE;
+      const ky = ((Math.random() * 0.8 + 0.15) * Math.PI) / LATTICE_SPACING_WIDE;
       const omega =
         2 *
         OMEGA_0 *
         Math.hypot(
-          Math.sin((kx * LATTICE_SPACING) / 2),
-          Math.sin((ky * LATTICE_SPACING) / 2),
+          Math.sin((kx * LATTICE_SPACING_WIDE) / 2),
+          Math.sin((ky * LATTICE_SPACING_WIDE) / 2),
         );
       const angle = Math.random() * Math.PI * 2;
       return {
@@ -90,21 +92,25 @@ export default function PhysicsHero() {
     });
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = cappedDpr();
+      spacing = isCompactViewport() ? LATTICE_SPACING_COMPACT : LATTICE_SPACING_WIDE;
       w = canvas.clientWidth;
       h = canvas.clientHeight;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      cols = Math.ceil(w / LATTICE_SPACING) + 2;
-      rows = Math.ceil(h / LATTICE_SPACING) + 2;
-      originX = (w - (cols - 1) * LATTICE_SPACING) / 2;
-      originY = (h - (rows - 1) * LATTICE_SPACING) / 2;
+      cols = Math.ceil(w / spacing) + 2;
+      rows = Math.ceil(h / spacing) + 2;
+      originX = (w - (cols - 1) * spacing) / 2;
+      originY = (h - (rows - 1) * spacing) / 2;
     };
 
     resize();
-    const ro = new ResizeObserver(resize);
+    const ro = new ResizeObserver(() => {
+      resize();
+      loop.redraw();
+    });
     ro.observe(canvas);
 
     const onMove = (e: MouseEvent) => {
@@ -146,9 +152,12 @@ export default function PhysicsHero() {
       out.y = uy;
     };
 
-    const draw = () => {
-      t += reduce ? 0.004 : 0.011;
-      pointer.current.strength *= 0.985;
+    const draw = ({ reducedMotion }: { reducedMotion: boolean }) => {
+      // Bei reduzierter Bewegung bleibt die Zeit stehen: ein statisches Bild.
+      if (!reducedMotion) {
+        t += 0.011;
+        pointer.current.strength *= 0.985;
+      }
       ctx.clearRect(0, 0, w, h);
 
       // Alle Positionen einmal berechnen, danach Bindungen und Atome zeichnen.
@@ -159,8 +168,8 @@ export default function PhysicsHero() {
 
       for (let j = 0; j < rows; j++) {
         for (let i = 0; i < cols; i++) {
-          const x0 = originX + i * LATTICE_SPACING;
-          const y0 = originY + j * LATTICE_SPACING;
+          const x0 = originX + i * spacing;
+          const y0 = originY + j * spacing;
           displace(x0, y0, u);
           const idx = j * cols + i;
           px[idx] = x0 + u.x;
@@ -183,7 +192,7 @@ export default function PhysicsHero() {
             if (ni >= cols || nj >= rows) continue;
             const nIdx = nj * cols + ni;
             const d = Math.hypot(px[nIdx] - px[idx], py[nIdx] - py[idx]);
-            const strain = (d - LATTICE_SPACING) / LATTICE_SPACING;
+            const strain = (d - spacing) / spacing;
             const a = Math.min(0.5, Math.abs(strain) * 1.5 + 0.06);
             // Dehnung teal, Stauchung ruby — das Feld zeigt seine eigene Spannung.
             ctx.strokeStyle = rgba(strain > 0 ? colors.physics : colors.market, a);
@@ -204,14 +213,12 @@ export default function PhysicsHero() {
         ctx.fillStyle = rgba(colors.physics, a * 0.8);
         ctx.fill();
       }
-
-      raf = requestAnimationFrame(draw);
     };
 
-    raf = requestAnimationFrame(draw);
+    const loop = createRenderLoop(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      loop.stop();
       ro.disconnect();
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseleave", onLeave);

@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui/Container";
-import PhysicsHero from "@/components/PhysicsHero";
+import PhysicsHero from "@/components/PhysicsHeroLazy";
 import { PhysicsTimeline } from "./PhysicsTimeline";
 
 export const metadata = {
