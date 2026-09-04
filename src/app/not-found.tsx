@@ -1,4 +1,4 @@
-import { ButtonLink, Container } from "@/components/ui";
+import { ButtonLink, Container, PageTitle } from "@/components/ui";
 
 export default function NotFound() {
     return (
@@ -7,9 +7,9 @@ export default function NotFound() {
                 <p className="font-mono text-sm font-semibold tracking-widest text-physics uppercase">
                     404
                 </p>
-                <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                <PageTitle>
                     Seite nicht gefunden
-                </h1>
+                </PageTitle>
                 <p className="max-w-prose text-muted text-pretty">
                     Die aufgerufene Seite existiert nicht oder wurde verschoben.
                 </p>

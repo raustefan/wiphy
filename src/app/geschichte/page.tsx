@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { Lead } from "@/components/ui";
 import PhysicsHero from "@/components/PhysicsHeroLazy";
 import { PhysicsTimeline } from "./PhysicsTimeline";
 
@@ -32,12 +33,12 @@ export default function GeschichtePage() {
               Unsere Geschichte
             </h1>
 
-            <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+            <Lead className="max-w-xl">
               Von den ersten Bestrebungen für eine Universität in Ulm bis zum
               dreifachen Jubiläum 2024: eine interaktive Zeitleiste über die
               Universität Ulm, die Physik, die Wirtschaftsphysik und den
               Alumni-Verein.
-            </p>
+            </Lead>
           </div>
         </section>
       </Container>

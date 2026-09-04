@@ -31,8 +31,8 @@ import {
     SATZUNG_URL,
     SEPA_CREDITOR_ID,
     STEPS,
-    formatEuro,
 } from "@/lib/membership";
+import { formatEuro } from "@/lib/format";
 import type { FeeRates } from "@/lib/feeDefaults";
 import { annualFee, billableMonths, withSurcharge } from "@/lib/feeCalculation";
 import {

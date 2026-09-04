@@ -3,17 +3,13 @@
  *
  * Als Daten und nicht als JSX gepflegt: der Text ändert sich nur durch Beschluss
  * der Mitgliederversammlung, und so bleibt eine Änderung ein reiner Textdiff
- * ohne Layoutrisiko. Jeder Absatz ist ein eigener String; `items` rendert als
- * Aufzählung.
+ * ohne Layoutrisiko. Aufbau und Renderer teilt sie sich mit Impressum und
+ * Datenschutz — siehe `src/lib/legal.ts`.
  */
 
-export type Paragraph = {
-  id: string;
-  title: string;
-  blocks: Array<string | { items: string[] }>;
-};
+import type { LegalDocument } from "@/lib/legal";
 
-export const SATZUNG: Paragraph[] = [
+export const SATZUNG: LegalDocument = [
   {
     id: "1",
     title: "§ 1 Name, Sitz und Geschäftsjahr",

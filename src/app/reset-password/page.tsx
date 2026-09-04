@@ -3,74 +3,44 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { Button, ButtonLink, Callout, Field, Input, Spinner } from "@/components/ui";
+import { useActionForm } from "@/lib/client/useActionForm";
+import { postJson } from "@/lib/client/postJson";
 
-/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
-function messageOf(error: unknown, fallback: string): string {
-    return error instanceof Error && error.message ? error.message : fallback;
-}
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [errorMessage, setErrorMessage] = useState("");
-    const [featureDisabled, setFeatureDisabled] = useState(false);
+    const [done, setDone] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrorMessage("");
+    const form = useActionForm(
+        (formData) =>
+            postJson(
+                "/api/auth/reset-password",
+                { token, password: formData.get("password") },
+                "Fehler beim Zurücksetzen des Passworts.",
+            ),
+        { featureLabel: "Passwort zurücksetzen", onSuccess: () => setDone(true) },
+    );
 
-        if (!token) {
-            setErrorMessage("Ungültiger oder fehlender Token.");
-            setStatus("error");
-            return;
-        }
+    function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
 
+        // Beide Prüfungen kann nur der Browser machen — der Server sieht das
+        // Bestätigungsfeld nie.
         if (password.length < 8) {
-            setErrorMessage("Das Passwort muss mindestens 8 Zeichen lang sein.");
-            setStatus("error");
+            form.setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
             return;
         }
-
         if (password !== confirmPassword) {
-            setErrorMessage("Die Passwörter stimmen nicht überein.");
-            setStatus("error");
+            form.setError("Die Passwörter stimmen nicht überein.");
             return;
         }
 
-        setStatus("loading");
-
-        try {
-            const res = await fetch("/api/auth/reset-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ token, password }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                if (data.code === "FEATURE_DISABLED") {
-                    setFeatureDisabled(true);
-                    setStatus("idle");
-                    return;
-                }
-                throw new Error(data.error || "Etwas ist schiefgelaufen.");
-            }
-
-            setStatus("success");
-        } catch (err: unknown) {
-            console.error(err);
-            setErrorMessage(messageOf(err, "Fehler beim Zurücksetzen des Passworts."));
-            setStatus("error");
-        }
-    };
+        void form.run({ password });
+    }
 
     if (!token) {
         return (
@@ -89,7 +59,7 @@ function ResetPasswordForm() {
         );
     }
 
-    if (status === "success") {
+    if (done) {
         return (
             <AuthShell title="Erfolgreich!">
                 <Callout tone="success">
@@ -104,49 +74,40 @@ function ResetPasswordForm() {
     }
 
     return (
-        <>
-            <FeatureDisabledDialog
-                open={featureDisabled}
-                featureLabel="Passwort zurücksetzen"
-                onOpenChange={setFeatureDisabled}
-            />
-            <AuthShell
-                title="Neues Passwort festlegen"
-                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
-            >
-                <form onSubmit={handleSubmit} className="grid gap-4">
-                    {status === "error" && errorMessage && (
-                        <Callout tone="danger">{errorMessage}</Callout>
-                    )}
+        <AuthShell
+            title="Neues Passwort festlegen"
+            footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+        >
+            <form onSubmit={handleSubmit} className="grid gap-4">
+                {form.feedback}
 
-                    <Field label="Neues Passwort" htmlFor="reset-password" hint="Mindestens 8 Zeichen.">
-                        <Input
-                            id="reset-password"
-                            type="password"
-                            autoComplete="new-password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </Field>
+                <Field label="Neues Passwort" htmlFor="reset-password" hint="Mindestens 8 Zeichen.">
+                    <Input
+                        id="reset-password"
+                        type="password"
+                        autoComplete="new-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </Field>
 
-                    <Field label="Passwort bestätigen" htmlFor="reset-password-confirm">
-                        <Input
-                            id="reset-password-confirm"
-                            type="password"
-                            autoComplete="new-password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </Field>
+                <Field label="Passwort bestätigen" htmlFor="reset-password-confirm">
+                    <Input
+                        id="reset-password-confirm"
+                        type="password"
+                        autoComplete="new-password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                    />
+                </Field>
 
-                    <Button type="submit" size="lg" loading={status === "loading"} className="w-full">
-                        Passwort speichern
-                    </Button>
-                </form>
-            </AuthShell>
-        </>
+                <Button type="submit" size="lg" loading={form.pending} className="w-full">
+                    Passwort speichern
+                </Button>
+            </form>
+        </AuthShell>
     );
 }
 

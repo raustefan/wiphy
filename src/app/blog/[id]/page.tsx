@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { getPublishedPost } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
+import { formatDate } from "@/lib/format";
 
 export default async function PublicBlogPost({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -15,11 +16,7 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
     if (!post) return notFound();
 
     const minutes = readingTimeMinutes(post.content);
-    const published = post.publishedAt.toLocaleDateString("de-DE", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    });
+    const published = formatDate(post.publishedAt);
 
     return (
         <Container size="3" className="py-8 sm:py-12">

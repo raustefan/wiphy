@@ -10,3 +10,4 @@ export { Separator } from "./Separator";
 export { Spinner } from "./Spinner";
 export { Switch } from "./Switch";
 export { Table, TableWrap, Th, Td } from "./Table";
+export { PageTitle, SectionTitle, Prose, Lead, Eyebrow } from "./Text";

@@ -11,6 +11,7 @@ import {
     resendVerificationEmail,
 } from "./actions";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { useActionForm } from "@/lib/client/useActionForm";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { Button, Container, Field, Input } from "@/components/ui";
 
@@ -33,12 +34,15 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
     const [error, setError] = useState("");
     const [emailUnverified, setEmailUnverified] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [resendState, setResendState] = useState<
-        "idle" | "sending" | "sent" | "error"
-    >("idle");
-    const [resendMessage, setResendMessage] = useState("");
+    const [resendSent, setResendSent] = useState(false);
     const [featureDisabled, setFeatureDisabled] = useState(false);
     const [challenge, setChallenge] = useState(challengeJson);
+
+    // Der Login selbst läuft über next-auth und nicht über eine Serveraktion;
+    // das erneute Senden der Bestätigungsmail schon.
+    const resend = useActionForm(() => resendVerificationEmail(email), {
+        onSuccess: () => setResendSent(true),
+    });
 
     useEffect(() => {
         import("altcha");
@@ -61,8 +65,8 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
         setSubmitting(true);
         setError("");
         setEmailUnverified(false);
-        setResendState("idle");
-        setResendMessage("");
+        setResendSent(false);
+        resend.setError("");
 
         try {
             if (!altcha) {
@@ -111,20 +115,7 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
         }
     };
 
-    const handleResend = async () => {
-        setResendState("sending");
-        setResendMessage("");
-        const result = await resendVerificationEmail(email);
-        if (result.ok) {
-            setResendState("sent");
-            setResendMessage(
-                "Wir haben dir eine neue E-Mail zur Bestätigung geschickt. Bitte prüfe dein Postfach (auch den Spam-Ordner).",
-            );
-        } else {
-            setResendState("error");
-            setResendMessage(result.message);
-        }
-    };
+
 
     return (
         <Container size="4" className="py-8 sm:py-14">
@@ -156,29 +147,28 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                                     className="grid gap-2 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3"
                                 >
                                     <p className="text-sm text-negative">{error}</p>
-                                    {emailUnverified && resendState !== "sent" && (
+                                    {emailUnverified && !resendSent && (
                                         <Button
                                             type="button"
                                             variant="soft"
                                             color="neutral"
                                             size="sm"
-                                            onClick={handleResend}
-                                            loading={resendState === "sending"}
+                                            onClick={() => void resend.run()}
+                                            loading={resend.pending}
                                             className="w-full"
                                         >
                                             Bestätigungs-E-Mail erneut senden
                                         </Button>
                                     )}
-                                    {resendMessage && (
-                                        <p
-                                            className={
-                                                resendState === "error"
-                                                    ? "text-sm text-negative"
-                                                    : "text-sm text-positive"
-                                            }
-                                        >
-                                            {resendMessage}
+                                    {resendSent && (
+                                        <p className="text-sm text-positive">
+                                            Wir haben dir eine neue E-Mail zur Bestätigung
+                                            geschickt. Bitte prüfe dein Postfach (auch den
+                                            Spam-Ordner).
                                         </p>
+                                    )}
+                                    {resend.error && (
+                                        <p className="text-sm text-negative">{resend.error}</p>
                                     )}
                                 </div>
                             )}

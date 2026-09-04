@@ -20,6 +20,7 @@ import {
   EmailComposerDialog,
   type MailRecipient,
 } from "@/components/EmailComposerDialog";
+import { formatDate, formatEuro } from "@/lib/format";
 import { renderBlocksEditorHtml } from "@/lib/email/blocks";
 import { feeReminderMessage } from "@/lib/email/messages";
 import {
@@ -84,35 +85,19 @@ function hasOpenFee(user: FeesTableUser, year: number) {
   return !(existing?.bezahlt ?? false);
 }
 
-function formatDate(d: string | null) {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("de-DE", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function formatCurrency(amount: number) {
-  return amount.toLocaleString("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  });
-}
-
 /**
  * Erklärt, wie der Standardbeitrag zustande kommt — Monatssatz, anteilige
  * Monate im Eintrittsjahr und ggf. der 10-%-Aufschlag nach § 5 Abs. 5.
  */
 function explainFee(fee: FeesTableUser["fees"][number]) {
   const parts = [
-    `${formatCurrency(fee.breakdown.monthly)}/Monat × ${fee.breakdown.months} ${
+    `${formatEuro(fee.breakdown.monthly)}/Monat × ${fee.breakdown.months} ${
       fee.breakdown.months === 1 ? "Monat" : "Monate"
     }`,
   ];
   if (fee.breakdown.months < 12) parts.push("anteilig ab Eintritt (§ 5 Abs. 3)");
   if (fee.breakdown.surcharge > 0) {
-    parts.push(`+ ${formatCurrency(fee.breakdown.surcharge)} ohne Lastschrift (§ 5 Abs. 5)`);
+    parts.push(`+ ${formatEuro(fee.breakdown.surcharge)} ohne Lastschrift (§ 5 Abs. 5)`);
   }
   return parts.join(" · ");
 }
@@ -193,7 +178,7 @@ function AmountDialog({
       <div className="mb-4 grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">
         <p>
           Standardbeitrag:{" "}
-          <span className="font-semibold tabular-nums">{formatCurrency(fee.standard)}</span>
+          <span className="font-semibold tabular-nums">{formatEuro(fee.standard)}</span>
         </p>
         <p className="text-muted">{explainFee(fee)}</p>
       </div>
@@ -316,7 +301,7 @@ function UserPaymentHistoryDialog({
                     </Badge>
                   </Td>
                   <Td className="text-right tabular-nums">
-                    {formatCurrency(fee.beitrag)}
+                    {formatEuro(fee.beitrag)}
                     {fee.manuell && (
                       <Badge tone="warning" className="ml-2">
                         Ausnahme
@@ -747,7 +732,7 @@ export function FeesTable({
                         className="text-sm font-medium tabular-nums"
                         title={existing ? explainFee(existing) : undefined}
                       >
-                        {formatCurrency(existing?.beitrag ?? 0)}
+                        {formatEuro(existing?.beitrag ?? 0)}
                       </span>
                       {existing?.manuell && <Badge tone="warning">Ausnahme</Badge>}
                       {existing?.angelegt === false && (
@@ -815,10 +800,9 @@ export function FeesTable({
         onClose={() => setHistoryUser(null)}
       />
 
-      {isAdmin && (
+      {isAdmin && mailOpen && (
         <EmailComposerDialog
-          open={mailOpen}
-          onOpenChange={setMailOpen}
+          onClose={() => setMailOpen(false)}
           recipients={mailRecipients}
           defaultSubject={reminderDefaults.subject}
           defaultMessage={reminderDefaults.html}

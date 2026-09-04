@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Scale } from "lucide-react";
-import { ButtonLink, Card, Container, Separator } from "@/components/ui";
+import { ButtonLink, Card, Prose, SectionTitle, Separator } from "@/components/ui";
+import { LegalPage, LegalSections } from "@/components/LegalPage";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
-import { formatEuro } from "@/lib/membership";
+import { formatEuro } from "@/lib/format";
 import { SATZUNG } from "./satzungstext";
 
 export const metadata: Metadata = {
@@ -47,33 +48,24 @@ export default async function SatzungPage() {
     ];
 
     return (
-        <Container size="2" className="pt-6 pb-16 sm:pt-10">
-            <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-center">
-                <div>
-                    <p className="flex items-center gap-2 text-sm font-medium text-physics">
-                        <Scale size={16} aria-hidden="true" />
-                        Verein
-                    </p>
-                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
-                        Satzung &amp; Ziele
-                    </h1>
-                </div>
-                <ButtonLink href="/" variant="soft" color="neutral" size="sm">
-                    ← Zurück zur Startseite
-                </ButtonLink>
-            </div>
-
-            <p className="mb-8 max-w-prose text-sm leading-relaxed text-muted text-pretty sm:text-base">
+        <LegalPage
+            title="Satzung & Ziele"
+            eyebrow={
+                <>
+                    <Scale size={16} aria-hidden="true" />
+                    Verein
+                </>
+            }
+        >
+            <Prose className="mb-8 max-w-prose">
                 Die Satzung des Wirtschaftsphysik Alumni e.V. im Wortlaut. Sie regelt Zweck,
                 Mitgliedschaft, Beiträge und Organe des Vereins.
-            </p>
+            </Prose>
 
             {/* ---------- Beitragsordnung ---------- */}
             <Card className="mb-10 grid gap-4 p-5 sm:p-6">
                 <div>
-                    <h2 className="text-xl font-bold tracking-tight">
-                        Mitgliedsbeiträge für ordentliche Mitglieder
-                    </h2>
+                    <SectionTitle>Mitgliedsbeiträge für ordentliche Mitglieder</SectionTitle>
                     <p className="mt-1 text-sm text-muted">
                         Beschlossen von der Mitgliederversammlung, Stand {currentYear}.
                     </p>
@@ -116,39 +108,7 @@ export default async function SatzungPage() {
             </Card>
 
             {/* ---------- Satzungstext ---------- */}
-            <div className="grid gap-8">
-                {SATZUNG.map((paragraph) => (
-                    <section key={paragraph.id} className="grid gap-3">
-                        <h2
-                            id={`paragraph-${paragraph.id}`}
-                            className="scroll-mt-24 text-xl font-bold tracking-tight text-balance"
-                        >
-                            {paragraph.title}
-                        </h2>
-                        {paragraph.blocks.map((block, index) =>
-                            typeof block === "string" ? (
-                                <p
-                                    key={index}
-                                    className="text-sm leading-relaxed text-muted text-pretty sm:text-base"
-                                >
-                                    {block}
-                                </p>
-                            ) : (
-                                <ul
-                                    key={index}
-                                    className="ml-5 grid list-disc gap-1.5 text-sm leading-relaxed text-muted marker:text-faint sm:text-base"
-                                >
-                                    {block.items.map((item) => (
-                                        <li key={item} className="text-pretty">
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ),
-                        )}
-                    </section>
-                ))}
-            </div>
-        </Container>
+            <LegalSections document={SATZUNG} />
+        </LegalPage>
     );
 }

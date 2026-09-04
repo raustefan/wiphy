@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { Lead, PageTitle, Prose } from "@/components/ui";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PenLine } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -8,6 +9,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import PhysicsHero from "@/components/PhysicsHeroLazy";
 import MarketDiffusion from "@/components/MarketDiffusionLazy";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
+import { formatDateShort } from "@/lib/format";
 
 const pillars = [
   {
@@ -78,12 +80,12 @@ export default async function HomePage() {
               e.&nbsp;V.
             </h1>
 
-            <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+            <Lead className="max-w-xl">
               Ein gemeinnütziger Verein für Physik- und
               Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die
               Physik — ihre Methoden der statistischen Mechanik, Modellbildung
               und Datenanalyse, angewendet auf wirtschaftliche Systeme.
-            </p>
+            </Lead>
 
             <div className="flex w-full flex-col justify-center gap-3 min-[420px]:w-auto min-[420px]:flex-row">
               <ButtonLink href="/blog" size="lg">
@@ -119,14 +121,14 @@ export default async function HomePage() {
           <SectionMarker index="01" label="Der Verein" />
 
           <div className="mb-8 grid max-w-2xl gap-3">
-            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+            <PageTitle as="h2">
               Drei Säulen, ein Netzwerk
-            </h2>
-            <p className="text-base leading-relaxed text-muted sm:text-lg">
+            </PageTitle>
+            <Lead>
               Was in Ulm im Hörsaal beginnt, hört dort nicht auf. Der Verein
               hält die Verbindung zwischen Studium, Forschung und Berufspraxis
               offen — in beide Richtungen.
-            </p>
+            </Lead>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -149,15 +151,15 @@ export default async function HomePage() {
           <SectionMarker index="02" label="Die Physik dahinter" />
 
           <div className="mb-8 grid max-w-2xl gap-3">
-            <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+            <PageTitle as="h2">
               Eine Gleichung, zwei Welten
-            </h2>
-            <p className="text-base leading-relaxed text-muted sm:text-lg">
+            </PageTitle>
+            <Lead>
               Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
               Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Das
               folgende Modell läuft live im Browser: vollständig durchgerechnet,
               nicht nachgezeichnet.
-            </p>
+            </Lead>
           </div>
 
           {/* ─── Geometrische Brownsche Bewegung ─── */}
@@ -177,13 +179,13 @@ export default async function HomePage() {
                   </h3>
                 </div>
 
-                <p className="text-sm leading-relaxed text-muted sm:text-base">
+                <Prose>
                   Ein Pollenkorn im Wasser zittert, weil unzählige Moleküle
                   dagegenstoßen. Ein Kurs zittert aus demselben Grund — nur
                   heißen die Stöße hier Kauf und Verkauf. Bachelier schrieb die
                   Diffusionsgleichung 1900 für die Pariser Börse auf, fünf Jahre
                   bevor Einstein sie für die Brownsche Bewegung herleitete.
-                </p>
+                </Prose>
 
                 <code className="formula-block is-market">
                   dS = μS dt + σS dW
@@ -191,13 +193,13 @@ export default async function HomePage() {
                   S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW<sub>t</sub></sup>
                 </code>
 
-                <p className="text-sm leading-relaxed text-muted sm:text-base">
+                <Prose>
                   Der Term <span className="formula">−σ²/2</span> ist der
                   aufschlussreichste: Volatilität kostet Rendite. Und die Breite
                   der Verteilung wächst mit <span className="formula">σ√t</span>,
                   nicht linear. Deshalb ist eine ehrliche Prognose keine Linie,
                   sondern ein Kegel.
-                </p>
+                </Prose>
 
                 <p className="formula-legend">
                   Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind die
@@ -251,7 +253,7 @@ export default async function HomePage() {
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
                       <span className="inline-flex items-center gap-1.5">
                         <CalendarDays size={13} aria-hidden="true" />
-                        {latestPost.publishedAt.toLocaleDateString("de-DE")}
+                        {formatDateShort(latestPost.publishedAt)}
                       </span>
                       {latestPost.author && (
                         <span className="inline-flex items-center gap-1.5">
@@ -265,9 +267,9 @@ export default async function HomePage() {
                       {latestPost.title}
                     </h2>
 
-                    <p className="text-base leading-relaxed text-muted sm:text-lg">
+                    <Lead>
                       {latestPost.preview}
-                    </p>
+                    </Lead>
                   </div>
 
                   {latestPost.imageUrl && (
@@ -309,14 +311,14 @@ export default async function HomePage() {
             />
             <div className="relative flex flex-col items-start justify-between gap-6 p-6 sm:p-10 md:flex-row md:items-center lg:p-14">
               <div className="grid max-w-xl gap-3">
-                <h2 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                <PageTitle as="h2">
                   Mitglied werden
-                </h2>
-                <p className="text-base leading-relaxed text-muted sm:text-lg">
+                </PageTitle>
+                <Lead>
                   Offen für Alumni und Studierende der Physik und
                   Wirtschaftsphysik an der Universität Ulm. Die Registrierung
                   dauert wenige Minuten — den Rest übernehmen wir.
-                </p>
+                </Lead>
               </div>
 
               <div className="flex w-full flex-col gap-3 md:w-auto min-[420px]:flex-row">

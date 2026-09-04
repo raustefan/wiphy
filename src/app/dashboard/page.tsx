@@ -28,21 +28,12 @@ import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { formatStatus } from "@/lib/statusLabels";
-import { Badge, ButtonLink, Card, Container, Separator } from "@/components/ui";
+import { formatDate, formatEuro } from "@/lib/format";
+import { Badge, ButtonLink, Card, Container, Eyebrow, PageTitle, Separator } from "@/components/ui";
 import { SectionHeader } from "./SectionHeader";
 import { countOpenApplications, getOpenApplication } from "@/lib/server/services/membershipService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
-
-function formatDate(d?: string | Date | null) {
-    if (!d) return "—";
-    const dt = typeof d === "string" ? new Date(d) : d;
-    return dt.toLocaleDateString("de-DE", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
-}
 
 const ADMIN_ACTIONS = [
     { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
@@ -95,13 +86,13 @@ export default async function DashboardPage() {
             {/* ---------- Header ---------- */}
             <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:mb-10 sm:flex-row sm:items-center">
                 <div className="grid min-w-0 gap-1">
-                    <p className="flex items-center gap-2 text-sm font-medium text-physics">
+                    <Eyebrow>
                         <User size={16} aria-hidden="true" />
                         Mitgliederbereich
-                    </p>
-                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                    </Eyebrow>
+                    <PageTitle>
                         Hallo, {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
-                    </h1>
+                    </PageTitle>
                 </div>
                 <LogoutButton />
             </div>
@@ -263,10 +254,7 @@ export default async function DashboardPage() {
                                 </div>
                                 <p className="text-xs font-medium text-muted">
                                     Betrag:{" "}
-                                    {amount.toLocaleString("de-DE", {
-                                        style: "currency",
-                                        currency: "EUR",
-                                    })}
+                                    {formatEuro(amount)}
                                 </p>
                             </div>
                         );

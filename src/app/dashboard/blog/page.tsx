@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { DeletePostButton } from "./DeletePostButton";
+import { formatDateShort } from "@/lib/format";
 import {
     Badge,
     ButtonLink,
@@ -58,7 +59,7 @@ export default async function AdminBlogPage() {
                                         </Badge>
                                     </Td>
                                     <Td className="tabular-nums whitespace-nowrap text-muted">
-                                        {post.createdAt.toLocaleDateString("de-DE")}
+                                        {formatDateShort(post.createdAt)}
                                     </Td>
                                     <Td>
                                         <div className="flex flex-wrap justify-end gap-2">

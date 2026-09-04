@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { registerUser } from "./actions";
-import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { useActionForm } from "@/lib/client/useActionForm";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { Button, Field, Input } from "@/components/ui";
 
@@ -19,32 +19,14 @@ const ALTCHA_STYLE = {
 } as CSSProperties;
 
 export function RegisterForm({ challengeJson }: { challengeJson: string }) {
-    const [error, setError] = useState("");
-    const [featureDisabled, setFeatureDisabled] = useState(false);
+    const form = useActionForm(registerUser, { featureLabel: "Registrierung" });
 
     useEffect(() => {
         import("altcha");
     }, []);
 
-    async function handleAction(formData: FormData) {
-        setError("");
-        const res = await registerUser(formData);
-        if (!res.ok) {
-            if (res.code === "FORBIDDEN") {
-                setFeatureDisabled(true);
-            } else {
-                setError(res.message);
-            }
-        }
-    }
-
     return (
         <>
-            <FeatureDisabledDialog
-                open={featureDisabled}
-                featureLabel="Registrierung"
-                onOpenChange={setFeatureDisabled}
-            />
             <AuthShell
                 title="Neues Konto erstellen"
                 description="Ein Nutzerkonto bestätigt noch nicht die Mitgliedschaft im WirtschaftsPhysik Alumni e.V."
@@ -54,15 +36,8 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                     </>
                 }
             >
-                <form action={handleAction} className="grid gap-4">
-                    {error && (
-                        <div
-                            role="alert"
-                            className="rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm text-negative"
-                        >
-                            {error}
-                        </div>
-                    )}
+                <form action={form.submit} className="grid gap-4">
+                    {form.feedback}
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Vorname" htmlFor="register-vorname">
@@ -123,7 +98,7 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                         />
                     </div>
 
-                    <Button type="submit" size="lg" className="w-full">
+                    <Button type="submit" size="lg" loading={form.pending} className="w-full">
                         Konto erstellen
                     </Button>
                 </form>

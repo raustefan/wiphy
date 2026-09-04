@@ -13,7 +13,7 @@ import {
     Td,
     Th,
 } from "@/components/ui";
-import { formatEuro } from "@/lib/membership";
+import { formatEuro } from "@/lib/format";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { saveFeeDefault, deleteFeeDefaultYear } from "./actions";
 

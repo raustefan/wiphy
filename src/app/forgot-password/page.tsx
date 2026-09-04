@@ -2,96 +2,61 @@
 
 import { useState } from "react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { Button, Callout, Field, Input } from "@/components/ui";
+import { useActionForm } from "@/lib/client/useActionForm";
+import { postJson } from "@/lib/client/postJson";
 
-/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
-function messageOf(error: unknown, fallback: string): string {
-    return error instanceof Error && error.message ? error.message : fallback;
-}
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-    const [errorMessage, setErrorMessage] = useState("");
-    const [featureDisabled, setFeatureDisabled] = useState(false);
+    const [sent, setSent] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus("loading");
-        setErrorMessage("");
-
-        try {
-            const res = await fetch("/api/auth/forgot-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                if (data.code === "FEATURE_DISABLED") {
-                    setFeatureDisabled(true);
-                    setStatus("idle");
-                    return;
-                }
-                throw new Error(data.error || "Etwas ist schiefgelaufen.");
-            }
-
-            setStatus("success");
-        } catch (err: unknown) {
-            console.error(err);
-            setErrorMessage(messageOf(err, "Es gab ein Problem beim Senden der E-Mail."));
-            setStatus("error");
-        }
-    };
+    const form = useActionForm(
+        (formData) =>
+            postJson(
+                "/api/auth/forgot-password",
+                { email: formData.get("email") },
+                "Es gab ein Problem beim Senden der E-Mail.",
+            ),
+        { featureLabel: "Passwort zurücksetzen", onSuccess: () => setSent(true) },
+    );
 
     return (
-        <>
-            <FeatureDisabledDialog
-                open={featureDisabled}
-                featureLabel="Passwort zurücksetzen"
-                onOpenChange={setFeatureDisabled}
-            />
-            <AuthShell
-                title="Passwort vergessen"
-                description={
-                    status === "success"
-                        ? undefined
-                        : "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link, um dein Passwort zurückzusetzen."
-                }
-                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
-            >
-                {status === "success" ? (
-                    <Callout tone="success">
-                        Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen
-                        Link zum Zurücksetzen geschickt.
-                    </Callout>
-                ) : (
-                    <form onSubmit={handleSubmit} className="grid gap-4">
-                        {status === "error" && errorMessage && (
-                            <Callout tone="danger">{errorMessage}</Callout>
-                        )}
+        <AuthShell
+            title="Passwort vergessen"
+            description={
+                sent
+                    ? undefined
+                    : "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link, um dein Passwort zurückzusetzen."
+            }
+            footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+        >
+            {sent ? (
+                <Callout tone="success">
+                    Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir dir einen
+                    Link zum Zurücksetzen geschickt.
+                </Callout>
+            ) : (
+                <form action={form.submit} className="grid gap-4">
+                    {form.feedback}
 
-                        <Field label="E-Mail" htmlFor="forgot-email">
-                            <Input
-                                id="forgot-email"
-                                type="email"
-                                autoComplete="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                placeholder="beispiel@domain.de"
-                            />
-                        </Field>
+                    <Field label="E-Mail" htmlFor="forgot-email">
+                        <Input
+                            id="forgot-email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="beispiel@domain.de"
+                        />
+                    </Field>
 
-                        <Button type="submit" size="lg" loading={status === "loading"} className="w-full">
-                            Link anfordern
-                        </Button>
-                    </form>
-                )}
-            </AuthShell>
-        </>
+                    <Button type="submit" size="lg" loading={form.pending} className="w-full">
+                        Link anfordern
+                    </Button>
+                </form>
+            )}
+        </AuthShell>
     );
 }

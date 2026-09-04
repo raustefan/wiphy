@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import TiptapLink from "@tiptap/extension-link";
-import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
+import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
+import { useActionForm } from "@/lib/client/useActionForm";
 import {
   Button,
   Checkbox,
@@ -23,8 +21,7 @@ export type MailRecipient = {
 };
 
 type EmailComposerDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
   recipients: MailRecipient[];
   defaultSubject?: string;
   defaultMessage?: string;
@@ -33,9 +30,15 @@ type EmailComposerDialogProps = {
   onSuccess?: () => void;
 };
 
+/**
+ * Mail an ausgewählte Empfänger verfassen.
+ *
+ * Wird nur gerendert, solange der Dialog offen sein soll — dadurch startet jeder
+ * Aufruf mit leerem Formular, ohne dass die Komponente ihren eigenen Zustand
+ * beim Öffnen von Hand zurücksetzen muss.
+ */
 export function EmailComposerDialog({
-  open,
-  onOpenChange,
+  onClose,
   recipients,
   defaultSubject = "",
   defaultMessage = "",
@@ -44,96 +47,51 @@ export function EmailComposerDialog({
   onSuccess,
 }: EmailComposerDialogProps) {
   const [subject, setSubject] = useState(defaultSubject);
-  const [message, setMessage] = useState(defaultMessage);
   const [bccToSelf, setBccToSelf] = useState(true);
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [sentCount, setSentCount] = useState(0);
-  const wasOpenRef = useRef(false);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      TiptapLink.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-physics underline cursor-pointer",
-        },
-      }),
-    ],
-    content: defaultMessage,
-    editorProps: {
-      attributes: {
-        class:
-          "max-w-none min-h-[200px] p-4 text-sm leading-relaxed focus:outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2",
-      },
-    },
+  const form = useActionForm(sendDirectMailAction, {
+    featureLabel: "Mailversand",
+    onSuccess: () => setSuccess(true),
   });
 
-  // Reset only when the dialog opens — not when parent props change while open.
-  useEffect(() => {
-    if (open && !wasOpenRef.current) {
-      setSubject(defaultSubject);
-      setMessage(defaultMessage);
-      setBccToSelf(true);
-      setError("");
-      setSuccess(false);
-      setSentCount(0);
-      editor?.commands.setContent(defaultMessage);
-    }
-    wasOpenRef.current = open;
-  }, [open, defaultSubject, defaultMessage, editor]);
+  const editor = useEmailEditor({ content: defaultMessage });
 
   function closeDialog() {
     if (success) onSuccess?.();
-    setSuccess(false);
-    onOpenChange(false);
+    onClose();
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (recipients.length === 0) return;
 
-    setError("");
-    setPending(true);
-    try {
-      const formData = new FormData();
-      for (const r of recipients) {
-        formData.append("selectedUserIds", r.id);
-      }
-      formData.set("subject", subject);
-      formData.set("message", editor?.getHTML() || message);
-      if (bccToSelf) formData.set("bccToSelf", "on");
-
-      const result = await sendDirectMailAction(formData);
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
-
-      setSentCount(recipients.length);
-      setSuccess(true);
-    } finally {
-      setPending(false);
+    const formData = new FormData();
+    for (const r of recipients) {
+      formData.append("selectedUserIds", r.id);
     }
+    formData.set("subject", subject);
+    formData.set("message", editor?.getHTML() ?? defaultMessage);
+    if (bccToSelf) formData.set("bccToSelf", "on");
+
+    void form.submit(formData);
   }
 
   /** Abbrechen/Esc/Backdrop — während des Versands bleibt der Dialog offen. */
   function handleClose() {
-    if (pending) return;
+    if (form.pending) return;
     closeDialog();
   }
 
   if (success) {
     return (
-      <Dialog open={open} onClose={closeDialog} size="sm">
+      <Dialog open onClose={closeDialog} size="sm">
         <div className="grid justify-items-center gap-3 py-2 text-center">
           <CheckCircle2 size={48} className="text-positive" aria-hidden="true" />
           <h2 className="text-lg font-bold tracking-tight">E-Mail gesendet</h2>
           <p className="text-sm text-muted">
-            Die Nachricht wurde an {sentCount} {sentCount === 1 ? "Empfänger" : "Empfänger"}{" "}
-            versendet.
+            Die Nachricht wurde an {recipients.length}{" "}
+            {recipients.length === 1 ? "Empfänger" : "Empfänger"} versendet.
           </p>
           <Button className="mt-2" onClick={closeDialog}>
             Schließen
@@ -145,7 +103,7 @@ export function EmailComposerDialog({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={handleClose}
       title={submitLabel}
       description={
@@ -167,11 +125,7 @@ export function EmailComposerDialog({
           </div>
         )}
 
-        {error && (
-          <p role="alert" className="text-sm text-negative">
-            {error}
-          </p>
-        )}
+        {form.feedback}
 
         <Field label="Betreff" htmlFor="email-composer-subject">
           <Input
@@ -182,16 +136,7 @@ export function EmailComposerDialog({
           />
         </Field>
 
-        <div className="grid gap-1.5">
-          <span className="text-sm font-semibold text-foreground">Nachricht</span>
-          <p className="text-sm text-faint">
-            Verfügbare Platzhalter: $Vorname, $Nachname, $Name
-          </p>
-          <div className="overflow-hidden rounded-xl border border-line-strong bg-surface">
-            <EmailEditorToolbar editor={editor} />
-            <EditorContent editor={editor} />
-          </div>
-        </div>
+        <EmailBodyField editor={editor} />
 
         {showBccToSelf && (
           <div className="flex items-center gap-2">
@@ -210,12 +155,12 @@ export function EmailComposerDialog({
         )}
 
         <DialogFooter className="sm:items-end">
-          <Button variant="soft" color="neutral" type="button" disabled={pending} onClick={handleClose}>
+          <Button variant="soft" color="neutral" type="button" disabled={form.pending} onClick={handleClose}>
             Abbrechen
           </Button>
           <div className="grid gap-1 sm:justify-items-end">
-            <Button type="submit" loading={pending} disabled={recipients.length === 0}>
-              {pending ? "Wird gesendet…" : submitLabel}
+            <Button type="submit" loading={form.pending} disabled={recipients.length === 0}>
+              {form.pending ? "Wird gesendet…" : submitLabel}
             </Button>
             <p className="text-xs text-faint">
               E-Mail an {recipients.length} {recipients.length === 1 ? "Person" : "Personen"}{" "}

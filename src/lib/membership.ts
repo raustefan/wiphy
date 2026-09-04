@@ -54,10 +54,6 @@ export const STEPS = [
 
 export type StepId = (typeof STEPS)[number]["id"];
 
-export function formatEuro(value: number): string {
-  return value.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
-}
-
 /** Alter in vollen Jahren am Stichtag. */
 export function ageAt(birthDate: Date, reference: Date = new Date()): number {
   let age = reference.getFullYear() - birthDate.getFullYear();

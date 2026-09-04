@@ -3,51 +3,32 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
+import { useActionForm } from "@/lib/client/useActionForm";
+import { postJson } from "@/lib/client/postJson";
 
-/** Fehlermeldung aus einem unbekannten Fehlerwert, sonst der Standardtext. */
-function messageOf(error: unknown, fallback: string): string {
-    return error instanceof Error && error.message ? error.message : fallback;
-}
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
+    const [verified, setVerified] = useState(false);
 
-    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("loading");
-    const [errorMessage, setErrorMessage] = useState("");
-    const [featureDisabled, setFeatureDisabled] = useState(false);
+    const form = useActionForm(
+        (formData) =>
+            postJson(
+                "/api/auth/verify-email",
+                { token: formData.get("token") },
+                "Fehler bei der E-Mail-Bestätigung.",
+            ),
+        { featureLabel: "E-Mail-Verifizierung", onSuccess: () => setVerified(true) },
+    );
 
+    // Die Bestätigung passiert beim Öffnen des Links, nicht auf Knopfdruck.
+    // `form.run` ist über Renders hinweg stabil, der Effekt läuft also nur bei
+    // einem tatsächlich neuen Token.
+    const { run } = form;
     useEffect(() => {
-        // Ohne Token wird gar nicht erst angefragt — das rendert unten den
-        // eigenen Hinweis.
-        if (!token) return;
-
-        fetch("/api/auth/verify-email", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ token }),
-        })
-            .then(async (res) => {
-                const data = await res.json();
-                if (!res.ok) {
-                    if (data.code === "FEATURE_DISABLED") {
-                        setFeatureDisabled(true);
-                        setStatus("idle");
-                        return;
-                    }
-                    throw new Error(data.error || "Etwas ist schiefgelaufen.");
-                }
-                setStatus("success");
-            })
-            .catch((err: unknown) => {
-                console.error(err);
-                setErrorMessage(messageOf(err, "Fehler bei der E-Mail-Bestätigung."));
-                setStatus("error");
-            });
-    }, [token]);
+        if (token) void run({ token });
+    }, [token, run]);
 
     if (!token) {
         return (
@@ -63,7 +44,18 @@ function VerifyEmailContent() {
         );
     }
 
-    if (status === "loading") {
+    if (verified) {
+        return (
+            <AuthShell title="Erfolgreich bestätigt!">
+                <Callout tone="success">Deine E-Mail-Adresse wurde bestätigt.</Callout>
+                <ButtonLink href="/login" size="lg" className="w-full">
+                    Zum Login
+                </ButtonLink>
+            </AuthShell>
+        );
+    }
+
+    if (!form.error && !form.featureDisabled) {
         return (
             <AuthShell
                 title="E-Mail wird verifiziert …"
@@ -76,36 +68,21 @@ function VerifyEmailContent() {
         );
     }
 
-    if (status === "success") {
-        return (
-            <AuthShell title="Erfolgreich bestätigt!">
-                <Callout tone="success">Deine E-Mail-Adresse wurde bestätigt.</Callout>
-                <ButtonLink href="/login" size="lg" className="w-full">
-                    Zum Login
-                </ButtonLink>
-            </AuthShell>
-        );
-    }
-
     return (
-        <>
-            <FeatureDisabledDialog
-                open={featureDisabled}
-                featureLabel="E-Mail-Verifizierung"
-                onOpenChange={setFeatureDisabled}
-            />
-            <AuthShell
-                title="Fehler bei der Verifizierung"
-                footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
-            >
+        <AuthShell
+            title="Fehler bei der Verifizierung"
+            footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
+        >
+            {form.feedback}
+            {!form.error && (
                 <Callout tone="danger">
-                    {errorMessage || "Der Bestätigungslink ist ungültig oder abgelaufen."}
+                    Der Bestätigungslink ist ungültig oder abgelaufen.
                 </Callout>
-                <ButtonLink href="/login" size="lg" color="neutral" variant="soft" className="w-full">
-                    Zurück zum Login
-                </ButtonLink>
-            </AuthShell>
-        </>
+            )}
+            <ButtonLink href="/login" size="lg" color="neutral" variant="soft" className="w-full">
+                Zurück zum Login
+            </ButtonLink>
+        </AuthShell>
     );
 }
 

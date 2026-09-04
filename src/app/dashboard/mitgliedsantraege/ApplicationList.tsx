@@ -16,7 +16,7 @@ import {
     TextArea,
 } from "@/components/ui";
 import { formatIban, maskIban } from "@/lib/iban";
-import { formatEuro } from "@/lib/membership";
+import { formatEuro } from "@/lib/format";
 import {
     acceptMembershipApplication,
     declineMembershipApplication,

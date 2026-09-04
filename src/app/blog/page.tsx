@@ -1,16 +1,12 @@
 import { Calendar, Clock, User } from "lucide-react";
+import { Lead } from "@/components/ui";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
-
-const dateFormat: Intl.DateTimeFormatOptions = {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-};
+import { formatDate } from "@/lib/format";
 
 function MetaLine({
     author,
@@ -25,7 +21,7 @@ function MetaLine({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
             <span className="inline-flex items-center gap-1.5">
                 <Calendar size={13} aria-hidden="true" />
-                {date.toLocaleDateString("de-DE", dateFormat)}
+                {formatDate(date)}
             </span>
             {author && (
                 <span className="inline-flex items-center gap-1.5">
@@ -101,9 +97,9 @@ export default async function BlogIndexPage() {
                                     date={lead.publishedAt}
                                     minutes={readingTimeMinutes(lead.content)}
                                 />
-                                <p className="max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+                                <Lead className="max-w-2xl">
                                     {lead.preview}
-                                </p>
+                                </Lead>
                                 <span className="text-sm font-bold text-physics">
                                     Weiterlesen →
                                 </span>

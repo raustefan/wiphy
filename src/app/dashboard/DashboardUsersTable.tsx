@@ -204,17 +204,12 @@ export function DashboardUsersTable({
                 </>
             )}
 
-            {isAdmin && (
+            {isAdmin && mailUser && (
                 <EmailComposerDialog
-                    open={mailUser != null}
-                    onOpenChange={(open) => {
-                        if (!open) setMailUser(null);
-                    }}
-                    recipients={
-                        mailUser
-                            ? [{ id: mailUser.id, name: mailDisplayName, email: mailUser.email }]
-                            : []
-                    }
+                    onClose={() => setMailUser(null)}
+                    recipients={[
+                        { id: mailUser.id, name: mailDisplayName, email: mailUser.email },
+                    ]}
                     defaultSubject=""
                     defaultMessage=""
                     submitLabel="E-Mail senden"

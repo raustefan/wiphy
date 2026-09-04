@@ -8,6 +8,7 @@ import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { deriveStudentYears, selectableStudentYears } from "@/lib/membership";
 import { Badge, Callout, Card, Container } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
+import { formatDate } from "@/lib/format";
 import { ApplicationWizard } from "./ApplicationWizard";
 import { WithdrawApplicationButton } from "./WithdrawApplicationButton";
 
@@ -71,11 +72,7 @@ export default async function MembershipApplicationPage() {
                         </Badge>
                         <span className="text-sm text-muted">
                             eingereicht am{" "}
-                            {openApplication.submittedAt.toLocaleDateString("de-DE", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}
+                            {formatDate(openApplication.submittedAt)}
                         </span>
                     </div>
                     <p className="max-w-prose text-sm text-muted text-pretty">

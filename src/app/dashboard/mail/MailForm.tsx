@@ -15,11 +15,8 @@ import {
     Separator,
 } from "@/components/ui";
 import { sendEmailAction } from "./actions";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import TiptapLink from "@tiptap/extension-link";
-import { EmailEditorToolbar } from "@/components/EmailEditorToolbar";
-import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
+import { useActionForm } from "@/lib/client/useActionForm";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 
 export type MailUserOption = {
@@ -62,29 +59,9 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
     const [target, setTarget] = useState("ALL");
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-    const [error, setError] = useState("");
-    const [pending, setPending] = useState(false);
-    const [featureDisabled, setFeatureDisabled] = useState(false);
     const [showRecipients, setShowRecipients] = useState(false);
 
-    const editor = useEditor({
-        extensions: [
-            StarterKit,
-            TiptapLink.configure({
-                openOnClick: false,
-                HTMLAttributes: {
-                    class: "text-physics underline cursor-pointer",
-                },
-            }),
-        ],
-        content: "",
-        editorProps: {
-            attributes: {
-                class:
-                    "max-w-none min-h-[250px] p-4 text-sm leading-relaxed focus:outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2",
-            },
-        },
-    });
+    const editor = useEmailEditor({ minHeight: 250 });
 
     const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
@@ -106,6 +83,11 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
         }
         return [...list].sort(byStatusThenName);
     }, [target, users, selectedUsers]);
+
+    const form = useActionForm(sendEmailAction, {
+        featureLabel: "Mail-Versand",
+        onSuccess: () => onSuccess?.(recipients.length),
+    });
 
     const searchResults = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -148,41 +130,17 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
         setSelectedIds(new Set());
     }
 
-    async function submitAction(formData: FormData) {
-        setError("");
-        setPending(true);
-        try {
-            formData.set("message", editor?.getHTML() || "");
-            const result = await sendEmailAction(formData);
-            if (result && !result.ok) {
-                if (result.code === "FORBIDDEN") {
-                    setFeatureDisabled(true);
-                } else {
-                    setError(result.message);
-                }
-            } else {
-                onSuccess?.(recipients.length);
-            }
-        } finally {
-            setPending(false);
-        }
+    function submitAction(formData: FormData) {
+        formData.set("message", editor?.getHTML() || "");
+        return form.submit(formData);
     }
 
     return (
         <form action={submitAction}>
-            <FeatureDisabledDialog
-                open={featureDisabled}
-                featureLabel="Mail-Versand"
-                onOpenChange={setFeatureDisabled}
-            />
             <input type="hidden" name="target" value={target} />
 
             <div className="grid gap-5">
-                {error && (
-                    <p role="alert" className="text-sm text-negative">
-                        {error}
-                    </p>
-                )}
+                {form.feedback}
 
                 {/* Empfängergruppe */}
                 <Field
@@ -375,16 +333,7 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                 </Field>
 
                 {/* Nachricht */}
-                <div className="grid gap-1.5">
-                    <span className="text-sm font-semibold text-foreground">Nachricht</span>
-                    <p className="text-sm text-faint">
-                        Verfügbare Platzhalter: $Vorname, $Nachname, $Name
-                    </p>
-                    <div className="overflow-hidden rounded-xl border border-line-strong bg-surface">
-                        <EmailEditorToolbar editor={editor} />
-                        <EditorContent editor={editor} />
-                    </div>
-                </div>
+                <EmailBodyField editor={editor} />
 
                 <Separator />
 
@@ -453,9 +402,9 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                     </Dialog>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <Button size="lg" type="submit" loading={pending}>
+                        <Button size="lg" type="submit" loading={form.pending}>
                             <Send size={16} aria-hidden="true" />{" "}
-                            {pending
+                            {form.pending
                                 ? "Wird gesendet…"
                                 : `An ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
                         </Button>
