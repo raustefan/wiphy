@@ -8,7 +8,7 @@ import {
     getDashboardUsers,
     getEditableUser,
 } from "@/lib/server/services/userService";
-import { getFeeDashboardUsers } from "@/lib/server/services/feeService";
+import { getFeeDashboardData } from "@/lib/server/services/feeService";
 import {
     User,
     UserCircle,
@@ -22,6 +22,7 @@ import {
     Mail,
     UserCog,
     ArrowRight,
+    FileText,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
@@ -29,6 +30,9 @@ import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDia
 import { formatStatus } from "@/lib/statusLabels";
 import { Badge, ButtonLink, Card, Container, Separator } from "@/components/ui";
 import { SectionHeader } from "./SectionHeader";
+import { countOpenApplications, getOpenApplication } from "@/lib/server/services/membershipService";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
+import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 function formatDate(d?: string | Date | null) {
     if (!d) return "—";
@@ -46,6 +50,7 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
     { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
+    { href: MEMBERSHIP_ADMIN_PATH, label: "Mitgliedsanträge", Icon: FileText },
     { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
 ];
 
@@ -57,7 +62,7 @@ export default async function DashboardPage() {
     const profile = await getEditableUser(currentUser.id);
 
     // Fetch current user's fee data for the visualizer
-    const feeUsers = await getFeeDashboardUsers(currentUser.id, "MEMBER");
+    const feeUsers = await getFeeDashboardData(currentUser.id, "MEMBER");
     const myRecord = feeUsers.find((u) => u.id === currentUser.id);
     const myFees = myRecord?.fees || [];
 
@@ -65,6 +70,15 @@ export default async function DashboardPage() {
     const last3Years = [currentYear - 2, currentYear - 1, currentYear];
     const userStatus = profile?.status ?? currentUser.status ?? "KEIN_MITGLIED";
     const memberSince = profile?.createdAt ?? null;
+
+    // Der Antrags-CTA ist nur für Konten ohne Mitgliedschaft relevant.
+    const isNonMember = userStatus === "KEIN_MITGLIED";
+    const [openApplication, applicationEnabled, openApplicationCount] = await Promise.all([
+        isNonMember ? getOpenApplication(currentUser.id) : null,
+        isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
+        isAdmin ? countOpenApplications() : 0,
+    ]);
+    const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
 
     return (
         <Container size="4" className="py-8 sm:py-12">
@@ -118,6 +132,37 @@ export default async function DashboardPage() {
                 </span>
             </Link>
 
+            {/* ---------- Mitgliedsantrag CTA (nur ohne Mitgliedschaft) ---------- */}
+            {showApplicationCta && (
+                <Link
+                    href={MEMBERSHIP_APPLICATION_PATH}
+                    className="group mb-6 grid gap-2 rounded-2xl border border-line bg-raised/60 px-5 py-5 transition-shadow hover:shadow-lg sm:mb-8 sm:px-6"
+                >
+                    <span className="flex items-center gap-2 text-sm font-medium text-physics">
+                        <FileText size={18} aria-hidden="true" />
+                        Mitgliedschaft
+                    </span>
+                    <span className="text-lg font-bold tracking-tight sm:text-xl">
+                        {openApplication
+                            ? "Dein Aufnahmeantrag wird geprüft"
+                            : "Vereinsmitgliedschaft beantragen"}
+                    </span>
+                    <span className="max-w-prose text-sm text-muted text-pretty">
+                        {openApplication
+                            ? "Der Vorstand entscheidet über deinen Antrag. Hier siehst du den aktuellen Stand."
+                            : "Du bist derzeit als „Kein Mitglied“ geführt. In fünf Schritten stellst du deinen Aufnahmeantrag."}
+                    </span>
+                    <span className="mt-1 flex items-center gap-2 text-sm font-semibold text-physics">
+                        {openApplication ? "Status ansehen" : "Antrag starten"}
+                        <ArrowRight
+                            size={16}
+                            aria-hidden="true"
+                            className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                        />
+                    </span>
+                </Link>
+            )}
+
             {/* ---------- Profile summary ---------- */}
             <Card className="mb-6 grid gap-5 p-5 sm:mb-8 sm:grid-cols-3 sm:p-6">
                 <div className="grid gap-1">
@@ -167,6 +212,9 @@ export default async function DashboardPage() {
                             >
                                 <Icon size={16} aria-hidden="true" />
                                 {label}
+                                {href === MEMBERSHIP_ADMIN_PATH && openApplicationCount > 0 && (
+                                    <Badge tone="warning">{openApplicationCount}</Badge>
+                                )}
                             </ButtonLink>
                         ))}
                     </div>

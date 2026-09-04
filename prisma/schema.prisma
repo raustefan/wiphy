@@ -34,6 +34,10 @@ model User {
   studiengang    String?
   studienbeginn  DateTime?
   studienende    DateTime?
+  /// Jahre mit Sonderstatus nach § 5 (z. B. Studierende). Maßgeblich für den
+  /// Beitragssatz eines Jahres, solange dafür noch keine `MemberFee`-Zeile
+  /// existiert — und damit auch für Jahre, die erst künftig angelegt werden.
+  studentYears   Int[]
   diplomarbeit   String?
   bachelorarbeit String?
   masterarbeit   String?
@@ -65,6 +69,7 @@ model User {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   fees              MemberFee[]
+  applications      MembershipApplication[]
   lastLogin         DateTime    @default(now())
   emailVerified     Boolean     @default(false)
   /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
@@ -91,7 +96,12 @@ model MemberFee {
   jahr      Int
   bezahlt   Boolean @default(false)
   isStudent Boolean @default(false)
+  /// Effektiver Betrag. Nur maßgeblich, wenn `beitragManuell` gesetzt ist —
+  /// sonst gilt der aus `FeeDefault` berechnete Standardbeitrag.
   beitrag   Float   @default(0)
+  /// Ausnahmefall: ein Admin hat den Betrag von Hand abweichend festgelegt.
+  /// Solange false, folgt die Zeile automatisch den Standardbeiträgen.
+  beitragManuell Boolean @default(false)
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -127,6 +137,9 @@ enum FeatureFlagKey {
   CONTACT_FORM
   CONTACT_FORM_MAIL
   CONTACT_FORM_STORAGE
+  MEMBERSHIP_APPLICATION
+  MEMBERSHIP_APPLICATION_MAIL
+  MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL
 }
 
 model FeatureFlag {
@@ -203,4 +216,108 @@ model ContactRequest {
 
   @@index([createdAt])
   @@index([handledAt])
+}
+
+/// Standard-Beitragssätze je Beitragsjahr, als **Monatsbeträge** — so beschließt
+/// sie die Mitgliederversammlung (§ 5). Ein einzelner globaler Satz wäre falsch,
+/// sobald der Beitrag geändert wird: dann würden auch abgeschlossene Jahre neu
+/// bewertet. Fehlt ein Jahr, gilt das jüngste hinterlegte Jahr davor
+/// (siehe `resolveFeeDefault`).
+model FeeDefault {
+  jahr    Int   @id
+  /// Monatsbeitrag für reguläre ordentliche Mitglieder.
+  regular Float
+  /// Monatsbeitrag für Mitglieder mit Sonderstatus (z. B. Studierende).
+  student Float
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+enum MembershipApplicationStatus {
+  EINGEREICHT
+  ANGENOMMEN
+  ABGELEHNT
+  ZURUECKGEZOGEN
+}
+
+/// Aufnahmeantrag eines Accounts ohne Mitgliedschaft.
+///
+/// Die Personendaten stehen hier als *Snapshot* und nicht nur als Verweis auf
+/// `User`: das Mitglied darf sein Profil jederzeit weiter bearbeiten, und ohne
+/// Kopie würde eine spätere Änderung rückwirkend verändern, was tatsächlich
+/// beantragt und beschlossen wurde (Beitragsstufe, SEPA-Mandat).
+model MembershipApplication {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  status MembershipApplicationStatus @default(EINGEREICHT)
+
+  /// Trägt `userId` solange der Antrag offen ist, sonst NULL. Erzwingt über den
+  /// Unique-Constraint genau einen offenen Antrag pro Account, ohne dass dafür
+  /// ein partieller Index an Prisma vorbei angelegt werden müsste.
+  openForUserId String? @unique
+
+  // --- Snapshot: Person & Adresse ---
+  vorname      String
+  name         String
+  titel        String?
+  geburtsdatum DateTime
+  strasse      String
+  plz          String
+  stadt        String
+  land         String
+  telefon      String?
+
+  // --- Snapshot: Studium & Beruf ---
+  studiengang   String?
+  studienbeginn DateTime?
+  studienende   DateTime?
+  arbeitgeber   String?
+  berufsstand   String?
+  berufszweig   String?
+  position      String?
+  /// Jahre, für die die Studierendenermäßigung beantragt wird.
+  studentYears  Int[]
+
+  // --- Snapshot: SEPA ---
+  kontoinhaber String
+  IBAN         String
+  BIC          String?
+  bank         String?
+  bankeinzug   Boolean @default(true)
+  /// Datum der Mandatserteilung (= Zeitpunkt des Absendens).
+  mandatDatum  DateTime
+  /// Wird erst vergeben, wenn dem Verein eine Gläubiger-ID vorliegt.
+  mandatsreferenz String?
+
+  // --- Einwilligungen ---
+  satzungAccepted     Boolean
+  datenschutzAccepted Boolean
+  /// Version der zugestimmten Texte, damit später nachweisbar bleibt, worauf
+  /// sich die Zustimmung bezog.
+  consentVersion      String
+
+  /// Jahresbeiträge zum Zeitpunkt der Antragstellung. Eingefroren, damit eine
+  /// Beitragserhöhung zwischen Antrag und Aufnahmebeschluss den Antragsteller
+  /// nicht nachträglich überrascht.
+  beitragRegularSnapshot Float
+  beitragStudentSnapshot Float
+
+  /// SHA-256 der Client-IP — genug zur Missbrauchskorrelation, kein Klardatum.
+  ipHash    String?
+  userAgent String?
+
+  submittedAt  DateTime  @default(now())
+  decidedAt    DateTime?
+  decidedById  String?
+  decisionNote String?
+  mailedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, submittedAt])
+  @@index([userId])
 }

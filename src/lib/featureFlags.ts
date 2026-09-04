@@ -15,6 +15,9 @@ export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = [
   "CONTACT_FORM",
   "CONTACT_FORM_MAIL",
   "CONTACT_FORM_STORAGE",
+  "MEMBERSHIP_APPLICATION",
+  "MEMBERSHIP_APPLICATION_MAIL",
+  "MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL",
 ];
 
 export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
@@ -32,6 +35,9 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   CONTACT_FORM: "Kontaktformular",
   CONTACT_FORM_MAIL: "Kontaktformular: Benachrichtigung per Mail",
   CONTACT_FORM_STORAGE: "Kontaktformular: Speicherung in der Datenbank",
+  MEMBERSHIP_APPLICATION: "Mitgliedsantrag",
+  MEMBERSHIP_APPLICATION_MAIL: "Mitgliedsantrag: Benachrichtigung an Admins",
+  MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL: "Mitgliedsantrag: Eingangsbestätigung",
 };
 
 export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
@@ -52,6 +58,12 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
     "Verschickt bei jeder Anfrage eine Benachrichtigung an alle Admins. Aus: Anfragen werden nur noch im Dashboard gesammelt.",
   CONTACT_FORM_STORAGE:
     "Speichert eingehende Anfragen in der Datenbank. Aus: Anfragen werden nur noch per Mail zugestellt und sind später nicht mehr einsehbar.",
+  MEMBERSHIP_APPLICATION:
+    "Schaltet den Antrag auf Vereinsmitgliedschaft im Mitgliederbereich ein oder aus. Aus: Nicht-Mitglieder können keinen neuen Antrag stellen; bereits eingegangene Anträge bleiben im Dashboard bearbeitbar.",
+  MEMBERSHIP_APPLICATION_MAIL:
+    "Benachrichtigt alle Admins per Mail über einen neuen Aufnahmeantrag. Aus: Anträge werden nur noch im Dashboard gesammelt.",
+  MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL:
+    "Schickt dem Antragsteller eine Eingangsbestätigung sowie eine Mail bei Annahme oder Ablehnung.",
 };
 
 export function isFeatureFlagKey(value: string | null): value is FeatureFlagKey {

@@ -7,6 +7,7 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
     links: [
       { href: "/geschichte", label: "Geschichte" },
       { href: "/vorstand", label: "Vorstand" },
+      { href: "/satzung", label: "Satzung & Ziele" },
       { href: "/blog", label: "Blog" },
       { href: "/kontakt", label: "Kontakt" },
     ],

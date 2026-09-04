@@ -13,6 +13,7 @@ const links = [
   { href: "/blog", label: "Blog" },
   { href: "/geschichte", label: "Geschichte" },
   { href: "/vorstand", label: "Vorstand" },
+  { href: "/satzung", label: "Satzung" },
   { href: "/kontakt", label: "Kontakt" },
 ];
 

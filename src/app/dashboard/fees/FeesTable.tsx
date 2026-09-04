@@ -27,6 +27,7 @@ import {
   Checkbox,
   Dialog,
   DialogFooter,
+  Field,
   IconButton,
   Input,
   Select,
@@ -40,6 +41,7 @@ import {
 import {
   updateFeeStatus,
   updateFeeAmount,
+  revertFeeAmount,
   updateFeeComment,
   initializeBillingYear,
 } from "./actions";
@@ -52,11 +54,20 @@ export type FeesTableUser = {
   mitgliedId: number | null;
   zahlungsKommentar: string | null;
   aufnahmedatum: string | null;
+  bankeinzug: boolean;
+  /** Vom Mitglied erklärte Jahre mit Sonderstatus (§ 5). */
+  studentYears: number[];
   fees: Array<{
     jahr: number;
     bezahlt: boolean;
     isStudent: boolean;
+    /** Tatsächlich fälliger Betrag: Standard oder manuelle Ausnahme. */
     beitrag: number;
+    /** Was der beschlossene Standardbeitrag ergäbe. */
+    standard: number;
+    manuell: boolean;
+    angelegt: boolean;
+    breakdown: { monthly: number; months: number; base: number; surcharge: number };
   }>;
 };
 
@@ -86,6 +97,23 @@ function formatCurrency(amount: number) {
     style: "currency",
     currency: "EUR",
   });
+}
+
+/**
+ * Erklärt, wie der Standardbeitrag zustande kommt — Monatssatz, anteilige
+ * Monate im Eintrittsjahr und ggf. der 10-%-Aufschlag nach § 5 Abs. 5.
+ */
+function explainFee(fee: FeesTableUser["fees"][number]) {
+  const parts = [
+    `${formatCurrency(fee.breakdown.monthly)}/Monat × ${fee.breakdown.months} ${
+      fee.breakdown.months === 1 ? "Monat" : "Monate"
+    }`,
+  ];
+  if (fee.breakdown.months < 12) parts.push("anteilig ab Eintritt (§ 5 Abs. 3)");
+  if (fee.breakdown.surcharge > 0) {
+    parts.push(`+ ${formatCurrency(fee.breakdown.surcharge)} ohne Lastschrift (§ 5 Abs. 5)`);
+  }
+  return parts.join(" · ");
 }
 
 /**
@@ -137,6 +165,72 @@ function CommentDialog({
   );
 }
 
+/**
+ * Ausnahme-Dialog für den Beitrag.
+ *
+ * Der Regelfall braucht keine Eingabe — er ergibt sich aus den beschlossenen
+ * Standardsätzen. Nur wer davon abweichen will, öffnet diesen Dialog; ein
+ * Zurücksetzen führt die Zeile wieder in den Automatismus zurück.
+ */
+function AmountDialog({
+  target,
+  onClose,
+}: {
+  target: { user: FeesTableUser; fee: FeesTableUser["fees"][number] } | null;
+  onClose: () => void;
+}) {
+  if (!target) return null;
+  const { user, fee } = target;
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      title={`Beitrag ${fee.jahr} – ${user.vorname} ${user.name ?? ""}`}
+      description="Nur für Ausnahmefälle. Ohne Abweichung gilt automatisch der Standardbeitrag."
+    >
+      <div className="mb-4 grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+        <p>
+          Standardbeitrag:{" "}
+          <span className="font-semibold tabular-nums">{formatCurrency(fee.standard)}</span>
+        </p>
+        <p className="text-muted">{explainFee(fee)}</p>
+      </div>
+
+      <form action={updateFeeAmount} onSubmit={onClose}>
+        <input type="hidden" name="userId" value={user.id} />
+        <input type="hidden" name="year" value={fee.jahr} />
+        <Field label="Abweichender Betrag (€)">
+          <Input
+            type="number"
+            name="beitrag"
+            step="0.01"
+            min="0"
+            defaultValue={fee.beitrag}
+            autoFocus
+          />
+        </Field>
+        <DialogFooter>
+          <Button variant="soft" color="neutral" type="button" onClick={onClose}>
+            Abbrechen
+          </Button>
+          <Button type="submit">Ausnahme speichern</Button>
+        </DialogFooter>
+      </form>
+
+      {fee.manuell && (
+        <form action={revertFeeAmount} onSubmit={onClose} className="mt-2">
+          <input type="hidden" name="userId" value={user.id} />
+          <input type="hidden" name="year" value={fee.jahr} />
+          <Button type="submit" variant="ghost" color="neutral" size="sm" className="w-full">
+            Auf Standardbeitrag zurücksetzen
+          </Button>
+        </form>
+      )}
+    </Dialog>
+  );
+}
+
 function UserPaymentHistoryDialog({
   user,
   open,
@@ -164,6 +258,27 @@ function UserPaymentHistoryDialog({
       <p className="mt-3 flex items-center gap-2 text-sm">
         <Calendar size={16} className="text-faint" aria-hidden="true" />
         Mitglied seit <span className="font-medium">{formatDate(user.aufnahmedatum)}</span>
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+        <GraduationCap size={16} className="text-faint" aria-hidden="true" />
+        Sonderstatus erklärt für:
+        {user.studentYears.length === 0 ? (
+          <span className="font-medium">—</span>
+        ) : (
+          user.studentYears.map((year) => (
+            <Badge key={year} tone="info">
+              {year}
+            </Badge>
+          ))
+        )}
+      </div>
+
+      <p className="mt-1 flex items-center gap-2 text-sm text-muted">
+        <CircleEuro size={16} className="text-faint" aria-hidden="true" />
+        {user.bankeinzug
+          ? "Lastschrifteinzug erteilt"
+          : "Kein Lastschriftmandat — Beiträge mit 10 % Aufschlag (§ 5 Abs. 5)"}
       </p>
 
       <Separator className="my-3" />
@@ -199,7 +314,14 @@ function UserPaymentHistoryDialog({
                       {fee.bezahlt ? "Bezahlt" : "Offen"}
                     </Badge>
                   </Td>
-                  <Td className="text-right tabular-nums">{formatCurrency(fee.beitrag)}</Td>
+                  <Td className="text-right tabular-nums">
+                    {formatCurrency(fee.beitrag)}
+                    {fee.manuell && (
+                      <Badge tone="warning" className="ml-2">
+                        Ausnahme
+                      </Badge>
+                    )}
+                  </Td>
                 </tr>
               ))}
             </tbody>
@@ -226,6 +348,10 @@ export function FeesTable({
   const [mailOpen, setMailOpen] = useState(false);
   const [commentUser, setCommentUser] = useState<FeesTableUser | null>(null);
   const [historyUser, setHistoryUser] = useState<FeesTableUser | null>(null);
+  const [amountTarget, setAmountTarget] = useState<{
+    user: FeesTableUser;
+    fee: FeesTableUser["fees"][number];
+  } | null>(null);
   const [search, setSearch] = useState("");
   const [revertConfirm, setRevertConfirm] = useState<{
     form: HTMLFormElement;
@@ -467,7 +593,9 @@ export function FeesTable({
               const existing = user.fees.find((f) => f.jahr === selectedYear);
               const paid = existing?.bezahlt ?? false;
               const isStudent = existing?.isStudent ?? false;
-              const beitrag = existing?.beitrag ?? 0;
+              // Für Jahre ohne Beitragszeile stammt der Sonderstatus aus der
+              // Erklärung des Mitglieds — das soll man der Zeile ansehen.
+              const declaredStudent = user.studentYears.includes(selectedYear);
 
               return (
                 <tr
@@ -545,8 +673,13 @@ export function FeesTable({
                           color={isStudent ? "accent" : "neutral"}
                           aria-label={
                             isStudent
-                              ? "Student (Klicken zum Ändern)"
+                              ? "Sonderstatus (Klicken zum Ändern)"
                               : "Regulär (Klicken zum Ändern)"
+                          }
+                          title={
+                            existing?.angelegt === false && declaredStudent
+                              ? `Sonderstatus laut Erklärung des Mitglieds für ${selectedYear}`
+                              : undefined
                           }
                         >
                           <GraduationCap size={16} aria-hidden="true" />
@@ -607,36 +740,32 @@ export function FeesTable({
                     )}
                   </Td>
                   <Td className="text-center" onClick={stopRowClick}>
-                    {isAdmin ? (
-                      <form action={updateFeeAmount}>
-                        <input type="hidden" name="userId" value={user.id} />
-                        <input type="hidden" name="year" value={selectedYear} />
-                        <div className="flex items-center justify-center gap-1">
-                          <Input
-                            type="number"
-                            name="beitrag"
-                            step="0.01"
-                            min="0"
-                            defaultValue={beitrag}
-                            aria-label={`Beitrag ${selectedYear} für ${user.vorname} ${user.name ?? ""}`}
-                            className="w-22 px-2 py-1.5 text-right tabular-nums"
-                          />
-                          <IconButton
-                            type="submit"
-                            size="sm"
-                            variant="soft"
-                            color="accent"
-                            aria-label="Betrag speichern"
-                          >
-                            <Check size={15} aria-hidden="true" />
-                          </IconButton>
-                        </div>
-                      </form>
-                    ) : (
-                      <span className="text-sm font-medium tabular-nums">
-                        {formatCurrency(beitrag)}
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span
+                        className="text-sm font-medium tabular-nums"
+                        title={existing ? explainFee(existing) : undefined}
+                      >
+                        {formatCurrency(existing?.beitrag ?? 0)}
                       </span>
-                    )}
+                      {existing?.manuell && <Badge tone="warning">Ausnahme</Badge>}
+                      {existing?.angelegt === false && (
+                        <Badge title={`Für ${selectedYear} ist noch keine Beitragszeile angelegt. Angezeigt wird der Standardbeitrag.`}>
+                          Vorschau
+                        </Badge>
+                      )}
+                      {isAdmin && existing && (
+                        <IconButton
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          color="neutral"
+                          onClick={() => setAmountTarget({ user, fee: existing })}
+                          aria-label={`Beitrag ${selectedYear} für ${user.vorname} ${user.name ?? ""} abweichend festlegen`}
+                        >
+                          <Pencil size={15} aria-hidden="true" />
+                        </IconButton>
+                      )}
+                    </div>
                   </Td>
                 </tr>
               );
@@ -669,6 +798,8 @@ export function FeesTable({
           </Button>
         </DialogFooter>
       </Dialog>
+
+      <AmountDialog target={amountTarget} onClose={() => setAmountTarget(null)} />
 
       <CommentDialog
         user={commentUser}

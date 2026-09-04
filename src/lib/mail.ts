@@ -117,3 +117,56 @@ export async function sendContactRequestEmail(
     encoding: "utf-8",
   });
 }
+
+/**
+ * Benachrichtigung über einen neuen Aufnahmeantrag.
+ *
+ * Enthält bewusst **keine** Bank- oder Adressdaten: SMTP ist kein
+ * vertraulicher Kanal, und die vollständigen Antragsdaten stehen ohnehin
+ * hinter dem Login im Dashboard.
+ */
+export async function sendMembershipApplicationEmail(
+  adminEmails: string[],
+  application: { vorname: string; name: string; email: string; dashboardUrl: string },
+) {
+  if (adminEmails.length === 0) return;
+
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  const vorname = escapeHtml(application.vorname);
+  const name = escapeHtml(application.name);
+  const email = escapeHtml(application.email);
+  const url = escapeHtml(application.dashboardUrl);
+
+  await transporter.sendMail({
+    from,
+    // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
+    bcc: adminEmails.join(","),
+    subject: "Neuer Antrag auf Vereinsmitgliedschaft",
+    text: `Hallo Admin,\n\nes liegt ein neuer Antrag auf Vereinsmitgliedschaft vor:\n\nName: ${application.vorname} ${application.name}\nE-Mail: ${application.email}\n\nDie vollständigen Antragsdaten inklusive Bankverbindung findest du im Dashboard:\n${application.dashboardUrl}\n\nViele Grüße,\nDein WirtschaftsPhysik Alumni e.V. System`,
+    html: `<p>Hallo Admin,</p><p>es liegt ein neuer Antrag auf Vereinsmitgliedschaft vor:</p><p><strong>Name:</strong> ${vorname} ${name}<br><strong>E-Mail:</strong> ${email}</p><p>Die vollständigen Antragsdaten inklusive Bankverbindung findest du im Dashboard:</p><p><a href="${url}">${url}</a></p><p>Viele Grüße,<br>Dein WirtschaftsPhysik Alumni e.V. System</p>`,
+    encoding: "utf-8",
+  });
+}
+
+/** Eingangsbestätigung, Annahme oder Ablehnung an den Antragsteller. */
+export async function sendMembershipStatusEmail(
+  email: string,
+  content: { subject: string; text: string },
+) {
+  const transporter = createMailTransporter();
+  const { from } = getSmtpConfig();
+
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: content.subject,
+    text: content.text,
+    html: content.text
+      .split("\n\n")
+      .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+      .join(""),
+    encoding: "utf-8",
+  });
+}

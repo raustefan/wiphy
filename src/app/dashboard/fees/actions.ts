@@ -2,10 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/server/authz";
-import { setFeeComment, setFeePaidStatus, setFeeStatus, setFeeAmount } from "@/lib/server/services/feeService";
-import { executeAction } from "@/lib/server/errors";
+import {
+  setFeeComment,
+  setFeePaidStatus,
+  setFeeStatus,
+  setFeeAmount,
+  resetFeeAmount,
+  getFeeLiableUsers,
+} from "@/lib/server/services/feeService";
+import { AppError, executeAction } from "@/lib/server/errors";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { feeCommentSchema, feeToggleSchema, feeStatusUpdateSchema, feeAmountUpdateSchema } from "@/lib/server/validation/schemas";
+import { feeDefaultSchema } from "@/lib/server/validation/membershipSchemas";
+import { removeFeeDefault, setFeeDefault } from "@/lib/server/services/feeDefaultService";
 import { prisma } from "@/lib/prisma";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 
@@ -64,16 +73,19 @@ export async function initializeBillingYear(formData: FormData) {
     const year = parseInt(formData.get("year") as string);
     if (!year || isNaN(year)) return;
 
-    const users = await prisma.user.findMany({ select: { id: true } });
+    // Nur beitragspflichtige Mitglieder — für alle anderen wäre die Zeile sinnlos.
+    const users = await getFeeLiableUsers();
 
     for (const user of users) {
-      let isStudentDefault = false;
-      const lastFee = await prisma.memberFee.findFirst({
-        where: { userId: user.id, jahr: { lt: year } },
-        orderBy: { jahr: "desc" },
-      });
-      if (lastFee) {
-        isStudentDefault = lastFee.isStudent;
+      // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der
+      // Status des zuletzt erfassten Jahres fortgeschrieben.
+      let isStudentDefault = user.studentYears.includes(year);
+      if (user.studentYears.length === 0) {
+        const lastFee = await prisma.memberFee.findFirst({
+          where: { userId: user.id, jahr: { lt: year } },
+          orderBy: { jahr: "desc" },
+        });
+        isStudentDefault = lastFee?.isStudent ?? false;
       }
 
       await prisma.memberFee.upsert({
@@ -84,7 +96,10 @@ export async function initializeBillingYear(formData: FormData) {
           jahr: year,
           bezahlt: false,
           isStudent: isStudentDefault,
+          // Kein Betrag: die Zeile folgt automatisch den Standard-Beitragssätzen,
+          // bis ein Admin sie ausdrücklich als Ausnahme überschreibt.
           beitrag: 0,
+          beitragManuell: false,
         },
       });
     }
@@ -93,3 +108,42 @@ export async function initializeBillingYear(formData: FormData) {
   });
 }
 
+
+export async function revertFeeAmount(formData: FormData) {
+  await executeAction(async () => {
+    await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
+
+    const { userId, year } = parseFormData(feeToggleSchema.omit({ paid: true }), formData);
+
+    await resetFeeAmount({ userId, year });
+    revalidatePath("/dashboard/fees");
+  });
+}
+
+export async function saveFeeDefault(formData: FormData) {
+  return executeAction(async () => {
+    await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
+
+    const { jahr, regular, student } = parseFormData(feeDefaultSchema, formData);
+
+    await setFeeDefault(jahr, regular, student);
+    revalidatePath("/dashboard/fees");
+  });
+}
+
+export async function deleteFeeDefaultYear(formData: FormData) {
+  return executeAction(async () => {
+    await requireAdmin();
+    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
+
+    const jahr = Number(formData.get("jahr"));
+    if (!Number.isInteger(jahr)) {
+      throw new AppError("VALIDATION_ERROR", "Ungültiges Jahr.");
+    }
+
+    await removeFeeDefault(jahr);
+    revalidatePath("/dashboard/fees");
+  });
+}
