@@ -10,6 +10,9 @@ import {
 import bcrypt from "bcryptjs";
 import { buildUserUpdateData, type UpdateUserInput } from "./userUpdateData";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { adminCreatedUserMessage, emailChangeMessage } from "@/lib/email/messages";
+import { siteUrl } from "@/lib/server/siteUrl";
 
 export async function getDashboardUsers(userId: string, role: Role) {
   return findUsersForDashboard(userId, role);
@@ -62,11 +65,10 @@ export async function updateUserProfile(input: UpdateUserInput) {
       },
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
-
-    const { sendEmailChangeEmail } = await import("@/lib/mail");
-    await sendEmailChangeEmail(newEmail, verificationUrl);
+    await sendEmail({
+      to: newEmail,
+      message: emailChangeMessage(siteUrl(`/verify-email?token=${token}`)),
+    });
 
     // Keep the old email in updated data
     data.email = user.email;
@@ -127,12 +129,14 @@ export async function adminCreateUser(input: Prisma.UserCreateInput, currentUser
     },
   });
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
-
   try {
-    const { sendAdminCreatedUserEmail } = await import("@/lib/mail");
-    await sendAdminCreatedUserEmail(user.email, verificationUrl, { vorname: user.vorname, name: user.name });
+    await sendEmail({
+      to: user.email,
+      message: adminCreatedUserMessage(
+        { vorname: user.vorname, name: user.name },
+        siteUrl(`/verify-email?token=${token}`),
+      ),
+    });
   } catch (error) {
     console.error("Failed to send admin created user notification email:", error);
   }

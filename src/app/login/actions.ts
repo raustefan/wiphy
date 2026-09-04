@@ -8,7 +8,9 @@ import { executeAction } from "@/lib/server/errors";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
-import { sendUserRegistrationConfirmationEmail } from "@/lib/mail";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { registrationConfirmationMessage } from "@/lib/email/messages";
+import { siteUrl } from "@/lib/server/siteUrl";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 
 /**
@@ -88,13 +90,15 @@ export async function resendVerificationEmail(email: string) {
             },
         });
 
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
+        const verificationUrl = siteUrl(`/verify-email?token=${token}`);
 
         try {
-            await sendUserRegistrationConfirmationEmail(user.email, verificationUrl, {
-                vorname: user.vorname,
-                name: user.name,
+            await sendEmail({
+                to: user.email,
+                message: registrationConfirmationMessage(
+                    { vorname: user.vorname, name: user.name },
+                    verificationUrl,
+                ),
             });
         } catch (error) {
             console.error("Failed to resend verification email:", error);

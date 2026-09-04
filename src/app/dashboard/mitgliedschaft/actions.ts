@@ -18,8 +18,11 @@ import {
   applicationIdSchema,
   membershipApplicationSchema,
 } from "@/lib/server/validation/membershipSchemas";
-import { sendMembershipApplicationEmail, sendMembershipStatusEmail } from "@/lib/mail";
-import { membershipReceivedTemplate } from "@/lib/email/templates";
+import { sendEmail } from "@/lib/server/email/mailer";
+import {
+  membershipApplicationNoticeMessage,
+  membershipReceivedMessage,
+} from "@/lib/email/messages";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 function absoluteUrl(path: string, host: string | null, proto: string) {
@@ -78,11 +81,15 @@ export async function submitMembershipApplication(formData: FormData) {
     if (await isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL")) {
       try {
         const adminEmails = await getAdminNotificationEmails();
-        await sendMembershipApplicationEmail(adminEmails, {
-          vorname: parsed.data.vorname,
-          name: parsed.data.name,
-          email: currentUser.email ?? "",
-          dashboardUrl: absoluteUrl(MEMBERSHIP_ADMIN_PATH, host, proto),
+        await sendEmail({
+          // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
+          bcc: adminEmails,
+          message: membershipApplicationNoticeMessage({
+            vorname: parsed.data.vorname,
+            name: parsed.data.name,
+            email: currentUser.email ?? "",
+            dashboardUrl: absoluteUrl(MEMBERSHIP_ADMIN_PATH, host, proto),
+          }),
         });
         await markApplicationMailed(application.id);
       } catch (error) {
@@ -94,10 +101,13 @@ export async function submitMembershipApplication(formData: FormData) {
 
     if (currentUser.email && (await isFeatureEnabled("MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL"))) {
       try {
-        await sendMembershipStatusEmail(
-          currentUser.email,
-          membershipReceivedTemplate({ vorname: parsed.data.vorname, name: parsed.data.name }),
-        );
+        await sendEmail({
+          to: currentUser.email,
+          message: membershipReceivedMessage({
+            vorname: parsed.data.vorname,
+            name: parsed.data.name,
+          }),
+        });
       } catch (error) {
         console.error("Failed to send membership confirmation mail:", error);
       }

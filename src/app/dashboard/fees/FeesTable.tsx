@@ -20,7 +20,8 @@ import {
   EmailComposerDialog,
   type MailRecipient,
 } from "@/components/EmailComposerDialog";
-import { feeReminderTemplate } from "@/lib/email/templates";
+import { renderBlocksEditorHtml } from "@/lib/email/blocks";
+import { feeReminderMessage } from "@/lib/email/messages";
 import {
   Badge,
   Button,
@@ -393,11 +394,12 @@ export function FeesTable({
 
   const reminderDefaults = useMemo(() => {
     const single = selectedUsers.length === 1 ? selectedUsers[0] : undefined;
-    return feeReminderTemplate({
+    const message = feeReminderMessage({
       vorname: single?.vorname,
       name: single?.name,
       year: selectedYear,
     });
+    return { subject: message.subject, html: renderBlocksEditorHtml(message.blocks) };
   }, [selectedUsers, selectedYear]);
 
   function handleYearChange(value: string) {
@@ -819,7 +821,7 @@ export function FeesTable({
           onOpenChange={setMailOpen}
           recipients={mailRecipients}
           defaultSubject={reminderDefaults.subject}
-          defaultMessage={reminderDefaults.message}
+          defaultMessage={reminderDefaults.html}
           submitLabel="Erinnerung senden"
           onSuccess={() => setSelectedIds(new Set())}
         />

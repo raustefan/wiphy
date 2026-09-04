@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { mailSendSchema } from "@/lib/server/validation/schemas";
 import { sendMailForTarget } from "@/lib/server/email/mailService";
@@ -39,14 +38,12 @@ export async function sendEmailAction(formData: FormData) {
         const admin = await enforceAdminMailRateLimit();
         await requireFeatureEnabled("MAIL_SERVICES");
         const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
-        const htmlMessage = String(formData.get("message") ?? "");
 
         await sendMailForTarget({
             target,
             selectedUserIds,
             subject,
-            message,
-            htmlMessage,
+            html: message,
             bccToSelf,
             adminEmail: admin.email,
         });

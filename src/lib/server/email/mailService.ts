@@ -1,12 +1,23 @@
+/**
+ * Rundmails aus dem Dashboard: Empfänger auflösen, Platzhalter ersetzen,
+ * versenden.
+ *
+ * Der eigentliche Versand läuft — wie bei jeder anderen Mail — über
+ * `sendEmail()`; der im Editor verfasste Text wird dafür als `html`-Block in
+ * dasselbe Briefpapier gesetzt.
+ */
 import { prisma } from "@/lib/prisma";
-import nodemailer from "nodemailer";
 import { AppError } from "@/lib/server/errors";
-import { getSmtpConfig } from "@/lib/server/env";
-import { escapeHtml, sanitizeEmailHtml } from "@/lib/server/email/sanitizeHtml";
+import { escapeHtml } from "@/lib/email/escapeHtml";
+import type { EmailMessage } from "@/lib/email/blocks";
+import { sanitizeEmailHtml } from "./sanitizeHtml";
+import { htmlToText } from "./htmlToText";
+import { sendEmail } from "./mailer";
 
-export function createMailTransporter() {
-  return nodemailer.createTransport(getSmtpConfig().transport);
-}
+type StatusTarget = "EHRENMITGLIED" | "ORDENTLICHES_MITGLIED" | "KEIN_MITGLIED";
+export type MailTarget = "ALL" | StatusTarget | "SELECTED";
+
+type Recipient = { email: string; vorname: string | null; name: string | null };
 
 export async function resolveUsersByIds(userIds: string[]) {
   const uniqueIds = [...new Set(userIds)];
@@ -29,8 +40,6 @@ export async function resolveUsersByIds(userIds: string[]) {
   return found;
 }
 
-type StatusTarget = "EHRENMITGLIED" | "ORDENTLICHES_MITGLIED" | "KEIN_MITGLIED";
-
 export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
   if (target === "ALL") {
     return prisma.user.findMany({ select: { email: true, vorname: true, name: true } });
@@ -42,7 +51,7 @@ export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
 }
 
 export async function resolveRecipientEmails(input: {
-  target: "ALL" | StatusTarget | "SELECTED";
+  target: MailTarget;
   selectedUserIds: string[];
 }) {
   if (input.target === "SELECTED") {
@@ -52,9 +61,9 @@ export async function resolveRecipientEmails(input: {
 }
 
 /**
- * Substitutes $Vorname/$Nachname/$Name placeholders with member-controlled data.
- * `escape: true` HTML-escapes the values first — required whenever the result
- * is used as email HTML, since a member's name is arbitrary user input.
+ * Ersetzt $Vorname/$Nachname/$Name durch die Daten des Empfängers.
+ * `escape: true` maskiert die Werte vorher — zwingend, sobald das Ergebnis als
+ * HTML verschickt wird, da Namen beliebige Nutzereingaben sind.
  */
 function replacePlaceholders(
   template: string,
@@ -66,124 +75,79 @@ function replacePlaceholders(
   const nachname = wrap(user.name || "");
   const full = wrap(`${user.vorname || ""} ${user.name || ""}`.trim());
 
-  let result = template;
-  result = result.replace(/\$Vorname/g, vorname);
-  result = result.replace(/\$Nachname/g, nachname);
-  result = result.replace(/\$Name/g, full);
-  return result;
+  return template
+    .replace(/\$Vorname/g, vorname)
+    .replace(/\$Nachname/g, nachname)
+    .replace(/\$Name/g, full);
+}
+
+/** Baut aus dem sanitisierten Editor-HTML eine versandfertige Nachricht. */
+function composeMessage(subject: string, html: string): EmailMessage {
+  return {
+    subject,
+    blocks: [{ type: "html", html, text: htmlToText(html) }],
+  };
 }
 
 export async function sendMailToUsers(input: {
-  recipientEmails: string[];
   subject: string;
-  message: string;
+  /** Rich-Text aus dem Composer. */
+  html: string;
   bccToSelf: boolean;
   adminEmail?: string | null;
-  htmlMessage?: string;
-  users?: { email: string; vorname: string | null; name: string | null }[];
+  users: Recipient[];
 }) {
-  const transporter = createMailTransporter();
-  const { from } = getSmtpConfig();
+  // Einmal zentral sanitisieren: entfernt Skripte, Event-Handler und unsichere
+  // Link-Schemata, unabhängig davon, was der Editor clientseitig zugelassen hat.
+  const template = sanitizeEmailHtml(input.html);
 
-  // Sanitize the admin-authored HTML once: strips scripts, event handlers and
-  // unsafe link schemes (e.g. javascript:) regardless of what the rich-text
-  // editor produced or allowed client-side.
-  const sanitizedHtmlTemplate = input.htmlMessage ? sanitizeEmailHtml(input.htmlMessage) : undefined;
-
-  // If users are provided, send personalized individual emails
-  if (input.users && input.users.length > 0) {
-    for (const user of input.users) {
-      const personalizedSubject = replacePlaceholders(input.subject, user);
-      const personalizedMessage = replacePlaceholders(input.message, user);
-      // Member-controlled name fields must be HTML-escaped before landing in the HTML body.
-      const personalizedHtml = sanitizedHtmlTemplate
-        ? replacePlaceholders(sanitizedHtmlTemplate, user, { escape: true })
-        : undefined;
-
-      await transporter.sendMail({
-        from,
-        to: user.email,
-        subject: personalizedSubject,
-        text: personalizedMessage,
-        html: personalizedHtml || personalizedMessage,
-        encoding: "utf-8",
-      });
-    }
-
-    // Send copy to admin if requested
-    if (input.bccToSelf) {
-      const selfEmail = input.adminEmail?.trim();
-      if (!selfEmail) {
-        throw new AppError(
-          "VALIDATION_ERROR",
-          "Keine E-Mail in der Session. Bitte neu einloggen oder 'Kopie an mich' deaktivieren.",
-        );
-      }
-      await transporter.sendMail({
-        from,
-        to: selfEmail,
-        subject: input.subject + " (Kopie)",
-        text: input.message,
-        html: sanitizedHtmlTemplate || input.message,
-        encoding: "utf-8",
-      });
-    }
-    return;
+  if (input.users.length === 0) {
+    throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
   }
 
-  // Fallback to BCC for backward compatibility
-  const bccAddresses = new Set(
-    input.recipientEmails.map((e) => e.trim()).filter((e) => e.length > 0),
-  );
+  // Einzelversand statt BCC, damit die Anrede pro Empfänger stimmt.
+  for (const user of input.users) {
+    await sendEmail({
+      to: user.email,
+      message: composeMessage(
+        replacePlaceholders(input.subject, user),
+        replacePlaceholders(template, user, { escape: true }),
+      ),
+    });
+  }
 
   if (input.bccToSelf) {
     const selfEmail = input.adminEmail?.trim();
     if (!selfEmail) {
       throw new AppError(
         "VALIDATION_ERROR",
-        "Keine E-Mail in der Session. Bitte neu einloggen oder 'BCC an mich' deaktivieren.",
+        "Keine E-Mail in der Session. Bitte neu einloggen oder 'Kopie an mich' deaktivieren.",
       );
     }
-    bccAddresses.add(selfEmail);
+    await sendEmail({
+      to: selfEmail,
+      message: composeMessage(`${input.subject} (Kopie)`, template),
+    });
   }
-
-  const emails = Array.from(bccAddresses).join(",");
-  if (!emails) {
-    throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
-  }
-
-  await transporter.sendMail({
-    from,
-    bcc: emails,
-    subject: input.subject,
-    text: input.message,
-    html: sanitizedHtmlTemplate || input.message,
-    encoding: "utf-8",
-  });
 }
-
-export type MailTarget = "ALL" | StatusTarget | "SELECTED";
 
 export async function sendMailForTarget(input: {
   target: MailTarget;
   selectedUserIds: string[];
   subject: string;
-  message: string;
+  html: string;
   bccToSelf: boolean;
   adminEmail?: string | null;
-  htmlMessage?: string;
 }) {
   const users = await resolveRecipientEmails({
     target: input.target,
     selectedUserIds: input.selectedUserIds,
   });
   await sendMailToUsers({
-    recipientEmails: users.map((u) => u.email),
     subject: input.subject,
-    message: input.message,
+    html: input.html,
     bccToSelf: input.bccToSelf,
     adminEmail: input.adminEmail,
-    htmlMessage: input.htmlMessage,
     users,
   });
 }

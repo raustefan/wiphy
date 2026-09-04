@@ -11,7 +11,12 @@ import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerSchema } from "@/lib/server/validation/schemas";
-import { sendAdminRegistrationNotificationEmail, sendUserRegistrationConfirmationEmail } from "@/lib/mail";
+import { sendEmail } from "@/lib/server/email/mailer";
+import {
+    adminRegistrationNoticeMessage,
+    registrationConfirmationMessage,
+} from "@/lib/email/messages";
+import { siteUrl } from "@/lib/server/siteUrl";
 
 export async function registerUser(formData: FormData) {
     return executeAction(async () => {
@@ -78,8 +83,7 @@ export async function registerUser(formData: FormData) {
             },
         });
 
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
+        const verificationUrl = siteUrl(`/verify-email?token=${token}`);
 
         try {
             const admins = await prisma.user.findMany({
@@ -88,8 +92,14 @@ export async function registerUser(formData: FormData) {
             });
             const adminEmails = admins.map((admin) => admin.email);
 
-            await sendAdminRegistrationNotificationEmail(adminEmails, { vorname, name, email });
-            await sendUserRegistrationConfirmationEmail(email, verificationUrl, { vorname, name });
+            await sendEmail({
+                bcc: adminEmails,
+                message: adminRegistrationNoticeMessage({ vorname, name, email }),
+            });
+            await sendEmail({
+                to: email,
+                message: registrationConfirmationMessage({ vorname, name }, verificationUrl),
+            });
         } catch (error) {
             console.error("Failed to send registration notification emails:", error);
         }

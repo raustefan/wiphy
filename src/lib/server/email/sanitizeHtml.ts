@@ -35,13 +35,3 @@ export function sanitizeEmailHtml(html: string): string {
     },
   });
 }
-
-/** Escapes user-controlled text (e.g. a member's name) before it's interpolated into email HTML. */
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}

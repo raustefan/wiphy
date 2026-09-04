@@ -16,19 +16,20 @@ import {
   applicationIdSchema,
   applicationRejectSchema,
 } from "@/lib/server/validation/membershipSchemas";
-import { sendMembershipStatusEmail } from "@/lib/mail";
+import { sendEmail } from "@/lib/server/email/mailer";
+import type { EmailMessage } from "@/lib/email/blocks";
 import {
-  membershipApprovedTemplate,
-  membershipRejectedTemplate,
-} from "@/lib/email/templates";
+  membershipApprovedMessage,
+  membershipRejectedMessage,
+} from "@/lib/email/messages";
 import { MEMBERSHIP_ADMIN_PATH } from "@/lib/membership";
 
 /** Mail an den Antragsteller darf die bereits vollzogene Entscheidung nie kippen. */
-async function notifyApplicant(email: string | undefined, content: { subject: string; text: string }) {
+async function notifyApplicant(email: string | undefined, message: EmailMessage) {
   if (!email) return;
   if (!(await isFeatureEnabled("MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL"))) return;
   try {
-    await sendMembershipStatusEmail(email, content);
+    await sendEmail({ to: email, message });
   } catch (error) {
     console.error("Failed to send membership decision mail:", error);
   }
@@ -51,7 +52,7 @@ export async function acceptMembershipApplication(formData: FormData) {
 
     await notifyApplicant(
       application.user.email,
-      membershipApprovedTemplate({
+      membershipApprovedMessage({
         vorname: application.vorname,
         name: application.name,
         aufnahmedatum,
@@ -77,7 +78,7 @@ export async function declineMembershipApplication(formData: FormData) {
 
     await notifyApplicant(
       application.user.email,
-      membershipRejectedTemplate({
+      membershipRejectedMessage({
         vorname: application.vorname,
         name: application.name,
         note,

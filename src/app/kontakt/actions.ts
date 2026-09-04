@@ -12,7 +12,8 @@ import { contactSchema } from "@/lib/server/validation/schemas";
 import { MIN_FILL_TIME_MS, SPAM_SCORE_MAIL_THRESHOLD } from "@/lib/contact";
 import { hashIp, scoreSpam } from "@/lib/server/contactSpam";
 import { getAdminNotificationEmails } from "@/lib/server/services/contactService";
-import { sendContactRequestEmail } from "@/lib/mail";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { contactRequestMessage } from "@/lib/email/messages";
 
 /**
  * Public contact form.
@@ -122,7 +123,14 @@ export async function submitContactRequest(formData: FormData) {
         if (shouldMail) {
             try {
                 const adminEmails = await getAdminNotificationEmails();
-                await sendContactRequestEmail(adminEmails, payload);
+                await sendEmail({
+                    // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern
+                    // heraus; die Besucheradresse steht im Reply-To statt im From,
+                    // sonst würde die Mail an unserem SPF/DKIM/DMARC scheitern.
+                    bcc: adminEmails,
+                    replyTo: `${payload.name} <${payload.email}>`,
+                    message: contactRequestMessage(payload),
+                });
                 if (requestId) {
                     await prisma.contactRequest.update({
                         where: { id: requestId },
