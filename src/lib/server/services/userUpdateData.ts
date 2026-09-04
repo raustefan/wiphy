@@ -127,10 +127,11 @@ export function buildUserUpdateData(input: UpdateUserInput): Prisma.UserUpdateIn
   applyDate(data, "studienende", input.studienende);
 
   const isAdmin = input.currentUserRole === "ADMIN";
-  const isSelf = input.currentUserId === input.idToEdit;
 
-  // Zahlungsdaten (ohne Kommentar/Mahnung): Nutzer dürfen ihre eigenen Daten pflegen
-  if (isAdmin || isSelf) {
+  // Zahlungsdaten (ohne Kommentar/Mahnung): nur Admins ändern sie hier — Mitglieder
+  // tun das ausschließlich über die Zahlungsverwaltung (`/dashboard/zahlungen`),
+  // wo dafür erneut das SEPA-Mandat bestätigt werden muss.
+  if (isAdmin) {
     data.bank = input.bank ?? null;
     data.BLZ = input.BLZ ?? null;
     data.KTO = input.KTO ?? null;

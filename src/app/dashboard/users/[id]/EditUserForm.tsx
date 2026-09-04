@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Mail, Info } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Banknote, Check, Mail, Info } from "lucide-react";
 import {
     Button,
+    Callout,
     Checkbox,
     Dialog,
     DialogFooter,
@@ -130,6 +132,14 @@ const ADMIN_ONLY_KEYS = new Set([
     "ausschluss",
     "zahlungsKommentar",
     "mahnung",
+    "bank",
+    "BLZ",
+    "KTO",
+    "IBAN",
+    "BIC",
+    "bankeinzug",
+    "zuwendungsbesch",
+    "mandatserteilung",
 ]);
 
 export function EditUserForm({
@@ -425,49 +435,64 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Zahlungsdaten */}
-                    <Section
-                        title="Zahlungsdaten"
-                        description="Deine Bankverbindung für den Mitgliedsbeitrag."
-                    >
-                        <div className="grid gap-3 sm:grid-cols-3">
-                            <Field label="Bank">
-                                <Input name="bank" defaultValue={initialValues.bank} />
+                    {isAdmin ? (
+                        <Section
+                            title="Zahlungsdaten"
+                            description="Bankverbindung des Mitglieds für den Mitgliedsbeitrag."
+                        >
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <Field label="Bank">
+                                    <Input name="bank" defaultValue={initialValues.bank} />
+                                </Field>
+                                <Field label="BLZ">
+                                    <Input name="BLZ" defaultValue={initialValues.BLZ} />
+                                </Field>
+                                <Field label="Kontonummer">
+                                    <Input name="KTO" defaultValue={initialValues.KTO} />
+                                </Field>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <Field label="IBAN">
+                                    <Input name="IBAN" defaultValue={initialValues.IBAN} />
+                                </Field>
+                                <Field label="BIC">
+                                    <Input name="BIC" defaultValue={initialValues.BIC} />
+                                </Field>
+                            </div>
+                            <Field label="Mandatserteilung">
+                                <Input
+                                    name="mandatserteilung"
+                                    type="date"
+                                    defaultValue={initialValues.mandatserteilung}
+                                />
                             </Field>
-                            <Field label="BLZ">
-                                <Input name="BLZ" defaultValue={initialValues.BLZ} />
-                            </Field>
-                            <Field label="Kontonummer">
-                                <Input name="KTO" defaultValue={initialValues.KTO} />
-                            </Field>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label="IBAN">
-                                <Input name="IBAN" defaultValue={initialValues.IBAN} />
-                            </Field>
-                            <Field label="BIC">
-                                <Input name="BIC" defaultValue={initialValues.BIC} />
-                            </Field>
-                        </div>
-                        <Field label="Mandatserteilung">
-                            <Input
-                                name="mandatserteilung"
-                                type="date"
-                                defaultValue={initialValues.mandatserteilung}
-                            />
-                        </Field>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <CheckboxField
-                                label="Bankeinzug"
-                                name="bankeinzug"
-                                defaultChecked={Boolean(user.bankeinzug)}
-                            />
-                            <CheckboxField
-                                label="Zuwendungsbeschreibung"
-                                name="zuwendungsbesch"
-                                defaultChecked={Boolean(user.zuwendungsbesch)}
-                            />
-                        </div>
-                    </Section>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <CheckboxField
+                                    label="Bankeinzug"
+                                    name="bankeinzug"
+                                    defaultChecked={Boolean(user.bankeinzug)}
+                                />
+                                <CheckboxField
+                                    label="Zuwendungsbeschreibung"
+                                    name="zuwendungsbesch"
+                                    defaultChecked={Boolean(user.zuwendungsbesch)}
+                                />
+                            </div>
+                        </Section>
+                    ) : (
+                        <Section title="Zahlungsdaten">
+                            <Callout tone="info" icon={<Banknote size={16} />}>
+                                Deine Bankverbindung und dein SEPA-Mandat änderst du in der{" "}
+                                <Link
+                                    href="/dashboard/zahlungen"
+                                    className="font-semibold text-physics underline"
+                                >
+                                    Zahlungsverwaltung
+                                </Link>
+                                . Dort findest du auch deine vollständige Beitragshistorie.
+                            </Callout>
+                        </Section>
+                    )}
 
                     {isAdmin && (
                         <>

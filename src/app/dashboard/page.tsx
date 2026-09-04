@@ -23,13 +23,22 @@ import {
     UserCog,
     ArrowRight,
     FileText,
+    CreditCard,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { formatStatus } from "@/lib/statusLabels";
 import { formatDate, formatEuro } from "@/lib/format";
-import { Badge, ButtonLink, Card, Container, Eyebrow, PageTitle, Separator } from "@/components/ui";
+import {
+    Badge,
+    ButtonLink,
+    Card,
+    Container,
+    Eyebrow,
+    PageTitle,
+    Separator,
+} from "@/components/ui";
 import { SectionHeader } from "./SectionHeader";
 import { countOpenApplications, getOpenApplication } from "@/lib/server/services/membershipService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
@@ -228,37 +237,51 @@ export default async function DashboardPage() {
 
                 <Separator className="my-4" />
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                    {last3Years.map((year) => {
-                        const fee = myFees.find((f) => f.jahr === year);
-                        const isPaid = fee?.bezahlt ?? false;
-                        const isStudent = fee?.isStudent ?? false;
-                        const amount = fee?.beitrag ?? 0;
-                        return (
-                            <div
-                                key={year}
-                                className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4"
-                            >
-                                <p className="flex items-center gap-2 text-sm text-muted">
-                                    <Calendar size={14} className="text-faint" aria-hidden="true" />
-                                    Beitragsjahr
-                                </p>
-                                <p className="font-mono text-2xl font-bold tracking-tight">{year}</p>
-                                <div className="flex flex-wrap gap-1">
-                                    <Badge tone={isPaid ? "positive" : "negative"}>
-                                        {isPaid ? "Bezahlt" : "Ausstehend"}
-                                    </Badge>
-                                    <Badge tone={isStudent ? "info" : "neutral"}>
-                                        {isStudent ? "Student" : "Regulär"}
-                                    </Badge>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                        {last3Years.map((year) => {
+                            const fee = myFees.find((f) => f.jahr === year);
+                            const isPaid = fee?.bezahlt ?? false;
+                            const isStudent = fee?.isStudent ?? false;
+                            const amount = fee?.beitrag ?? 0;
+                            return (
+                                <div
+                                    key={year}
+                                    className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4"
+                                >
+                                    <p className="flex items-center gap-2 text-sm text-muted">
+                                        <Calendar size={14} className="text-faint" aria-hidden="true" />
+                                        Beitragsjahr
+                                    </p>
+                                    <p className="font-mono text-2xl font-bold tracking-tight">{year}</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        <Badge tone={isPaid ? "positive" : "negative"}>
+                                            {isPaid ? "Bezahlt" : "Ausstehend"}
+                                        </Badge>
+                                        <Badge tone={isStudent ? "info" : "neutral"}>
+                                            {isStudent ? "Student" : "Regulär"}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs font-medium text-muted">
+                                        Betrag:{" "}
+                                        {formatEuro(amount)}
+                                    </p>
                                 </div>
-                                <p className="text-xs font-medium text-muted">
-                                    Betrag:{" "}
-                                    {formatEuro(amount)}
-                                </p>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+
+                    <Separator className="lg:hidden" />
+                    <Separator orientation="vertical" className="hidden lg:block" />
+
+                    <ButtonLink
+                        href="/dashboard/zahlungen"
+                        size="lg"
+                        className="flex h-auto flex-col items-center justify-center gap-2 px-8 py-6 text-center lg:w-56"
+                    >
+                        <CreditCard size={22} aria-hidden="true" />
+                        Zahlungen verwalten
+                    </ButtonLink>
                 </div>
             </Card>
 

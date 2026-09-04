@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
+import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
 
 /**
  * Email addresses are always stored lowercased — `User.email` is case-sensitive
@@ -301,3 +302,33 @@ export const userUpdateSchema = z.object({
 });
 
 export type UserUpdateParsed = z.infer<typeof userUpdateSchema>;
+
+/**
+ * Schema für die Bankdaten-Änderung eines Mitglieds über die
+ * Zahlungsverwaltung (`/dashboard/zahlungen`). Bewusst getrennt von
+ * `userUpdateSchema`: hier verlangt `bankeinzug` — anders als im generischen
+ * Profilformular — eine erneute, verpflichtende Bestätigung, weil damit ein
+ * neues SEPA-Mandat erteilt wird.
+ */
+export const bankUpdateSchema = z.object({
+  IBAN: z
+    .string()
+    .trim()
+    .min(1, "Bitte eine IBAN angeben.")
+    .transform(normalizeIban)
+    .refine(isValidIban, "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe."),
+  BIC: optionalString(40).refine(
+    (v) => v === undefined || isValidBic(v),
+    "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
+  ),
+  bank: optionalString(200),
+  BLZ: optionalString(50),
+  KTO: optionalString(50),
+  bankeinzug: z
+    .string()
+    .optional()
+    .transform((v) => v === "on" || v === "true")
+    .pipe(z.literal(true, { message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren." })),
+});
+
+export type BankUpdateParsed = z.infer<typeof bankUpdateSchema>;

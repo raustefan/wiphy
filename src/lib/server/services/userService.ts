@@ -22,6 +22,34 @@ export async function getEditableUser(id: string) {
   return findUserById(id);
 }
 
+/**
+ * Ändert ausschließlich die eigene Bankverbindung eines Mitglieds
+ * (`/dashboard/zahlungen`). Bewusst getrennt von `updateUserProfile`: hier
+ * gibt es keine Rollen-/Fremdbearbeitungslogik — es ist immer der eigene
+ * Account — und ein erneutes SEPA-Mandat setzt `mandatserteilung` neu.
+ */
+export async function updateOwnBankDetails(
+  userId: string,
+  input: {
+    bank: string | null;
+    BLZ: string | null;
+    KTO: string | null;
+    IBAN: string;
+    BIC: string | null;
+    bankeinzug: boolean;
+  },
+) {
+  await updateUserById(userId, {
+    bank: input.bank,
+    BLZ: input.BLZ,
+    KTO: input.KTO,
+    IBAN: input.IBAN,
+    BIC: input.BIC,
+    bankeinzug: input.bankeinzug,
+    mandatserteilung: new Date(),
+  });
+}
+
 export async function updateUserProfile(input: UpdateUserInput) {
   const data = buildUserUpdateData(input);
 
