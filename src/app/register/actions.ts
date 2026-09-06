@@ -10,7 +10,7 @@ import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
-import { registerSchema } from "@/lib/server/validation/schemas";
+import { registerFormSchema } from "@/lib/server/validation/schemas";
 import { sendEmail } from "@/lib/server/email/mailer";
 import {
     adminRegistrationNoticeMessage,
@@ -18,11 +18,31 @@ import {
 } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
 
+/** Sitz der Universität — die Antwort auf die Sicherheitsfrage im Formular. */
+const SECURITY_ANSWER = "ulm";
+
+/** Schneller als das füllt kein Mensch das Formular aus. */
+const MIN_FILL_TIME_MS = 3000;
+
 export async function registerUser(formData: FormData) {
     return executeAction(async () => {
         await requireFeatureEnabled("REGISTRATION");
 
-        const { vorname, name, email, password } = parseFormData(registerSchema, formData);
+        const { vorname, name, email, password, securityAnswer, website, renderedAt } =
+            parseFormData(registerFormSchema, formData);
+
+        // Honeypot und Zeitmessung laufen vor allem anderen: sie kosten nichts
+        // und fangen die Bots ab, die stumpf jedes Feld füllen bzw. sofort
+        // abschicken. Beide antworten mit einem vorgetäuschten Erfolg — einem
+        // Bot zu erklären, woran er gescheitert ist, hilft nur ihm.
+        if (website && website.trim() !== "") {
+            redirect("/login?register=success");
+        }
+        const renderedAtMs = Number(renderedAt);
+        if (Number.isFinite(renderedAtMs) && Date.now() - renderedAtMs < MIN_FILL_TIME_MS) {
+            redirect("/login?register=success");
+        }
+
         const requestHeaders = await headers();
         const clientIp = extractClientIp(requestHeaders);
 
@@ -36,6 +56,15 @@ export async function registerUser(formData: FormData) {
             blockMs: 60 * 60 * 1000,
             message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
         });
+
+        // Vor dem Captcha, weil die Prüfung nichts kostet: verifyAltchaPayload()
+        // schreibt eine Zeile in `SolvedAltchaChallenge`.
+        if (securityAnswer.toLowerCase() !== SECURITY_ANSWER) {
+            throw new AppError(
+                "VALIDATION_ERROR",
+                "Die Antwort auf die Sicherheitsfrage stimmt nicht. Bitte versuche es erneut.",
+            );
+        }
 
         const captchaValid = await verifyAltchaPayload(formData.get("altcha") as string | null);
         if (!captchaValid) {

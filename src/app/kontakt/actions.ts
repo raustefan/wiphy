@@ -82,7 +82,7 @@ export async function submitContactRequest(formData: FormData) {
         await consumeRateLimit({
             bucket: "contact-global",
             keyParts: ["all"],
-            limit: 100,
+            limit: 5,
             windowMs: 60 * 60 * 1000,
             blockMs: 60 * 60 * 1000,
             message: "Das Kontaktformular ist momentan überlastet. Bitte versuche es später erneut.",

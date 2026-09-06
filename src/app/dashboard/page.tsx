@@ -24,6 +24,7 @@ import {
     ArrowRight,
     FileText,
     CreditCard,
+    ShieldAlert,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
@@ -52,6 +53,7 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
     { href: MEMBERSHIP_ADMIN_PATH, label: "Mitgliedsanträge", Icon: FileText },
     { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
+    { href: "/dashboard/rate-limits", label: "Rate Limits", Icon: ShieldAlert },
 ];
 
 export default async function DashboardPage() {

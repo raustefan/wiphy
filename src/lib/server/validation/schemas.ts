@@ -111,6 +111,25 @@ export const contactSchema = z.object({
   renderedAt: z.string().optional(),
 });
 
+/**
+ * Öffentliche Registrierung: `registerSchema` plus Bot-Abwehr.
+ *
+ * Bewusst *nicht* in `registerSchema` selbst — sonst erbt
+ * `adminCreateUserSchema` die Sicherheitsfrage, und ein Admin müsste sie beim
+ * Anlegen eines Kontos mitbeantworten.
+ */
+export const registerFormSchema = registerSchema.extend({
+  securityAnswer: z
+    .string()
+    .trim()
+    .min(1, "Bitte beantworte die Sicherheitsfrage.")
+    .max(100, "Antwort ist zu lang."),
+  // Honeypot: im UI versteckt, jeder Wert stammt also von einem Bot.
+  website: z.string().max(200).optional(),
+  // Millisekunden zwischen Anzeige und Absenden des Formulars.
+  renderedAt: z.string().optional(),
+});
+
 export const adminCreateUserSchema = registerSchema.extend({
   role: roleEnum.default("MEMBER"),
   status: statusEnum.default("KEIN_MITGLIED"),

@@ -165,7 +165,7 @@ export function ContactForm({
                       Honeypot. Kept in the accessibility tree's blind spot rather
                       than `display: none`, which the more careful bots skip.
                     */}
-                    <div aria-hidden="true" className="contact-honeypot">
+                    <div aria-hidden="true" className="form-honeypot">
                         <label htmlFor="contact-website">
                             Website (bitte freilassen)
                             <input

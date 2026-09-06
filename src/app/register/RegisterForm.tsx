@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { registerUser } from "./actions";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
@@ -20,10 +20,19 @@ const ALTCHA_STYLE = {
 
 export function RegisterForm({ challengeJson }: { challengeJson: string }) {
     const form = useActionForm(registerUser, { featureLabel: "Registrierung" });
+    // Beim Mount gesetzt, nicht auf dem Server: gemessen wird, wie lange das
+    // Formular sichtbar war — nicht, wann die Seite gerendert wurde.
+    const renderedAt = useRef<number>(0);
 
     useEffect(() => {
+        renderedAt.current = Date.now();
         import("altcha");
     }, []);
+
+    function handleAction(formData: FormData) {
+        formData.set("renderedAt", String(renderedAt.current));
+        return form.submit(formData);
+    }
 
     return (
         <>
@@ -36,7 +45,7 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                     </>
                 }
             >
-                <form action={form.submit} className="grid gap-4">
+                <form action={handleAction} className="grid gap-4">
                     {form.feedback}
 
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -87,10 +96,41 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                         />
                     </Field>
 
-                    <div className="grid gap-1.5">
+                    {/*
+                      Honeypot. Nicht per `display: none` versteckt, sondern
+                      off-canvas — darauf prüfen die sorgfältigeren Bots.
+                    */}
+                    <div aria-hidden="true" className="form-honeypot">
+                        <label htmlFor="register-website">
+                            Website (bitte freilassen)
+                            <input
+                                id="register-website"
+                                type="text"
+                                name="website"
+                                tabIndex={-1}
+                                autoComplete="off"
+                            />
+                        </label>
+                    </div>
+
+                    <div className="grid gap-3">
                         <span className="text-sm font-semibold text-foreground">
                             Sicherheitsüberprüfung
                         </span>
+                        <Field
+                            label="In welcher Stadt befindet sich die Universität, an der unser Verein zu Hause ist?"
+                            htmlFor="register-security-answer"
+                            
+                        >
+                            <Input
+                                id="register-security-answer"
+                                name="securityAnswer"
+                                required
+                                autoComplete="off"
+                                maxLength={100}
+                                placeholder="Name der Stadt"
+                            />
+                        </Field>
                         <altcha-widget
                             challenge={challengeJson}
                             name="altcha"

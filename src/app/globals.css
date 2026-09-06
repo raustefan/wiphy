@@ -351,13 +351,13 @@ html[data-theme-appearance="dark"] {
 }
 
 /* --------------------------------------------------------------------------
-   Kontaktformular-Honeypot
+   Formular-Honeypot (Kontakt, Registrierung)
    --------------------------------------------------------------------------
    Off-canvas statt `display: none` — Bots, die versteckte Felder überspringen,
    prüfen üblicherweise auf `display`/`visibility`. `aria-hidden` und
    `tabIndex={-1}` halten das Feld von echten Nutzer:innen fern.
    */
-.contact-honeypot {
+.form-honeypot {
   position: absolute;
   left: -9999px;
   top: auto;
