@@ -3,6 +3,44 @@ import { prisma } from "@/lib/prisma";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { extractClientIp } from "@/lib/server/rateLimit";
 import { logSecurityEvent } from "@/lib/server/securityLog";
+import { pruneUnverifiedRegistrations } from "@/lib/server/registrationCleanup";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { adminRegistrationNoticeMessage } from "@/lib/email/messages";
+
+/**
+ * Benachrichtigt die Admins über eine neue Registrierung — bewusst erst hier
+ * und nicht schon beim Absenden des Formulars.
+ *
+ * Ohne bestätigte Adresse ist eine Registrierung nur eine Behauptung: ein Bot,
+ * der frei erfundene Adressen einträgt, würde sonst mit jedem Versuch eine Mail
+ * an den gesamten Vorstand auslösen. Nach der Bestätigung steht dagegen fest,
+ * dass jemand Zugriff auf das angegebene Postfach hat.
+ *
+ * Nur für Selbstregistrierungen: `registrationPendingSince` ist ausschließlich
+ * dort gesetzt. Bestätigt jemand ein von einem Admin angelegtes Konto oder eine
+ * geänderte Adresse, geht keine Mail raus.
+ */
+async function notifyAdminsAboutRegistration(user: {
+  vorname: string;
+  name: string;
+  email: string;
+}) {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { email: true },
+    });
+
+    await sendEmail({
+      bcc: admins.map((admin) => admin.email),
+      message: adminRegistrationNoticeMessage(user),
+    });
+  } catch (error) {
+    // Der Nutzer hat seine Adresse bestätigt — daran darf ein SMTP-Ausfall
+    // nichts ändern. Das Konto steht ohnehin in der Nutzerliste im Dashboard.
+    console.error("Failed to notify admins about a completed registration:", error);
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -97,12 +135,15 @@ export async function POST(request: Request) {
         }
       }
 
-      // Update the user
+      // Update the user. `registrationPendingSince` fällt dabei immer weg: das
+      // Konto ist ab jetzt bestätigt und damit von der automatischen Löschung
+      // unbestätigter Registrierungen ausgenommen.
       await prisma.user.update({
         where: { id: user.id },
         data: {
           email: verificationToken.email,
           emailVerified: true,
+          registrationPendingSince: null,
         },
       });
 
@@ -114,6 +155,14 @@ export async function POST(request: Request) {
         ip: clientIp,
         userAgent,
       });
+
+      if (!isEmailChange && user.registrationPendingSince) {
+        await notifyAdminsAboutRegistration({
+          vorname: user.vorname,
+          name: user.name,
+          email: verificationToken.email,
+        });
+      }
     } else {
       // If no userId, but email is present, search by email (fallback)
       const user = await prisma.user.findUnique({
@@ -139,6 +188,7 @@ export async function POST(request: Request) {
         where: { email: verificationToken.email },
         data: {
           emailVerified: true,
+          registrationPendingSince: null,
         },
       });
 
@@ -149,12 +199,25 @@ export async function POST(request: Request) {
         ip: clientIp,
         userAgent,
       });
+
+      if (user.registrationPendingSince) {
+        await notifyAdminsAboutRegistration({
+          vorname: user.vorname,
+          name: user.name,
+          email: user.email,
+        });
+      }
     }
 
     // Delete the used token
     await prisma.emailVerificationToken.delete({
       where: { token },
     });
+
+    // Zweiter Aufhänger für den Aufräumlauf neben der Registrierung — erst
+    // hier, damit er nie das Konto löschen kann, dessen Link gerade eingelöst
+    // wird.
+    await pruneUnverifiedRegistrations();
 
     return NextResponse.json({ success: true });
   } catch (error) {

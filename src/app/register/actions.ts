@@ -12,12 +12,13 @@ import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { registerFormSchema } from "@/lib/server/validation/schemas";
 import { sendEmail } from "@/lib/server/email/mailer";
-import {
-    adminRegistrationNoticeMessage,
-    registrationConfirmationMessage,
-} from "@/lib/email/messages";
+import { registrationConfirmationMessage } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
 import { logSecurityEvent, type SecurityEventReason } from "@/lib/server/securityLog";
+import {
+    pruneUnverifiedRegistrations,
+    UNVERIFIED_TTL_HOURS,
+} from "@/lib/server/registrationCleanup";
 
 /** Sitz der Universität — die Antwort auf die Sicherheitsfrage im Formular. */
 const SECURITY_ANSWER = "ulm";
@@ -115,6 +116,11 @@ export async function registerUser(formData: FormData) {
             throw error;
         }
 
+        // Vor der Kollisionsprüfung: eine abgelaufene, nie bestätigte
+        // Registrierung soll die Adresse nicht dauerhaft blockieren. Wer sich
+        // beim ersten Anlauf vertippt hat, kann es damit erneut versuchen.
+        await pruneUnverifiedRegistrations();
+
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             // Don't reveal whether the email is already registered (avoids account enumeration).
@@ -132,12 +138,19 @@ export async function registerUser(formData: FormData) {
                 email,
                 password: hashedPassword,
                 emailVerified: false,
+                // Markiert das Konto als „öffentlich registriert, noch nicht
+                // bestätigt“. Daran hängen die Admin-Benachrichtigung (kommt
+                // erst nach der Bestätigung) und die automatische Löschung
+                // nach UNVERIFIED_TTL_HOURS.
+                registrationPendingSince: new Date(),
             },
         });
 
-        // Generate email verification token
+        // Generate email verification token. Dieselbe Frist wie die Löschung
+        // unbestätigter Konten: ein Link, der den Account überlebt, würde nur
+        // auf einen 404 führen.
         const token = crypto.randomBytes(32).toString("hex");
-        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        const expires = new Date(Date.now() + UNVERIFIED_TTL_HOURS * 60 * 60 * 1000);
 
         await prisma.emailVerificationToken.create({
             data: {
@@ -152,23 +165,18 @@ export async function registerUser(formData: FormData) {
 
         const verificationUrl = siteUrl(`/verify-email?token=${token}`);
 
+        // Hier geht *nur* die Bestätigungsmail an den Anmelder raus. Die
+        // Benachrichtigung der Admins verschickt erst der Klick auf den
+        // Bestätigungslink (siehe `api/auth/verify-email`): eine erfundene
+        // Adresse erzeugt sonst eine Mail an den ganzen Vorstand, und genau das
+        // macht das Formular als Spam-Verstärker interessant.
         try {
-            const admins = await prisma.user.findMany({
-                where: { role: "ADMIN" },
-                select: { email: true },
-            });
-            const adminEmails = admins.map((admin) => admin.email);
-
-            await sendEmail({
-                bcc: adminEmails,
-                message: adminRegistrationNoticeMessage({ vorname, name, email }),
-            });
             await sendEmail({
                 to: email,
                 message: registrationConfirmationMessage({ vorname, name }, verificationUrl),
             });
         } catch (error) {
-            console.error("Failed to send registration notification emails:", error);
+            console.error("Failed to send registration confirmation email:", error);
         }
 
         redirect("/login?register=success");

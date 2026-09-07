@@ -44,6 +44,10 @@ const TYPE_LABELS: Record<SecurityEventType, TypeLabel> = {
     label: "E-Mail-Änderung",
     hint: "Angeforderte Adressänderung. Der Klick darauf zählt als Bestätigung.",
   },
+  REGISTRATION_EXPIRED: {
+    label: "Registrierung verfallen",
+    hint: "Unbestätigt gebliebene Registrierung, nach 24 Stunden automatisch gelöscht.",
+  },
 };
 
 export function typeLabel(type: SecurityEventType): string {
@@ -63,6 +67,7 @@ export const TYPE_ORDER: SecurityEventType[] = [
   "PASSWORD_RESET_REQUEST",
   "PASSWORD_RESET_COMPLETE",
   "EMAIL_CHANGE",
+  "REGISTRATION_EXPIRED",
 ];
 
 export const OUTCOME_LABELS: Record<SecurityEventOutcome, string> = {
@@ -92,6 +97,7 @@ const REASON_LABELS: Record<string, string> = {
   spam_filtered: "Als Spam einsortiert, nicht gemailt",
   mail_failed: "Mailversand fehlgeschlagen",
   email_change: "Adressänderung bestätigt",
+  unverified_expired: "Nicht binnen 24 Stunden bestätigt",
 };
 
 export function reasonLabel(reason: string | null): string {

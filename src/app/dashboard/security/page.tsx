@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Info, ShieldAlert } from "lucide-react";
+import { Activity, AlertTriangle, Info, ShieldAlert, UserX } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import {
     getSecurityOverview,
@@ -8,6 +8,11 @@ import {
     type TypeStat,
 } from "@/lib/server/services/securityEventService";
 import { getRateLimitEntries, summarizeByBucket } from "@/lib/server/services/rateLimitService";
+import {
+    getPendingRegistrationStats,
+    pruneUnverifiedRegistrations,
+    UNVERIFIED_TTL_HOURS,
+} from "@/lib/server/registrationCleanup";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import {
     Badge,
@@ -41,9 +46,16 @@ export default async function SecurityPage({
     const resolvedParams = searchParams ? await searchParams : undefined;
     const days = parseWindowDays(resolvedParams?.tage);
 
-    const [overview, rateLimitEntries] = await Promise.all([
+    // Dritter Aufhänger für den Aufräumlauf (neben Registrierung und
+    // Bestätigungslink) — und der einzige, den ein Admin selbst auslösen kann:
+    // ein Neuladen dieser Seite zeigt damit einen aktuellen Stand, nicht einen,
+    // der auf die nächste Registrierung wartet.
+    await pruneUnverifiedRegistrations();
+
+    const [overview, rateLimitEntries, pendingRegistrations] = await Promise.all([
         getSecurityOverview(days),
         getRateLimitEntries(),
+        getPendingRegistrationStats(),
     ]);
     const rateLimitSummary = summarizeByBucket(rateLimitEntries);
 
@@ -64,6 +76,8 @@ export default async function SecurityPage({
     );
 
     const blockedNow = rateLimitSummary.reduce((sum, bucket) => sum + bucket.blockedCount, 0);
+    const expiredRegistrations =
+        typeStats.find((stat) => stat.type === "REGISTRATION_EXPIRED")?.total ?? 0;
 
     return (
         <Container size="4" className="py-8 sm:py-12">
@@ -133,6 +147,52 @@ export default async function SecurityPage({
                         hint="Falsche Zugangsdaten, ungültige Links, belegte Adressen."
                     />
                 </div>
+            </Card>
+
+            {/* ---------- Unbestätigte Registrierungen ---------- */}
+            <Card className="mb-6 p-5 sm:p-6">
+                <SectionTitle>
+                    <span className="inline-flex items-center gap-2">
+                        <UserX size={20} aria-hidden="true" />
+                        Unbestätigte Registrierungen
+                    </span>
+                </SectionTitle>
+                <p className="mt-1 mb-5 text-sm text-muted">
+                    Wer sich selbst registriert, hat {UNVERIFIED_TTL_HOURS} Stunden Zeit, die
+                    E-Mail-Adresse zu bestätigen. Danach wird das Konto automatisch gelöscht — so
+                    bleiben erfundene Adressen aus der Nutzerliste, und die Admin-Benachrichtigung
+                    geht ohnehin erst nach der Bestätigung raus. Von Admins angelegte Konten und
+                    Konten von vor Einführung dieser Regel sind ausgenommen.
+                </p>
+                <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="grid gap-1">
+                        <p className="text-sm text-muted">Automatisch gelöscht</p>
+                        <p className="text-3xl font-semibold tracking-tight">
+                            {formatNumber(expiredRegistrations)}
+                        </p>
+                        <p className="text-xs leading-relaxed text-faint">
+                            in den letzten {days} Tagen — jede Löschung steht als eigener Eintrag
+                            im Protokoll.
+                        </p>
+                    </div>
+                    <div className="grid gap-1">
+                        <p className="text-sm text-muted">Zurzeit offen</p>
+                        <p className="text-3xl font-semibold tracking-tight">
+                            {formatNumber(pendingRegistrations.pending)}
+                        </p>
+                        <p className="text-xs leading-relaxed text-faint">
+                            {pendingRegistrations.nextDeletionAt
+                                ? `Nächste Löschung am ${formatDateTime(pendingRegistrations.nextDeletionAt)}.`
+                                : "Keine Registrierung wartet auf eine Bestätigung."}
+                        </p>
+                    </div>
+                </div>
+                {!pendingRegistrations.enabled && (
+                    <Callout tone="warning" icon={<AlertTriangle size={16} />} className="mt-5">
+                        Das automatische Löschen ist über die Funktionsschalter abgeschaltet.
+                        Unbestätigte Konten bleiben bis auf Weiteres stehen.
+                    </Callout>
+                )}
             </Card>
 
             {/* ---------- Verlauf ---------- */}

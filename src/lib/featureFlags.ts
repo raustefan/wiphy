@@ -18,6 +18,7 @@ export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = [
   "MEMBERSHIP_APPLICATION",
   "MEMBERSHIP_APPLICATION_MAIL",
   "MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL",
+  "REGISTRATION_CLEANUP",
 ];
 
 export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
@@ -38,6 +39,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   MEMBERSHIP_APPLICATION: "Mitgliedsantrag",
   MEMBERSHIP_APPLICATION_MAIL: "Mitgliedsantrag: Benachrichtigung an Admins",
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL: "Mitgliedsantrag: Eingangsbestätigung",
+  REGISTRATION_CLEANUP: "Registrierung: unbestätigte Konten löschen",
 };
 
 export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
@@ -64,6 +66,8 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
     "Benachrichtigt alle Admins per Mail über einen neuen Aufnahmeantrag. Aus: Anträge werden nur noch im Dashboard gesammelt.",
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL:
     "Schickt dem Antragsteller eine Eingangsbestätigung sowie eine Mail bei Annahme oder Ablehnung.",
+  REGISTRATION_CLEANUP:
+    "Löscht selbst registrierte Konten automatisch, deren E-Mail-Adresse nach 24 Stunden nicht bestätigt ist. Aus: Unbestätigte Registrierungen bleiben stehen und müssen von Hand gelöscht werden. Von Admins angelegte Konten und der Altbestand sind nie betroffen.",
 };
 
 export function isFeatureFlagKey(value: string | null): value is FeatureFlagKey {

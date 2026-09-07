@@ -25,7 +25,8 @@ export type SecurityEventType =
   | "PASSWORD_RESET_REQUEST"
   | "PASSWORD_RESET_COMPLETE"
   | "EMAIL_VERIFICATION"
-  | "EMAIL_CHANGE";
+  | "EMAIL_CHANGE"
+  | "REGISTRATION_EXPIRED";
 
 export type SecurityEventOutcome = "SUCCESS" | "FAILURE" | "BLOCKED";
 
@@ -48,7 +49,8 @@ export type SecurityEventReason =
   | "invalid_token"
   | "email_change"
   | "spam_filtered"
-  | "mail_failed";
+  | "mail_failed"
+  | "unverified_expired";
 
 type SecurityEventInput = {
   type: SecurityEventType;

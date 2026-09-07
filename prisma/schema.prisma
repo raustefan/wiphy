@@ -73,8 +73,21 @@ model User {
   securityEvents    SecurityEvent[]
   lastLogin         DateTime    @default(now())
   emailVerified     Boolean     @default(false)
+  /// Gesetzt, solange eine **Selbstregistrierung** über das öffentliche
+  /// Formular noch unbestätigt ist; der Klick auf den Bestätigungslink nullt
+  /// den Wert. Steuert beides, was an einer Registrierung erst nach der
+  /// Bestätigung passieren darf: die Benachrichtigung der Admins und das
+  /// automatische Löschen nach `UNVERIFIED_TTL_HOURS` (siehe
+  /// `registrationCleanup.ts`).
+  ///
+  /// NULL heißt „nicht betroffen“ — und zwar für alle Konten, die es vor
+  /// dieser Regel schon gab, und für die von Admins angelegten Konten. Deren
+  /// Bestätigung darf beliebig lange dauern, ohne dass sie verschwinden.
+  registrationPendingSince DateTime?
   /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
   passwordChangedAt DateTime    @default(now())
+
+  @@index([registrationPendingSince])
 }
 
 enum Role {
@@ -141,6 +154,7 @@ enum FeatureFlagKey {
   MEMBERSHIP_APPLICATION
   MEMBERSHIP_APPLICATION_MAIL
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL
+  REGISTRATION_CLEANUP
 }
 
 model FeatureFlag {
@@ -335,6 +349,11 @@ enum SecurityEventType {
   /// Angeforderte Änderung der eigenen Adresse (Bestätigungsmail verschickt).
   /// Der Klick darauf erscheint als EMAIL_VERIFICATION.
   EMAIL_CHANGE
+  /// Eine Selbstregistrierung wurde nicht binnen der Frist bestätigt und das
+  /// Konto daraufhin automatisch gelöscht. Kein Zugriffsversuch, sondern das
+  /// Ergebnis einer Aufräummaßnahme — steht trotzdem hier, weil es genau die
+  /// Kennzahl ist, an der sich Registrierungs-Spam ablesen lässt.
+  REGISTRATION_EXPIRED
 }
 
 enum SecurityEventOutcome {

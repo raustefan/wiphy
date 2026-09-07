@@ -57,7 +57,7 @@ export function registrationConfirmationMessage(user: Person, verificationUrl: s
       { type: "text", content: `vielen Dank für deine Registrierung beim ${VEREIN.name}! Bitte bestätige zuerst deine E-Mail-Adresse:` },
       { type: "button", label: "E-Mail-Adresse bestätigen", url: verificationUrl },
       { type: "text", content: "Sobald deine Adresse verifiziert und dein Konto von einem Administrator freigeschaltet ist, hast du vollen Zugriff auf den Internbereich." },
-      { type: "note", content: "Der Link ist 24 Stunden gültig." },
+      { type: "note", content: "Der Link ist 24 Stunden gültig. Bleibt die Bestätigung aus, löschen wir das angelegte Konto danach automatisch wieder — du kannst dich dann jederzeit neu registrieren." },
     ],
   };
 }
@@ -110,11 +110,11 @@ export function adminRegistrationNoticeMessage(newUser: {
 }): EmailMessage {
   return {
     subject: "Neuer Benutzer registriert",
-    preheader: `${newUser.vorname} ${newUser.name} wartet auf Bestätigung.`,
+    preheader: `${newUser.vorname} ${newUser.name} wartet auf Freischaltung.`,
     signature: "system",
     blocks: [
       { type: "text", content: "Hallo Admin," },
-      { type: "text", content: "ein neuer Benutzer hat sich registriert und wartet auf Bestätigung:" },
+      { type: "text", content: "ein neuer Benutzer hat sich registriert und seine E-Mail-Adresse soeben bestätigt:" },
       {
         type: "facts",
         items: [
@@ -122,7 +122,8 @@ export function adminRegistrationNoticeMessage(newUser: {
           { label: "E-Mail", value: newUser.email },
         ],
       },
-      { type: "text", content: "Bitte prüfe und bestätige die Registrierung im Dashboard." },
+      { type: "text", content: "Bitte prüfe das Konto im Dashboard und schalte es frei." },
+      { type: "note", content: "Diese Mail geht erst nach der Bestätigung der Adresse raus. Registrierungen mit erfundenen Adressen erreichen euch also gar nicht erst und werden nach 24 Stunden automatisch gelöscht." },
     ],
   };
 }
