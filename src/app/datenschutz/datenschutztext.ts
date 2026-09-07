@@ -208,6 +208,15 @@ export const DATENSCHUTZ: LegalDocument = [
     ],
   },
   {
+    title: "Sicherheitsprotokoll (Anmeldung, Registrierung, Kontaktformular, Passwort- und E-Mail-Änderungen)",
+    blocks: [
+      "Um unbefugte Zugriffe auf Nutzerkonten, automatisierte Massenanfragen und Spam zu erkennen und abzuwehren, protokollieren wir sicherheitsrelevante Vorgänge unserer Anmelde- und Formularfunktionen. Erfasst werden: Anmeldeversuche und erfolgreiche Anmeldungen, Registrierungsversuche und abgeschlossene Registrierungen über das öffentliche Registrierungsformular, abgesendete Kontaktanfragen, angeforderte und tatsächlich durchgeführte Passwort-Zurücksetzungen, das Bestätigen einer E-Mail-Adresse über den zugesandten Link sowie angeforderte Änderungen der eigenen E-Mail-Adresse.",
+      "Zu jedem dieser Vorgänge speichern wir den Zeitpunkt, die Art des Vorgangs, dessen Ergebnis (erfolgreich, fehlgeschlagen oder abgewehrt) und einen technischen Kurzcode für den Grund (z.B. „falsche Zugangsdaten“, „Limit überschritten“), bei angemeldeten bzw. registrierten Personen zusätzlich die Kennung des betroffenen Nutzerkontos. IP-Adresse und E-Mail-Adresse werden nicht im Klartext gespeichert, sondern ausschließlich als nicht rückrechenbarer Prüfwert (Hash mit geheimem Schlüssel), der nur den Vergleich mehrerer Vorgänge untereinander erlaubt. Passwörter, Inhalte von Nachrichten und Zugangs-Links werden nicht protokolliert.",
+      "Rechtsgrundlage ist unser berechtigtes Interesse an der Sicherheit der Verarbeitung gem. Art. 6 Abs. 1 lit. f DSGVO i.V.m. Art. 32 DSGVO. Das Protokoll ist ausschließlich für Administratoren des Vereins zugänglich und wird nicht für Werbung, Reichweitenmessung oder eine Bewertung von Personen verwendet.",
+      "Der Prüfwert der IP-Adresse und die Browserkennung werden nach 7 Tagen automatisch gelöscht, der übrige Protokolleintrag spätestens nach 90 Tagen. Wird ein Nutzerkonto gelöscht, verlieren die zugehörigen Einträge sofort jeden Personenbezug. Einträge, deren weitere Aufbewahrung zur Aufklärung eines konkreten Vorfalls erforderlich ist, sind bis zu dessen endgültiger Klärung von der Löschung ausgenommen.",
+    ],
+  },
+  {
     title: "Erhebung von Zugriffsdaten und Logfiles",
     blocks: [
       "Wir, bzw. unser Hostinganbieter, erhebt auf Grundlage unserer berechtigten Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO Daten über jeden Zugriff auf den Server, auf dem sich dieser Dienst befindet (sogenannte Serverlogfiles). Zu den Zugriffsdaten gehören Name der abgerufenen Webseite, Datei, Datum und Uhrzeit des Abrufs, übertragene Datenmenge, Meldung über erfolgreichen Abruf, Browsertyp nebst Version, das Betriebssystem des Nutzers, Referrer URL (die zuvor besuchte Seite), IP-Adresse und der anfragende Provider.",

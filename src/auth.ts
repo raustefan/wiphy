@@ -7,6 +7,7 @@ import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { AppError } from "@/lib/server/errors";
+import { logSecurityEvent, type SecurityEventReason } from "@/lib/server/securityLog";
 
 /**
  * Thrown when the credentials are valid but the user hasn't confirmed their
@@ -46,6 +47,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const ipRateLimitKey = [clientIp];
                 const rateLimitKey = [clientIp, email];
 
+                // Jeder Ausgang dieser Funktion wird protokolliert — ein
+                // Protokoll mit Lücken ist als Angriffserkennung wertlos.
+                const logAttempt = (
+                    outcome: "SUCCESS" | "FAILURE" | "BLOCKED",
+                    reason?: SecurityEventReason,
+                    userId?: string,
+                ) =>
+                    logSecurityEvent({
+                        type: "LOGIN",
+                        outcome,
+                        reason,
+                        userId,
+                        email,
+                        ip: clientIp,
+                        userAgent: request.headers.get("user-agent"),
+                    });
+
                 // `consumeRateLimit` throws an AppError, which NextAuth would flatten
                 // into a generic "check your credentials". Re-throw as a CredentialsSignin
                 // so the login page can show the real reason.
@@ -71,6 +89,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     });
                 } catch (error) {
                     if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+                        await logAttempt("BLOCKED", "rate_limited");
                         throw new LoginRateLimitedError();
                     }
                     throw error;
@@ -80,22 +99,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // bypass it) but before any DB lookup, so scripted attempts pay
                 // the proof-of-work cost first.
                 if (!(await verifyAltchaPayload(String(credentials?.altcha ?? "")))) {
+                    await logAttempt("BLOCKED", "captcha_failed");
                     throw new CaptchaFailedError();
                 }
 
-                if (!email || !credentials?.password) return null;
+                if (!email || !credentials?.password) {
+                    await logAttempt("FAILURE", "invalid_credentials");
+                    return null;
+                }
                 const user = await prisma.user.findUnique({
                     where: { email },
                 });
-                if (!user) return null;
+                // Unbekannte Adresse und falsches Passwort teilen sich denselben
+                // Grund: die Unterscheidung stünde sonst dauerhaft im Protokoll,
+                // obwohl sie nach außen bewusst verborgen wird.
+                if (!user) {
+                    await logAttempt("FAILURE", "invalid_credentials");
+                    return null;
+                }
                 const valid = await bcrypt.compare(credentials.password as string, user.password);
-                if (!valid) return null;
+                if (!valid) {
+                    await logAttempt("FAILURE", "invalid_credentials", user.id);
+                    return null;
+                }
                 // Only reveal the unconfirmed-email state once the password checks
                 // out, so this can't be used to probe which emails have accounts.
-                if (!user.emailVerified) throw new EmailNotVerifiedError();
+                if (!user.emailVerified) {
+                    await logAttempt("FAILURE", "email_not_verified", user.id);
+                    throw new EmailNotVerifiedError();
+                }
                 // Admins must always be able to log in, even while the LOGIN flag is off,
                 // so they can get back in to re-enable it.
-                if (user.role !== "ADMIN" && !(await isFeatureEnabled("LOGIN"))) return null;
+                if (user.role !== "ADMIN" && !(await isFeatureEnabled("LOGIN"))) {
+                    await logAttempt("BLOCKED", "feature_disabled", user.id);
+                    return null;
+                }
                 await prisma.user.update({
                     where: { id: user.id },
                     data: { lastLogin: new Date() },
@@ -104,6 +142,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // legitimate users behind one NAT/office IP exhaust the shared cap.
                 await resetRateLimit("login", rateLimitKey);
                 await resetRateLimit("login-ip", ipRateLimitKey);
+                await logAttempt("SUCCESS", undefined, user.id);
                 return {
                     id: user.id,
                     email: user.email,

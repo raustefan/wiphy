@@ -4,10 +4,21 @@ import bcrypt from "bcryptjs";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
+import { logSecurityEvent } from "@/lib/server/securityLog";
 
 export async function POST(request: Request) {
   try {
+    const clientIp = extractClientIp(request.headers);
+    const userAgent = request.headers.get("user-agent");
+
     if (!(await isFeatureEnabled("PASSWORD_RESET"))) {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_COMPLETE",
+        outcome: "BLOCKED",
+        reason: "feature_disabled",
+        ip: clientIp,
+        userAgent,
+      });
       return NextResponse.json(
         { error: "Passwort zurücksetzen wurde von einem Administrator deaktiviert.", code: "FEATURE_DISABLED" },
         { status: 403 },
@@ -32,7 +43,7 @@ export async function POST(request: Request) {
     try {
       await consumeRateLimit({
         bucket: "reset-password-ip",
-        keyParts: [extractClientIp(request.headers)],
+        keyParts: [clientIp],
         limit: 20,
         windowMs: 15 * 60 * 1000,
         blockMs: 15 * 60 * 1000,
@@ -40,6 +51,13 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+        await logSecurityEvent({
+          type: "PASSWORD_RESET_COMPLETE",
+          outcome: "BLOCKED",
+          reason: "rate_limited",
+          ip: clientIp,
+          userAgent,
+        });
         return NextResponse.json({ error: error.message }, { status: 429 });
       }
       throw error;
@@ -50,8 +68,17 @@ export async function POST(request: Request) {
       where: { token },
     });
 
-    // Check if token exists and is not expired
+    // Check if token exists and is not expired. Der Token selbst wird nie
+    // protokolliert — er wäre bis zum Ablauf ein gültiger Kontozugang.
     if (!resetToken || resetToken.expires < new Date()) {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_COMPLETE",
+        outcome: "FAILURE",
+        reason: "invalid_token",
+        email: resetToken?.email,
+        ip: clientIp,
+        userAgent,
+      });
       return NextResponse.json(
         { error: "Der Link ist ungültig oder abgelaufen" },
         { status: 400 }
@@ -67,13 +94,22 @@ export async function POST(request: Request) {
     // it, so mark it verified too — otherwise someone who never confirmed their
     // address resets their password and is still locked out at login with no
     // way to tell why.
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { email: resetToken.email },
       data: {
         password: hashedPassword,
         passwordChangedAt: new Date(),
         emailVerified: true,
       },
+      select: { id: true },
+    });
+
+    await logSecurityEvent({
+      type: "PASSWORD_RESET_COMPLETE",
+      outcome: "SUCCESS",
+      userId: updatedUser.id,
+      ip: clientIp,
+      userAgent,
     });
 
     // Any outstanding confirmation link is redundant now.

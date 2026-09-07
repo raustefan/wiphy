@@ -36,6 +36,17 @@
   --on-market: #ffffff;
   --on-negative: #ffffff;
 
+  /* Diagrammfarben — eigene Werte, nicht die Statusfarben des Textes.
+     Die Textfarben liegen für Flächen zu hell bzw. zu dunkel; diese vier sind
+     gegen die Kartenfläche geprüft (Kontrast >= 3:1, Farbfehlsichtigkeit).
+     Die Stapelreihenfolge Erfolg -> abgewehrt -> fehlgeschlagen ist Teil der
+     Prüfung: Grün und Rot direkt nebeneinander sind bei Rot-Grün-Schwäche
+     nicht unterscheidbar (ΔE 3.7), mit Blau dazwischen sind es >= 26. */
+  --chart-success: #15803d;
+  --chart-blocked: #1d4ed8;
+  --chart-failure: #dc2626;
+  --chart-accent: #0d9488;
+
   color-scheme: light;
 }
 
@@ -64,6 +75,13 @@ html[data-theme-appearance="dark"] {
   --on-physics: #052e2b;
   --on-market: #ffffff;
   --on-negative: #450a0a;
+
+  /* Eigene Stufen für die dunkle Fläche, keine Umkehrung der hellen: die
+     hellen Werte lägen hier außerhalb des zulässigen Helligkeitsbands. */
+  --chart-success: #16a34a;
+  --chart-blocked: #3b82f6;
+  --chart-failure: #ef4444;
+  --chart-accent: #11a396;
 }
 
 @theme inline {
@@ -84,6 +102,10 @@ html[data-theme-appearance="dark"] {
   --color-on-physics: var(--on-physics);
   --color-on-market: var(--on-market);
   --color-on-negative: var(--on-negative);
+  --color-chart-success: var(--chart-success);
+  --color-chart-blocked: var(--chart-blocked);
+  --color-chart-failure: var(--chart-failure);
+  --color-chart-accent: var(--chart-accent);
 
   --font-sans:
     var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI",

@@ -8,10 +8,21 @@ import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
+import { logSecurityEvent } from "@/lib/server/securityLog";
 
 export async function POST(request: Request) {
   try {
+    const clientIp = extractClientIp(request.headers);
+    const userAgent = request.headers.get("user-agent");
+
     if (!(await isFeatureEnabled("PASSWORD_RESET"))) {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_REQUEST",
+        outcome: "BLOCKED",
+        reason: "feature_disabled",
+        ip: clientIp,
+        userAgent,
+      });
       return NextResponse.json(
         { error: "Passwort zurücksetzen wurde von einem Administrator deaktiviert.", code: "FEATURE_DISABLED" },
         { status: 403 },
@@ -25,7 +36,6 @@ export async function POST(request: Request) {
     }
 
     const trimmedEmail = normalizeEmail(email);
-    const clientIp = extractClientIp(request.headers);
 
     try {
       // Per-IP cap first: stops one IP from requesting resets for many different
@@ -48,6 +58,14 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+        await logSecurityEvent({
+          type: "PASSWORD_RESET_REQUEST",
+          outcome: "BLOCKED",
+          reason: "rate_limited",
+          email: trimmedEmail,
+          ip: clientIp,
+          userAgent,
+        });
         return NextResponse.json({ error: error.message }, { status: 429 });
       }
       throw error;
@@ -58,8 +76,18 @@ export async function POST(request: Request) {
       where: { email: trimmedEmail },
     });
 
-    // If no user found, still return { success: true } (no enumeration)
+    // If no user found, still return { success: true } (no enumeration).
+    // Im Protokoll steht der echte Ausgang: eine Serie von Anfragen für
+    // Adressen ohne Konto ist genau das Muster, das man sehen will.
     if (!user) {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_REQUEST",
+        outcome: "FAILURE",
+        reason: "unknown_email",
+        email: trimmedEmail,
+        ip: clientIp,
+        userAgent,
+      });
       return NextResponse.json({ success: true });
     }
 
@@ -81,9 +109,31 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendEmail({
-      to: trimmedEmail,
-      message: passwordResetMessage(siteUrl(`/reset-password?token=${token}`)),
+    try {
+      await sendEmail({
+        to: trimmedEmail,
+        message: passwordResetMessage(siteUrl(`/reset-password?token=${token}`)),
+      });
+    } catch (error) {
+      // Der Vorgang gilt erst als erfolgreich, wenn die Mail draußen ist —
+      // sonst zählt das Protokoll versendete Links, die es nie gab.
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_REQUEST",
+        outcome: "FAILURE",
+        reason: "mail_failed",
+        userId: user.id,
+        ip: clientIp,
+        userAgent,
+      });
+      throw error;
+    }
+
+    await logSecurityEvent({
+      type: "PASSWORD_RESET_REQUEST",
+      outcome: "SUCCESS",
+      userId: user.id,
+      ip: clientIp,
+      userAgent,
     });
 
     return NextResponse.json({ success: true });

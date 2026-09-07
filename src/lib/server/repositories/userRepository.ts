@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, Role } from "@prisma/client";
+import { anonymizeSecurityEventsForUser } from "@/lib/server/securityLog";
 
 export function findUsersForDashboard(userId: string, role: Role) {
   const where: Prisma.UserWhereInput | undefined = role === "ADMIN" ? undefined : { id: userId };
@@ -30,6 +31,12 @@ export function updateUserById(id: string, data: Prisma.UserUpdateInput) {
 }
 
 export async function deleteUserById(id: string) {
+  // Vor dem Löschen: danach hat der Fremdschlüssel `userId` im
+  // Sicherheitsprotokoll bereits auf NULL gesetzt, und die Zeilen wären über
+  // den E-Mail-Hash zwar noch zuzuordnen, aber nicht mehr auffindbar.
+  const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
+  await anonymizeSecurityEventsForUser(id, user?.email);
+
   await prisma.memberFee.deleteMany({ where: { userId: id } });
   return prisma.user.delete({ where: { id } });
 }

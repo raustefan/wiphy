@@ -53,7 +53,7 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
     { href: MEMBERSHIP_ADMIN_PATH, label: "Mitgliedsanträge", Icon: FileText },
     { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
-    { href: "/dashboard/rate-limits", label: "Rate Limits", Icon: ShieldAlert },
+    { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert },
 ];
 
 export default async function DashboardPage() {

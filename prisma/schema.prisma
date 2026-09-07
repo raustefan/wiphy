@@ -70,6 +70,7 @@ model User {
   updatedAt         DateTime    @updatedAt
   fees              MemberFee[]
   applications      MembershipApplication[]
+  securityEvents    SecurityEvent[]
   lastLogin         DateTime    @default(now())
   emailVerified     Boolean     @default(false)
   /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
@@ -320,4 +321,82 @@ model MembershipApplication {
 
   @@index([status, submittedAt])
   @@index([userId])
+}
+
+enum SecurityEventType {
+  LOGIN
+  REGISTRATION
+  CONTACT_REQUEST
+  PASSWORD_RESET_REQUEST
+  PASSWORD_RESET_COMPLETE
+  /// Klick auf den Bestätigungslink — schließt Registrierung *und*
+  /// E-Mail-Änderung ab. Welcher Fall vorlag, steht in `reason`.
+  EMAIL_VERIFICATION
+  /// Angeforderte Änderung der eigenen Adresse (Bestätigungsmail verschickt).
+  /// Der Klick darauf erscheint als EMAIL_VERIFICATION.
+  EMAIL_CHANGE
+}
+
+enum SecurityEventOutcome {
+  /// Der Vorgang ist durchgelaufen (Login erfolgt, Konto angelegt, Mail raus).
+  SUCCESS
+  /// Versucht, aber abgelehnt — falsches Passwort, Captcha, ungültiger Token.
+  FAILURE
+  /// Von einer Schutzmaßnahme gestoppt: Rate Limit, Honeypot, Feature-Flag.
+  BLOCKED
+}
+
+/// Sicherheitsprotokoll für die öffentlichen Zugangs- und Formularfunktionen.
+///
+/// Zweck ist ausschließlich die Sicherheit der Verarbeitung (Art. 32 DSGVO):
+/// Erkennung von Brute-Force-, Enumeration- und Spam-Angriffen sowie die
+/// Auskunft an ein Mitglied, ob jemand versucht hat, sich auf sein Konto
+/// anzumelden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.
+///
+/// Datenminimierung ist im Schema festgeschrieben, nicht nur im Aufrufer:
+/// es gibt keine Spalte für Klartext-E-Mail, Klartext-IP, Passwörter,
+/// Formularinhalte oder Tokens. Personenbezug entsteht nur über `userId`
+/// (eigenes Konto) und die gepfefferten Hashes — und auch der nur befristet,
+/// siehe `pruneSecurityEvents()`.
+///
+/// Pro Versuch entsteht **genau eine** Zeile mit ihrem Ergebnis. „Versuche“ ist
+/// damit die Anzahl aller Zeilen eines Typs, „erfolgreich“ die Teilmenge mit
+/// `outcome = SUCCESS`; zwei Zeilen pro Vorgang würden dieselbe Handlung
+/// doppelt zählen.
+model SecurityEvent {
+  id      String               @id @default(cuid())
+  type    SecurityEventType
+  outcome SecurityEventOutcome
+
+  /// Kurzcode für den Grund (z. B. `invalid_credentials`, `rate_limited`).
+  /// Bewusst kein Freitext: hier darf nichts landen, was der Nutzer eingegeben hat.
+  reason String?
+
+  /// Gesetzt, sobald der Vorgang einem Konto zuzuordnen ist. `SetNull` statt
+  /// `Cascade`, damit ein gelöschtes Konto die Angriffsstatistik nicht
+  /// verfälscht — die Zeile bleibt, aber ohne Personenbezug (vgl.
+  /// `anonymizeSecurityEventsForUser`).
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  /// HMAC der normalisierten E-Mail-Adresse. Nur gesetzt, wenn `userId` fehlt:
+  /// bei einem bekannten Konto wäre der Hash redundanter Personenbezug. Erlaubt,
+  /// Angriffe auf eine bestimmte (auch nicht existierende) Adresse zu erkennen,
+  /// ohne die Adresse selbst zu speichern.
+  subjectHash String?
+
+  /// HMAC der Client-IP. Wird nach `PSEUDONYM_RETENTION_DAYS` genullt — die
+  /// Datenschutzerklärung sagt 7 Tage für IP-Daten zu.
+  ipHash String?
+
+  /// Gekürzter User-Agent, unterliegt derselben 7-Tage-Frist wie `ipHash`.
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type, outcome, createdAt])
+  @@index([userId, createdAt])
+  @@index([subjectHash, createdAt])
+  @@index([ipHash, createdAt])
 }

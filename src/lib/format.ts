@@ -15,6 +15,13 @@ export function formatEuro(value: number): string {
   return EURO.format(value);
 }
 
+const NUMBER = new Intl.NumberFormat("de-DE");
+
+/** `1.284` — Tausenderpunkte für Zähler und Achsenbeschriftungen. */
+export function formatNumber(value: number): string {
+  return NUMBER.format(value);
+}
+
 const LONG_DATE = new Intl.DateTimeFormat("de-DE", {
   year: "numeric",
   month: "long",
@@ -33,6 +40,20 @@ function toDate(value: string | number | Date | null | undefined): Date | null {
 export function formatDate(value: string | number | Date | null | undefined): string {
   const date = toDate(value);
   return date ? LONG_DATE.format(date) : "—";
+}
+
+const DATE_TIME = new Intl.DateTimeFormat("de-DE", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** `04.09.2026, 14:32` — für Protokolle, wo die Uhrzeit die halbe Aussage ist. */
+export function formatDateTime(value: string | number | Date | null | undefined): string {
+  const date = toDate(value);
+  return date ? DATE_TIME.format(date) : "—";
 }
 
 /** `04.09.2026` — für Tabellen und Listen, wo Platz knapp ist. */

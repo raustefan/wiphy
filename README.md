@@ -73,7 +73,12 @@ Diese Anwendung ist so vorkonfiguriert, dass sie reibungslos auf einem Ubuntu-Se
    NEXTAUTH_SECRET="DEIN_SESSIONS_GEHEIMNIS" # Erzeugen mit: openssl rand -base64 32
    NEXTAUTH_URL="http://DEINE_SERVER_IP"     # Oder deine Domain
    AUTH_TRUST_HOST=true
+   SECURITY_LOG_PEPPER="DEIN_PROTOKOLL_GEHEIMNIS" # Optional, sonst wird NEXTAUTH_SECRET benutzt
    ```
+   `SECURITY_LOG_PEPPER` pseudonymisiert IP- und E-Mail-Adressen im
+   Sicherheitsprotokoll (`SecurityEvent`). Ohne eigenen Wert greift
+   `NEXTAUTH_SECRET`; ein separater Wert lässt sich unabhängig von den Sessions
+   rotieren.
 
 5. **Datenbank & Anwendung initialisieren:**
    ```bash

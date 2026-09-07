@@ -13,6 +13,7 @@ import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { sendEmail } from "@/lib/server/email/mailer";
 import { adminCreatedUserMessage, emailChangeMessage } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
+import { logSecurityEvent } from "@/lib/server/securityLog";
 
 export async function getDashboardUsers(userId: string, role: Role) {
   return findUsersForDashboard(userId, role);
@@ -71,6 +72,12 @@ export async function updateUserProfile(input: UpdateUserInput) {
       // Reported as a result, not thrown: the caller is a plain form action, so
       // a throw would replace the page with the generic error screen and lose
       // everything the user typed.
+      await logSecurityEvent({
+        type: "EMAIL_CHANGE",
+        outcome: "FAILURE",
+        reason: "email_taken",
+        userId: user.id,
+      });
       return { ok: false as const, reason: "email_taken" as const };
     }
 
@@ -93,9 +100,29 @@ export async function updateUserProfile(input: UpdateUserInput) {
       },
     });
 
-    await sendEmail({
-      to: newEmail,
-      message: emailChangeMessage(siteUrl(`/verify-email?token=${token}`)),
+    try {
+      await sendEmail({
+        to: newEmail,
+        message: emailChangeMessage(siteUrl(`/verify-email?token=${token}`)),
+      });
+    } catch (error) {
+      await logSecurityEvent({
+        type: "EMAIL_CHANGE",
+        outcome: "FAILURE",
+        reason: "mail_failed",
+        userId: user.id,
+      });
+      throw error;
+    }
+
+    // Der Vorgang ist hier erst *angefordert*: erst der Klick auf den
+    // Bestätigungslink ändert die Adresse und erscheint als EMAIL_VERIFICATION
+    // mit dem Grund `email_change`. Ohne IP-Bezug, weil dieser Service keinen
+    // Request-Kontext hat — das Konto ist hier die relevante Zuordnung.
+    await logSecurityEvent({
+      type: "EMAIL_CHANGE",
+      outcome: "SUCCESS",
+      userId: user.id,
     });
 
     // Keep the old email in updated data

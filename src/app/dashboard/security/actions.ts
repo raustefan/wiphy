@@ -13,6 +13,6 @@ export async function removeRateLimitEntry(formData: FormData) {
             throw new AppError("VALIDATION_ERROR", "Ungültiger Eintrag.");
         }
         await deleteRateLimitEntry(key);
-        revalidatePath("/dashboard/rate-limits");
+        revalidatePath("/dashboard/security");
     });
 }
