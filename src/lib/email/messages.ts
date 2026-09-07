@@ -122,8 +122,8 @@ export function adminRegistrationNoticeMessage(newUser: {
           { label: "E-Mail", value: newUser.email },
         ],
       },
-      { type: "text", content: "Bitte prüfe das Konto im Dashboard und schalte es frei." },
-      { type: "note", content: "Diese Mail geht erst nach der Bestätigung der Adresse raus. Registrierungen mit erfundenen Adressen erreichen euch also gar nicht erst und werden nach 24 Stunden automatisch gelöscht." },
+      { type: "text", content: "Damit ist der Nutzer noch kein Mitglied im Verein. Hierzu muss der Nutzer selbstständig einen Antrag auf Mitgliedschaft in seinem Dashboard stellen." },
+      { type: "note", content: "Die Mail Adresse des Nutzers wurde bereits bestätigt." },
     ],
   };
 }

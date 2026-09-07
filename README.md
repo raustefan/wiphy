@@ -92,6 +92,54 @@ Diese Anwendung ist so vorkonfiguriert, dass sie reibungslos auf einem Ubuntu-Se
 
 ---
 
+### nginx als Reverse Proxy
+
+nginx nimmt HTTPS entgegen und reicht an `127.0.0.1:3000` weiter. Der
+`location /`-Block **muss** die Adresse des Besuchers selbst setzen:
+
+```nginx
+location / {
+    # Bewusst die numerische Adresse: `localhost` kann je nach /etc/hosts
+    # zuerst als ::1 aufgelöst werden, und die Anwendung lauscht nur auf
+    # 127.0.0.1 — das ergäbe einen 502.
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+
+    proxy_set_header Host              $host;
+    proxy_set_header Upgrade           $http_upgrade;
+    proxy_set_header Connection        'upgrade';
+
+    # Ohne diese drei Zeilen sieht die Anwendung nie die echte Besucher-IP:
+    # nginx reicht unbekannte Request-Header unverändert durch, ein Angreifer
+    # könnte also seinen eigenen `X-Forwarded-For` mitschicken und sich damit
+    # bei jeder Anfrage einen frischen Rate-Limit-Zähler aussuchen. Weil nginx
+    # sie hier selbst setzt, wird alles Mitgeschickte überschrieben.
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    proxy_cache_bypass $http_upgrade;
+}
+```
+
+Übernehmen mit `nginx -t && systemctl reload nginx`.
+
+Die Anwendung wertet in dieser Reihenfolge aus (`src/lib/server/clientIp.ts`):
+`X-Real-IP` zuerst, sonst der **letzte** Eintrag aus `X-Forwarded-For` — der
+stammt vom nächstgelegenen Vermittler, während der erste vom Client stammen
+kann.
+
+Damit dieser Weg nicht umgangen werden kann, lauscht die Anwendung nur auf
+`127.0.0.1` (`next start -H 127.0.0.1` im `start`-Skript). Vorher war Port 3000
+auf allen Schnittstellen offen und direkt aus dem Internet erreichbar — an
+nginx, HTTPS und den Headern vorbei. Zur Kontrolle:
+
+```bash
+ss -tlnp | grep :3000   # soll 127.0.0.1:3000 zeigen, nicht *:3000
+```
+
+---
+
 ### Deployment & Updates via SSH (`deploy.sh`)
 
 Im Stammverzeichnis befindet sich das Skript `deploy.sh`. Jedes Mal, wenn du Updates in dein Git-Repository gepusht hast, kannst du den Server mit folgenden Wegen aktualisieren:

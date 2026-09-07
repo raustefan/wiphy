@@ -3,7 +3,10 @@ import { headers } from "next/headers";
 import { AppError } from "@/lib/server/errors";
 import { prisma } from "@/lib/prisma";
 
-type HeaderBag = Pick<Headers, "get">;
+// Weiterhin von hier aus zu importieren: die Aufrufer holen sich Adresse und
+// Limit in einem Zug. Die Funktion selbst liegt in einer eigenen Datei, damit
+// sie ohne `next/headers` und Datenbank testbar bleibt.
+export { extractClientIp } from "@/lib/server/clientIp";
 
 type RateLimitOptions = {
   bucket: string;
@@ -31,23 +34,6 @@ function now() {
 
 function makeStoreKey(bucket: string, keyParts: Array<string | null | undefined>) {
   return `${bucket}:${hashKey(keyParts)}`;
-}
-
-export function extractClientIp(headerBag: HeaderBag) {
-  const forwardedFor = headerBag.get("x-forwarded-for");
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(",")[0]?.trim();
-    if (firstIp) {
-      return firstIp;
-    }
-  }
-
-  const realIp = headerBag.get("x-real-ip")?.trim();
-  if (realIp) {
-    return realIp;
-  }
-
-  return "unknown";
 }
 
 export async function getRequestHeaders() {
