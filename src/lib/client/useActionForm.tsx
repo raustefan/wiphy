@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Callout } from "@/components/ui/Callout";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
+import { getRedirectTarget } from "@/lib/redirectError";
 import type { ActionResult } from "@/lib/server/errors";
 
 /**
@@ -55,6 +49,7 @@ export function useActionForm<T>(
   options: ActionFormOptions<T> = {},
 ): ActionForm {
   const { featureLabel, onSuccess, onError } = options;
+  const router = useRouter();
 
   // Aktion und Callbacks über eine Ref: `submit` behält damit über Renders
   // hinweg dieselbe Identität und darf gefahrlos in einer Effekt-Abhängigkeit
@@ -66,34 +61,56 @@ export function useActionForm<T>(
 
   const [error, setError] = useState("");
   const [featureDisabled, setFeatureDisabled] = useState(false);
-  // useTransition statt eines eigenen `pending`-Flags: so bleibt die UI während
-  // des Server-Roundtrips bedienbar und `router.refresh()` im onSuccess zählt
-  // noch zum selben Übergang.
-  const [pending, startTransition] = useTransition();
+  // Eigenes Pending-Flag statt `useTransition`: das Ergebnis der Aktion wird
+  // hier ausgewertet, nicht gerendert, und ein zusätzlicher Übergang um den
+  // Aufruf herum bringt nichts außer einer weiteren Fehlerquelle.
+  const [pending, setPending] = useState(false);
 
-  // Das Promise löst auf, wenn der Übergang durch ist — Aufrufer können also
+  // Das Promise löst auf, wenn die Aktion durch ist — Aufrufer können also
   // `await` nutzen. Ob es geklappt hat, sagen `onSuccess`/`onError`.
-  const submit = useCallback(
-    (formData: FormData) =>
-      new Promise<void>((resolve) => {
-        setError("");
-        startTransition(async () => {
-          const current = latest.current;
-          const result = await current.action(formData);
+  const submit = useCallback(async (formData: FormData) => {
+    const current = latest.current;
+    setError("");
+    setPending(true);
 
-          if (result.ok) {
-            current.onSuccess?.(result.data);
-          } else if (result.code === "FORBIDDEN" && current.featureLabel) {
-            setFeatureDisabled(true);
-          } else {
-            setError(result.message);
-            current.onError?.(result.message);
-          }
-          resolve();
-        });
-      }),
-    [],
-  );
+    let result: ActionResult<T>;
+    try {
+      result = await current.action(formData);
+    } catch (thrown) {
+      // Eine Serveraktion, die `redirect()` aufruft, liefert kein Ergebnis,
+      // sondern wirft die Weiterleitung als Fehler bis hierher. Wer sie nur
+      // durchreicht, verliert sie: es gibt an dieser Stelle nichts mehr, was
+      // sie auffängt — das Formular bliebe stehen, obwohl die Aktion auf dem
+      // Server längst durchgelaufen ist. Genau so verhielt sich die
+      // Registrierung: Konto angelegt, Mail verschickt, Seite unverändert.
+      // Also wird das Ziel aus dem Fehler gelesen und selbst angesteuert.
+      const target = getRedirectTarget(thrown);
+      if (target) {
+        if (target.kind === "replace") router.replace(target.url);
+        else router.push(target.url);
+        // `pending` bleibt bewusst stehen: die Seite wechselt gerade, und ein
+        // wieder freigegebener Knopf lüde nur zum zweiten Absenden ein.
+        return;
+      }
+      setPending(false);
+      throw thrown;
+    }
+
+    // Erst nach der Auswertung freigeben — ein `router.refresh()` im
+    // `onSuccess` soll noch unter dem laufenden Zustand starten.
+    try {
+      if (result.ok) {
+        current.onSuccess?.(result.data);
+      } else if (result.code === "FORBIDDEN" && current.featureLabel) {
+        setFeatureDisabled(true);
+      } else {
+        setError(result.message);
+        current.onError?.(result.message);
+      }
+    } finally {
+      setPending(false);
+    }
+  }, [router]);
 
   const run = useCallback(
     (fields: Record<string, string> = {}) => {

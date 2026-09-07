@@ -1,4 +1,5 @@
 import { ZodError } from "zod";
+import { isRedirectError } from "@/lib/redirectError";
 
 export type AppErrorCode =
   | "VALIDATION_ERROR"
@@ -37,16 +38,6 @@ export function mapErrorToActionResult(error: unknown): ActionResult {
     code: "INTERNAL_ERROR",
     message: "Es ist ein unerwarteter Fehler aufgetreten.",
   };
-}
-
-function isRedirectError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string" &&
-    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
-  );
 }
 
 export async function executeAction<T>(action: () => Promise<T>): Promise<ActionResult<T>> {
