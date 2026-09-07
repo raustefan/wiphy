@@ -6,7 +6,15 @@
  * früher oder später auseinander.
  *
  * Frei von Server-Imports — Client-Komponenten formatieren damit genauso.
+ *
+ * Alle Datumsformate tragen ausdrücklich `timeZone: "Europe/Berlin"`. Ohne die
+ * Angabe nimmt `Intl` die Zeitzone der jeweiligen Umgebung — und das ist beim
+ * Rendern auf dem Server UTC, beim Rendern im Browser die des Besuchers.
+ * Dieselbe Zeile stünde dann je nach Ort zwei Stunden früher im Protokoll, als
+ * sie passiert ist. Es gilt immer deutsche Zeit, Sommerzeit eingeschlossen.
  */
+
+const TIME_ZONE = "Europe/Berlin";
 
 const EURO = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
 
@@ -26,9 +34,10 @@ const LONG_DATE = new Intl.DateTimeFormat("de-DE", {
   year: "numeric",
   month: "long",
   day: "numeric",
+  timeZone: TIME_ZONE,
 });
 
-const SHORT_DATE = new Intl.DateTimeFormat("de-DE");
+const SHORT_DATE = new Intl.DateTimeFormat("de-DE", { timeZone: TIME_ZONE });
 
 function toDate(value: string | number | Date | null | undefined): Date | null {
   if (value === null || value === undefined || value === "") return null;
@@ -48,6 +57,7 @@ const DATE_TIME = new Intl.DateTimeFormat("de-DE", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: TIME_ZONE,
 });
 
 /** `04.09.2026, 14:32` — für Protokolle, wo die Uhrzeit die halbe Aussage ist. */

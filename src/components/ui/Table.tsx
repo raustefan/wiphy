@@ -1,6 +1,14 @@
 import { cn } from "@/lib/cn";
 
-/** Horizontal scrollbarer Wrapper — Tabellen kippen auf dem Telefon nicht das Layout. */
+/**
+ * Horizontal scrollbarer Wrapper — breite Tabellen kippen auf dem Telefon nicht
+ * das Layout, sondern scrollen in sich.
+ *
+ * Bewusst **ohne** negativen Außenabstand: alle Aufrufer stecken in einer
+ * `Card` mit eigener Innenabstands­kante. Ein `-mx-4` zöge die Tabelle darüber
+ * hinaus, sie liefe dann näher am Kartenrand als jeder andere Inhalt und sähe
+ * auf schmalen Bildschirmen aus, als ragte sie heraus.
+ */
 export function TableWrap({
   className,
   children,
@@ -8,11 +16,7 @@ export function TableWrap({
   className?: string;
   children: React.ReactNode;
 }) {
-  return (
-    <div className={cn("-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0", className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn("overflow-x-auto", className)}>{children}</div>;
 }
 
 export function Table({

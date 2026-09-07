@@ -206,3 +206,134 @@ export async function getSecurityOverview(days: WindowDays): Promise<SecurityOve
     retention: { event: EVENT_RETENTION_DAYS, pseudonym: PSEUDONYM_RETENTION_DAYS },
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Wochenraster                                                        *
+ * ------------------------------------------------------------------ */
+
+export type HeatCell = {
+  /** 0 = Montag … 6 = Sonntag. */
+  weekday: number;
+  /** 0…23, Ortszeit. */
+  hour: number;
+  total: number;
+  success: number;
+  blocked: number;
+  failure: number;
+};
+
+export type ActivityHeatmap = {
+  /** Sieben Zeilen à 24 Zellen, lückenlos — auch die leeren Stunden. */
+  rows: HeatCell[][];
+  max: number;
+  total: number;
+};
+
+const WEEKDAY_COUNT = 7;
+const HOUR_COUNT = 24;
+
+/**
+ * Vorgänge nach Wochentag und Stunde.
+ *
+ * Der Nutzen liegt im Muster, nicht in den Einzelwerten: Menschen registrieren
+ * sich abends und am Wochenende, ein Skript läuft gleichmäßig durch die Nacht.
+ * Ein Raster zeigt diesen Unterschied auf einen Blick, eine Tagesreihe nicht.
+ *
+ * `isodow` beginnt bei 1 = Montag; die deutsche Woche fängt nicht am Sonntag an.
+ */
+export async function getActivityHeatmap(days: WindowDays): Promise<ActivityHeatmap> {
+  const rows = await prisma.$queryRaw<
+    Array<{ weekday: number; hour: number; outcome: SecurityEventOutcome; count: number }>
+  >`
+    SELECT extract(isodow from ("createdAt" AT TIME ZONE 'Europe/Berlin'))::int AS weekday,
+           extract(hour   from ("createdAt" AT TIME ZONE 'Europe/Berlin'))::int AS hour,
+           "outcome", count(*)::int AS count
+    FROM "SecurityEvent"
+    WHERE "createdAt" >= ${windowStart(days - 1)}
+    GROUP BY 1, 2, 3
+  `;
+
+  const grid: HeatCell[][] = Array.from({ length: WEEKDAY_COUNT }, (_, weekday) =>
+    Array.from({ length: HOUR_COUNT }, (_, hour) => ({
+      weekday,
+      hour,
+      ...emptyCounts(),
+    })),
+  );
+
+  let max = 0;
+  let total = 0;
+
+  for (const row of rows) {
+    const cell = grid[row.weekday - 1]?.[row.hour];
+    if (!cell) continue;
+
+    addOutcome(cell, row.outcome, row.count);
+    total += row.count;
+    if (cell.total > max) max = cell.total;
+  }
+
+  return { rows: grid, max, total };
+}
+
+/* ------------------------------------------------------------------ *
+ * Trichter                                                            *
+ * ------------------------------------------------------------------ */
+
+export type RegistrationFunnel = {
+  /** Abgeschlossene Registrierungen über das öffentliche Formular. */
+  registered: number;
+  /** Davon getrennt gezählt: bestätigte Adressen (ohne Adressänderungen). */
+  verified: number;
+  /** Eingereichte Aufnahmeanträge. */
+  applied: number;
+  /** Angenommene Aufnahmeanträge. */
+  accepted: number;
+  /** Unbestätigt verfallene und automatisch gelöschte Registrierungen. */
+  expired: number;
+};
+
+/**
+ * Der Weg vom Formular bis zur Mitgliedschaft, Stufe für Stufe.
+ *
+ * **Kein Kohortenschnitt.** Gezählt wird, was *im Zeitraum* passiert ist, nicht
+ * was aus den Registrierungen dieses Zeitraums geworden ist: wer sich im Mai
+ * anmeldet und im Juli den Antrag stellt, erscheint in zwei verschiedenen
+ * Zeiträumen je einmal. Für „läuft der Ablauf rund?“ ist das die richtige
+ * Frage; für „was wurde aus diesen 20 Leuten?“ wäre es die falsche, und deshalb
+ * steht der Hinweis auch an der Grafik.
+ */
+export async function getRegistrationFunnel(days: WindowDays): Promise<RegistrationFunnel> {
+  const [events, applications] = await Promise.all([
+    prisma.$queryRaw<Array<{ registered: number; verified: number; expired: number }>>`
+      SELECT
+        count(*) FILTER (WHERE "type" = 'REGISTRATION' AND "outcome" = 'SUCCESS')::int
+          AS registered,
+        -- Adressänderungen laufen über denselben Bestätigungslink, gehören hier
+        -- aber nicht dazu: sie stammen von Konten, die es längst gibt.
+        count(*) FILTER (
+          WHERE "type" = 'EMAIL_VERIFICATION' AND "outcome" = 'SUCCESS'
+            AND ("reason" IS NULL OR "reason" <> 'email_change')
+        )::int AS verified,
+        count(*) FILTER (WHERE "type" = 'REGISTRATION_EXPIRED')::int AS expired
+      FROM "SecurityEvent"
+      WHERE "createdAt" >= ${windowStart(days - 1)}
+    `,
+    prisma.$queryRaw<Array<{ applied: number; accepted: number }>>`
+      SELECT
+        count(*) FILTER (WHERE "submittedAt" >= ${windowStart(days - 1)})::int AS applied,
+        count(*) FILTER (
+          WHERE "decidedAt" >= ${windowStart(days - 1)} AND "status" = 'ANGENOMMEN'
+        )::int AS accepted
+      FROM "MembershipApplication"
+    `,
+  ]);
+
+  return {
+    registered: events[0]?.registered ?? 0,
+    verified: events[0]?.verified ?? 0,
+    applied: applications[0]?.applied ?? 0,
+    accepted: applications[0]?.accepted ?? 0,
+    expired: events[0]?.expired ?? 0,
+  };
+}

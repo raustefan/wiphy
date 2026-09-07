@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Activity, AlertTriangle, Info, ShieldAlert, UserX } from "lucide-react";
+import { Activity, AlertTriangle, Filter, Info, ShieldAlert, UserX } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import {
+    getActivityHeatmap,
+    getRegistrationFunnel,
     getSecurityOverview,
     parseWindowDays,
     WINDOW_DAYS,
@@ -31,10 +33,20 @@ import { OutcomeTimeline } from "./OutcomeTimeline";
 import { TypeSparklines } from "./TypeSparklines";
 import { StatTile } from "./StatTiles";
 import { ReasonBars } from "./ReasonBars";
+import { ActivityHeatmap } from "./ActivityHeatmap";
+import { RegistrationFunnel } from "./RegistrationFunnel";
 import { RateLimitTable } from "./RateLimitTable";
 import { OUTCOME_LABELS, OUTCOME_TONES, reasonLabel, TYPE_ORDER, typeLabel } from "./securityLabels";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Kopfzeile der scrollbaren Ereignisliste. Deckend, nicht `bg-raised/60` wie
+ * sonst: durch eine durchscheinende Kopfzeile würden die durchlaufenden Zeilen
+ * sichtbar. `sticky` sitzt an jeder Zelle statt an `<thead>`, weil das in allen
+ * Browsern trägt.
+ */
+const STICKY_TH = "sticky top-0 z-10 bg-raised";
 
 export default async function SecurityPage({
     searchParams,
@@ -52,11 +64,14 @@ export default async function SecurityPage({
     // der auf die nächste Registrierung wartet.
     await pruneUnverifiedRegistrations();
 
-    const [overview, rateLimitEntries, pendingRegistrations] = await Promise.all([
-        getSecurityOverview(days),
-        getRateLimitEntries(),
-        getPendingRegistrationStats(),
-    ]);
+    const [overview, rateLimitEntries, pendingRegistrations, funnel, heatmap] =
+        await Promise.all([
+            getSecurityOverview(days),
+            getRateLimitEntries(),
+            getPendingRegistrationStats(),
+            getRegistrationFunnel(days),
+            getActivityHeatmap(days),
+        ]);
     const rateLimitSummary = summarizeByBucket(rateLimitEntries);
 
     // Auch Vorgangsarten ohne einen einzigen Eintrag bekommen eine Kachel: „hier
@@ -149,6 +164,22 @@ export default async function SecurityPage({
                 </div>
             </Card>
 
+            {/* ---------- Trichter ---------- */}
+            <Card className="mb-6 p-5 sm:p-6">
+                <SectionTitle>
+                    <span className="inline-flex items-center gap-2">
+                        <Filter size={20} aria-hidden="true" />
+                        Vom Formular zur Mitgliedschaft
+                    </span>
+                </SectionTitle>
+                <p className="mt-1 mb-5 text-sm text-muted">
+                    Wie weit neue Interessierte kommen — und wo sie unterwegs abspringen.
+                    Bricht eine Stufe plötzlich ein, liegt es meist an ihr und nicht an den
+                    Leuten: eine Bestätigungsmail im Spam-Ordner sieht genau so aus.
+                </p>
+                <RegistrationFunnel data={funnel} days={days} />
+            </Card>
+
             {/* ---------- Unbestätigte Registrierungen ---------- */}
             <Card className="mb-6 p-5 sm:p-6">
                 <SectionTitle>
@@ -203,6 +234,17 @@ export default async function SecurityPage({
                     Tag halten zeigt die genauen Zahlen.
                 </p>
                 <OutcomeTimeline daily={overview.daily} />
+            </Card>
+
+            {/* ---------- Wochenraster ---------- */}
+            <Card className="mb-6 p-5 sm:p-6">
+                <SectionTitle>Wochenraster</SectionTitle>
+                <p className="mt-1 mb-5 text-sm text-muted">
+                    Alle Vorgänge nach Wochentag und Stunde, in deutscher Zeit. Menschen sind
+                    abends und am Wochenende unterwegs; ein gleichmäßig durchgefärbtes Raster
+                    — besonders nachts — spricht für automatisierte Zugriffe.
+                </p>
+                <ActivityHeatmap data={heatmap} />
             </Card>
 
             {/* ---------- Verlauf je Vorgangsart ---------- */}
@@ -285,21 +327,26 @@ export default async function SecurityPage({
             <Card className="mb-6 p-5 sm:p-6">
                 <SectionTitle>Letzte Ereignisse</SectionTitle>
                 <p className="mt-1 text-sm text-muted">
-                    Die 60 jüngsten Einträge, unabhängig vom gewählten Zeitraum.
+                    Die 60 jüngsten Einträge, unabhängig vom gewählten Zeitraum — in der Liste
+                    scrollbar.
                 </p>
                 {overview.recent.length === 0 ? (
                     <p className="py-8 text-center text-sm text-muted">Noch keine Einträge.</p>
                 ) : (
-                    <TableWrap className="mt-4">
+                    /* Eigener Rahmen statt `TableWrap`: hier wird in beide
+                       Richtungen gescrollt. Ohne die Höhenbegrenzung schiebt die
+                       Liste alles Nachfolgende — Rate Limits, Hinweise — um zwei
+                       Bildschirmseiten nach unten. */
+                    <div className="mt-4 max-h-[26rem] overflow-auto">
                         <Table className="min-w-[780px]">
                             <thead>
-                                <tr className="bg-raised/60">
-                                    <Th>Zeitpunkt</Th>
-                                    <Th>Vorgang</Th>
-                                    <Th>Ergebnis</Th>
-                                    <Th>Grund</Th>
-                                    <Th>Konto / Kennung</Th>
-                                    <Th>IP-Pseudonym</Th>
+                                <tr>
+                                    <Th className={STICKY_TH}>Zeitpunkt</Th>
+                                    <Th className={STICKY_TH}>Vorgang</Th>
+                                    <Th className={STICKY_TH}>Ergebnis</Th>
+                                    <Th className={STICKY_TH}>Grund</Th>
+                                    <Th className={STICKY_TH}>Konto / Kennung</Th>
+                                    <Th className={STICKY_TH}>IP-Pseudonym</Th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -338,7 +385,7 @@ export default async function SecurityPage({
                                 ))}
                             </tbody>
                         </Table>
-                    </TableWrap>
+                    </div>
                 )}
             </Card>
 

@@ -47,6 +47,25 @@
   --chart-failure: #dc2626;
   --chart-accent: #0d9488;
 
+  /* Einfarbige Rampen für Menge (Heatmap) und Reihenfolge (Trichter).
+     Beide bleiben auf dem Farbton des Akzents und werden allein über die
+     Helligkeit gestuft — ein Regenbogen würde eine Rangfolge behaupten, die
+     die Daten nicht haben. Geprüft: Helligkeit streng monoton, Abstand je
+     Stufe >= 0.06 (OKLCH L), Farbtonstreuung <= 4°.
+     Die Trichterstufen halten zusätzlich >= 2:1 Kontrast zur Kartenfläche,
+     weil sie einzelne Marken sind. Die hellste Stufe der Heatmap darf das
+     unterschreiten: sie bedeutet „fast nichts“ und soll zurücktreten. */
+  --chart-seq-1: #cfe6e3;
+  --chart-seq-2: #a1c2be;
+  --chart-seq-3: #74a09b;
+  --chart-seq-4: #477e79;
+  --chart-seq-5: #115e59;
+
+  --chart-stage-1: #83bfb6;
+  --chart-stage-2: #5f9d96;
+  --chart-stage-3: #3b7d77;
+  --chart-stage-4: #115e59;
+
   color-scheme: light;
 }
 
@@ -82,6 +101,19 @@ html[data-theme-appearance="dark"] {
   --chart-blocked: #3b82f6;
   --chart-failure: #ef4444;
   --chart-accent: #11a396;
+
+  /* Eigene Stufen, keine Umkehrung: gegen die dunkle Fläche muss die Rampe
+     nach oben laufen, nicht nach unten. */
+  --chart-seq-1: #1a3634;
+  --chart-seq-2: #2a5954;
+  --chart-seq-3: #3b7e76;
+  --chart-seq-4: #4ca69a;
+  --chart-seq-5: #5ecfc0;
+
+  --chart-stage-1: #2a5c57;
+  --chart-stage-2: #3b8078;
+  --chart-stage-3: #4ca79b;
+  --chart-stage-4: #5ecfc0;
 }
 
 @theme inline {
