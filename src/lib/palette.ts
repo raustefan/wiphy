@@ -18,6 +18,8 @@ export type CanvasPalette = {
   ink: string;
   /** Zurückhaltende Hilfslinien, Achsen, Raster. */
   muted: string;
+  /** Kartenhintergrund — für Beschriftungen, die etwas überdecken müssen. */
+  surface: string;
 };
 
 const LIGHT: CanvasPalette = {
@@ -25,6 +27,7 @@ const LIGHT: CanvasPalette = {
   market: "168, 26, 82",
   ink: "22, 24, 29",
   muted: "100, 116, 132",
+  surface: "255, 255, 255",
 };
 
 const DARK: CanvasPalette = {
@@ -32,6 +35,7 @@ const DARK: CanvasPalette = {
   market: "236, 92, 134",
   ink: "232, 234, 237",
   muted: "138, 150, 166",
+  surface: "19, 19, 22",
 };
 
 export function paletteFor(appearance: Appearance): CanvasPalette {

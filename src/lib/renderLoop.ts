@@ -5,6 +5,11 @@
  * Canvas aus dem Viewport scrollt oder der Tab in den Hintergrund geht. Bei
  * `prefers-reduced-motion: reduce` wird stattdessen genau ein Bild gezeichnet
  * — und erneut, wenn sich die Einstellung während der Sitzung ändert.
+ *
+ * Optional lässt sich die Bildrate deckeln (`fps`). Auf Telefonen kostet jedes
+ * Vollbild spürbar Füllrate; 30 Bilder/s sehen dort identisch aus, halbieren
+ * aber die Arbeit. Displays mit 120 Hz (iPhone Pro) laufen ohne Deckel doppelt
+ * so schnell wie gedacht — mit Deckel sind alle Geräte gleich schnell.
  */
 export type RenderLoopHandle = {
     /** Neu zeichnen, ohne die Schleife zu starten (z. B. nach einem Resize). */
@@ -12,21 +17,33 @@ export type RenderLoopHandle = {
     stop: () => void;
 };
 
+export type RenderLoopFrame = {
+    reducedMotion: boolean;
+    /** Zeitstempel in ms — für zeitbasierte statt bildzahlbasierte Animation. */
+    now: number;
+};
+
 export function createRenderLoop(
     canvas: HTMLCanvasElement,
-    draw: (options: { reducedMotion: boolean }) => void,
+    draw: (options: RenderLoopFrame) => void,
+    options: { fps?: number } = {},
 ): RenderLoopHandle {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Eine Millisekunde Toleranz, sonst fällt bei 60 fps jedes zweite Bild aus.
+    const minDelta = options.fps ? 1000 / options.fps - 1 : 0;
 
     let raf = 0;
     let visible = true;
     let stopped = false;
+    let lastDraw = 0;
 
     const reducedMotion = () => motionQuery.matches;
 
-    const frame = () => {
-        draw({ reducedMotion: false });
+    const frame = (now: number) => {
         raf = requestAnimationFrame(frame);
+        if (now - lastDraw < minDelta) return;
+        lastDraw = now;
+        draw({ reducedMotion: false, now });
     };
 
     const shouldRun = () => !stopped && visible && !document.hidden && !reducedMotion();
@@ -41,7 +58,9 @@ export function createRenderLoop(
             raf = 0;
         }
         // Statisches Einzelbild, damit die Fläche nie leer bleibt.
-        if (!stopped && visible && !document.hidden) draw({ reducedMotion: true });
+        if (!stopped && visible && !document.hidden) {
+            draw({ reducedMotion: true, now: performance.now() });
+        }
     };
 
     // Außerhalb des Viewports gibt es nichts zu animieren.
@@ -60,7 +79,7 @@ export function createRenderLoop(
     sync();
 
     return {
-        redraw: () => draw({ reducedMotion: reducedMotion() }),
+        redraw: () => draw({ reducedMotion: reducedMotion(), now: performance.now() }),
         stop: () => {
             stopped = true;
             if (raf) cancelAnimationFrame(raf);

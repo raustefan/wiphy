@@ -170,7 +170,7 @@ export default async function HomePage() {
                 <MarketDiffusion />
               </div>
 
-              <div className="order-1 flex flex-col gap-4 lg:order-2">
+              <div className="order-1 flex flex-col gap-4 lg:order-2 lg:justify-center lg:gap-5">
                 <div className="grid gap-2">
                   <p className="font-mono text-xs font-semibold tracking-[0.16em] text-market uppercase">
                     Statistische Physik
@@ -199,13 +199,9 @@ export default async function HomePage() {
                   aufschlussreichste: Volatilität kostet Rendite. Und die Breite
                   der Verteilung wächst mit <span className="formula">σ√t</span>,
                   nicht linear. Deshalb ist eine ehrliche Prognose keine Linie,
-                  sondern ein Kegel.
+                  sondern ein Kegel — bei fester Achse sieht man sofort, was ein
+                  Sprung von σ = 10 % auf 90 % daraus macht.
                 </Prose>
-
-                <p className="formula-legend">
-                  Handelstag Δt = 1/252, Drift μ = 7 % p. a. Die Bänder sind die
-                  analytischen Quantile der Log-Normalverteilung.
-                </p>
               </div>
             </div>
           </Card>
