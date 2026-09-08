@@ -1,4 +1,4 @@
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar, CalendarDays, Clock, User } from "lucide-react";
 import { Lead } from "@/components/ui";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
@@ -13,10 +13,13 @@ function MetaLine({
     author,
     date,
     minutes,
+    eventTitle,
 }: {
     author: string | null;
     date: Date;
     minutes: number;
+    /* Kein Link, sondern nur ein Hinweis: die ganze Karte ist bereits einer. */
+    eventTitle?: string;
 }) {
     return (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
@@ -34,6 +37,12 @@ function MetaLine({
                 <Clock size={13} aria-hidden="true" />
                 {minutes} Min. Lesezeit
             </span>
+            {eventTitle && (
+                <span className="inline-flex min-w-0 items-center gap-1.5 text-market">
+                    <CalendarDays size={13} aria-hidden="true" className="shrink-0" />
+                    <span className="truncate">Rückblick: {eventTitle}</span>
+                </span>
+            )}
         </div>
     );
 }
@@ -99,6 +108,9 @@ export default async function BlogIndexPage() {
                                     author={lead.author}
                                     date={lead.publishedAt}
                                     minutes={readingTimeMinutes(lead.content)}
+                                    eventTitle={
+                                        lead.event?.published ? lead.event.title : undefined
+                                    }
                                 />
                                 <Lead className="max-w-2xl">
                                     {lead.preview}
@@ -139,6 +151,11 @@ export default async function BlogIndexPage() {
                                                 author={post.author}
                                                 date={post.publishedAt}
                                                 minutes={readingTimeMinutes(post.content)}
+                                                eventTitle={
+                                                    post.event?.published
+                                                        ? post.event.title
+                                                        : undefined
+                                                }
                                             />
                                             <h3 className="text-lg font-bold tracking-tight text-balance sm:text-xl">
                                                 {post.title}

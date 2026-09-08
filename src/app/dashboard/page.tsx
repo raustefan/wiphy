@@ -14,6 +14,7 @@ import {
     UserCircle,
     IdCard,
     Calendar,
+    CalendarDays,
     SlidersHorizontal,
     Send,
     BookOpen,
@@ -43,12 +44,15 @@ import {
 import { SectionHeader } from "./SectionHeader";
 import { countOpenApplications, getOpenApplication } from "@/lib/server/services/membershipService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
+import { getDashboardEvent } from "@/lib/server/services/eventService";
+import { UpcomingEventAlert } from "./UpcomingEventAlert";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
     { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
     { href: "/dashboard/users/new", label: "Neuer User", Icon: User },
     { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
+    { href: "/dashboard/termine", label: "Termine", Icon: CalendarDays },
     { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
     { href: MEMBERSHIP_ADMIN_PATH, label: "Mitgliedsanträge", Icon: FileText },
@@ -75,11 +79,13 @@ export default async function DashboardPage() {
 
     // Der Antrags-CTA ist nur für Konten ohne Mitgliedschaft relevant.
     const isNonMember = userStatus === "KEIN_MITGLIED";
-    const [openApplication, applicationEnabled, openApplicationCount] = await Promise.all([
-        isNonMember ? getOpenApplication(currentUser.id) : null,
-        isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
-        isAdmin ? countOpenApplications() : 0,
-    ]);
+    const [openApplication, applicationEnabled, openApplicationCount, upcomingEvent] =
+        await Promise.all([
+            isNonMember ? getOpenApplication(currentUser.id) : null,
+            isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
+            isAdmin ? countOpenApplications() : 0,
+            getDashboardEvent(),
+        ]);
     const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
 
     return (
@@ -107,6 +113,9 @@ export default async function DashboardPage() {
                 </div>
                 <LogoutButton />
             </div>
+
+            {/* ---------- Hinweis auf den nächsten Termin ---------- */}
+            {upcomingEvent && <UpcomingEventAlert event={upcomingEvent} />}
 
             {/* ---------- Mitgliederselbstverwaltung CTA ---------- */}
             <Link

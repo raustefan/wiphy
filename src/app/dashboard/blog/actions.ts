@@ -64,6 +64,7 @@ export async function savePost(formData: FormData) {
             author: String(formData.get("author") ?? ""),
             publishedAt: String(formData.get("publishedAt") ?? ""),
             published: formData.get("published") === "on",
+            eventId: String(formData.get("eventId") ?? ""),
         };
         const parsed = blogSaveSchema.safeParse(raw);
         if (!parsed.success) {
@@ -77,6 +78,9 @@ export async function savePost(formData: FormData) {
         revalidatePath("/dashboard/blog");
         revalidatePath("/blog");
         revalidatePath(`/blog/${parsed.data.id}`);
+        // Der Rückblick erscheint auf der Terminseite — die muss ihn mitbekommen.
+        revalidatePath("/termine");
+        if (parsed.data.eventId) revalidatePath(`/termine/${parsed.data.eventId}`);
         redirect("/dashboard/blog");
     });
 }

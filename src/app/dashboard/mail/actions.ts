@@ -3,6 +3,7 @@
 import { AppError, executeAction } from "@/lib/server/errors";
 import { mailSendSchema } from "@/lib/server/validation/schemas";
 import { sendMailForTarget } from "@/lib/server/email/mailService";
+import { getAnnouncedEvent } from "@/lib/server/services/eventService";
 import { enforceAdminMailRateLimit } from "@/lib/server/email/rateLimitMail";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 
@@ -21,6 +22,7 @@ function parseMailForm(formData: FormData) {
         message: String(formData.get("message") ?? ""),
         selectedUserIds,
         bccToSelf: formData.get("bccToSelf") === "on",
+        eventId: String(formData.get("eventId") ?? ""),
     };
 
     const parsed = mailSendSchema.safeParse(raw);
@@ -37,7 +39,12 @@ export async function sendEmailAction(formData: FormData) {
     return executeAction(async () => {
         const admin = await enforceAdminMailRateLimit();
         await requireFeatureEnabled("MAIL_SERVICES");
-        const { target, subject, message, selectedUserIds, bccToSelf } = parseMailForm(formData);
+        const { target, subject, message, selectedUserIds, bccToSelf, eventId } =
+            parseMailForm(formData);
+
+        // Der Terminblock entsteht serverseitig aus dem gespeicherten Termin —
+        // was der Absender im Editor stehen hat, kann ihn nicht verfälschen.
+        const event = eventId ? await getAnnouncedEvent(eventId) : undefined;
 
         await sendMailForTarget({
             target,
@@ -46,6 +53,7 @@ export async function sendEmailAction(formData: FormData) {
             html: message,
             bccToSelf,
             adminEmail: admin.email,
+            event,
         });
 
         return { ok: true };

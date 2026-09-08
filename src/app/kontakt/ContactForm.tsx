@@ -33,9 +33,12 @@ const ALTCHA_STYLE = {
 export function ContactForm({
     challengeJson,
     enabled,
+    defaultSubject = "",
 }: {
     challengeJson: string;
     enabled: boolean;
+    /** Vorbelegung aus der Adresszeile (`?betreff=…`). */
+    defaultSubject?: string;
 }) {
     const [submitted, setSubmitted] = useState(false);
     const [messageLength, setMessageLength] = useState(0);
@@ -140,6 +143,7 @@ export function ContactForm({
                             name="subject"
                             required
                             maxLength={200}
+                            defaultValue={defaultSubject}
                             placeholder="Worum geht es?"
                         />
                     </Field>

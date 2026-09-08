@@ -25,6 +25,16 @@ import {
   type BlogImageMeta,
 } from "@/lib/blogImages";
 
+/** Termin, auf den ein Beitrag zurückblickt. */
+export type LinkedEvent = {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date | null;
+  allDay: boolean;
+  published: boolean;
+};
+
 export type BlogPostWithImages = {
   id: string;
   title: string;
@@ -39,6 +49,8 @@ export type BlogPostWithImages = {
   images: BlogImageMeta[];
   /** Kurzform für `images[0]` — spart den Seiten die Fallunterscheidung. */
   cover: BlogImageMeta | null;
+  /** Verknüpfter Termin, falls der Beitrag über einen berichtet. */
+  event: LinkedEvent | null;
 };
 
 function toImageMeta(row: BlogImageRow): BlogImageMeta {
@@ -114,6 +126,7 @@ export async function saveAdminPost(input: {
   author: string;
   publishedAt: Date;
   published: boolean;
+  eventId: string | null;
 }) {
   await updatePost(input.id, {
     title: input.title,
@@ -122,6 +135,7 @@ export async function saveAdminPost(input: {
     author: input.author,
     publishedAt: input.publishedAt,
     published: input.published,
+    eventId: input.eventId,
   });
 }
 

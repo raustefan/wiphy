@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Send, X, List } from "lucide-react";
+import { CalendarDays, Send, X, List } from "lucide-react";
 import {
     Badge,
     Button,
@@ -15,6 +15,7 @@ import {
     Separator,
 } from "@/components/ui";
 import { sendEmailAction } from "./actions";
+import type { MailAnnouncement } from "./MailDashboard";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
@@ -29,6 +30,8 @@ export type MailUserOption = {
 
 type MailFormProps = {
     users: MailUserOption[];
+    /** Gesetzt, wenn die Mail einen Termin ankündigt (`?termin=<id>`). */
+    announcement?: MailAnnouncement | null;
     onSuccess?: (count: number) => void;
 };
 
@@ -55,13 +58,13 @@ function byStatusThenName(a: MailUserOption, b: MailUserOption) {
     return (a.name || a.email).localeCompare(b.name || b.email, "de");
 }
 
-export function MailForm({ users, onSuccess }: MailFormProps) {
+export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
     const [target, setTarget] = useState("ALL");
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
     const [showRecipients, setShowRecipients] = useState(false);
 
-    const editor = useEmailEditor({ minHeight: 250 });
+    const editor = useEmailEditor({ minHeight: 250, content: announcement?.html ?? "" });
 
     const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
@@ -328,12 +331,37 @@ export function MailForm({ users, onSuccess }: MailFormProps) {
                         id="mail-subject"
                         name="subject"
                         required
+                        defaultValue={announcement?.subject ?? ""}
                         placeholder="Wichtige Info zum Sommerfest…"
                     />
                 </Field>
 
                 {/* Nachricht */}
                 <EmailBodyField editor={editor} />
+
+                {/* Terminanhang: was der Versand unter den Text setzt. */}
+                {announcement && (
+                    <>
+                        <input type="hidden" name="eventId" value={announcement.id} />
+                        <div className="grid gap-2 rounded-2xl border border-dashed border-line-strong bg-raised/40 p-4">
+                            <p className="flex items-center gap-2 text-sm font-semibold">
+                                <CalendarDays size={16} aria-hidden="true" className="text-market" />
+                                Wird unter die Nachricht gesetzt
+                            </p>
+                            <p className="text-sm text-muted">
+                                <span className="font-semibold text-foreground">
+                                    {announcement.title}
+                                </span>{" "}
+                                · {announcement.when}
+                            </p>
+                            <p className="text-xs text-faint">
+                                Eckdaten, ein Knopf zur Terminseite und der Hinweis auf das
+                                Kontaktformular. Der Block entsteht beim Versand aus dem
+                                gespeicherten Termin und lässt sich hier nicht verändern.
+                            </p>
+                        </div>
+                    </>
+                )}
 
                 <Separator />
 

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { Lead, PageTitle, Prose } from "@/components/ui";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, PenLine } from "lucide-react";
+import { ArrowRight, CalendarDays, CalendarPlus, PenLine } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -9,6 +9,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import PhysicsHero from "@/components/PhysicsHeroLazy";
 import MarketDiffusion from "@/components/MarketDiffusionLazy";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
+import { getFeaturedEvent } from "@/lib/server/services/eventService";
+import { EventDateCube, EventFacts } from "@/components/EventCard";
+import { eventIcsPath, eventPath, formatCountdown } from "@/lib/events";
 import { formatDateShort } from "@/lib/format";
 import { blogImageUrl } from "@/lib/blogImages";
 
@@ -54,6 +57,8 @@ export default async function HomePage() {
   const session = await auth();
   const posts = await getPublishedPosts();
   const latestPost = posts.length > 0 ? posts[0] : null;
+  // Der nächste Termin — und wenn keiner ansteht, der zuletzt vergangene.
+  const featured = await getFeaturedEvent();
 
   return (
     <div className="grid gap-14 py-8 sm:gap-20 sm:py-12">
@@ -146,10 +151,87 @@ export default async function HomePage() {
         </section>
       </Container>
 
+      {/* ═══════════════════ Termine ═══════════════════ */}
+      {featured && (
+        <Container size="4">
+          <section>
+            <SectionMarker index="02" label="Termine" />
+
+            <div className="mb-8 grid max-w-2xl gap-3">
+              <PageTitle as="h2">
+                {featured.isPast ? "Zuletzt im Verein" : "Was als Nächstes ansteht"}
+              </PageTitle>
+              <Lead>
+                {featured.isPast
+                  ? "Aktuell ist nichts terminiert — hier steht deshalb der letzte Termin. Der nächste kommt bestimmt, und Mitglieder erfahren davon zuerst."
+                  : "Stammtische, Exkursionen und Vorträge. Ein Klick übernimmt den Termin in den eigenen Kalender."}
+              </Lead>
+            </div>
+
+            <Card className="p-5 sm:p-8">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-10">
+                <div className="grid gap-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {featured.isPast ? (
+                      <Badge>Vergangen</Badge>
+                    ) : (
+                      <>
+                        <Badge tone="physics">Nächster Termin</Badge>
+                        {formatCountdown(featured.event) && (
+                          <Badge>{formatCountdown(featured.event)}</Badge>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex gap-4 sm:gap-6">
+                    <EventDateCube
+                      date={featured.event.start}
+                      past={featured.isPast}
+                      size="lg"
+                    />
+                    <div className="grid min-w-0 flex-1 content-start gap-3">
+                      <h3 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+                        {featured.event.title}
+                      </h3>
+                      <EventFacts event={featured.event} />
+                    </div>
+                  </div>
+
+                  {featured.event.summary && (
+                    <Prose className="max-w-2xl">{featured.event.summary}</Prose>
+                  )}
+                </div>
+
+                <div className="grid gap-3 lg:w-56">
+                  <ButtonLink href={eventPath(featured.event.id)} size="lg">
+                    Zum Termin <ArrowRight size={16} aria-hidden="true" />
+                  </ButtonLink>
+                  {!featured.isPast && (
+                    <ButtonLink
+                      href={eventIcsPath(featured.event.id)}
+                      size="lg"
+                      variant="soft"
+                      color="neutral"
+                      prefetch={false}
+                    >
+                      <CalendarPlus size={16} aria-hidden="true" /> In den Kalender
+                    </ButtonLink>
+                  )}
+                  <ButtonLink href="/termine" size="lg" variant="ghost" color="neutral">
+                    Alle Termine
+                  </ButtonLink>
+                </div>
+              </div>
+            </Card>
+          </section>
+        </Container>
+      )}
+
       {/* ═══════════════════ Physik dahinter ═══════════════════ */}
       <Container size="4">
         <section>
-          <SectionMarker index="02" label="Die Physik dahinter" />
+          <SectionMarker index="03" label="Die Physik dahinter" />
 
           <div className="mb-8 grid max-w-2xl gap-3">
             <PageTitle as="h2">
@@ -234,7 +316,7 @@ export default async function HomePage() {
       {latestPost && (
         <Container size="4">
           <section>
-            <SectionMarker index="03" label="Aus dem Verein" />
+            <SectionMarker index="04" label="Aus dem Verein" />
 
             <Card className="p-5 sm:p-8 lg:p-10">
               <Link
@@ -295,7 +377,7 @@ export default async function HomePage() {
       {/* ═══════════════════ Mitglied werden ═══════════════════ */}
       <Container size="4">
         <section className="pb-4">
-          <SectionMarker index="04" label="Mitmachen" />
+          <SectionMarker index="05" label="Mitmachen" />
 
           <div className="relative overflow-hidden rounded-3xl border border-line bg-surface">
             <div

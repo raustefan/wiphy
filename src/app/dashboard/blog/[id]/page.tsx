@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
+import { getEventOptions } from "@/lib/server/services/eventService";
+import { formatEventShort } from "@/lib/events";
 import { Check, X } from "lucide-react";
 import { savePost } from "../actions";
 import MarkdownEditor from "@/components/MarkdownEditor";
@@ -14,6 +16,7 @@ import {
     Container,
     Field,
     Input,
+    Select,
     TextArea,
 } from "@/components/ui";
 
@@ -28,7 +31,10 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
         redirect("/dashboard/blog");
     }
 
-    const post = await getPostForEdit(resolvedParams.id);
+    const [post, events] = await Promise.all([
+        getPostForEdit(resolvedParams.id),
+        getEventOptions(),
+    ]);
     if (!post) {
         return (
             <Container size="2" className="py-16 text-center text-muted">
@@ -68,6 +74,26 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                             defaultValue={defaultDate}
                             required
                         />
+                    </Field>
+
+                    <Field
+                        label="Gehört zu Termin"
+                        htmlFor="post-event"
+                        hint="Verknüpft den Beitrag als Rückblick mit einem Termin. Beide Seiten verlinken danach aufeinander."
+                    >
+                        <Select
+                            id="post-event"
+                            name="eventId"
+                            defaultValue={post.event?.id ?? ""}
+                        >
+                            <option value="">— kein Termin —</option>
+                            {events.map((event) => (
+                                <option key={event.id} value={event.id}>
+                                    {formatEventShort(event)} · {event.title}
+                                    {event.published ? "" : " (Entwurf)"}
+                                </option>
+                            ))}
+                        </Select>
                     </Field>
 
                     <Field label="Kurze Textpreview (Vorschau-Snippet)" htmlFor="post-preview">

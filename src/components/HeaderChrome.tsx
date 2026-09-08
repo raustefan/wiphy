@@ -10,6 +10,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ButtonLink } from "@/components/ui/Button";
 
 const links = [
+  { href: "/termine", label: "Termine" },
   { href: "/blog", label: "Blog" },
   { href: "/geschichte", label: "Geschichte" },
   { href: "/vorstand", label: "Vorstand" },

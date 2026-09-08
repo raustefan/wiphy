@@ -9,7 +9,9 @@
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { escapeHtml } from "@/lib/email/escapeHtml";
-import type { EmailMessage } from "@/lib/email/blocks";
+import type { EmailBlock, EmailMessage } from "@/lib/email/blocks";
+import { eventContactPath, eventPath, formatEventRange, type EventTiming } from "@/lib/events";
+import { siteUrl } from "@/lib/server/siteUrl";
 import { sanitizeEmailHtml } from "./sanitizeHtml";
 import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
@@ -61,7 +63,20 @@ export async function resolveRecipientEmails(input: {
 }
 
 /**
- * Ersetzt $Vorname/$Nachname/$Name durch die Daten des Empfängers.
+ * Persönliche Anrede eines Empfängers.
+ *
+ * Bewusst geschlechtsneutral: der Verein speichert keine Geschlechtsangabe, und
+ * eine neue personenbezogene Angabe nur für die Briefformel wäre die falsche
+ * Reihenfolge. Ohne hinterlegten Namen bleibt es beim schlichten „Guten Tag“ —
+ * besser als eine Anrede mit einer Leerstelle darin.
+ */
+function greeting(user: { vorname: string | null; name: string | null }): string {
+  const full = `${user.vorname || ""} ${user.name || ""}`.trim();
+  return full ? `Guten Tag ${full}` : "Guten Tag";
+}
+
+/**
+ * Ersetzt $Anrede/$Vorname/$Nachname/$Name durch die Daten des Empfängers.
  * `escape: true` maskiert die Werte vorher — zwingend, sobald das Ergebnis als
  * HTML verschickt wird, da Namen beliebige Nutzereingaben sind.
  */
@@ -74,18 +89,67 @@ function replacePlaceholders(
   const vorname = wrap(user.vorname || "");
   const nachname = wrap(user.name || "");
   const full = wrap(`${user.vorname || ""} ${user.name || ""}`.trim());
+  const anrede = wrap(greeting(user));
 
   return template
+    .replace(/\$Anrede/g, anrede)
     .replace(/\$Vorname/g, vorname)
     .replace(/\$Nachname/g, nachname)
     .replace(/\$Name/g, full);
 }
 
+/**
+ * Der Termin, den eine Ankündigung anhängt.
+ *
+ * Der Block entsteht hier und nicht im Editor: als Bausteine gerendert bekommt
+ * er denselben Knopf, dieselbe Faktenliste und dieselbe Textfassung wie jede
+ * andere Systemmail — und der Absender kann ihn nicht versehentlich
+ * zerschreiben.
+ */
+export type AnnouncedEvent = EventTiming & {
+  id: string;
+  title: string;
+  summary: string;
+  location: string;
+  address: string;
+  onlineUrl: string;
+};
+
+function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
+  const place = [event.location.trim(), event.address.trim()].filter(Boolean).join(", ");
+  const facts: { label: string; value: string; href?: string }[] = [
+    { label: "Wann", value: formatEventRange(event) },
+  ];
+  if (place) facts.push({ label: "Wo", value: place });
+  if (event.onlineUrl.trim()) {
+    facts.push({ label: "Online", value: event.onlineUrl.trim(), href: event.onlineUrl.trim() });
+  }
+
+  return [
+    { type: "divider" },
+    { type: "heading", content: event.title },
+    ...(event.summary.trim() ? ([{ type: "text", content: event.summary.trim() }] as EmailBlock[]) : []),
+    { type: "facts", items: facts },
+    {
+      type: "button",
+      label: "Termin ansehen & in den Kalender eintragen",
+      url: siteUrl(eventPath(event.id)),
+    },
+    {
+      type: "note",
+      content: `Fragen zum Termin? Schreib uns über das Kontaktformular: ${siteUrl(eventContactPath(event.title))}`,
+    },
+  ];
+}
+
 /** Baut aus dem sanitisierten Editor-HTML eine versandfertige Nachricht. */
-function composeMessage(subject: string, html: string): EmailMessage {
+function composeMessage(subject: string, html: string, event?: AnnouncedEvent): EmailMessage {
   return {
     subject,
-    blocks: [{ type: "html", html, text: htmlToText(html) }],
+    blocks: [
+      { type: "html", html, text: htmlToText(html) },
+      ...(event ? eventBlocks(event) : []),
+    ],
   };
 }
 
@@ -96,6 +160,8 @@ export async function sendMailToUsers(input: {
   bccToSelf: boolean;
   adminEmail?: string | null;
   users: Recipient[];
+  /** Gesetzt bei einer Terminankündigung — hängt den Terminblock an. */
+  event?: AnnouncedEvent;
 }) {
   // Einmal zentral sanitisieren: entfernt Skripte, Event-Handler und unsichere
   // Link-Schemata, unabhängig davon, was der Editor clientseitig zugelassen hat.
@@ -112,6 +178,7 @@ export async function sendMailToUsers(input: {
       message: composeMessage(
         replacePlaceholders(input.subject, user),
         replacePlaceholders(template, user, { escape: true }),
+        input.event,
       ),
     });
   }
@@ -126,7 +193,7 @@ export async function sendMailToUsers(input: {
     }
     await sendEmail({
       to: selfEmail,
-      message: composeMessage(`${input.subject} (Kopie)`, template),
+      message: composeMessage(`${input.subject} (Kopie)`, template, input.event),
     });
   }
 }
@@ -138,6 +205,7 @@ export async function sendMailForTarget(input: {
   html: string;
   bccToSelf: boolean;
   adminEmail?: string | null;
+  event?: AnnouncedEvent;
 }) {
   const users = await resolveRecipientEmails({
     target: input.target,
@@ -149,5 +217,6 @@ export async function sendMailForTarget(input: {
     bccToSelf: input.bccToSelf,
     adminEmail: input.adminEmail,
     users,
+    event: input.event,
   });
 }

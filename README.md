@@ -22,6 +22,20 @@
 - **Rollen-System (ADMIN & MEMBER):**
   - **MEMBER:** Kann sich einloggen, das Dashboard sehen und das eigene Profil (Name, Stadt, Telefon) bearbeiten.
   - **ADMIN:** Sieht alle Benutzer, kann Rollen ändern und hat vollen Zugriff auf das Blog-System (Erstellen, Bearbeiten, Löschen, Veröffentlichen).
+- **Termine:**
+  - Öffentliche Terminliste (`/termine`) mit kommenden Terminen; vergangene
+    erscheinen erst über den Umschalter **Vergangenes**.
+  - Detailseite je Termin mit Markdown-Beschreibung, Kartenlink, Rückfrage über
+    das Kontaktformular und **Kalenderdatei** (`.ics`) für Apple Kalender,
+    Google Kalender, Outlook und Thunderbird — einzeln oder alle kommenden
+    Termine gesammelt.
+  - Der nächste Termin steht auf der Startseite; steht keiner an, der zuletzt
+    vergangene. Im Mitgliederbereich weist ein Hinweis auf Termine innerhalb der
+    nächsten drei Monate hin.
+  - Blogbeiträge lassen sich als **Rückblick** mit einem Termin verknüpfen;
+    Beitrag und Termin verlinken danach aufeinander.
+  - Verwaltung unter `/dashboard/termine` (Anlegen, Bearbeiten, Veröffentlichen,
+    Löschen).
 - **Blog-System (Markdown):**
   - Integrierter Split-Screen Markdown-Editor im Admin-Bereich.
   - Öffentliche Anzeige der Beiträge im Blog-Bereich.
@@ -31,6 +45,11 @@
     Durchblättern, per Wischgeste bedienbar).
 - **Rundmail-System:**
   - Admins können über `/dashboard/mail` eine Rundmail an definierte Empfänger-Gruppen schicken.
+  - **Termin ankündigen:** ein Klick auf einen kommenden Termin füllt Betreff und
+    Einladungstext vor; Eckdaten und ein Knopf zur Terminseite werden beim
+    Versand serverseitig angehängt. Erlaubt nur für veröffentlichte Termine.
+  - Platzhalter `$Anrede`, `$Vorname`, `$Nachname`, `$Name` werden pro Empfänger
+    ersetzt (`$Anrede` → „Guten Tag Anna Müller“).
   - Unterstützte Gruppen: **Alle Benutzer**, **nur Mitglieder (MEMBER)**, **nur Administratoren (ADMIN)** oder **ausgewählte Nutzer** (Suche, Mehrfachauswahl).
   - Versand per BCC, damit Empfänger nicht alle Adressen sehen; optional **BCC an mich** (Kopie an den absendenden Admin).
   - Nutzt Nodemailer und SMTP-Zugangsdaten aus der `.env`.

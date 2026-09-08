@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
+import { parseBerlinLocalInput, startOfBerlinDay } from "@/lib/berlinTime";
 
 /**
  * Email addresses are always stored lowercased — `User.email` is case-sensitive
@@ -63,6 +64,17 @@ const optionalEnum = <T extends [string, ...string[]]>(values: T) =>
     (v) => (v === "" || v === undefined ? undefined : v),
     z.enum(values).optional(),
   );
+
+/**
+ * Verknüpfung mit einem Termin — leer heißt „keiner“. Steht hier oben, weil
+ * sowohl das Blog-Formular („Gehört zu Termin“) als auch die Rundmail
+ * („Termin ankündigen“) dieselbe optionale Referenz führen.
+ */
+const optionalEventId = z
+  .string()
+  .max(64, "Ungültige Termin-ID.")
+  .optional()
+  .transform((value) => (value === undefined || value.trim() === "" ? null : value.trim()));
 
 export const registerSchema = z.object({
   vorname: z
@@ -157,6 +169,12 @@ export const mailSendSchema = z
     selectedUserIds: z.array(z.string().min(1)).default([]),
     /** Checkbox „BCC an mich“: FormData sendet value "on" wenn gesetzt */
     bccToSelf: z.boolean().default(false),
+    /**
+     * Angekündigter Termin. Ist er gesetzt, hängt der Versand einen Terminblock
+     * mit Eckdaten und Knopf zur Terminseite an die Nachricht — der Text im
+     * Editor bleibt davon unberührt.
+     */
+    eventId: optionalEventId,
   })
   .superRefine((data, ctx) => {
     if (data.target === "SELECTED" && data.selectedUserIds.length === 0) {
@@ -237,11 +255,93 @@ export const blogSaveSchema = z.object({
     .max(200, "Autor ist zu lang."),
   publishedAt: z.coerce.date().default(() => new Date()),
   published: z.boolean(),
+  /** Rückblick auf einen Termin — leer, wenn der Beitrag zu keinem gehört. */
+  eventId: optionalEventId,
 });
 
 export const blogDeleteSchema = z.object({
   id: z.string().min(1, "Ungültige Beitrags-ID.").max(64),
 });
+
+// ─────────────────────────── Termine ───────────────────────────
+
+/**
+ * Formularwerte aus `datetime-local` bzw. `date` sind Wandzeit ohne Zeitzone.
+ * `new Date(value)` würde sie in der Zeitzone der Laufzeitumgebung lesen — auf
+ * dem Server also UTC, und der Termin läge eine bis zwei Stunden daneben.
+ */
+const berlinDateTime = (message: string) =>
+  z
+    .string()
+    .trim()
+    .transform((value) => parseBerlinLocalInput(value))
+    .refine((value): value is Date => value !== null, message);
+
+const optionalBerlinDateTime = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => (value === undefined || value === "" ? null : parseBerlinLocalInput(value)))
+  .refine((value) => value === null || value instanceof Date, "Ungültiges Enddatum.");
+
+const optionalUrl = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, "Der Link ist zu lang.")
+    .default("")
+    .refine(
+      (value) => value === "" || /^https?:\/\/\S+$/i.test(value),
+      "Bitte eine vollständige Adresse angeben, die mit https:// beginnt.",
+    );
+
+export const eventSaveSchema = z
+  .object({
+    id: z.string().min(1, "Ungültige Termin-ID.").max(64),
+    title: z
+      .string()
+      .trim()
+      .min(1, "Bitte einen Titel angeben.")
+      .max(200, "Titel ist zu lang."),
+    summary: z
+      .string()
+      .trim()
+      .max(500, "Die Kurzbeschreibung ist zu lang (max. 500 Zeichen).")
+      .default(""),
+    description: z.string().max(100_000, "Die Beschreibung ist zu lang.").default(""),
+    start: berlinDateTime("Bitte einen gültigen Beginn angeben."),
+    end: optionalBerlinDateTime,
+    allDay: z.boolean().default(false),
+    location: z.string().trim().max(200, "Der Ort ist zu lang.").default(""),
+    address: z.string().trim().max(300, "Die Anschrift ist zu lang.").default(""),
+    onlineUrl: optionalUrl(500),
+    published: z.boolean().default(false),
+  })
+  // Ganztägige Termine tragen keine Uhrzeit: was im Formular stehen bleibt,
+  // wird hier verworfen, statt später an drei Stellen ignoriert zu werden.
+  .transform((data) =>
+    data.allDay
+      ? {
+          ...data,
+          start: startOfBerlinDay(data.start),
+          end: data.end ? startOfBerlinDay(data.end) : null,
+        }
+      : data,
+  )
+  .superRefine((data, ctx) => {
+    if (data.end && data.end.getTime() < data.start.getTime()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Das Ende darf nicht vor dem Beginn liegen.",
+        path: ["end"],
+      });
+    }
+  });
+
+export const eventDeleteSchema = z.object({
+  id: z.string().min(1, "Ungültige Termin-ID.").max(64),
+});
+
 
 /**
  * Bilder werden immer im Kontext ihres Beitrags angesprochen: die `postId`

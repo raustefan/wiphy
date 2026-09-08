@@ -135,6 +135,59 @@ model BlogPost {
   updatedAt   DateTime @updatedAt
 
   images BlogImage[]
+
+  /// Optionaler Rückbezug auf den Termin, über den dieser Beitrag berichtet.
+  /// `SetNull` statt `Cascade`: ein gelöschter Termin darf den Rückblick nicht
+  /// mitnehmen — der Beitrag verliert nur seine Verknüpfung.
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventId String?
+
+  @@index([eventId])
+}
+
+/// Ein Vereinstermin — Stammtisch, Exkursion, Sondervorlesung,
+/// Mitgliederversammlung.
+///
+/// Die Termine sind öffentlich: die Seite `/termine` zeigt kommende Termine,
+/// vergangene erst auf Klick. Was „vergangen“ heißt, entscheidet ausschließlich
+/// `end ?? start` gegen die aktuelle Zeit — es gibt bewusst kein Statusfeld,
+/// das jemand von Hand nachziehen müsste.
+model Event {
+  id String @id @default(cuid())
+
+  title String
+  /// Ein bis zwei Sätze für Übersicht, Startseite und Ankündigungsmail.
+  summary String @default("")
+  /// Ausführliche Beschreibung als Markdown, wie beim Blog.
+  description String @default("")
+
+  start DateTime
+  /// Ende, falls bekannt. Ohne Angabe gilt der Termin am Starttag als vorbei
+  /// (siehe `eventEnd()`), und die Kalenderdatei setzt eine Standarddauer.
+  end DateTime?
+  /// Ganztägig: Uhrzeiten werden weder angezeigt noch in die `.ics` geschrieben.
+  allDay Boolean @default(false)
+
+  /// Name des Orts, z. B. „Universität Ulm, Hörsaal H3“.
+  location String @default("")
+  /// Anschrift, getrennt vom Namen — sie landet als eigene Zeile in der
+  /// Kalenderdatei und im Kartenlink.
+  address String @default("")
+  /// Videokonferenz- oder Streamlink für hybride Termine.
+  onlineUrl String @default("")
+
+  /// Wie beim Blog: unveröffentlichte Termine sind Entwürfe und öffentlich
+  /// unsichtbar, auch wenn ihre ID bekannt ist.
+  published Boolean @default(false)
+
+  /// Blogbeiträge, die über den Termin berichten (Rückblick).
+  posts BlogPost[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, start])
+  @@index([start])
 }
 
 /// Ein Bild eines Blogbeitrags, Binärdaten inklusive.
@@ -214,6 +267,7 @@ enum FeatureFlagKey {
   MEMBERSHIP_APPLICATION_MAIL
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL
   REGISTRATION_CLEANUP
+  EVENT_MANAGEMENT
 }
 
 model FeatureFlag {

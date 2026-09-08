@@ -8,13 +8,20 @@ import "@uiw/react-markdown-preview/markdown.css";
 // WICHTIG: SSR deaktivieren, da der Editor Browser-APIs nutzt
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
-export default function MarkdownEditor({ initialValue = "" }: { initialValue?: string }) {
+export default function MarkdownEditor({
+    initialValue = "",
+    /** Feldname im Formular — Blogbeiträge schicken `content`, Termine `description`. */
+    name = "content",
+}: {
+    initialValue?: string;
+    name?: string;
+}) {
     const [value, setValue] = useState(initialValue);
 
     return (
         <div data-color-mode="light">
             {/* Dieses unsichtbare Feld schickt den Markdown-Text an die Server-Action */}
-            <input type="hidden" name="content" value={value} />
+            <input type="hidden" name={name} value={value} />
 
             <MDEditor
                 value={value}

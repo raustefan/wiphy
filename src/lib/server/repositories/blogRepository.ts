@@ -21,11 +21,25 @@ const imageMetaSelect = {
   coverForPostId: true,
 } as const;
 
+/**
+ * Der verknüpfte Termin, auf den ein Beitrag zurückblickt. `published` ist
+ * dabei: die öffentliche Beitragsseite darf nicht auf einen Entwurf verlinken.
+ */
+const eventLinkSelect = {
+  id: true,
+  title: true,
+  start: true,
+  end: true,
+  allDay: true,
+  published: true,
+} as const;
+
 const withImages = {
   images: {
     select: imageMetaSelect,
     orderBy: { position: "asc" },
   },
+  event: { select: eventLinkSelect },
 } as const;
 
 export type BlogImageRow = {
@@ -80,17 +94,18 @@ export function createPost(data: {
   return prisma.blogPost.create({ data });
 }
 
-export function updatePost(
-  id: string,
-  data: {
-    title: string;
-    content: string;
-    preview: string;
-    author: string;
-    publishedAt: Date;
-    published: boolean;
-  },
-) {
+export type BlogPostWriteData = {
+  title: string;
+  content: string;
+  preview: string;
+  author: string;
+  publishedAt: Date;
+  published: boolean;
+  /** `null` löst eine bestehende Verknüpfung mit einem Termin. */
+  eventId: string | null;
+};
+
+export function updatePost(id: string, data: BlogPostWriteData) {
   return prisma.blogPost.update({
     where: { id },
     data,
