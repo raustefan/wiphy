@@ -10,6 +10,7 @@ import PhysicsHero from "@/components/PhysicsHeroLazy";
 import MarketDiffusion from "@/components/MarketDiffusionLazy";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { formatDateShort } from "@/lib/format";
+import { blogImageUrl } from "@/lib/blogImages";
 
 const pillars = [
   {
@@ -272,11 +273,11 @@ export default async function HomePage() {
                     </Lead>
                   </div>
 
-                  {latestPost.imageUrl && (
+                  {latestPost.cover && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={latestPost.imageUrl}
-                      alt=""
+                      src={blogImageUrl(latestPost.cover.id, "thumb")}
+                      alt={latestPost.cover.alt}
                       loading="lazy"
                       decoding="async"
                       className="size-24 shrink-0 rounded-xl border border-line object-cover sm:size-32"

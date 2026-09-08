@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import MarkdownViewer from "@/components/MarkdownViewer";
+import { BlogGallery } from "@/components/BlogGallery";
 import { getPublishedPost } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
 import { formatDate } from "@/lib/format";
@@ -43,16 +44,6 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
                 </div>
 
                 <Card className="h-fit p-5 lg:sticky lg:top-24">
-                    {post.imageUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={post.imageUrl}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            className="mb-5 aspect-[4/3] w-full rounded-lg border border-line object-cover"
-                        />
-                    )}
                     <dl className="grid gap-4">
                         <div className="grid gap-1">
                             <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
@@ -84,6 +75,12 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
                     </dl>
                 </Card>
             </header>
+
+            {post.images.length > 0 && (
+                <div className="mt-8 sm:mt-10">
+                    <BlogGallery images={post.images} />
+                </div>
+            )}
 
             <div className="my-8 h-px bg-line sm:my-10" aria-hidden="true" />
 

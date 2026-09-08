@@ -237,17 +237,29 @@ export const blogSaveSchema = z.object({
     .max(200, "Autor ist zu lang."),
   publishedAt: z.coerce.date().default(() => new Date()),
   published: z.boolean(),
-  imageUrl: z
-    .string()
-    .trim()
-    .max(2000, "Bild-URL ist zu lang.")
-    .optional()
-    .or(z.literal(""))
-    .transform((value) => (value ? value : null)),
 });
 
 export const blogDeleteSchema = z.object({
   id: z.string().min(1, "Ungültige Beitrags-ID.").max(64),
+});
+
+/**
+ * Bilder werden immer im Kontext ihres Beitrags angesprochen: die `postId`
+ * steht nicht nur der Vollständigkeit halber dabei, sie ist die Zuständigkeits-
+ * prüfung. Ohne sie könnte eine erratene Bild-ID ein Bild eines fremden
+ * Beitrags treffen.
+ */
+export const blogImageSchema = z.object({
+  postId: z.string().min(1, "Ungültige Beitrags-ID.").max(64),
+  imageId: z.string().min(1, "Ungültige Bild-ID.").max(64),
+});
+
+export const blogImageMoveSchema = blogImageSchema.extend({
+  direction: z.enum(["up", "down"]),
+});
+
+export const blogImageAltSchema = blogImageSchema.extend({
+  alt: z.string().trim().max(300, "Der Alternativtext ist zu lang."),
 });
 
 export const userUpdateSchema = z.object({

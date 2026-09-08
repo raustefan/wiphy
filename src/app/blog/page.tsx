@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
 import { formatDate } from "@/lib/format";
+import { blogImageSrcSet, blogImageUrl } from "@/lib/blogImages";
 
 function MetaLine({
     author,
@@ -75,11 +76,13 @@ export default async function BlogIndexPage() {
                             href={`/blog/${lead.id}`}
                             className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                         >
-                            {lead.imageUrl && (
+                            {lead.cover && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={lead.imageUrl}
-                                    alt=""
+                                    src={blogImageUrl(lead.cover.id)}
+                                    srcSet={blogImageSrcSet(lead.cover.id)}
+                                    sizes="(min-width: 1024px) 900px, 100vw"
+                                    alt={lead.cover.alt}
                                     loading="eager"
                                     decoding="async"
                                     className="aspect-[16/7] w-full border-b border-line object-cover"
@@ -119,11 +122,13 @@ export default async function BlogIndexPage() {
                                         href={`/blog/${post.id}`}
                                         className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                                     >
-                                        {post.imageUrl && (
+                                        {post.cover && (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
-                                                src={post.imageUrl}
-                                                alt=""
+                                                src={blogImageUrl(post.cover.id, "thumb")}
+                                                srcSet={blogImageSrcSet(post.cover.id)}
+                                                sizes="(min-width: 768px) 460px, 100vw"
+                                                alt={post.cover.alt}
                                                 loading="lazy"
                                                 decoding="async"
                                                 className="aspect-[16/9] w-full border-b border-line object-cover"

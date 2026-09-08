@@ -8,6 +8,7 @@
 - **ORM:** Prisma v7 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`, `pg`)
 - **Authentifizierung:** NextAuth.js v5 (`next-auth@beta`, `bcryptjs`)
 - **Blog / Editor:** `@uiw/react-md-editor`, `@uiw/react-markdown-preview`
+- **Bildverarbeitung:** `sharp` (verkleinert Blog-Bilder beim Upload zu WebP)
 - **E-Mail-Versand:** Nodemailer (Rundmails an Mitglieder)
 
 ## Features
@@ -24,6 +25,10 @@
 - **Blog-System (Markdown):**
   - Integrierter Split-Screen Markdown-Editor im Admin-Bereich.
   - Öffentliche Anzeige der Beiträge im Blog-Bereich.
+  - **Bildergalerie:** je Beitrag ein Titelbild und bis zu fünf weitere Bilder,
+    hochgeladen über `/dashboard/blog/<id>`. Titelbild erscheint in der
+    Übersicht, die Galerie auf der Beitragsseite (Vollbildansicht zum
+    Durchblättern, per Wischgeste bedienbar).
 - **Rundmail-System:**
   - Admins können über `/dashboard/mail` eine Rundmail an definierte Empfänger-Gruppen schicken.
   - Unterstützte Gruppen: **Alle Benutzer**, **nur Mitglieder (MEMBER)**, **nur Administratoren (ADMIN)** oder **ausgewählte Nutzer** (Suche, Mehrfachauswahl).
@@ -119,6 +124,11 @@ location / {
     proxy_set_header X-Forwarded-Proto $scheme;
 
     proxy_cache_bypass $http_upgrade;
+
+    # Blog-Bilder dürfen bis 2 MB groß sein; nginx bricht sonst schon bei 1 MB
+    # mit „413 Request Entity Too Large“ ab, bevor die Anwendung das Bild
+    # überhaupt zu Gesicht bekommt.
+    client_max_body_size 4M;
 }
 ```
 
@@ -160,6 +170,24 @@ cd /var/www/wiphy
 ```
 
 *(Hinweis: Falls das Skript auf dem Server noch nicht ausführbar ist, mache es einmalig mit `chmod +x deploy.sh` ausführbar).*
+
+#### Einmalig beim Update auf die Bildergalerie
+
+`deploy.sh` ruft `prisma db push` auf. Der Schritt legt die neue Tabelle
+`BlogImage` an, entfernt dabei aber auch die abgelöste Spalte
+`BlogPost.imageUrl` — und weil dort Daten stehen, bricht `db push` ohne
+ausdrückliche Erlaubnis ab. Für dieses eine Update deshalb auf dem Server
+einmal die Migration fahren, die dasselbe tut und im Repository dokumentiert
+ist:
+
+```bash
+cd /var/www/wiphy
+npx prisma migrate deploy
+```
+
+Danach läuft `deploy.sh` wieder unverändert durch. Vorhandene Vorschaubilder,
+die als externe URL in `imageUrl` hinterlegt waren, verschwinden mit diesem
+Schritt; sie müssen als Titelbild neu hochgeladen werden.
 
 ---
 

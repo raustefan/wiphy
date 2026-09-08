@@ -1,14 +1,16 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminPosts } from "@/lib/server/services/blogService";
-import { Plus, Pencil } from "lucide-react";
-import { deletePost } from "./actions";
+import { Images, Pencil, Plus } from "lucide-react";
+import { createDraft, deletePost } from "./actions";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { DeletePostButton } from "./DeletePostButton";
 import { formatDateShort } from "@/lib/format";
+import { blogImageUrl } from "@/lib/blogImages";
 import {
     Badge,
+    Button,
     ButtonLink,
     Card,
     Container,
@@ -33,16 +35,22 @@ export default async function AdminBlogPage() {
                 title="Blog verwalten"
                 backHref="/dashboard"
             >
-                <ButtonLink href="/dashboard/blog/new" className="w-full sm:w-auto">
-                    <Plus size={16} aria-hidden="true" /> Neuer Beitrag
-                </ButtonLink>
+                {/* Knopf statt Link: der Entwurf entsteht sofort in der
+                    Datenbank, damit die Bearbeitungsseite eine Beitrags-ID hat,
+                    an der Bilder hängen können. */}
+                <form action={createDraft} className="w-full sm:w-auto">
+                    <Button type="submit" className="w-full sm:w-auto">
+                        <Plus size={16} aria-hidden="true" /> Neuer Beitrag
+                    </Button>
+                </form>
             </DashboardPageHeader>
 
             <Card className="p-4 sm:p-6">
                 <TableWrap>
-                    <Table className="min-w-[560px]">
+                    <Table className="min-w-[640px]">
                         <thead>
                             <tr className="bg-raised/60">
+                                <Th>Bild</Th>
                                 <Th>Titel</Th>
                                 <Th>Status</Th>
                                 <Th>Datum</Th>
@@ -52,7 +60,33 @@ export default async function AdminBlogPage() {
                         <tbody>
                             {posts.map((post) => (
                                 <tr key={post.id} className="transition-colors hover:bg-raised/50">
-                                    <Td className="font-medium">{post.title}</Td>
+                                    <Td>
+                                        {post.cover ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={blogImageUrl(post.cover.id, "thumb")}
+                                                alt=""
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="size-12 rounded-lg border border-line object-cover"
+                                            />
+                                        ) : (
+                                            <span
+                                                className="grid size-12 place-items-center rounded-lg border border-dashed border-line text-faint"
+                                                title="Kein Titelbild"
+                                            >
+                                                <Images size={16} aria-hidden="true" />
+                                            </span>
+                                        )}
+                                    </Td>
+                                    <Td className="font-medium">
+                                        {post.title}
+                                        {post.images.length > 1 && (
+                                            <span className="ml-2 font-mono text-xs whitespace-nowrap text-faint">
+                                                +{post.images.length - 1} Bilder
+                                            </span>
+                                        )}
+                                    </Td>
                                     <Td>
                                         <Badge tone={post.published ? "positive" : "warning"}>
                                             {post.published ? "Veröffentlicht" : "Entwurf"}
@@ -81,7 +115,7 @@ export default async function AdminBlogPage() {
                             ))}
                             {posts.length === 0 && (
                                 <tr>
-                                    <Td colSpan={4} className="py-8 text-center text-muted">
+                                    <Td colSpan={5} className="py-8 text-center text-muted">
                                         Noch keine Beiträge vorhanden.
                                     </Td>
                                 </tr>

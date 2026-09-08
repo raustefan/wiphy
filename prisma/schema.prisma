@@ -130,10 +130,69 @@ model BlogPost {
   preview     String   @default("")
   author      String   @default("")
   publishedAt DateTime @default(now())
-  imageUrl    String?
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  images BlogImage[]
+}
+
+/// Ein Bild eines Blogbeitrags, Binärdaten inklusive.
+///
+/// Die Bytes liegen bewusst in der Datenbank und nicht im Dateisystem: der
+/// Betrieb ist ein einzelner Server mit einem Backup — und das sichert die
+/// Datenbank. Ein Bild, das nur auf der Platte liegt, wäre nach einem Umzug
+/// weg, während der Beitrag es weiter referenziert.
+///
+/// Damit das tragbar bleibt, kommt hier nichts an, was nicht vorher durch
+/// `processBlogImage()` gelaufen ist: neu kodiertes WebP, in der Kantenlänge
+/// begrenzt und ohne EXIF. Ein 2-MB-Upload landet so als gut 200 KB in der
+/// Zeile — sonst würde jede `findMany`-Abfrage über Beiträge die Bilder
+/// mitschleppen. Genau deshalb wird `data`/`thumbnail` nirgends per `include`
+/// geladen, sondern nur über die Bild-Route einzeln (siehe
+/// `blogImageMetaSelect`).
+model BlogImage {
+  id     String   @id @default(cuid())
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  /// Trägt `postId`, wenn dieses Bild das Titelbild des Beitrags ist, sonst
+  /// NULL. Der Unique-Constraint erzwingt damit höchstens ein Titelbild pro
+  /// Beitrag — dieselbe Technik wie bei `MembershipApplication.openForUserId`,
+  /// und ohne partiellen Index an Prisma vorbei.
+  coverForPostId String? @unique
+
+  /// Position in der Galerie. Das Titelbild steht immer auf 0, die weiteren
+  /// Bilder folgen lückenlos — die öffentliche Reihenfolge ist damit allein
+  /// hieraus ablesbar.
+  position Int @default(0)
+
+  /// Alternativtext für Screenreader. Leer erlaubt: dann gilt das Bild als
+  /// rein dekorativ und wird mit leerem `alt` ausgeliefert.
+  alt String @default("")
+
+  /// Ursprünglicher Dateiname, nur zur Wiedererkennung im Dashboard.
+  fileName String @default("")
+
+  /// Immer `image/webp`; als Spalte geführt, damit die Ausliefer-Route den
+  /// Content-Type nicht raten muss, falls später ein zweites Format dazukommt.
+  mimeType String @default("image/webp")
+
+  width    Int
+  height   Int
+  /// Größe von `data` in Bytes — erspart der Übersicht im Dashboard das Laden
+  /// der Bytes, nur um „wie groß ist das?“ zu beantworten.
+  byteSize Int
+
+  /// Vollbild-Variante für Lightbox und Titelbild.
+  data      Bytes
+  /// Kleine Variante für Listen und den Galerie-Streifen.
+  thumbnail Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId, position])
 }
 
 enum FeatureFlagKey {
