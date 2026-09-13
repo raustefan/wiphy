@@ -60,8 +60,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <AppThemeProvider>
+          {/* Sprungmarke: ohne sie führt jeder Tastaturbesuch zuerst durch
+              Wortmarke, sechs Navigationspunkte, Themenumschalter und
+              Mitgliederknopf — auf jeder Unterseite erneut. Sichtbar wird sie
+              nur im Fokus. */}
+          <a
+            href="#inhalt"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-physics focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-physics focus:outline-2 focus:outline-offset-2 focus:outline-physics"
+          >
+            Zum Inhalt springen
+          </a>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main id="inhalt" className="flex-1">
+            {children}
+          </main>
           <Footer />
         </AppThemeProvider>
       </body>

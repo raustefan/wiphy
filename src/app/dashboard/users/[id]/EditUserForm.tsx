@@ -10,6 +10,7 @@ import {
     Checkbox,
     Dialog,
     DialogFooter,
+    Field,
     Input,
     Select,
     Separator,
@@ -679,26 +680,6 @@ function Section({
             </div>
             <div className="grid gap-3">{children}</div>
         </section>
-    );
-}
-
-function Field({
-    label,
-    required,
-    children,
-}: {
-    label: string;
-    required?: boolean;
-    children: React.ReactNode;
-}) {
-    return (
-        <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-foreground">
-                {label}
-                {required && <span className="text-negative"> *</span>}
-            </span>
-            {children}
-        </label>
     );
 }
 

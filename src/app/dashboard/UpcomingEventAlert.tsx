@@ -6,7 +6,6 @@ import {
     eventPath,
     formatCountdown,
     formatEventRange,
-    UPCOMING_ALERT_MONTHS,
     type EventTiming,
 } from "@/lib/events";
 

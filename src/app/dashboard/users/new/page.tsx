@@ -90,19 +90,19 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                 )}
 
                 <form action={createUserAction} className="grid gap-4">
-                    <Field label="Vorname *" htmlFor="new-user-vorname">
+                    <Field label="Vorname" required htmlFor="new-user-vorname">
                         <Input id="new-user-vorname" name="vorname" required />
                     </Field>
 
-                    <Field label="Nachname *" htmlFor="new-user-name">
+                    <Field label="Nachname" required htmlFor="new-user-name">
                         <Input id="new-user-name" name="name" required />
                     </Field>
 
-                    <Field label="E-Mail *" htmlFor="new-user-email">
+                    <Field label="E-Mail" required htmlFor="new-user-email">
                         <Input id="new-user-email" name="email" type="email" required />
                     </Field>
 
-                    <Field label="Passwort *" htmlFor="new-user-password">
+                    <Field label="Passwort" required htmlFor="new-user-password">
                         <Input
                             id="new-user-password"
                             name="password"

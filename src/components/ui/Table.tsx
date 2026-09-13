@@ -31,12 +31,19 @@ export function Table({
   );
 }
 
+/**
+ * Spaltenkopf. `scope="col"` ist voreingestellt — ohne die Angabe muss die
+ * Unterstützungstechnik die Zuordnung von Zelle zu Kopf raten, und bei den
+ * breiten Beitrags- und Mitgliedstabellen hier rät sie falsch.
+ */
 export function Th({
   className,
+  scope = "col",
   ...props
 }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
+      scope={scope}
       className={cn(
         "px-3 py-2.5 text-xs font-semibold tracking-wide whitespace-nowrap text-faint uppercase",
         className,

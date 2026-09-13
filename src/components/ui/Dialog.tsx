@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -26,6 +26,11 @@ export function Dialog({
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  /* Titel und Beschreibung stehen zwar im Dialog, sind ihm aber nicht
+     zugeordnet: `showModal()` kündigt sonst nur „Dialog“ an, und der Titel
+     folgt erst, wenn man sich durch den Inhalt liest. */
+  const headingId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     const el = ref.current;
@@ -43,6 +48,8 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
+      aria-labelledby={title ? headingId : undefined}
+      aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -61,9 +68,15 @@ export function Dialog({
       <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6">
         <div className="grid gap-1">
           {title && (
-            <h2 className="text-lg font-bold tracking-tight text-balance">{title}</h2>
+            <h2 id={headingId} className="text-lg font-bold tracking-tight text-balance">
+              {title}
+            </h2>
           )}
-          {description && <p className="text-sm text-muted">{description}</p>}
+          {description && (
+            <p id={descriptionId} className="text-sm text-muted">
+              {description}
+            </p>
+          )}
         </div>
         <button
           type="button"

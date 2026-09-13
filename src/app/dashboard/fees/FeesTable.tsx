@@ -605,7 +605,24 @@ export function FeesTable({
                   <Td>
                     <Badge className="font-mono">{user.mitgliedId ?? "—"}</Badge>
                   </Td>
-                  <Td className="font-medium">{user.name || "—"}</Td>
+                  <Td className="font-medium">
+                    {/* Die Zeile als Ganzes ist anklickbar, aber ein `<tr>`
+                        nimmt keinen Fokus: über die Tastatur war der
+                        Beitragsverlauf damit gar nicht erreichbar. Der Name ist
+                        jetzt der eigentliche Auslöser, der Zeilenklick nur noch
+                        die bequeme Zugabe für die Maus. */}
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        openUserHistory(user);
+                      }}
+                      className="cursor-pointer rounded-sm text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                    >
+                      {user.name || "—"}
+                      <span className="sr-only"> — Beitragsverlauf öffnen</span>
+                    </button>
+                  </Td>
                   <Td>{user.vorname}</Td>
                   {isAdmin && (
                     <Td onClick={stopRowClick}>

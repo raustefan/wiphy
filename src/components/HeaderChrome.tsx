@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -39,6 +39,10 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
     setMenuOpen(false);
   }
 
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
   /* Scroll-Sperre und Esc-Handling, solange das Drawer offen ist. */
   useEffect(() => {
     if (!menuOpen) return;
@@ -53,6 +57,45 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
       window.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
+
+  /* Fokusführung. Das Drawer trägt `aria-modal="true"`, war aber keines: der
+     Fokus blieb beim Öffnen auf dem Menüknopf hinter der Abdeckung liegen, und
+     ein Tastaturbesuch tabbte aus dem offenen Menü heraus in die verdeckte
+     Seite. Anders als beim nativen `<dialog>` (siehe `ui/Dialog.tsx`) nimmt
+     einem das hier niemand ab. */
+  const hadFocusInside = useRef(false);
+  useEffect(() => {
+    if (menuOpen) {
+      hadFocusInside.current = true;
+      closeButtonRef.current?.focus();
+      return;
+    }
+    if (!hadFocusInside.current) return;
+    hadFocusInside.current = false;
+    // Nur zurückholen, wenn der Fokus noch im geschlossenen Drawer steckte —
+    // sonst würde ein Klick irgendwo auf der Seite den Fokus wegreißen.
+    if (drawerRef.current?.contains(document.activeElement)) {
+      openButtonRef.current?.focus();
+    }
+  }, [menuOpen]);
+
+  /* Tab hält im Drawer: vom letzten Element zurück zum ersten und umgekehrt. */
+  const trapTab = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Tab") return;
+    const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    );
+    if (!focusable || focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   const memberHref = signedIn ? "/dashboard" : "/login";
   const memberLabel = signedIn ? "Dashboard" : "Mitgliederbereich";
@@ -126,6 +169,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
           <button
+            ref={openButtonRef}
             type="button"
             aria-label="Menü öffnen"
             aria-expanded={menuOpen}
@@ -161,6 +205,8 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           )}
         />
         <div
+          ref={drawerRef}
+          onKeyDown={trapTab}
           className={cn(
             "absolute inset-y-0 right-0 flex w-full max-w-xs flex-col bg-surface shadow-2xl transition-transform duration-250 ease-out motion-reduce:transition-none",
             menuOpen ? "translate-x-0" : "translate-x-full",
@@ -171,6 +217,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
               Menü
             </span>
             <button
+              ref={closeButtonRef}
               type="button"
               aria-label="Menü schließen"
               onClick={() => setMenuOpen(false)}

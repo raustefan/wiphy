@@ -11,7 +11,13 @@ const baseInput: UpdateUserInput = {
   email: "stefan@example.com",
 };
 
-test("member self-updates may change payment data but not admin fields or payment notes", () => {
+/* Erwartung angepasst an die Regel, die `buildUserUpdateData` inzwischen
+   umsetzt und im Quelltext auch begründet: Zahlungsdaten ändert ein Mitglied
+   nicht über das Profilformular, sondern ausschließlich unter
+   `/dashboard/zahlungen`, wo dafür erneut das SEPA-Mandat bestätigt wird.
+   Der Test behauptete noch das frühere, weitere Verhalten und schlug deshalb
+   fehl — er hat die Verschärfung nicht bemerkt. */
+test("member self-updates change neither payment data nor admin fields", () => {
   const data = buildUserUpdateData({
     ...baseInput,
     role: "ADMIN",
@@ -41,15 +47,18 @@ test("member self-updates may change payment data but not admin fields or paymen
   assert.equal("zahlungsKommentar" in data, false);
   assert.equal("mahnung" in data, false);
 
-  // Eigene Zahlungsdaten (ohne Kommentar/Mahnung) darf ein Mitglied selbst pflegen
-  assert.equal(data.bank, "Example Bank");
-  assert.equal(data.BLZ, "123");
-  assert.equal(data.KTO, "456");
-  assert.equal(data.IBAN, "DE123");
-  assert.equal(data.BIC, "TESTDEFF");
-  assert.equal(data.bankeinzug, true);
-  assert.equal(data.zuwendungsbesch, true);
-  assert.ok(data.mandatserteilung instanceof Date);
+  // Zahlungsdaten bleiben dem Profilformular ebenfalls verschlossen
+  assert.equal("bank" in data, false);
+  assert.equal("BLZ" in data, false);
+  assert.equal("KTO" in data, false);
+  assert.equal("IBAN" in data, false);
+  assert.equal("BIC" in data, false);
+  assert.equal("bankeinzug" in data, false);
+  assert.equal("zuwendungsbesch" in data, false);
+  assert.equal("mandatserteilung" in data, false);
+
+  // Die eigenen Profilfelder bleiben schreibbar
+  assert.equal(data.vorname, "Stefan");
 });
 
 test("member editing another user's profile ignores payment and admin fields", () => {

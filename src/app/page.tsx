@@ -104,16 +104,20 @@ export default async function HomePage() {
 
             <dl className="mt-2 grid w-full max-w-md grid-cols-3">
               {heroMetrics.map((metric, i) => (
+                /* `flex-col-reverse`: der Wert steht oben, im Markup aber die
+                   Beschreibung zuerst — eine `<dd>` vor ihrer `<dt>` ist
+                   ungültig, und Screenreader lesen das Paar dann verdreht
+                   („1967“ als Begriff, „Universität Ulm“ als Erklärung). */
                 <div
                   key={metric.label}
-                  className={`grid gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
+                  className={`flex flex-col-reverse gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
                 >
-                  <dd className="font-mono text-base font-bold tracking-tight sm:text-xl">
-                    {metric.value}
-                  </dd>
                   <dt className="font-mono text-[0.58rem] tracking-[0.12em] text-faint uppercase sm:text-[0.65rem]">
                     {metric.label}
                   </dt>
+                  <dd className="font-mono text-base font-bold tracking-tight sm:text-xl">
+                    {metric.value}
+                  </dd>
                 </div>
               ))}
             </dl>

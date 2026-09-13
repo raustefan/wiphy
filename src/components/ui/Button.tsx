@@ -55,7 +55,12 @@ export function buttonClasses({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors duration-150",
+    // `cursor-pointer` muss hier stehen: Tailwinds Preflight lässt das
+    // `cursor: default` des Browsers für `<button>` unangetastet. Ohne die
+    // Klasse zeigte jeder Knopf den Pfeil, während `IconButton` und
+    // `ButtonLink` (ein `<a>`) die Hand zeigten — im selben Dialog
+    // nebeneinander.
+    "inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors duration-150",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
     "disabled:pointer-events-none disabled:opacity-50",
     sizeClasses[size],
@@ -86,6 +91,10 @@ export function Button({
     <button
       type={type}
       disabled={disabled || loading}
+      // Der Spinner ist `aria-hidden` — ohne `aria-busy` bliebe der laufende
+      // Versand für Screenreader also völlig unbemerkt: der Knopf würde nur
+      // still deaktiviert.
+      aria-busy={loading || undefined}
       className={buttonClasses({ variant, color, size, className })}
       {...props}
     >
