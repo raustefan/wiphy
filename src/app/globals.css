@@ -36,6 +36,17 @@
   --on-market: #ffffff;
   --on-negative: #ffffff;
 
+  /* Passwortstärke — durchgehende Rampe von Rot nach Grün.
+     Eigene Werte statt --negative/--warning/--positive: die Statusfarben sind
+     für Text gewählt und ergeben als Flächen nebeneinander keine gleichmäßige
+     Rampe. Die Stufe steht nie allein: neben dem Balken steht immer das
+     Urteil im Klartext, sonst wäre die Angabe bei Rot-Grün-Schwäche leer. */
+  --strength-0: #dc2626;
+  --strength-1: #ea580c;
+  --strength-2: #ca8a04;
+  --strength-3: #65a30d;
+  --strength-4: #15803d;
+
   /* Diagrammfarben — eigene Werte, nicht die Statusfarben des Textes.
      Die Textfarben liegen für Flächen zu hell bzw. zu dunkel; diese vier sind
      gegen die Kartenfläche geprüft (Kontrast >= 3:1, Farbfehlsichtigkeit).
@@ -94,6 +105,13 @@ html[data-theme-appearance="dark"] {
   --on-physics: #052e2b;
   --on-market: #ffffff;
   --on-negative: #450a0a;
+
+  /* Hellere Rampe für die dunkle Fläche — die hellen Werte verschwänden darauf. */
+  --strength-0: #f87171;
+  --strength-1: #fb923c;
+  --strength-2: #facc15;
+  --strength-3: #a3e635;
+  --strength-4: #4ade80;
 
   /* Eigene Stufen für die dunkle Fläche, keine Umkehrung der hellen: die
      hellen Werte lägen hier außerhalb des zulässigen Helligkeitsbands. */

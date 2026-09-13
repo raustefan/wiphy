@@ -133,7 +133,7 @@ export function ContactForm({
                             type="email"
                             autoComplete="email"
                             required
-                            placeholder="mail@beispiel.de"
+                            placeholder="deine@email.de"
                         />
                     </Field>
 

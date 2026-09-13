@@ -180,7 +180,7 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                                     autoComplete="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="mail@beispiel.de"
+                                    placeholder="deine@email.de"
                                     required
                                 />
                             </Field>
