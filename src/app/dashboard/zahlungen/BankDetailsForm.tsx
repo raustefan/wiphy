@@ -4,7 +4,8 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Info, Pencil, X } from "lucide-react";
 import { Badge, Button, Callout, Checkbox, Field, Input } from "@/components/ui";
-import { formatIban, maskIban } from "@/lib/iban";
+import { maskIban } from "@/lib/iban";
+import { IbanInput } from "@/components/IbanInput";
 import { formatDate } from "@/lib/format";
 import { SEPA_CREDITOR_ID } from "@/lib/membership";
 import { updateBankDetails } from "./actions";
@@ -96,13 +97,7 @@ export function BankDetailsForm({
     return (
         <form ref={formRef} onSubmit={(event) => event.preventDefault()} className="grid gap-4">
             <Field label="IBAN" hint="Wird beim Speichern auf ihre Prüfziffer geprüft.">
-                <Input
-                    name="IBAN"
-                    defaultValue={formatIban(initial.IBAN)}
-                    placeholder="DE00 0000 0000 0000 0000 00"
-                    inputMode="text"
-                    autoComplete="off"
-                />
+                <IbanInput defaultValue={initial.IBAN} />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="BIC (optional)" hint="Für Konten im SEPA-Raum nicht erforderlich.">

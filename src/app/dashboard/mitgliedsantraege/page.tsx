@@ -62,7 +62,7 @@ export default async function MembershipApplicationsPage() {
         IBAN: application.IBAN,
         BIC: application.BIC,
         bank: application.bank,
-        mandatDatum: application.mandatDatum.toISOString(),
+        mandatDatum: application.mandatDatum?.toISOString() ?? null,
         beitragRegularSnapshot: application.beitragRegularSnapshot,
         beitragStudentSnapshot: application.beitragStudentSnapshot,
         feePlan: planApplicationFees({

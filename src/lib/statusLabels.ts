@@ -13,6 +13,18 @@ export function formatStatus(status?: Status | string | null): string {
     }
 }
 
+/**
+ * Kurzform für enge Spalten: `Mitglied`, `Ehrenmitglied`, `Kein Mitglied`.
+ *
+ * „Ordentliches Mitglied“ war in der Nutzertabelle die breiteste Zelle
+ * überhaupt — das Beiwort trägt dort nichts bei, weil daneben ohnehin nur die
+ * beiden anderen Stufen stehen können. Die Langform bleibt als `title` am
+ * Etikett, damit die genaue Bezeichnung eine Mausbewegung entfernt ist.
+ */
+export function formatStatusShort(status?: Status | string | null): string {
+    return status === "ORDENTLICHES_MITGLIED" ? "Mitglied" : formatStatus(status);
+}
+
 /** Badge-Farbton des Mitgliedsstatus — die Werte sind `BadgeTone` des UI-Kits. */
 export function getStatusTone(
     status?: Status | string | null,

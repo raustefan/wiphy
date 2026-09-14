@@ -114,13 +114,25 @@ function toDateInput(d: string | Date | null): string {
     return new Date(d).toISOString().slice(0, 10);
 }
 
+/** Die vier Ja/Nein-Felder des Formulars — nur Admins sehen sie. */
+function isCheckboxKey(key: string) {
+    return (
+        key === "bankeinzug" ||
+        key === "zuwendungsbesch" ||
+        key === "datensperren" ||
+        key === "ausschluss"
+    );
+}
+
 function formatDiffValue(field: string, value: string): string {
+    // Kontrollkästchen zuerst: bei ihnen heißt der leere Wert „abgewählt“ und
+    // liest sich als „Nein“. Stünde die Leerprüfung davor, meldete der Dialog
+    // „Bankeinzug: Ja → —“ — ein Gedankenstrich für ein Feld, das nur zwei
+    // Zustände kennt.
+    if (isCheckboxKey(field)) return value === "on" ? "Ja" : "Nein";
     if (value === "") return "—";
     if (field === "role") return ROLE_LABEL_MAP[value] ?? value;
     if (field === "status") return STATUS_LABEL_MAP[value] ?? value;
-    if (field === "bankeinzug" || field === "zuwendungsbesch" || field === "datensperren" || field === "ausschluss") {
-        return value === "on" ? "Ja" : "Nein";
-    }
     return value;
 }
 
@@ -207,10 +219,6 @@ export function EditUserForm({
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [pendingHref, setPendingHref] = useState<string | null>(null);
-
-    function isCheckboxKey(key: string) {
-        return key === "bankeinzug" || key === "zuwendungsbesch" || key === "datensperren" || key === "ausschluss";
-    }
 
     function computeChanges() {
         const form = formRef.current;

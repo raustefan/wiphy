@@ -410,13 +410,16 @@ model MembershipApplication {
   studentYears  Int[]
 
   // --- Snapshot: SEPA ---
-  kontoinhaber String
-  IBAN         String
+  /// Bankdaten und Mandatsdatum fehlen, wenn kein Lastschriftmandat erteilt
+  /// wurde: ohne Mandat zieht der Verein nichts ein, hat für die Kontodaten
+  /// also keine Verwendung — und erhebt sie deshalb gar nicht erst.
+  kontoinhaber String?
+  IBAN         String?
   BIC          String?
   bank         String?
   bankeinzug   Boolean @default(true)
-  /// Datum der Mandatserteilung (= Zeitpunkt des Absendens).
-  mandatDatum  DateTime
+  /// Datum der Mandatserteilung (= Zeitpunkt des Absendens), sonst leer.
+  mandatDatum  DateTime?
   /// Wird erst vergeben, wenn dem Verein eine Gläubiger-ID vorliegt.
   mandatsreferenz String?
 

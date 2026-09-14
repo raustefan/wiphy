@@ -2,30 +2,31 @@
 
 import { Fragment, useMemo, useState } from "react";
 import {
-    ArrowUp,
     User,
     UserCircle,
-    IdCard,
     CheckCircle2,
     Clock,
     Mail,
     Pencil,
+    ShieldCheck,
     Check,
     X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { EmailComposerDialog } from "@/components/EmailComposerDialog";
-import { formatStatus, getStatusTone } from "@/lib/statusLabels";
+import { formatStatus, formatStatusShort, getStatusTone } from "@/lib/statusLabels";
 import type { Status } from "@prisma/client";
 import {
     Badge,
     Button,
     IconButtonLink,
     Separator,
+    SortableTh,
     Table,
     TableWrap,
     Td,
     Th,
+    type SortState,
 } from "@/components/ui";
 
 const DEFAULT_VISIBLE = 5;
@@ -63,7 +64,7 @@ export function DashboardUsersTable({
     const [showAll, setShowAll] = useState(false);
     const [mailUser, setMailUser] = useState<DashboardTableUser | null>(null);
     // Voreinstellung wie bisher: nach Mitglieds-ID, Konten ohne ID hinten.
-    const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({
+    const [sort, setSort] = useState<SortState<SortKey>>({
         key: "mitgliedId",
         desc: false,
     });
@@ -150,95 +151,124 @@ export function DashboardUsersTable({
 
     return (
         <>
+            {/*
+              Vier Spalten statt sechs — sechs passten auf keinen Telefon-
+              bildschirm, und `min-w-[640px]` hieß: bei jedem Blick auf die
+              Mitgliederliste erst einmal seitwärts scrollen. Zusammengelegt
+              wurde, was ohnehin zusammengehört: Name, Rolle und E-Mail
+              beschreiben dasselbe Konto.
+
+              Die Kontospalte bekommt `w-full max-w-0`: so nimmt sie den Rest
+              der Zeile ein und ihr Inhalt darf kürzen, statt die Tabelle
+              breiter zu machen. Ohne `max-w-0` bestimmt die längste
+              E-Mail-Adresse die Tabellenbreite — und das war der Grund für den
+              waagerechten Balken.
+            */}
             <TableWrap>
-                <Table className="min-w-[640px]">
+                <Table>
                     <thead>
                         <tr className="bg-raised/60">
+                            {/* Die Mitglieds-ID ist Buchhaltung des Vereins und
+                                erst ab `sm` sichtbar: auf dem Telefon ist der
+                                Name das Erkennungsmerkmal, und die Spalte kostet
+                                dort ein Fünftel der Breite. */}
                             <SortableTh
                                 sortKey="mitgliedId"
                                 label="ID"
-                                icon={<IdCard size={14} aria-hidden="true" />}
                                 sort={sort}
                                 onSort={toggleSort}
+                                className="hidden sm:table-cell"
                             />
                             <SortableTh
                                 sortKey="name"
-                                label="Name"
-                                icon={<User size={14} aria-hidden="true" />}
-                                sort={sort}
-                                onSort={toggleSort}
-                            />
-                            <SortableTh
-                                sortKey="role"
-                                label="Rolle"
-                                icon={<UserCircle size={14} aria-hidden="true" />}
+                                label="Konto"
                                 sort={sort}
                                 onSort={toggleSort}
                             />
                             <SortableTh
                                 sortKey="status"
                                 label="Mitgliedschaft"
-                                icon={<CheckCircle2 size={14} aria-hidden="true" />}
                                 sort={sort}
                                 onSort={toggleSort}
                             />
-                            <SortableTh
-                                sortKey="email"
-                                label="E-Mail"
-                                icon={<Mail size={14} aria-hidden="true" />}
-                                sort={sort}
-                                onSort={toggleSort}
-                            />
-                            <Th className="text-right">
-                                <span className="flex items-center justify-end gap-2">
-                                    <Pencil size={14} aria-hidden="true" />
-                                    Bearbeiten
-                                </span>
+                            <Th className="px-2 text-right">
+                                <span className="sr-only">Bearbeiten</span>
                             </Th>
                         </tr>
                     </thead>
                     <tbody>
                         {visibleUsers.map((u) => {
-                            const verified = u.emailVerified;
-                            const mailColor = verified ? "text-positive" : "text-negative";
+                            const name = displayName(u) || "—";
                             return (
                                 <tr key={u.id} className="transition-colors hover:bg-raised/50">
-                                    <Td className="font-mono tabular-nums">
+                                    <Td className="hidden px-2 py-2 align-top font-mono tabular-nums text-muted sm:table-cell">
                                         {u.mitgliedId ?? "—"}
                                     </Td>
-                                    <Td className="font-medium">
-                                        {[u.vorname, u.name].filter(Boolean).join(" ") || "—"}
-                                    </Td>
-                                    <Td>
-                                        <Badge tone={u.role === "ADMIN" ? "market" : "info"}>
-                                            {u.role === "ADMIN" ? "Admin" : "Member"}
-                                        </Badge>
-                                    </Td>
-                                    <Td>
-                                        <Badge tone={getStatusTone(u.status)}>
-                                            {getStatusIcon(u.status)}
-                                            {formatStatus(u.status)}
-                                        </Badge>
-                                    </Td>
-                                    <Td>
+
+                                    <Td className="w-full max-w-0 px-2 py-2">
+                                        <div className="flex items-center gap-1.5">
+                                            {/* Auf schmalen Bildschirmen wird
+                                                gekürzt — der volle Name bleibt
+                                                über den Tooltip erreichbar. */}
+                                            <span className="truncate font-medium" title={name}>
+                                                {name}
+                                            </span>
+                                            {/* Nur Admins tragen ein Zeichen: „ist
+                                                kein Admin“ ist der Normalfall und
+                                                braucht kein eigenes Symbol. */}
+                                            {u.role === "ADMIN" && (
+                                                <span
+                                                    title="Administrator"
+                                                    className="shrink-0 text-market"
+                                                >
+                                                    <ShieldCheck size={14} aria-hidden="true" />
+                                                    <span className="sr-only">Administrator</span>
+                                                </span>
+                                            )}
+                                        </div>
                                         <button
                                             type="button"
                                             onClick={() => setMailUser(u)}
-                                            title="E-Mail schreiben"
-                                            className={`flex cursor-pointer items-center gap-2 rounded-md text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-physics ${mailColor}`}
+                                            title={`E-Mail an ${u.email} schreiben`}
+                                            className={cn(
+                                                // `py-1` statt nichts: die Zeile ist
+                                                // sonst nur 16 px hoch und auf dem
+                                                // Telefon kaum zu treffen.
+                                                "flex w-full cursor-pointer items-center gap-1.5 rounded py-1 text-left text-xs underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics",
+                                                u.emailVerified ? "text-muted" : "text-negative",
+                                            )}
                                         >
-                                            {verified ? <Check size={16} /> : <X size={16} />}
-                                            {u.email}
+                                            {/* Das Häkchen sagt „Adresse bestätigt“ —
+                                                bestätigt ist der Normalfall, deshalb
+                                                fällt hier nur das Kreuz farblich auf. */}
+                                            {u.emailVerified ? (
+                                                <Check size={13} aria-hidden="true" className="shrink-0" />
+                                            ) : (
+                                                <X size={13} aria-hidden="true" className="shrink-0" />
+                                            )}
+                                            <span className="truncate">{u.email}</span>
+                                            <span className="sr-only">
+                                                {u.emailVerified
+                                                    ? " — Adresse bestätigt"
+                                                    : " — Adresse nicht bestätigt"}
+                                            </span>
                                         </button>
                                     </Td>
-                                    <Td className="text-right">
+
+                                    <Td className="px-2 py-2 align-top">
+                                        <Badge
+                                            tone={getStatusTone(u.status)}
+                                            title={formatStatus(u.status)}
+                                        >
+                                            {formatStatusShort(u.status)}
+                                        </Badge>
+                                    </Td>
+
+                                    <Td className="px-2 py-2 align-top text-right">
                                         <div className="flex justify-end">
                                             <IconButtonLink
                                                 href={`/dashboard/users/${u.id}`}
-                                                aria-label={`${
-                                                    [u.vorname, u.name].filter(Boolean).join(" ") ||
-                                                    u.email
-                                                } bearbeiten`}
+                                                aria-label={`${name || u.email} bearbeiten`}
                                                 variant="soft"
                                                 color="accent"
                                                 size="sm"
@@ -305,7 +335,12 @@ function ProfileRow({
     );
 }
 
-export type SortKey = "mitgliedId" | "name" | "role" | "status" | "email";
+/**
+ * Rolle und E-Mail fehlen hier bewusst: seit beide in der Kontospalte stehen,
+ * gibt es keinen Spaltenkopf mehr, über den man danach sortieren könnte — ein
+ * Sortierschlüssel ohne Bedienelement wäre toter Code.
+ */
+export type SortKey = "mitgliedId" | "name" | "status";
 
 function displayName(u: DashboardTableUser) {
     return [u.vorname, u.name].filter(Boolean).join(" ");
@@ -334,65 +369,7 @@ function compareBy(key: SortKey, a: DashboardTableUser, b: DashboardTableUser): 
         }
         case "name":
             return displayName(a).localeCompare(displayName(b), "de");
-        case "role":
-            // Admins zuerst — die kleinere Gruppe ist die gesuchte.
-            return (a.role === "ADMIN" ? 0 : 1) - (b.role === "ADMIN" ? 0 : 1);
         case "status":
             return (STATUS_RANK[String(a.status)] ?? 99) - (STATUS_RANK[String(b.status)] ?? 99);
-        case "email":
-            return a.email.localeCompare(b.email, "de");
     }
-}
-
-/**
- * Spaltenkopf, der die Tabelle sortiert.
- *
- * `aria-sort` sitzt am `<th>`, nicht am Knopf: Screenreader lesen die
- * Sortierung beim Betreten der Spalte vor, nicht erst beim Fokussieren des
- * Knopfes. Der Pfeil daneben ist `aria-hidden` — er wiederholt nur, was
- * `aria-sort` schon sagt.
- */
-function SortableTh({
-    sortKey,
-    label,
-    icon,
-    sort,
-    onSort,
-}: {
-    sortKey: SortKey;
-    label: string;
-    icon: React.ReactNode;
-    sort: { key: SortKey; desc: boolean };
-    onSort: (key: SortKey) => void;
-}) {
-    const active = sort.key === sortKey;
-
-    return (
-        <Th
-            aria-sort={active ? (sort.desc ? "descending" : "ascending") : "none"}
-            className="p-0"
-        >
-            <button
-                type="button"
-                onClick={() => onSort(sortKey)}
-                className={cn(
-                    "flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-xs font-semibold tracking-wide uppercase transition-colors",
-                    "hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics",
-                    active ? "text-foreground" : "text-faint",
-                )}
-            >
-                {icon}
-                {label}
-                <ArrowUp
-                    size={13}
-                    aria-hidden="true"
-                    className={cn(
-                        "shrink-0 transition-transform motion-reduce:transition-none",
-                        active ? "opacity-100" : "opacity-0",
-                        active && sort.desc && "rotate-180",
-                    )}
-                />
-            </button>
-        </Th>
-    );
 }

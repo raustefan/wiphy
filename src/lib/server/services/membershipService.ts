@@ -92,8 +92,11 @@ export async function submitApplication(
         IBAN: input.IBAN,
         BIC: input.BIC,
         bank: input.bank,
-        bankeinzug: true,
-        mandatDatum: submittedAt,
+        // Früher fest `true`, weil das Formular das Mandat verlangte. Seit es
+        // den Weg „Überweisung“ gibt, entscheidet die Wahl im Antrag — und
+        // ohne Mandat gibt es auch kein Mandatsdatum.
+        bankeinzug: input.bankeinzug,
+        mandatDatum: input.bankeinzug ? submittedAt : null,
         // Mandatsreferenzen werden erst vergeben, wenn dem Verein eine
         // Gläubiger-Identifikationsnummer vorliegt.
         mandatsreferenz: null,
@@ -134,8 +137,8 @@ export async function submitApplication(
         bank: input.bank,
         IBAN: input.IBAN,
         BIC: input.BIC,
-        bankeinzug: true,
-        mandatserteilung: submittedAt,
+        bankeinzug: input.bankeinzug,
+        mandatserteilung: input.bankeinzug ? submittedAt : null,
       },
     });
 
@@ -166,7 +169,7 @@ export async function approveApplication(params: {
     aufnahmedatum: params.aufnahmedatum,
     studentYears: application.studentYears,
     defaults: await findFeeDefaults(),
-    // Der Antrag verlangt das Lastschriftmandat, deshalb kein 10-%-Aufschlag.
+    // Ohne Mandat greift der 10-%-Aufschlag nach § 5 Abs. 5.
     bankeinzug: application.bankeinzug,
   });
 

@@ -49,11 +49,11 @@ export type ApplicationItem = {
     berufszweig: string | null;
     position: string | null;
     studentYears: number[];
-    kontoinhaber: string;
-    IBAN: string;
+    kontoinhaber: string | null;
+    IBAN: string | null;
     BIC: string | null;
     bank: string | null;
-    mandatDatum: string;
+    mandatDatum: string | null;
     beitragRegularSnapshot: number;
     beitragStudentSnapshot: number;
     feePlan: Array<{ jahr: number; isStudent: boolean; beitrag: number }>;
@@ -257,44 +257,79 @@ export function ApplicationList({ applications }: { applications: ApplicationIte
                                         <Detail label="Berufszweig" value={application.berufszweig} />
                                     </DetailGroup>
 
-                                    <DetailGroup title="Bankverbindung">
-                                        <Detail label="Kontoinhaber:in" value={application.kontoinhaber} />
-                                        <div className="flex items-center justify-between gap-3">
-                                            <span className="text-muted">IBAN</span>
-                                            <span className="flex items-center gap-1">
-                                                <span className="font-mono text-[13px] font-medium">
-                                                    {ibanVisible
-                                                        ? formatIban(application.IBAN)
-                                                        : maskIban(application.IBAN)}
-                                                </span>
-                                                <IconButton
-                                                    type="button"
-                                                    size="sm"
-                                                    aria-label={
-                                                        ibanVisible
-                                                            ? "IBAN verbergen"
-                                                            : "IBAN anzeigen"
+                                    <DetailGroup title="Zahlungsweise">
+                                        {application.IBAN ? (
+                                            <>
+                                                <Detail
+                                                    label="Weg"
+                                                    value="SEPA-Lastschrift"
+                                                />
+                                                <Detail
+                                                    label="Kontoinhaber:in"
+                                                    value={application.kontoinhaber}
+                                                />
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="text-muted">IBAN</span>
+                                                    <span className="flex items-center gap-1">
+                                                        <span className="font-mono text-[13px] font-medium">
+                                                            {ibanVisible
+                                                                ? formatIban(application.IBAN)
+                                                                : maskIban(application.IBAN)}
+                                                        </span>
+                                                        <IconButton
+                                                            type="button"
+                                                            size="sm"
+                                                            aria-label={
+                                                                ibanVisible
+                                                                    ? "IBAN verbergen"
+                                                                    : "IBAN anzeigen"
+                                                            }
+                                                            onClick={() =>
+                                                                setRevealedIban(
+                                                                    ibanVisible
+                                                                        ? null
+                                                                        : application.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            {ibanVisible ? (
+                                                                <EyeOff size={14} />
+                                                            ) : (
+                                                                <Eye size={14} />
+                                                            )}
+                                                        </IconButton>
+                                                    </span>
+                                                </div>
+                                                <Detail label="BIC" value={application.BIC} />
+                                                <Detail
+                                                    label="Kreditinstitut"
+                                                    value={application.bank}
+                                                />
+                                                <Detail
+                                                    label="Mandat erteilt"
+                                                    value={
+                                                        application.mandatDatum
+                                                            ? dateFormat.format(
+                                                                  new Date(application.mandatDatum),
+                                                              )
+                                                            : null
                                                     }
-                                                    onClick={() =>
-                                                        setRevealedIban(
-                                                            ibanVisible ? null : application.id,
-                                                        )
-                                                    }
-                                                >
-                                                    {ibanVisible ? (
-                                                        <EyeOff size={14} />
-                                                    ) : (
-                                                        <Eye size={14} />
-                                                    )}
-                                                </IconButton>
-                                            </span>
-                                        </div>
-                                        <Detail label="BIC" value={application.BIC} />
-                                        <Detail label="Kreditinstitut" value={application.bank} />
-                                        <Detail
-                                            label="Mandat erteilt"
-                                            value={dateFormat.format(new Date(application.mandatDatum))}
-                                        />
+                                                />
+                                            </>
+                                        ) : (
+                                            /* Ohne Mandat gibt es keine Bankdaten — der Verein
+                                               zieht nichts ein und hat sie deshalb nie erhoben.
+                                               Der Hinweis erklärt dem Vorstand die Lücke, statt
+                                               sie als fehlende Angabe erscheinen zu lassen. */
+                                            <>
+                                                <Detail label="Weg" value="Überweisung" />
+                                                <p className="text-muted text-pretty">
+                                                    Kein SEPA-Lastschriftmandat erteilt. Der
+                                                    Beitrag erhöht sich nach § 5 Abs. 5 um 10 %;
+                                                    Bankdaten liegen nicht vor.
+                                                </p>
+                                            </>
+                                        )}
                                     </DetailGroup>
 
                                     <DetailGroup title="Beitrag">

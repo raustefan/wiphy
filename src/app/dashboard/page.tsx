@@ -281,60 +281,66 @@ export default async function DashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 lg:order-1">
-                        {/* ---------- Beiträge ---------- */}
-                        <Card className="p-5 sm:p-6">
-                            <SectionHeader
-                                icon={<IdCard size={16} />}
-                                eyebrow="Zahlungsübersicht"
-                                title="Meine Beiträge der letzten drei Jahre"
-                                aside={
-                                    <ButtonLink
-                                        href="/dashboard/zahlungen"
-                                        variant="soft"
-                                        color="neutral"
-                                        size="sm"
-                                        className="self-start"
-                                    >
-                                        <CreditCard size={15} aria-hidden="true" />
-                                        Zahlungen verwalten
-                                    </ButtonLink>
-                                }
-                            />
-
-                            {/*
-                              Je Jahr eine Zeile statt einer Kachel: die drei
-                              Kacheln fielen auf dem Telefon untereinander und
-                              brauchten für drei Zahlen mehr Platz als die
-                              Tabelle darunter für dreizehn Konten.
-                            */}
-                            <ul className="mt-4 grid grid-cols-1 divide-y divide-line rounded-xl border border-line">
-                                {last3Years.map((year) => {
-                                    const fee = myFees.find((f) => f.jahr === year);
-                                    const isPaid = fee?.bezahlt ?? false;
-                                    const isStudent = fee?.isStudent ?? false;
-                                    const amount = fee?.beitrag ?? 0;
-                                    return (
-                                        <li
-                                            key={year}
-                                            className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3"
+                        {/* ---------- Beiträge ----------
+                          Nur für Mitglieder: wer keine Mitgliedschaft hat,
+                          schuldet auch keinen Beitrag — die Zahlungshistorie
+                          wäre für dieses Konto grundsätzlich leer und suggeriert
+                          eine Beitragspflicht, die es nicht gibt. */}
+                        {!isNonMember && (
+                            <Card className="p-5 sm:p-6">
+                                <SectionHeader
+                                    icon={<IdCard size={16} />}
+                                    eyebrow="Zahlungsübersicht"
+                                    title="Meine Beiträge der letzten drei Jahre"
+                                    aside={
+                                        <ButtonLink
+                                            href="/dashboard/zahlungen"
+                                            variant="soft"
+                                            color="neutral"
+                                            size="sm"
+                                            className="self-start"
                                         >
-                                            <span className="font-mono text-base font-bold tracking-tight tabular-nums">
-                                                {year}
-                                            </span>
-                                            <Badge tone={isPaid ? "positive" : "negative"}>
-                                                {isPaid ? "Bezahlt" : "Ausstehend"}
-                                            </Badge>
-                                            <Badge tone={isStudent ? "info" : "neutral"}>
-                                                {isStudent ? "Student" : "Regulär"}
-                                            </Badge>
-                                            <span className="ml-auto font-semibold tabular-nums">
-                                                {formatEuro(amount)}
-                                            </span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </Card>
+                                            <CreditCard size={15} aria-hidden="true" />
+                                            Zahlungen verwalten
+                                        </ButtonLink>
+                                    }
+                                />
+
+                                {/*
+                                  Je Jahr eine Zeile statt einer Kachel: die drei
+                                  Kacheln fielen auf dem Telefon untereinander und
+                                  brauchten für drei Zahlen mehr Platz als die
+                                  Tabelle darunter für dreizehn Konten.
+                                */}
+                                <ul className="mt-4 grid grid-cols-1 divide-y divide-line rounded-xl border border-line">
+                                    {last3Years.map((year) => {
+                                        const fee = myFees.find((f) => f.jahr === year);
+                                        const isPaid = fee?.bezahlt ?? false;
+                                        const isStudent = fee?.isStudent ?? false;
+                                        const amount = fee?.beitrag ?? 0;
+                                        return (
+                                            <li
+                                                key={year}
+                                                className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3"
+                                            >
+                                                <span className="font-mono text-base font-bold tracking-tight tabular-nums">
+                                                    {year}
+                                                </span>
+                                                <Badge tone={isPaid ? "positive" : "negative"}>
+                                                    {isPaid ? "Bezahlt" : "Ausstehend"}
+                                                </Badge>
+                                                <Badge tone={isStudent ? "info" : "neutral"}>
+                                                    {isStudent ? "Student" : "Regulär"}
+                                                </Badge>
+                                                <span className="ml-auto font-semibold tabular-nums">
+                                                    {formatEuro(amount)}
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </Card>
+                        )}
 
                         {/* ---------- Konten ---------- */}
                         <Card className="p-5 sm:p-6">

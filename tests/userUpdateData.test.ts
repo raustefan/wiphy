@@ -102,3 +102,42 @@ test("admin profile updates include admin and payment fields", () => {
   assert.equal(data.datensperren, false);
   assert.ok(data.mandatserteilung instanceof Date);
 });
+
+/* Regressionstest zu dem Fehler, dass ein Haken sich setzen, aber nicht wieder
+   entfernen ließ: Ein abgewähltes Kontrollkästchen schickt der Browser gar
+   nicht mit, das Feld kam als `undefined` an — und `undefined` heißt hier
+   „nicht anfassen“. Das Profilformular übersetzt „fehlt“ deshalb zu `false`,
+   bevor es hierher kommt; `buildUserUpdateData` muss ein ausdrückliches
+   `false` dann auch schreiben. */
+test("explizites false schaltet Admin-Kästchen wieder ab", () => {
+  const data = buildUserUpdateData({
+    ...baseInput,
+    currentUserRole: "ADMIN",
+    currentUserId: "admin-1",
+    bankeinzug: false,
+    zuwendungsbesch: false,
+    datensperren: false,
+    ausschluss: false,
+  });
+
+  assert.equal(data.bankeinzug, false);
+  assert.equal(data.zuwendungsbesch, false);
+  assert.equal(data.datensperren, false);
+  assert.equal(data.ausschluss, false);
+});
+
+/* Die Gegenprobe: `undefined` darf weiterhin „nicht anfassen“ bedeuten. Daran
+   hängen Aufrufer, die nur einen Teil der Felder kennen — würde das hier zu
+   `false`, löschte ein Teil-Update stillschweigend fremde Angaben. */
+test("undefined lässt Admin-Kästchen unverändert", () => {
+  const data = buildUserUpdateData({
+    ...baseInput,
+    currentUserRole: "ADMIN",
+    currentUserId: "admin-1",
+  });
+
+  assert.equal("bankeinzug" in data, false);
+  assert.equal("zuwendungsbesch" in data, false);
+  assert.equal("datensperren" in data, false);
+  assert.equal("ausschluss" in data, false);
+});

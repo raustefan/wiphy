@@ -194,7 +194,7 @@ export function membershipApprovedMessage(params: Person & {
           { label: "Mitgliedsnummer", value: String(params.mitgliedId) },
         ],
       },
-      { type: "text", content: "Deine Beiträge findest du ab sofort in deinem Mitgliederbereich. Der Einzug erfolgt per SEPA-Lastschrift von dem von dir angegebenen Konto." },
+      { type: "text", content: "Deine Beiträge findest du ab sofort in deinem Mitgliederbereich." },
     ],
   };
 }

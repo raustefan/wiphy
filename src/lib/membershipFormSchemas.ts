@@ -65,6 +65,24 @@ export const applicationStudySchema = z.object({
   position: optional(200),
 });
 
+/**
+ * Wie der Beitrag bezahlt wird. Eigener Schritt im Antrag, damit die
+ * Entscheidung bewusst fällt und nicht nebenbei beim Ausfüllen der Bankdaten.
+ */
+export const PAYMENT_METHODS = ["lastschrift", "ueberweisung"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const applicationPaymentSchema = z.object({
+  zahlungsweise: z.enum(PAYMENT_METHODS, {
+    message: "Bitte wähle aus, wie du den Beitrag zahlen möchtest.",
+  }),
+});
+
+/**
+ * Bankdaten — nur auf dem Lastschriftweg. Ohne Mandat zieht der Verein nichts
+ * ein und hat für die Kontodaten keine Verwendung; der Antrag fragt sie dann
+ * gar nicht erst ab.
+ */
 export const applicationBankSchema = z.object({
   kontoinhaber: required(200, "den Kontoinhaber"),
   IBAN: z
@@ -83,18 +101,68 @@ export const applicationBankSchema = z.object({
 });
 
 /**
+ * Dieselben Felder, aber ohne Pflicht: Für das Gesamtschema hängt es von der
+ * Zahlungsweise ab, ob sie ausgefüllt sein müssen — das entscheidet das
+ * `superRefine` weiter unten, nicht das Feld für sich.
+ */
+const bankFieldsOptional = z.object({
+  kontoinhaber: optional(200),
+  IBAN: optional(80),
+  BIC: optional(40),
+  bank: optional(200),
+  bankeinzug: z
+    .string()
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
+});
+
+/**
  * Gesamtschema für das Absenden. `studentYears` kommt über `getAll` als Array
  * und wird deshalb außerhalb von `parseFormData` eingespeist.
  */
 export const membershipApplicationSchema = applicationPersonSchema
   .extend(applicationStudySchema.shape)
-  .extend(applicationBankSchema.shape)
+  .extend(applicationPaymentSchema.shape)
+  .extend(bankFieldsOptional.shape)
   .extend({
     studentYears: z.array(z.coerce.number().int()).default([]),
     satzungAccepted: checkedBox,
     datenschutzAccepted: checkedBox,
   })
   .superRefine((data, ctx) => {
+    // Auf dem Lastschriftweg gelten dieselben Pflichten wie im Schrittschema —
+    // hier noch einmal, weil der Server dem Browser nicht glaubt.
+    if (data.zahlungsweise === "lastschrift") {
+      if (!data.kontoinhaber) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Bitte den Kontoinhaber angeben.",
+          path: ["kontoinhaber"],
+        });
+      }
+      if (!data.IBAN || !isValidIban(data.IBAN)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
+          path: ["IBAN"],
+        });
+      }
+      if (data.BIC && !isValidBic(data.BIC)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
+          path: ["BIC"],
+        });
+      }
+      if (!data.bankeinzug) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
+          path: ["bankeinzug"],
+        });
+      }
+    }
+
     if (data.studienbeginn && data.studienende && data.studienende < data.studienbeginn) {
       ctx.addIssue({
         code: "custom",
@@ -117,5 +185,16 @@ export const membershipApplicationSchema = applicationPersonSchema
         path: ["studentYears"],
       });
     }
-  });
+  })
+  /*
+   * Ohne Mandat werden die Bankfelder verworfen, statt sie nur zu ignorieren:
+   * Der Wizard behält alle Schritte im DOM, eine vorher eingetippte IBAN wird
+   * also mitgeschickt, auch wenn der Weg danach auf „Überweisung“ gewechselt
+   * hat. Was der Verein nicht braucht, soll er auch nicht speichern.
+   */
+  .transform((data) =>
+    data.zahlungsweise === "lastschrift"
+      ? { ...data, IBAN: data.IBAN ? normalizeIban(data.IBAN) : null }
+      : { ...data, kontoinhaber: null, IBAN: null, BIC: null, bank: null, bankeinzug: false },
+  );
 

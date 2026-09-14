@@ -11,8 +11,10 @@ import {
     FileText,
     GraduationCap,
     Info,
+    Landmark,
     Send,
     UserRound,
+    Wallet,
 } from "lucide-react";
 import {
     Badge,
@@ -25,6 +27,7 @@ import {
     Separator,
 } from "@/components/ui";
 import { formatIban } from "@/lib/iban";
+import { IbanInput } from "@/components/IbanInput";
 import {
     CONSENT_VERSION,
     DATENSCHUTZ_URL,
@@ -37,21 +40,33 @@ import type { FeeRates } from "@/lib/feeDefaults";
 import { annualFee, billableMonths, withSurcharge } from "@/lib/feeCalculation";
 import {
     applicationBankSchema,
+    applicationPaymentSchema,
     applicationPersonSchema,
     applicationStudySchema,
+    type PaymentMethod,
 } from "@/lib/membershipFormSchemas";
 import { submitMembershipApplication } from "./actions";
 
 type InitialValues = Record<string, string>;
 
-const STEP_ICONS = [FileText, UserRound, GraduationCap, Banknote, Check];
+const STEP_ICONS = [FileText, UserRound, GraduationCap, Wallet, Banknote, Check];
 
 /**
  * Die Schemas, gegen die ein Schritt geprüft wird, bevor es weitergeht. Rein
  * für die Bedienführung — die Autorität liegt beim Server, der beim Absenden
  * ohnehin das vollständige Schema anwendet.
  */
-const STEP_SCHEMAS = [null, applicationPersonSchema, applicationStudySchema, applicationBankSchema, null] as const;
+const STEP_SCHEMAS = [
+    null,
+    applicationPersonSchema,
+    applicationStudySchema,
+    applicationPaymentSchema,
+    applicationBankSchema,
+    null,
+] as const;
+
+/** Index des Bankschritts — er prüft nur auf dem Lastschriftweg. */
+const BANK_STEP = 4;
 
 export function ApplicationWizard({
     initial,
@@ -70,6 +85,7 @@ export function ApplicationWizard({
     const formRef = useRef<HTMLFormElement>(null);
     const [step, setStep] = useState(0);
     const [error, setError] = useState("");
+    const [zahlungsweise, setZahlungsweise] = useState<PaymentMethod | "">("");
     const [studentYears, setStudentYears] = useState<number[]>(preselectedYears);
     const [summary, setSummary] = useState<Record<string, string>>({});
     const [isPending, startTransition] = useTransition();
@@ -86,7 +102,10 @@ export function ApplicationWizard({
 
     function goToStep(target: number) {
         setError("");
-        const schema = STEP_SCHEMAS[step];
+        // Ohne Mandat gibt es im Bankschritt nichts zu prüfen: dort stehen dann
+        // gar keine Felder.
+        const schema =
+            step === BANK_STEP && zahlungsweise !== "lastschrift" ? null : STEP_SCHEMAS[step];
         // Rückwärts wird nie validiert — sonst säße man in einem Schritt fest,
         // dessen Fehler man weiter vorne korrigieren wollte.
         if (target > step && schema) {
@@ -246,40 +265,135 @@ export function ApplicationWizard({
 
                 <div hidden={step !== 3} className="grid gap-4">
                     <StepHeading
-                        title="Bankverbindung und SEPA-Lastschriftmandat"
-                        description="Der Mitgliedsbeitrag wird per Lastschrift eingezogen."
+                        title="Wie möchtest du den Beitrag zahlen?"
+                        description="Diese Wahl bestimmt die Höhe deines Beitrags. Du kannst sie später in der Zahlungsverwaltung ändern."
                     />
-                    <Field label="Kontoinhaber:in">
-                        <Input name="kontoinhaber" defaultValue={initial.kontoinhaber} autoComplete="name" />
-                    </Field>
-                    <Field label="IBAN" hint="Wird beim Absenden auf ihre Prüfziffer geprüft.">
-                        <Input
-                            name="IBAN"
-                            defaultValue={initial.IBAN}
-                            placeholder="DE00 0000 0000 0000 0000 00"
-                            inputMode="text"
-                            autoComplete="off"
+
+                    {/* Nebeneinander und gleich groß: Die beiden Wege sollen
+                        als Entscheidung erscheinen, nicht als Kästchen, das man
+                        übersieht. Ausgewählt wird über echte Radiobuttons —
+                        damit funktionieren Tastatur und Screenreader ohne
+                        Zutun, und genau eine Option kann gelten. */}
+                    <fieldset className="grid gap-3 sm:grid-cols-2">
+                        <legend className="sr-only">Zahlungsweise</legend>
+
+                        <PaymentOption
+                            value="lastschrift"
+                            checked={zahlungsweise === "lastschrift"}
+                            onSelect={setZahlungsweise}
+                            icon={<Landmark size={18} aria-hidden="true" />}
+                            title="SEPA-Lastschrift"
+                            badge="Empfohlen"
+                            price={`${formatEuro(annualFee(rates.regular))} im Jahr`}
+                            points={[
+                                "Der Beitrag wird einmal jährlich eingezogen, angekündigt und jederzeit widerrufbar.",
+                                "Du musst an nichts denken und keine Frist im Blick behalten.",
+                            ]}
                         />
-                    </Field>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="BIC (optional)" hint="Für Konten im SEPA-Raum nicht erforderlich.">
-                            <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
-                        </Field>
-                        <Field label="Kreditinstitut (optional)">
-                            <Input name="bank" defaultValue={initial.bank} />
-                        </Field>
-                    </div>
 
-                    <MandateText />
+                        <PaymentOption
+                            value="ueberweisung"
+                            checked={zahlungsweise === "ueberweisung"}
+                            onSelect={setZahlungsweise}
+                            icon={<Wallet size={18} aria-hidden="true" />}
+                            title="Überweisung"
+                            price={`${formatEuro(withSurcharge(annualFee(rates.regular)))} im Jahr`}
+                            priceTone="negative"
+                            points={[
+                                `10 % Aufschlag nach § 5 Abs. 5 der Satzung — ${formatEuro(withSurcharge(annualFee(rates.regular)) - annualFee(rates.regular))} mehr pro Jahr.`,
+                                "Du überweist selbst und fristgerecht; bei Verzug mahnt der Verein.",
+                                "Für den ehrenamtlichen Vorstand bedeutet jede Einzelüberweisung Nachhalten und Zuordnen von Hand.",
+                            ]}
+                        />
+                    </fieldset>
 
-                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
-                        <Checkbox name="bankeinzug" className="mt-0.5" />
-                        <span className="text-pretty">
-                            Ich ermächtige den WirtschaftsPhysik Alumni e.V., den Mitgliedsbeitrag
-                            von meinem Konto mittels Lastschrift einzuziehen, und weise mein
-                            Kreditinstitut an, die Lastschriften einzulösen.
-                        </span>
-                    </label>
+                    {/* Der Wert reist im Formular mit, nicht nur im React-Zustand:
+                        das Absenden liest die FormData, nicht den State. */}
+                    <input type="hidden" name="zahlungsweise" value={zahlungsweise} />
+
+                    <Callout tone="info" icon={<Info size={16} />}>
+                        Der Aufschlag deckt den Mehraufwand, den Einzelüberweisungen dem
+                        ehrenamtlich geführten Verein machen. Er ist keine Strafe — die
+                        Lastschrift ist schlicht der günstigere Weg für beide Seiten.
+                    </Callout>
+                </div>
+
+                <div hidden={step !== BANK_STEP} className="grid gap-4">
+                    {zahlungsweise === "lastschrift" ? (
+                        <>
+                            <StepHeading
+                                title="Bankverbindung und SEPA-Lastschriftmandat"
+                                description="Von diesem Konto zieht der Verein den Mitgliedsbeitrag ein."
+                            />
+                            <Field label="Kontoinhaber:in">
+                                <Input
+                                    name="kontoinhaber"
+                                    defaultValue={initial.kontoinhaber}
+                                    autoComplete="name"
+                                />
+                            </Field>
+                            <Field label="IBAN" hint="Wird beim Absenden auf ihre Prüfziffer geprüft.">
+                                <IbanInput defaultValue={initial.IBAN} />
+                            </Field>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field
+                                    label="BIC (optional)"
+                                    hint="Für Konten im SEPA-Raum nicht erforderlich."
+                                >
+                                    <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
+                                </Field>
+                                <Field label="Kreditinstitut (optional)">
+                                    <Input name="bank" defaultValue={initial.bank} />
+                                </Field>
+                            </div>
+
+                            <MandateText />
+
+                            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                                <Checkbox name="bankeinzug" className="mt-0.5" />
+                                <span className="text-pretty">
+                                    Ich ermächtige den WirtschaftsPhysik Alumni e.V., den
+                                    Mitgliedsbeitrag von meinem Konto mittels Lastschrift
+                                    einzuziehen, und weise mein Kreditinstitut an, die
+                                    Lastschriften einzulösen.
+                                </span>
+                            </label>
+                        </>
+                    ) : (
+                        <>
+                            <StepHeading
+                                title="Keine Bankverbindung nötig"
+                                description="Du hast dich für die Überweisung entschieden."
+                            />
+                            {/* Ohne Mandat zieht der Verein nichts ein und hat für
+                                Kontodaten keine Verwendung — dann werden sie auch
+                                nicht erhoben. */}
+                            <Callout tone="warning" icon={<Info size={16} />} title="Was das bedeutet">
+                                <ul className="mt-1 grid list-disc gap-1 pl-4 text-pretty">
+                                    <li>
+                                        Dein Jahresbeitrag beträgt{" "}
+                                        <strong className="text-foreground">
+                                            {formatEuro(withSurcharge(annualFee(rates.regular)))}
+                                        </strong>{" "}
+                                        statt {formatEuro(annualFee(rates.regular))} (§ 5 Abs. 5).
+                                    </li>
+                                    <li>
+                                        Du überweist selbst und fristgerecht. Die Bankverbindung des
+                                        Vereins bekommst du mit der Aufnahmebestätigung.
+                                    </li>
+                                    <li>
+                                        Wir speichern keine Kontodaten von dir — es gibt hier also
+                                        nichts auszufüllen.
+                                    </li>
+                                </ul>
+                            </Callout>
+                            <p className="text-sm text-muted text-pretty">
+                                Du kannst jederzeit auf Lastschrift wechseln: in der
+                                Zahlungsverwaltung unter „Bankverbindung“. Ab dem folgenden
+                                Beitragsjahr entfällt der Aufschlag dann wieder.
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 <div hidden={!isLast} className="grid gap-5">
@@ -331,8 +445,10 @@ export function ApplicationWizard({
                             Beiträge ohne Teilnahme am Lastschriftverfahren erhöhen sich nach § 5
                             Abs. 5 um 10 %, aufgerundet auf volle Euro (
                             {formatEuro(withSurcharge(annualFee(rates.regular)))} bzw.{" "}
-                            {formatEuro(withSurcharge(annualFee(rates.student)))} im vollen Jahr).
-                            Mit dem Mandat im vorigen Schritt entfällt dieser Aufschlag.
+                            {formatEuro(withSurcharge(annualFee(rates.student)))} im vollen Jahr).{" "}
+                            {zahlungsweise === "lastschrift"
+                                ? "Mit deinem Lastschriftmandat entfällt dieser Aufschlag."
+                                : "Du hast die Überweisung gewählt — der Aufschlag ist in deinem Beitrag also enthalten."}
                         </p>
                         <p className="text-sm text-muted text-pretty">
                             Die Beiträge sind in vollem Umfang steuerlich anrechenbar.
@@ -349,7 +465,11 @@ export function ApplicationWizard({
                         )}
                     </div>
 
-                    <SummaryBlock summary={summary} studentYears={studentYears} />
+                    <SummaryBlock
+                        summary={summary}
+                        studentYears={studentYears}
+                        zahlungsweise={zahlungsweise}
+                    />
 
                     <div className="grid gap-3">
                         <label className="flex cursor-pointer items-start gap-3 text-sm">
@@ -417,7 +537,7 @@ export function ApplicationWizard({
 
 function StepIndicator({ step, onSelect }: { step: number; onSelect: (index: number) => void }) {
     return (
-        <ol className="grid gap-2 sm:grid-cols-5">
+        <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {STEPS.map((entry, index) => {
                 const Icon = STEP_ICONS[index];
                 const isDone = index < step;
@@ -514,6 +634,86 @@ function IntroStep() {
     );
 }
 
+/**
+ * Eine der beiden Zahlungswege-Karten.
+ *
+ * Die ganze Karte ist das `<label>`, der Radiobutton sitzt sichtbar darin: So
+ * ist die Trefferfläche groß, die Auswahl bleibt aber ein gewöhnliches
+ * Formularelement — mit Tastaturbedienung, Pfeiltasten innerhalb der Gruppe und
+ * einer Ansage, die Screenreader von sich aus richtig vorlesen.
+ *
+ * Der Preis steht auf beiden Karten, nicht nur bei der teureren: Ein Betrag
+ * allein wirkt wie eine Zusatzgebühr, zwei Beträge nebeneinander sind ein
+ * Vergleich.
+ */
+function PaymentOption({
+    value,
+    checked,
+    onSelect,
+    icon,
+    title,
+    badge,
+    price,
+    priceTone,
+    points,
+}: {
+    value: PaymentMethod;
+    checked: boolean;
+    onSelect: (value: PaymentMethod) => void;
+    icon: React.ReactNode;
+    title: string;
+    badge?: string;
+    price: string;
+    priceTone?: "negative";
+    points: string[];
+}) {
+    return (
+        <label
+            className={`grid cursor-pointer content-start gap-3 rounded-xl border p-4 transition-colors ${
+                checked
+                    ? "border-physics bg-physics/8"
+                    : "border-line bg-raised/40 hover:bg-raised/70"
+            }`}
+        >
+            <span className="flex items-center gap-2.5">
+                <input
+                    type="radio"
+                    name="zahlungsweise-auswahl"
+                    value={value}
+                    checked={checked}
+                    onChange={() => onSelect(value)}
+                    className="size-4.5 shrink-0 cursor-pointer accent-physics"
+                />
+                <span className={checked ? "text-physics" : "text-faint"} aria-hidden="true">
+                    {icon}
+                </span>
+                <span className="font-semibold">{title}</span>
+                {badge && (
+                    <Badge tone="positive" className="ml-auto">
+                        {badge}
+                    </Badge>
+                )}
+            </span>
+
+            <span
+                className={`text-lg font-bold tracking-tight ${
+                    priceTone === "negative" ? "text-negative" : "text-foreground"
+                }`}
+            >
+                {price}
+            </span>
+
+            <ul className="grid gap-1.5 text-sm text-muted">
+                {points.map((point) => (
+                    <li key={point} className="text-pretty">
+                        {point}
+                    </li>
+                ))}
+            </ul>
+        </label>
+    );
+}
+
 function MandateText() {
     return (
         <div className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4 text-sm">
@@ -561,10 +761,14 @@ const SUMMARY_FIELDS: Array<[string, string]> = [
 function SummaryBlock({
     summary,
     studentYears,
+    zahlungsweise,
 }: {
     summary: Record<string, string>;
     studentYears: number[];
+    zahlungsweise: PaymentMethod | "";
 }) {
+    // Bankfelder ohne Wert fallen von selbst heraus — auf dem Überweisungsweg
+    // bleibt die Zusammenfassung damit frei von leeren Kontozeilen.
     const rows = SUMMARY_FIELDS.filter(([key]) => summary[key]?.trim());
 
     return (
@@ -579,6 +783,16 @@ function SummaryBlock({
                         </dd>
                     </div>
                 ))}
+                <div className="flex justify-between gap-4">
+                    <dt className="text-muted">Zahlungsweise</dt>
+                    <dd className="font-medium">
+                        {zahlungsweise === "lastschrift"
+                            ? "SEPA-Lastschrift"
+                            : zahlungsweise === "ueberweisung"
+                              ? "Überweisung (mit Aufschlag)"
+                              : "—"}
+                    </dd>
+                </div>
                 <div className="flex justify-between gap-4">
                     <dt className="text-muted">Studienjahre</dt>
                     <dd className="font-medium">

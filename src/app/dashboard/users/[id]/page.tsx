@@ -90,14 +90,20 @@ async function updateUser(formData: FormData) {
         bank: parsed.bank,
         BLZ: parsed.BLZ,
         KTO: parsed.KTO,
-        bankeinzug: parsed.bankeinzug,
-        zuwendungsbesch: parsed.zuwendungsbesch,
+        // Ein abgewähltes Kontrollkästchen schickt der Browser gar nicht mit.
+        // Nach dem Schema kommt es damit als `undefined` an, und `undefined`
+        // heißt für `buildUserUpdateData` „nicht anfassen“ — ein Haken ließ
+        // sich hier also setzen, aber nie wieder entfernen. Dieses Formular
+        // zeigt Admins immer alle vier Kästchen, „fehlt“ bedeutet hier deshalb
+        // „abgewählt“ und nicht „unbekannt“.
+        bankeinzug: parsed.bankeinzug ?? false,
+        zuwendungsbesch: parsed.zuwendungsbesch ?? false,
         mahnung: parsed.mahnung,
         IBAN: parsed.IBAN,
         BIC: parsed.BIC,
         mandatserteilung: parsed.mandatserteilung,
-        datensperren: parsed.datensperren,
-        ausschluss: parsed.ausschluss,
+        datensperren: parsed.datensperren ?? false,
+        ausschluss: parsed.ausschluss ?? false,
         // Mitglieds- / role (admin only allowed to change)
         role:
             parsed.role === "ADMIN" || parsed.role === "MEMBER"

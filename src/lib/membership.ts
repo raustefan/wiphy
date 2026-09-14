@@ -44,10 +44,16 @@ export const MEMBERSHIP_ADMIN_PATH = "/dashboard/mitgliedsantraege";
 /** Fallback, solange für kein Jahr ein Beitragssatz gepflegt ist. */
 export const FALLBACK_FEE_DEFAULT = { regular: 0, student: 0 };
 
+/**
+ * Die Zahlungsweise ist ein eigener Schritt und steht vor der Bankverbindung:
+ * Stünde die Wahl über den Kontofeldern, wäre sie ein Klick nebenbei — und
+ * gerade hier kostet ein Versehen bares Geld (§ 5 Abs. 5).
+ */
 export const STEPS = [
   { id: "info", label: "Mitgliedschaft" },
   { id: "person", label: "Person & Adresse" },
   { id: "studium", label: "Studium & Beruf" },
+  { id: "zahlungsweise", label: "Zahlungsweise" },
   { id: "bank", label: "Bankverbindung" },
   { id: "summary", label: "Beitrag & Abschluss" },
 ] as const;

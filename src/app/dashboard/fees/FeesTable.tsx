@@ -14,6 +14,8 @@ import {
   Search,
   CircleEuro,
   GraduationCap,
+  HandCoins,
+  Landmark,
   MessageSquare,
 } from "lucide-react";
 import {
@@ -34,11 +36,13 @@ import {
   Input,
   Select,
   Separator,
+  SortableTh,
   Table,
   TableWrap,
   Td,
   TextArea,
   Th,
+  type SortState,
 } from "@/components/ui";
 import {
   updateFeeStatus,
@@ -80,6 +84,53 @@ type FeesTableProps = {
   availableYears: number[];
 };
 
+/** Anzeigename in einer Spalte — Vorname und Nachname stehen nicht mehr getrennt. */
+function displayName(user: FeesTableUser) {
+  return [user.vorname, user.name].filter(Boolean).join(" ");
+}
+
+export type FeesSortKey = "mitgliedId" | "name" | "paid" | "student";
+
+/**
+ * Vergleich für die Sortierung. `paid` und `student` hängen am angezeigten
+ * Jahr — dieselbe Person ist 2024 offen und 2025 bezahlt, die Spalte zeigt
+ * immer nur das gewählte Jahr.
+ *
+ * Aufsteigend heißt bei beiden Zuständen „das Auffällige zuerst“: offene
+ * Beiträge und Sonderstatus sind das, wonach in dieser Tabelle gesucht wird.
+ */
+function compareBy(
+  key: FeesSortKey,
+  a: FeesTableUser,
+  b: FeesTableUser,
+  year: number,
+): number {
+  switch (key) {
+    case "mitgliedId": {
+      // Konten ohne Mitglieds-ID bleiben in beide Richtungen hinten: sie haben
+      // keinen Wert, nicht den kleinsten.
+      if (a.mitgliedId == null && b.mitgliedId == null) return 0;
+      if (a.mitgliedId == null) return 1;
+      if (b.mitgliedId == null) return -1;
+      return a.mitgliedId - b.mitgliedId;
+    }
+    case "name":
+      return displayName(a).localeCompare(displayName(b), "de");
+    case "paid":
+      return Number(hasOpenFee(b, year)) - Number(hasOpenFee(a, year));
+    case "student": {
+      const rank = (u: FeesTableUser) => {
+        const fee = u.fees.find((f) => f.jahr === year);
+        // Ohne Beitragszeile zählt die Erklärung des Mitglieds — genau das
+        // zeigt die Spalte auch an.
+        const student = fee?.isStudent ?? u.studentYears.includes(year);
+        return student ? 0 : 1;
+      };
+      return rank(a) - rank(b);
+    }
+  }
+}
+
 function hasOpenFee(user: FeesTableUser, year: number) {
   const existing = user.fees.find((f) => f.jahr === year);
   return !(existing?.bezahlt ?? false);
@@ -100,6 +151,38 @@ function explainFee(fee: FeesTableUser["fees"][number]) {
     parts.push(`+ ${formatEuro(fee.breakdown.surcharge)} ohne Lastschrift (§ 5 Abs. 5)`);
   }
   return parts.join(" · ");
+}
+
+/**
+ * Zeigt am Namen, ob der Beitrag per SEPA-Lastschrift eingezogen wird.
+ *
+ * Beide Zustände bekommen ein eigenes Symbol statt eines vorhandenen gegen ein
+ * fehlendes: „kein Zeichen“ ließe offen, ob die Angabe fehlt oder das Mandat.
+ * Die Unterscheidung hängt außerdem nicht an der Farbe allein — Bankgebäude
+ * gegen Münzen in der Hand —, und der Klartext steht im `title` wie für
+ * Screenreader.
+ *
+ * Die Angabe gehört hierher, weil sie den Betrag daneben erklärt: ohne
+ * Lastschrift kommen 10 % Aufschlag dazu (§ 5 Abs. 5).
+ */
+function SepaMark({ bankeinzug }: { bankeinzug: boolean }) {
+  const label = bankeinzug
+    ? "SEPA-Lastschrift erteilt"
+    : "Keine SEPA-Lastschrift — Beitrag mit Aufschlag (§ 5 Abs. 5)";
+
+  return (
+    <span
+      title={label}
+      className={`shrink-0 ${bankeinzug ? "text-physics" : "text-faint"}`}
+    >
+      {bankeinzug ? (
+        <Landmark size={14} aria-hidden="true" />
+      ) : (
+        <HandCoins size={14} aria-hidden="true" />
+      )}
+      <span className="sr-only">{label}</span>
+    </span>
+  );
 }
 
 /**
@@ -339,6 +422,13 @@ export function FeesTable({
     fee: FeesTableUser["fees"][number];
   } | null>(null);
   const [search, setSearch] = useState("");
+  // Voreinstellung wie die Reihenfolge aus der Datenbank: nach Mitglieds-ID,
+  // Konten ohne ID hinten. Der erste Blick auf die Seite ändert sich dadurch
+  // nicht.
+  const [sort, setSort] = useState<SortState<FeesSortKey>>({
+    key: "mitgliedId",
+    desc: false,
+  });
   const [revertConfirm, setRevertConfirm] = useState<{
     form: HTMLFormElement;
     label: string;
@@ -353,13 +443,29 @@ export function FeesTable({
 
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return users;
-    return users.filter((u) =>
-      `${u.vorname} ${u.name ?? ""} ${u.email} ${u.mitgliedId ?? ""}`
-        .toLowerCase()
-        .includes(term),
+    const matching = term
+      ? users.filter((u) =>
+          `${u.vorname} ${u.name ?? ""} ${u.email} ${u.mitgliedId ?? ""}`
+            .toLowerCase()
+            .includes(term),
+        )
+      : users;
+
+    const direction = sort.desc ? -1 : 1;
+    return [...matching].sort((a, b) => {
+      const result = compareBy(sort.key, a, b, selectedYear);
+      // Gleichstand bricht nach Namen auf: sonst springen Zeilen mit gleichem
+      // Zahlungsstand bei jedem Sortierwechsel umher.
+      if (result !== 0) return result * direction;
+      return displayName(a).localeCompare(displayName(b), "de");
+    });
+  }, [users, search, sort, selectedYear]);
+
+  function toggleSort(key: FeesSortKey) {
+    setSort((current) =>
+      current.key === key ? { key, desc: !current.desc } : { key, desc: false },
     );
-  }, [users, search]);
+  }
 
   const selectedUsers = useMemo(() => {
     return Array.from(selectedIds)
@@ -539,28 +645,62 @@ export function FeesTable({
         )}
       </div>
 
+      {/* Legende: die beiden Symbole am Namen stehen sonst ohne Erklärung da —
+          zu erraten ist ein Bankgebäude nur, wenn man schon weiß, worum es
+          geht. */}
+      <p className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-faint">
+        <span className="flex items-center gap-1.5">
+          <Landmark size={13} aria-hidden="true" className="text-physics" />
+          SEPA-Lastschrift
+        </span>
+        <span className="flex items-center gap-1.5">
+          <HandCoins size={13} aria-hidden="true" />
+          ohne Lastschrift — Aufschlag nach § 5 Abs. 5
+        </span>
+      </p>
+
       <TableWrap>
-        <Table className="min-w-[720px]">
+        {/* Vorher `min-w-[720px]` bei acht Spalten. Vorname und Nachname
+            zusammengelegt spart eine ganze Spalte, und die Namensspalte nimmt
+            über `w-full max-w-0` den Rest der Zeile ein, statt ihn zu fordern:
+            lange Namen kürzen dann, anstatt die Tabelle breiter zu machen. */}
+        <Table className="min-w-[560px]">
           <thead>
             <tr className="bg-raised/60">
-              {isAdmin && <Th className="w-10" />}
-              <Th className="w-18">
-                <IconHeader icon={<IdCard size={16} />} label="Mitglieds-ID" />
-              </Th>
-              <Th>Name</Th>
-              <Th>Vorname</Th>
+              {isAdmin && <Th className="w-10 px-2" />}
+              <SortableTh
+                sortKey="mitgliedId"
+                label="Mitglieds-ID"
+                icon={<IdCard size={16} />}
+                sort={sort}
+                onSort={toggleSort}
+                className="w-16"
+              />
+              <SortableTh sortKey="name" label="Name" sort={sort} onSort={toggleSort} />
               {isAdmin && (
-                <Th className="min-w-40">
+                <Th className="hidden px-2 md:table-cell">
                   <IconHeader icon={<MessageSquare size={16} />} label="Kommentar" />
                 </Th>
               )}
-              <Th className="w-18 text-center">
-                <IconHeader icon={<GraduationCap size={16} />} label="Student" />
-              </Th>
-              <Th className="w-18 text-center">
-                <IconHeader icon={<CheckCircle2 size={16} />} label="Bezahlt" />
-              </Th>
-              <Th className="w-33 text-center">
+              <SortableTh
+                sortKey="student"
+                label="Studierendenstatus"
+                icon={<GraduationCap size={16} />}
+                sort={sort}
+                onSort={toggleSort}
+                align="center"
+                className="w-14"
+              />
+              <SortableTh
+                sortKey="paid"
+                label="Zahlungsstatus"
+                icon={<CheckCircle2 size={16} />}
+                sort={sort}
+                onSort={toggleSort}
+                align="center"
+                className="w-14"
+              />
+              <Th className="w-33 px-2 text-center">
                 <IconHeader icon={<Coins size={16} />} label="Betrag" />
               </Th>
             </tr>
@@ -568,7 +708,7 @@ export function FeesTable({
           <tbody>
             {filteredUsers.length === 0 && (
               <tr>
-                <Td colSpan={isAdmin ? 8 : 6} className="py-10 text-center text-muted">
+                <Td colSpan={isAdmin ? 7 : 5} className="py-10 text-center text-muted">
                   Keine Mitglieder gefunden.
                 </Td>
               </tr>
@@ -602,30 +742,33 @@ export function FeesTable({
                       />
                     </Td>
                   )}
-                  <Td>
+                  <Td className="px-2">
                     <Badge className="font-mono">{user.mitgliedId ?? "—"}</Badge>
                   </Td>
-                  <Td className="font-medium">
-                    {/* Die Zeile als Ganzes ist anklickbar, aber ein `<tr>`
-                        nimmt keinen Fokus: über die Tastatur war der
-                        Beitragsverlauf damit gar nicht erreichbar. Der Name ist
-                        jetzt der eigentliche Auslöser, der Zeilenklick nur noch
-                        die bequeme Zugabe für die Maus. */}
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        stopRowClick(event);
-                        openUserHistory(user);
-                      }}
-                      className="cursor-pointer rounded-sm text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                    >
-                      {user.name || "—"}
-                      <span className="sr-only"> — Beitragsverlauf öffnen</span>
-                    </button>
+                  <Td className="w-full max-w-0 px-2 font-medium">
+                    <div className="flex items-center gap-1.5">
+                      {/* Die Zeile als Ganzes ist anklickbar, aber ein `<tr>`
+                          nimmt keinen Fokus: über die Tastatur war der
+                          Beitragsverlauf damit gar nicht erreichbar. Der Name ist
+                          jetzt der eigentliche Auslöser, der Zeilenklick nur noch
+                          die bequeme Zugabe für die Maus. */}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          stopRowClick(event);
+                          openUserHistory(user);
+                        }}
+                        title={displayName(user) || undefined}
+                        className="cursor-pointer truncate rounded-sm text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
+                      >
+                        {displayName(user) || "—"}
+                        <span className="sr-only"> — Beitragsverlauf öffnen</span>
+                      </button>
+                      <SepaMark bankeinzug={user.bankeinzug} />
+                    </div>
                   </Td>
-                  <Td>{user.vorname}</Td>
                   {isAdmin && (
-                    <Td onClick={stopRowClick}>
+                    <Td className="hidden px-2 md:table-cell" onClick={stopRowClick}>
                       {user.zahlungsKommentar ? (
                         <div className="flex items-center gap-1">
                           <span
@@ -659,7 +802,7 @@ export function FeesTable({
                       )}
                     </Td>
                   )}
-                  <Td className="text-center" onClick={stopRowClick}>
+                  <Td className="px-2 text-center" onClick={stopRowClick}>
                     {isAdmin ? (
                       <form action={updateFeeStatus}>
                         <input type="hidden" name="userId" value={user.id} />
@@ -695,7 +838,7 @@ export function FeesTable({
                       </Badge>
                     )}
                   </Td>
-                  <Td className="text-center" onClick={stopRowClick}>
+                  <Td className="px-2 text-center" onClick={stopRowClick}>
                     {isAdmin ? (
                       <form
                         action={updateFeeStatus}
@@ -743,7 +886,7 @@ export function FeesTable({
                       </Badge>
                     )}
                   </Td>
-                  <Td className="text-center" onClick={stopRowClick}>
+                  <Td className="px-2 text-center" onClick={stopRowClick}>
                     <div className="flex items-center justify-center gap-1.5">
                       <span
                         className="text-sm font-medium tabular-nums"
