@@ -3,8 +3,35 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Banknote, Check, Mail, Info } from "lucide-react";
 import {
+    ArrowLeft,
+    Award,
+    Banknote,
+    Bell,
+    BookOpen,
+    Briefcase,
+    Building,
+    Calendar,
+    Check,
+    CreditCard,
+    Flag,
+    Globe,
+    GraduationCap,
+    Hash,
+    Home,
+    Info,
+    KeyRound,
+    Landmark,
+    Mail,
+    MapPin,
+    MessageSquare,
+    Phone,
+    ShieldCheck,
+    StickyNote,
+    User,
+} from "lucide-react";
+import {
+    Badge,
     Button,
     Callout,
     Checkbox,
@@ -15,6 +42,7 @@ import {
     Select,
     Separator,
 } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 
 type UserData = {
@@ -328,22 +356,32 @@ export function EditUserForm({
                 <input type="hidden" name="id" value={user.id} />
 
                 <div className="grid gap-6">
+                    {/* Zur besseren Orientierung getrennte Gruppen: jede(r) darf
+                        seine Angaben pflegen, Admins sehen darunter zusätzlich
+                        ihren Bereich mit Beitrags- und Verwaltungsfeldern. */}
+                    <GroupLabel icon={<User size={15} />} title="Mitgliederbereich" />
+
                     {/* Persönliche Daten */}
-                    <Section title="Persönliche Daten" description="Wie du angesprochen werden möchtest.">
+                    <Section
+                        icon={<User size={16} />}
+                        title="Persönliche Daten"
+                        description="Wie du angesprochen werden möchtest."
+                    >
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Vorname">
-                                <Input name="vorname" defaultValue={initialValues.vorname} />
+                                <IconInput icon={<User size={15} />} name="vorname" defaultValue={initialValues.vorname} />
                             </Field>
                             <Field label="Name" required>
-                                <Input name="name" defaultValue={initialValues.name} required />
+                                <IconInput icon={<User size={15} />} name="name" defaultValue={initialValues.name} required />
                             </Field>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Titel">
-                                <Input name="titel" defaultValue={initialValues.titel} />
+                                <IconInput icon={<Award size={15} />} name="titel" defaultValue={initialValues.titel} />
                             </Field>
                             <Field label="Geburtsdatum">
-                                <Input
+                                <IconInput
+                                    icon={<Calendar size={15} />}
                                     name="geburtsdatum"
                                     type="date"
                                     defaultValue={initialValues.geburtsdatum}
@@ -355,9 +393,10 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Kontakt */}
-                    <Section title="Kontakt" description="Wie wir dich erreichen können.">
+                    <Section icon={<Mail size={16} />} title="Kontakt" description="Wie wir dich erreichen können.">
                         <Field label="E-Mail" required>
-                            <Input
+                            <IconInput
+                                icon={<Mail size={15} />}
                                 name="email"
                                 type="email"
                                 defaultValue={initialValues.email}
@@ -373,10 +412,10 @@ export function EditUserForm({
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
-                                <Input name="telefon" defaultValue={initialValues.telefon} />
+                                <IconInput icon={<Phone size={15} />} name="telefon" defaultValue={initialValues.telefon} />
                             </Field>
                             <Field label="Website">
-                                <Input name="website" defaultValue={initialValues.website} />
+                                <IconInput icon={<Globe size={15} />} name="website" defaultValue={initialValues.website} />
                             </Field>
                         </div>
                     </Section>
@@ -384,19 +423,19 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Adresse */}
-                    <Section title="Adresse">
+                    <Section icon={<MapPin size={16} />} title="Adresse">
                         <Field label="Straße">
-                            <Input name="strasse" defaultValue={initialValues.strasse} />
+                            <IconInput icon={<Home size={15} />} name="strasse" defaultValue={initialValues.strasse} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-3">
                             <Field label="PLZ">
-                                <Input name="plz" defaultValue={initialValues.plz} />
+                                <IconInput icon={<MapPin size={15} />} name="plz" defaultValue={initialValues.plz} />
                             </Field>
                             <Field label="Stadt">
-                                <Input name="stadt" defaultValue={initialValues.stadt} />
+                                <IconInput icon={<Building size={15} />} name="stadt" defaultValue={initialValues.stadt} />
                             </Field>
                             <Field label="Land">
-                                <Input name="land" defaultValue={initialValues.land} />
+                                <IconInput icon={<Flag size={15} />} name="land" defaultValue={initialValues.land} />
                             </Field>
                         </div>
                     </Section>
@@ -404,20 +443,22 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Studium */}
-                    <Section title="Studium">
+                    <Section icon={<GraduationCap size={16} />} title="Studium">
                         <Field label="Studiengang">
-                            <Input name="studiengang" defaultValue={initialValues.studiengang} />
+                            <IconInput icon={<GraduationCap size={15} />} name="studiengang" defaultValue={initialValues.studiengang} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Studienbeginn">
-                                <Input
+                                <IconInput
+                                    icon={<Calendar size={15} />}
                                     name="studienbeginn"
                                     type="date"
                                     defaultValue={initialValues.studienbeginn}
                                 />
                             </Field>
                             <Field label="Studienende">
-                                <Input
+                                <IconInput
+                                    icon={<Calendar size={15} />}
                                     name="studienende"
                                     type="date"
                                     defaultValue={initialValues.studienende}
@@ -426,18 +467,18 @@ export function EditUserForm({
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Diplomarbeit">
-                                <Input name="diplomarbeit" defaultValue={initialValues.diplomarbeit} />
+                                <IconInput icon={<BookOpen size={15} />} name="diplomarbeit" defaultValue={initialValues.diplomarbeit} />
                             </Field>
                             <Field label="Bachelorarbeit">
-                                <Input name="bachelorarbeit" defaultValue={initialValues.bachelorarbeit} />
+                                <IconInput icon={<BookOpen size={15} />} name="bachelorarbeit" defaultValue={initialValues.bachelorarbeit} />
                             </Field>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Masterarbeit">
-                                <Input name="masterarbeit" defaultValue={initialValues.masterarbeit} />
+                                <IconInput icon={<BookOpen size={15} />} name="masterarbeit" defaultValue={initialValues.masterarbeit} />
                             </Field>
                             <Field label="Dissertation">
-                                <Input name="dissertation" defaultValue={initialValues.dissertation} />
+                                <IconInput icon={<BookOpen size={15} />} name="dissertation" defaultValue={initialValues.dissertation} />
                             </Field>
                         </div>
                     </Section>
@@ -445,102 +486,119 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Beruf */}
-                    <Section title="Beruf">
+                    <Section icon={<Briefcase size={16} />} title="Beruf">
                         <Field label="Arbeitgeber">
-                            <Input name="arbeitgeber" defaultValue={initialValues.arbeitgeber} />
+                            <IconInput icon={<Briefcase size={15} />} name="arbeitgeber" defaultValue={initialValues.arbeitgeber} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Berufsstand">
-                                <Input name="berufsstand" defaultValue={initialValues.berufsstand} />
+                                <IconInput icon={<Award size={15} />} name="berufsstand" defaultValue={initialValues.berufsstand} />
                             </Field>
                             <Field label="Berufszweig">
-                                <Input name="berufszweig" defaultValue={initialValues.berufszweig} />
+                                <IconInput icon={<Briefcase size={15} />} name="berufszweig" defaultValue={initialValues.berufszweig} />
                             </Field>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Position">
-                                <Input name="position" defaultValue={initialValues.position} />
+                                <IconInput icon={<Briefcase size={15} />} name="position" defaultValue={initialValues.position} />
                             </Field>
                             <Field label="Praktika">
-                                <Input name="praktika" defaultValue={initialValues.praktika} />
+                                <IconInput icon={<BookOpen size={15} />} name="praktika" defaultValue={initialValues.praktika} />
                             </Field>
                         </div>
                         <Field label="Berufserfahrung">
-                            <Input name="berufserfahrung" defaultValue={initialValues.berufserfahrung} />
+                            <IconInput icon={<StickyNote size={15} />} name="berufserfahrung" defaultValue={initialValues.berufserfahrung} />
                         </Field>
                     </Section>
 
-                    <Separator />
+                    {!isAdmin && (
+                        <>
+                            <Separator />
 
-                    {/* Zahlungsdaten */}
-                    {isAdmin ? (
-                        <Section
-                            title="Zahlungsdaten"
-                            description="Bankverbindung des Mitglieds für den Mitgliedsbeitrag."
-                        >
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                <Field label="Bank">
-                                    <Input name="bank" defaultValue={initialValues.bank} />
-                                </Field>
-                                <Field label="BLZ">
-                                    <Input name="BLZ" defaultValue={initialValues.BLZ} />
-                                </Field>
-                                <Field label="Kontonummer">
-                                    <Input name="KTO" defaultValue={initialValues.KTO} />
-                                </Field>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                <Field label="IBAN">
-                                    <Input name="IBAN" defaultValue={initialValues.IBAN} />
-                                </Field>
-                                <Field label="BIC">
-                                    <Input name="BIC" defaultValue={initialValues.BIC} />
-                                </Field>
-                            </div>
-                            <Field label="Mandatserteilung">
-                                <Input
-                                    name="mandatserteilung"
-                                    type="date"
-                                    defaultValue={initialValues.mandatserteilung}
-                                />
-                            </Field>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                                <CheckboxField
-                                    label="Bankeinzug"
-                                    name="bankeinzug"
-                                    defaultChecked={Boolean(user.bankeinzug)}
-                                />
-                                <CheckboxField
-                                    label="Zuwendungsbeschreibung"
-                                    name="zuwendungsbesch"
-                                    defaultChecked={Boolean(user.zuwendungsbesch)}
-                                />
-                            </div>
-                        </Section>
-                    ) : (
-                        <Section title="Zahlungsdaten">
-                            <Callout tone="info" icon={<Banknote size={16} />}>
-                                Deine Bankverbindung und dein SEPA-Mandat änderst du in der{" "}
-                                <Link
-                                    href="/dashboard/zahlungen"
-                                    className="font-semibold text-physics underline"
-                                >
-                                    Zahlungsverwaltung
-                                </Link>
-                                . Dort findest du auch deine vollständige Beitragshistorie.
-                            </Callout>
-                        </Section>
+                            <Section icon={<Landmark size={16} />} title="Zahlungsdaten">
+                                <Callout tone="info" icon={<Banknote size={16} />}>
+                                    Deine Bankverbindung und dein SEPA-Mandat änderst du in der{" "}
+                                    <Link
+                                        href="/dashboard/zahlungen"
+                                        className="font-semibold text-physics underline"
+                                    >
+                                        Zahlungsverwaltung
+                                    </Link>
+                                    . Dort findest du auch deine vollständige Beitragshistorie.
+                                </Callout>
+                            </Section>
+                        </>
                     )}
 
                     {isAdmin && (
                         <>
                             <Separator />
 
+                            <GroupLabel
+                                icon={<ShieldCheck size={15} />}
+                                title="Adminbereich"
+                                adminOnly
+                            />
+
+                            {/* Zahlungsdaten */}
+                            <Section
+                                icon={<Landmark size={16} />}
+                                title="Zahlungsdaten"
+                                description="Bankverbindung des Mitglieds für den Mitgliedsbeitrag."
+                            >
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <Field label="Bank">
+                                        <IconInput icon={<Landmark size={15} />} name="bank" defaultValue={initialValues.bank} />
+                                    </Field>
+                                    <Field label="BLZ">
+                                        <IconInput icon={<Hash size={15} />} name="BLZ" defaultValue={initialValues.BLZ} />
+                                    </Field>
+                                    <Field label="Kontonummer">
+                                        <IconInput icon={<Hash size={15} />} name="KTO" defaultValue={initialValues.KTO} />
+                                    </Field>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <Field label="IBAN">
+                                        <IconInput icon={<CreditCard size={15} />} name="IBAN" defaultValue={initialValues.IBAN} />
+                                    </Field>
+                                    <Field label="BIC">
+                                        <IconInput icon={<CreditCard size={15} />} name="BIC" defaultValue={initialValues.BIC} />
+                                    </Field>
+                                </div>
+                                <Field label="Mandatserteilung">
+                                    <IconInput
+                                        icon={<Calendar size={15} />}
+                                        name="mandatserteilung"
+                                        type="date"
+                                        defaultValue={initialValues.mandatserteilung}
+                                    />
+                                </Field>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <CheckboxField
+                                        label="Bankeinzug"
+                                        name="bankeinzug"
+                                        defaultChecked={Boolean(user.bankeinzug)}
+                                    />
+                                    <CheckboxField
+                                        label="Zuwendungsbeschreibung"
+                                        name="zuwendungsbesch"
+                                        defaultChecked={Boolean(user.zuwendungsbesch)}
+                                    />
+                                </div>
+                            </Section>
+
+                            <Separator />
+
                             {/* Mitgliedschaft & Rolle */}
-                            <Section title="Mitgliedschaft & Rolle" description="Nur für Administratoren sichtbar.">
+                            <Section
+                                icon={<ShieldCheck size={16} />}
+                                title="Mitgliedschaft & Rolle"
+                                description="Nur für Administratoren sichtbar."
+                            >
                                 <div className="grid gap-3 sm:grid-cols-3">
                                     <Field label="Mitglieds-ID">
-                                        <Input
+                                        <IconInput
+                                            icon={<KeyRound size={15} />}
                                             name="mitgliedId"
                                             type="number"
                                             defaultValue={initialValues.mitgliedId}
@@ -583,18 +641,24 @@ export function EditUserForm({
 
                             {/* Admin-interne Zahlungsvermerke */}
                             <Section
+                                icon={<StickyNote size={16} />}
                                 title="Interne Zahlungsvermerke"
                                 description="Nur für Administratoren sichtbar."
                             >
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <Field label="Zahlungs-Kommentar">
-                                        <Input
+                                        <IconInput
+                                            icon={<MessageSquare size={15} />}
                                             name="zahlungsKommentar"
                                             defaultValue={initialValues.zahlungsKommentar}
                                         />
                                     </Field>
                                     <Field label="Mahnung">
-                                        <Input name="mahnung" defaultValue={initialValues.mahnung} />
+                                        <IconInput
+                                            icon={<Bell size={15} />}
+                                            name="mahnung"
+                                            defaultValue={initialValues.mahnung}
+                                        />
                                     </Field>
                                 </div>
                             </Section>
@@ -701,10 +765,12 @@ export function EditUserForm({
 }
 
 function Section({
+    icon,
     title,
     description,
     children,
 }: {
+    icon?: React.ReactNode;
     title: string;
     description?: string;
     children: React.ReactNode;
@@ -712,11 +778,68 @@ function Section({
     return (
         <section className="grid gap-3">
             <div>
-                <h2 className="text-base font-bold tracking-tight">{title}</h2>
+                <h2 className="flex items-center gap-2 text-base font-bold tracking-tight">
+                    {icon && (
+                        <span className="text-faint" aria-hidden="true">
+                            {icon}
+                        </span>
+                    )}
+                    {title}
+                </h2>
                 {description && <p className="text-sm text-muted">{description}</p>}
             </div>
             <div className="grid gap-3">{children}</div>
         </section>
+    );
+}
+
+/** Gruppenkopf: kündigt den Mitglieder- bzw. den nur für Admins sichtbaren
+    Bereich an und macht die Trennung der Zuständigkeiten sichtbar. */
+function GroupLabel({
+    icon,
+    title,
+    adminOnly = false,
+}: {
+    icon: React.ReactNode;
+    title: string;
+    adminOnly?: boolean;
+}) {
+    return (
+        <div className="flex flex-wrap items-center gap-2.5">
+            <span
+                className="grid size-7 shrink-0 place-items-center rounded-lg bg-raised text-faint"
+                aria-hidden="true"
+            >
+                {icon}
+            </span>
+            <h2 className="text-sm font-bold tracking-wide">{title}</h2>
+            {adminOnly && (
+                <Badge tone="warning">
+                    <ShieldCheck size={12} aria-hidden="true" /> Nur für Admins
+                </Badge>
+            )}
+        </div>
+    );
+}
+
+/** Eingabefeld mit führendem Symbol: dasselbe Muster wie das Chevron im
+    `Select` und die Lupe in der Blog-Suche — rein dekorativ, vorn gepolstert,
+    damit der Text nie unter dem Symbol klebt. */
+function IconInput({
+    icon,
+    className,
+    ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { icon: React.ReactNode }) {
+    return (
+        <div className="relative">
+            <Input className={cn("pl-10", className)} {...props} />
+            <span
+                className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint"
+                aria-hidden="true"
+            >
+                {icon}
+            </span>
+        </div>
     );
 }
 

@@ -437,29 +437,66 @@ export type UserUpdateParsed = z.infer<typeof userUpdateSchema>;
 /**
  * Schema für die Bankdaten-Änderung eines Mitglieds über die
  * Zahlungsverwaltung (`/dashboard/zahlungen`). Bewusst getrennt von
- * `userUpdateSchema`: hier verlangt `bankeinzug` — anders als im generischen
- * Profilformular — eine erneute, verpflichtende Bestätigung, weil damit ein
- * neues SEPA-Mandat erteilt wird.
+ * `userUpdateSchema`: hier entscheidet die `zahlungsweise` — wie im
+ * Mitgliedsantrag — ob Bankdaten und die Mandatsbestätigung Pflicht sind.
+ * Auf dem Überweisungsweg werden die Bankfelder verworfen: was der Verein
+ * nicht braucht, soll er auch nicht speichern.
  */
-export const bankUpdateSchema = z.object({
-  IBAN: z
-    .string()
-    .trim()
-    .min(1, "Bitte eine IBAN angeben.")
-    .transform(normalizeIban)
-    .refine(isValidIban, "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe."),
-  BIC: optionalString(40).refine(
-    (v) => v === undefined || isValidBic(v),
-    "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
-  ),
-  bank: optionalString(200),
-  BLZ: optionalString(50),
-  KTO: optionalString(50),
-  bankeinzug: z
-    .string()
-    .optional()
-    .transform((v) => v === "on" || v === "true")
-    .pipe(z.literal(true, { message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren." })),
-});
+export const bankUpdateSchema = z
+  .object({
+    zahlungsweise: z.enum(["lastschrift", "ueberweisung"], {
+      message: "Bitte wähle aus, wie du den Beitrag zahlen möchtest.",
+    }),
+    IBAN: optionalString(80),
+    BIC: optionalString(40),
+    bank: optionalString(200),
+    BLZ: optionalString(50),
+    KTO: optionalString(50),
+    bankeinzug: preprocessBoolean,
+  })
+  .superRefine((data, ctx) => {
+    // Auf dem Lastschriftweg gelten dieselben Pflichten wie im Antrag — hier
+    // einmal serverseitig, weil der Browser nicht vertrauenswürdig ist.
+    if (data.zahlungsweise === "lastschrift") {
+      if (!data.IBAN || !isValidIban(normalizeIban(data.IBAN))) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
+          path: ["IBAN"],
+        });
+      }
+      if (data.BIC && !isValidBic(data.BIC)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
+          path: ["BIC"],
+        });
+      }
+      if (!data.bankeinzug) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
+          path: ["bankeinzug"],
+        });
+      }
+    }
+  })
+  .transform((data) =>
+    data.zahlungsweise === "lastschrift"
+      ? {
+          ...data,
+          IBAN: data.IBAN ? normalizeIban(data.IBAN) : null,
+          bankeinzug: data.bankeinzug ?? false,
+        }
+      : {
+          ...data,
+          IBAN: null,
+          BIC: null,
+          bank: null,
+          BLZ: null,
+          KTO: null,
+          bankeinzug: false,
+        },
+  );
 
 export type BankUpdateParsed = z.infer<typeof bankUpdateSchema>;

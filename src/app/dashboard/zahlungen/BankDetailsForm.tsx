@@ -2,12 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Pencil, X } from "lucide-react";
+import { Check, Info, Landmark, Pencil, Wallet, X } from "lucide-react";
 import { Badge, Button, Callout, Checkbox, Field, Input } from "@/components/ui";
 import { maskIban } from "@/lib/iban";
+import { PaymentOption } from "@/components/PaymentOption";
 import { IbanInput } from "@/components/IbanInput";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatEuro } from "@/lib/format";
 import { SEPA_CREDITOR_ID } from "@/lib/membership";
+import type { FeeRates } from "@/lib/feeDefaults";
+import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { updateBankDetails } from "./actions";
 
 type BankValues = {
@@ -22,13 +25,18 @@ type BankValues = {
 export function BankDetailsForm({
     initial,
     mandatserteilung,
+    rates,
 }: {
     initial: BankValues;
     mandatserteilung: Date | string | null;
+    rates: FeeRates;
 }) {
     const router = useRouter();
     const formRef = useRef<HTMLFormElement>(null);
     const [editing, setEditing] = useState(false);
+    const [zahlungsweise, setZahlungsweise] = useState<"lastschrift" | "ueberweisung">(
+        initial.bankeinzug ? "lastschrift" : "ueberweisung",
+    );
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
 
@@ -76,8 +84,9 @@ export function BankDetailsForm({
                         </div>
                     </dl>
                 ) : (
-                    <Callout tone="warning" icon={<Info size={16} />}>
-                        Für dein Konto ist noch keine Bankverbindung hinterlegt.
+                    <Callout tone="info" icon={<Info size={16} />}>
+                        Es ist keine Bankverbindung hinterlegt — dein Beitrag läuft per
+                        Überweisung.
                     </Callout>
                 )}
                 <Button
@@ -88,7 +97,7 @@ export function BankDetailsForm({
                     onClick={() => setEditing(true)}
                 >
                     <Pencil size={16} aria-hidden="true" />
-                    Bankverbindung ändern
+                    Zahlungsweise oder Bankverbindung ändern
                 </Button>
             </div>
         );
@@ -96,50 +105,127 @@ export function BankDetailsForm({
 
     return (
         <form ref={formRef} onSubmit={(event) => event.preventDefault()} className="grid gap-4">
-            <Field label="IBAN" hint="Wird beim Speichern auf ihre Prüfziffer geprüft.">
-                <IbanInput defaultValue={initial.IBAN} />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="BIC (optional)" hint="Für Konten im SEPA-Raum nicht erforderlich.">
-                    <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
-                </Field>
-                <Field label="Kreditinstitut (optional)">
-                    <Input name="bank" defaultValue={initial.bank} />
-                </Field>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="BLZ (optional)">
-                    <Input name="BLZ" defaultValue={initial.BLZ} />
-                </Field>
-                <Field label="Kontonummer (optional)">
-                    <Input name="KTO" defaultValue={initial.KTO} />
-                </Field>
-            </div>
+            {/* Wie im Antrag: die Wahl als zwei gleichwertige Karten statt als
+                ein Kästchen neben Kontoformularen. */}
+            <fieldset className="grid gap-3 sm:grid-cols-2">
+                <legend className="sr-only">Zahlungsweise</legend>
 
-            <div className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4 text-sm">
-                <p className="font-semibold">SEPA-Lastschriftmandat</p>
-                <p className="text-muted text-pretty">
-                    Zahlungsempfänger: WirtschaftsPhysik Alumni e.V.
-                    <br />
-                    Gläubiger-Identifikationsnummer: {SEPA_CREDITOR_ID || "wird nachgereicht"}
-                </p>
-                <p className="text-muted text-pretty">
-                    Mit dem Speichern erteilst du ein neues SEPA-Lastschriftmandat, das das
-                    bisherige ersetzt. Du kannst innerhalb von acht Wochen, beginnend mit dem
-                    Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten
-                    dabei die mit deinem Kreditinstitut vereinbarten Bedingungen. Jeder Einzug
-                    wird vorher angekündigt.
-                </p>
-            </div>
+                <PaymentOption
+                    value="lastschrift"
+                    checked={zahlungsweise === "lastschrift"}
+                    onSelect={setZahlungsweise}
+                    icon={<Landmark size={18} aria-hidden="true" />}
+                    title="SEPA-Lastschrift"
+                    badge="Empfohlen"
+                    price={`${formatEuro(annualFee(rates.regular))} im Jahr`}
+                    points={[
+                        "Der Beitrag wird einmal jährlich eingezogen, angekündigt und jederzeit widerrufbar.",
+                        "Du musst an nichts denken und keine Frist im Blick behalten.",
+                    ]}
+                />
 
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
-                <Checkbox name="bankeinzug" defaultChecked={initial.bankeinzug} className="mt-0.5" />
-                <span className="text-pretty">
-                    Ich ermächtige den WirtschaftsPhysik Alumni e.V., den Mitgliedsbeitrag von
-                    meinem Konto mittels Lastschrift einzuziehen, und weise mein Kreditinstitut
-                    an, die Lastschriften einzulösen.
-                </span>
-            </label>
+                <PaymentOption
+                    value="ueberweisung"
+                    checked={zahlungsweise === "ueberweisung"}
+                    onSelect={setZahlungsweise}
+                    icon={<Wallet size={18} aria-hidden="true" />}
+                    title="Überweisung"
+                    price={`${formatEuro(withSurcharge(annualFee(rates.regular)))} im Jahr`}
+                    priceTone="negative"
+                    points={[
+                        `10 % Aufschlag nach § 5 Abs. 5 der Satzung — ${formatEuro(withSurcharge(annualFee(rates.regular)) - annualFee(rates.regular))} mehr pro Jahr.`,
+                        "Du überweist selbst und fristgerecht; bei Verzug mahnt der Verein.",
+                        "Für den ehrenamtlichen Vorstand bedeutet jede Einzelüberweisung Nachhalten und Zuordnen von Hand.",
+                    ]}
+                />
+            </fieldset>
+
+            {/* Der Wert reist im Formular mit, nicht nur im React-Zustand:
+                das Absenden liest die FormData, nicht den State. */}
+            <input type="hidden" name="zahlungsweise" value={zahlungsweise} />
+
+            <Callout tone="info" icon={<Info size={16} />}>
+                Der Aufschlag deckt den Mehraufwand, den Einzelüberweisungen dem
+                ehrenamtlich geführten Verein machen. Er ist keine Strafe — die
+                Lastschrift ist schlicht der günstigere Weg für beide Seiten.
+            </Callout>
+
+            {zahlungsweise === "lastschrift" ? (
+                <>
+                    <Field label="IBAN" hint="Wird beim Speichern auf ihre Prüfziffer geprüft.">
+                        <IbanInput defaultValue={initial.IBAN} />
+                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="BIC (optional)" hint="Für Konten im SEPA-Raum nicht erforderlich.">
+                            <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
+                        </Field>
+                        <Field label="Kreditinstitut (optional)">
+                            <Input name="bank" defaultValue={initial.bank} />
+                        </Field>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="BLZ (optional)">
+                            <Input name="BLZ" defaultValue={initial.BLZ} />
+                        </Field>
+                        <Field label="Kontonummer (optional)">
+                            <Input name="KTO" defaultValue={initial.KTO} />
+                        </Field>
+                    </div>
+
+                    <div className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                        <p className="font-semibold">SEPA-Lastschriftmandat</p>
+                        <p className="text-muted text-pretty">
+                            Zahlungsempfänger: WirtschaftsPhysik Alumni e.V.
+                            <br />
+                            Gläubiger-Identifikationsnummer: {SEPA_CREDITOR_ID || "wird nachgereicht"}
+                        </p>
+                        <p className="text-muted text-pretty">
+                            Mit dem Speichern erteilst du ein neues SEPA-Lastschriftmandat, das das
+                            bisherige ersetzt. Du kannst innerhalb von acht Wochen, beginnend mit dem
+                            Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten
+                            dabei die mit deinem Kreditinstitut vereinbarten Bedingungen. Jeder Einzug
+                            wird vorher angekündigt.
+                        </p>
+                    </div>
+
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                        <Checkbox name="bankeinzug" defaultChecked={initial.bankeinzug} className="mt-0.5" />
+                        <span className="text-pretty">
+                            Ich ermächtige den WirtschaftsPhysik Alumni e.V., den Mitgliedsbeitrag von
+                            meinem Konto mittels Lastschrift einzuziehen, und weise mein Kreditinstitut
+                            an, die Lastschriften einzulösen.
+                        </span>
+                    </label>
+                </>
+            ) : (
+                <>
+                    {/* Ohne Mandat zieht der Verein nichts ein und hat für
+                        Kontodaten keine Verwendung — dann werden sie verworfen. */}
+                    <Callout tone="warning" icon={<Info size={16} />} title="Was das bedeutet">
+                        <ul className="mt-1 grid list-disc gap-1 pl-4 text-pretty">
+                            <li>
+                                Dein Jahresbeitrag beträgt{" "}
+                                <strong className="text-foreground">
+                                    {formatEuro(withSurcharge(annualFee(rates.regular)))}
+                                </strong>{" "}
+                                statt {formatEuro(annualFee(rates.regular))} (§ 5 Abs. 5).
+                            </li>
+                            <li>
+                                Du überweist selbst und fristgerecht. Die Kontoverbindung des
+                                Vereins steht in deiner Aufnahmebestätigung.
+                            </li>
+                            <li>
+                                Eine zuvor hinterlegte Bankverbindung und der Zeitpunkt des
+                                bisherigen Mandats werden dabei verworfen.
+                            </li>
+                        </ul>
+                    </Callout>
+                    <p className="text-sm text-muted text-pretty">
+                        Du kannst jederzeit zurück auf Lastschrift wechseln. Ab dem folgenden
+                        Beitragsjahr entfällt der Aufschlag dann wieder.
+                    </p>
+                </>
+            )}
 
             {error && (
                 <Callout tone="danger" icon={<Info size={16} />}>
@@ -161,10 +247,17 @@ export function BankDetailsForm({
                     <X size={16} aria-hidden="true" />
                     Abbrechen
                 </Button>
-                <Button type="button" onClick={submit} loading={isPending}>
-                    <Check size={16} aria-hidden="true" />
-                    Neues Mandat bestätigen &amp; speichern
-                </Button>
+                {zahlungsweise === "lastschrift" ? (
+                    <Button type="button" onClick={submit} loading={isPending}>
+                        <Check size={16} aria-hidden="true" />
+                        Neues Mandat bestätigen &amp; speichern
+                    </Button>
+                ) : (
+                    <Button type="button" onClick={submit} loading={isPending}>
+                        <Check size={16} aria-hidden="true" />
+                        Auf Überweisung umstellen
+                    </Button>
+                )}
             </div>
         </form>
     );

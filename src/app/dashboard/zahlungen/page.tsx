@@ -105,6 +105,7 @@ export default async function ZahlungenPage() {
                             bankeinzug: Boolean(profile?.bankeinzug),
                         }}
                         mandatserteilung={profile?.mandatserteilung ?? null}
+                        rates={rates}
                     />
                 </Card>
             </div>

@@ -106,7 +106,14 @@ export default async function DashboardPage() {
     const myFees = myRecord?.fees || [];
 
     const currentYear = new Date().getFullYear();
-    const last3Years = [currentYear - 2, currentYear - 1, currentYear];
+    // Nur Beitragsjahre anzeigen, in denen das Mitglied auch dabei war: ein
+    // Erstjahresmitglied sähe sonst zwei Jahre „Ausstehend“, für die es nie
+    // beitragspflichtig war. Ohne Aufnahmedatum (Altbestand) bleibt es bei
+    // den letzten drei Jahren.
+    const membershipStartYear = myRecord?.aufnahmedatum?.getFullYear() ?? null;
+    const last3Years = [currentYear - 2, currentYear - 1, currentYear].filter(
+        (year) => membershipStartYear == null || year >= membershipStartYear,
+    );
     const userStatus = profile?.status ?? currentUser.status ?? "KEIN_MITGLIED";
     const memberSince = profile?.createdAt ?? null;
 
@@ -291,7 +298,11 @@ export default async function DashboardPage() {
                                 <SectionHeader
                                     icon={<IdCard size={16} />}
                                     eyebrow="Zahlungsübersicht"
-                                    title="Meine Beiträge der letzten drei Jahre"
+                                    title={
+                                        membershipStartYear == null
+                                            ? "Meine Beiträge der letzten drei Jahre"
+                                            : "Meine Beiträge seit Aufnahme"
+                                    }
                                     aside={
                                         <ButtonLink
                                             href="/dashboard/zahlungen"

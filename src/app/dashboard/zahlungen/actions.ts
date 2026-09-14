@@ -9,10 +9,9 @@ import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { bankUpdateSchema } from "@/lib/server/validation/schemas";
 
 /**
- * Ändert die eigene Bankverbindung eines Mitglieds. Anders als die
- * generische Profilbearbeitung auf `/dashboard/users/[id]` verlangt dieses
- * Formular zwingend die erneute Bestätigung des SEPA-Lastschriftmandats
- * (`bankUpdateSchema`) — dieselbe Zustimmung wie beim Mitgliedsantrag.
+ * Ändert die eigene Zahlungsweise eines Mitglieds. Wer auf dem
+ * Lastschriftweg bleibt, bestätigt das SEPA-Mandat wie im Antrag erneut —
+ * ohne Mandat werden die Bankfelder verworfen (`bankUpdateSchema`).
  */
 export async function updateBankDetails(formData: FormData) {
     return executeAction(async () => {
@@ -25,7 +24,7 @@ export async function updateBankDetails(formData: FormData) {
             bank: parsed.bank ?? null,
             BLZ: parsed.BLZ ?? null,
             KTO: parsed.KTO ?? null,
-            IBAN: parsed.IBAN,
+            IBAN: parsed.IBAN ?? null,
             BIC: parsed.BIC ?? null,
             bankeinzug: parsed.bankeinzug,
         });

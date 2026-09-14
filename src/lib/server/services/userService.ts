@@ -27,7 +27,9 @@ export async function getEditableUser(id: string) {
  * Ändert ausschließlich die eigene Bankverbindung eines Mitglieds
  * (`/dashboard/zahlungen`). Bewusst getrennt von `updateUserProfile`: hier
  * gibt es keine Rollen-/Fremdbearbeitungslogik — es ist immer der eigene
- * Account — und ein erneutes SEPA-Mandat setzt `mandatserteilung` neu.
+ * Account — und ein erneutes SEPA-Mandat setzt `mandatserteilung` neu. Wer
+ * auf Überweisung umstellt, widerruft das Mandat; damit wird auch die
+ * Mandatszeit zurückgesetzt.
  */
 export async function updateOwnBankDetails(
   userId: string,
@@ -35,7 +37,7 @@ export async function updateOwnBankDetails(
     bank: string | null;
     BLZ: string | null;
     KTO: string | null;
-    IBAN: string;
+    IBAN: string | null;
     BIC: string | null;
     bankeinzug: boolean;
   },
@@ -47,7 +49,7 @@ export async function updateOwnBankDetails(
     IBAN: input.IBAN,
     BIC: input.BIC,
     bankeinzug: input.bankeinzug,
-    mandatserteilung: new Date(),
+    mandatserteilung: input.bankeinzug ? new Date() : null,
   });
 }
 
