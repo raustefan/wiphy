@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Info } from "lucide-react";
 import { MAX_MESSAGE_LENGTH } from "@/lib/contact";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { submitContactRequest } from "./actions";
+import { AltchaField } from "@/components/AltchaField";
 import {
     Button,
     ButtonLink,
@@ -17,18 +18,6 @@ import {
     Prose,
     TextArea,
 } from "@/components/ui";
-
-/** Altcha-Widget an die Design-Tokens angleichen. */
-const ALTCHA_STYLE = {
-    display: "block",
-    width: "100%",
-    "--altcha-max-width": "100%",
-    "--altcha-border-radius": "0.75rem",
-    "--altcha-border-color": "var(--line-strong)",
-    "--altcha-color-base": "var(--surface)",
-    "--altcha-color-base-content": "var(--foreground)",
-    "--altcha-color-primary": "var(--physics)",
-} as CSSProperties;
 
 export function ContactForm({
     challengeJson,
@@ -48,7 +37,6 @@ export function ContactForm({
 
     useEffect(() => {
         renderedAt.current = Date.now();
-        import("altcha");
     }, []);
 
     const form = useActionForm(submitContactRequest, {
@@ -182,16 +170,7 @@ export function ContactForm({
                         </label>
                     </div>
 
-                    <div className="grid gap-1.5">
-                        <span className="text-sm font-semibold text-foreground">
-                            Sicherheitsüberprüfung
-                        </span>
-                        <altcha-widget
-                            challenge={challengeJson}
-                            name="altcha"
-                            style={ALTCHA_STYLE}
-                        />
-                    </div>
+                    <AltchaField challengeJson={challengeJson} />
 
                     <Button type="submit" size="lg" loading={form.pending} disabled={!enabled}>
                         {form.pending ? "Wird gesendet …" : "Nachricht senden"}

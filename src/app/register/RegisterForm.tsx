@@ -1,25 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Check, ShieldCheck, Sparkles, UserPlus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ShieldCheck, Sparkles, UserPlus } from "lucide-react";
 import { registerUser } from "./actions";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { PasswordInput, PasswordStrengthMeter } from "@/components/PasswordField";
-import { PASSWORD_MIN_LENGTH } from "@/lib/passwordStrength";
+import { AltchaField } from "@/components/AltchaField";
+import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
 import { Button, Field, Input } from "@/components/ui";
-
-/** Altcha-Widget an die Design-Tokens angleichen. */
-const ALTCHA_STYLE = {
-    display: "block",
-    width: "100%",
-    "--altcha-max-width": "100%",
-    "--altcha-border-radius": "0.75rem",
-    "--altcha-border-color": "var(--line-strong)",
-    "--altcha-color-base": "var(--surface)",
-    "--altcha-color-base-content": "var(--foreground)",
-    "--altcha-color-primary": "var(--physics)",
-} as CSSProperties;
 
 /**
  * Abschnitt des Formulars mit Nummer und Trennlinie.
@@ -65,13 +53,7 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
 
     useEffect(() => {
         renderedAt.current = Date.now();
-        import("altcha");
     }, []);
-
-    // Erst melden, wenn im zweiten Feld überhaupt etwas steht — sonst stünde
-    // schon beim ersten Tastendruck im ersten Feld „stimmen nicht überein“.
-    const mismatch = confirmPassword.length > 0 && password !== confirmPassword;
-    const matches = confirmPassword.length > 0 && password === confirmPassword;
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -81,8 +63,9 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
         // Server sieht es nie und soll es auch nicht sehen.
         formData.delete("confirmPassword");
 
-        if (password !== confirmPassword) {
-            form.setError("Die Passwörter stimmen nicht überein.");
+        const problem = validateNewPassword(password, confirmPassword);
+        if (problem) {
+            form.setError(problem);
             return;
         }
 
@@ -95,7 +78,7 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
             size="lg"
             icon={<UserPlus size={22} aria-hidden="true" />}
             title="Schön, dass du dabei bist"
-            description="Leg dir in einer Minute ein Konto an. Ein Nutzerkonto ist noch keine Mitgliedschaft im WirtschaftsPhysik Alumni e.V. — darüber entscheidet der Vorstand separat."
+            description="Leg dir in einer Minute ein Konto an. Ein Nutzerkonto ist noch keine Mitgliedschaft im WirtschaftsPhysik Alumni e.V. — du findest einen separaten Antrag auf Mitgliedschaft in deinem Mitgliederbereich, sobald du einen Account hast."
             footer={
                 <>
                     Du hast schon ein Konto? <AuthLink href="/login">Hier anmelden</AuthLink>
@@ -145,54 +128,13 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                 </Step>
 
                 <Step number={2} title="Passwort festlegen">
-                    <div className="grid gap-2">
-                        <Field label="Passwort" htmlFor="register-password" required>
-                            <PasswordInput
-                                id="register-password"
-                                name="password"
-                                autoComplete="new-password"
-                                required
-                                minLength={PASSWORD_MIN_LENGTH}
-                                value={password}
-                                onChange={(event) => setPassword(event.target.value)}
-                                aria-describedby="register-password-strength"
-                                placeholder={`Mindestens ${PASSWORD_MIN_LENGTH} Zeichen`}
-                            />
-                        </Field>
-                        <PasswordStrengthMeter
-                            id="register-password-strength"
-                            password={password}
-                        />
-                    </div>
-
-                    <Field
-                        label="Passwort wiederholen"
-                        htmlFor="register-password-confirm"
-                        required
-                        error={mismatch ? "Die Passwörter stimmen nicht überein." : undefined}
-                    >
-                        <PasswordInput
-                            id="register-password-confirm"
-                            name="confirmPassword"
-                            autoComplete="new-password"
-                            required
-                            value={confirmPassword}
-                            onChange={(event) => setConfirmPassword(event.target.value)}
-                            aria-invalid={mismatch || undefined}
-                            placeholder="Zur Sicherheit noch einmal"
-                        />
-                    </Field>
-                    {/* `aria-live`, damit der Screenreader die Bestätigung
-                        mitbekommt — sichtbar ist sie ohnehin nur kurz. */}
-                    {matches && (
-                        <p
-                            aria-live="polite"
-                            className="-mt-2 flex items-center gap-1.5 text-xs font-medium text-positive"
-                        >
-                            <Check size={13} aria-hidden="true" />
-                            Die Passwörter stimmen überein.
-                        </p>
-                    )}
+                    <NewPasswordFields
+                        idPrefix="register"
+                        password={password}
+                        onPasswordChange={setPassword}
+                        confirmPassword={confirmPassword}
+                        onConfirmPasswordChange={setConfirmPassword}
+                    />
                 </Step>
 
                 {/*
@@ -227,11 +169,7 @@ export function RegisterForm({ challengeJson }: { challengeJson: string }) {
                             placeholder="Name der Stadt"
                         />
                     </Field>
-                    <altcha-widget
-                        challenge={challengeJson}
-                        name="altcha"
-                        style={ALTCHA_STYLE}
-                    />
+                    <AltchaField challengeJson={challengeJson} />
                 </Step>
 
                 <div className="grid gap-3">

@@ -11,7 +11,8 @@ import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import { Card, Container } from "@/components/ui";
+import { UserX } from "lucide-react";
+import { ButtonLink, Callout, Card, Container, EmptyState } from "@/components/ui";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 import { EditUserForm } from "./EditUserForm";
@@ -164,8 +165,17 @@ export default async function EditUserPage({
     const user = await getEditableUser(resolvedParams.id);
     if (!user) {
         return (
-            <Container size="2" className="py-16 text-center text-muted">
-                User nicht gefunden
+            <Container size="2" className="py-12">
+                <EmptyState
+                    icon={<UserX size={22} />}
+                    title="Benutzer nicht gefunden"
+                    description="Dieses Konto gibt es nicht (mehr). Möglicherweise wurde es gelöscht."
+                    action={
+                        <ButtonLink href="/dashboard" variant="soft" color="neutral">
+                            Zur Übersicht
+                        </ButtonLink>
+                    }
+                />
             </Container>
         );
     }
@@ -213,14 +223,14 @@ export default async function EditUserPage({
 
             <Card className="p-5 sm:p-6">
                 {formErrors.map((formError) => (
-                    <div
+                    <Callout
                         key={formError.title}
-                        role="alert"
-                        className="mb-4 grid gap-0.5 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm text-negative"
+                        tone="danger"
+                        title={formError.title}
+                        className="mb-4"
                     >
-                        <p className="font-bold">{formError.title}</p>
-                        <p>{formError.detail}</p>
-                    </div>
+                        {formError.detail}
+                    </Callout>
                 ))}
 
                 <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />

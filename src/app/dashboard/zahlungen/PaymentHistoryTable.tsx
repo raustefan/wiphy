@@ -1,15 +1,16 @@
 import { Calendar } from "lucide-react";
-import { Badge, Table, TableWrap, Td, Th } from "@/components/ui";
+import { Badge, EmptyState, Table, TableWrap, Td, Th } from "@/components/ui";
 import { formatEuro } from "@/lib/format";
 import type { DashboardFee } from "@/lib/server/services/feeService";
 
 export function PaymentHistoryTable({ fees }: { fees: DashboardFee[] }) {
     if (fees.length === 0) {
         return (
-            <p className="flex items-center gap-2 text-sm text-muted">
-                <Calendar size={16} className="text-faint" aria-hidden="true" />
-                Für dein Konto liegt noch kein Beitragsjahr vor.
-            </p>
+            <EmptyState
+                icon={<Calendar size={22} />}
+                title="Noch kein Beitragsjahr"
+                description="Sobald der Verein für dich einen Mitgliedsbeitrag angelegt hat, findest du ihn hier — mit Betrag, Stufe und Zahlungsstand."
+            />
         );
     }
 

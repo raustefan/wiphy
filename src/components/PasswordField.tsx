@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { controlClasses } from "@/components/ui";
-import { evaluatePassword, type PasswordScore } from "@/lib/passwordStrength";
+import { controlClasses, Field } from "@/components/ui";
+import {
+    evaluatePassword,
+    PASSWORD_MIN_LENGTH,
+    type PasswordScore,
+} from "@/lib/passwordStrength";
 
 /**
  * Passwortfeld mit Sichtbarkeitsschalter.
@@ -115,4 +119,115 @@ export function PasswordStrengthMeter({
             </ul>
         </div>
     );
+}
+
+/**
+ * Passwort und Wiederholung als ein Baustein — samt Stärkeanzeige und
+ * Live-Abgleich der beiden Felder.
+ *
+ * Die Registrierung hatte das alles, das Zurücksetzen des Passworts nichts
+ * davon: dort waren beide Felder nackte `type="password"`-Eingaben ohne
+ * Sichtbarkeitsschalter, ohne Stärkeanzeige und mit einer Mindestlänge, die als
+ * `8` im Formular stand statt aus `PASSWORD_MIN_LENGTH` zu kommen. Wer sein
+ * Passwort zurücksetzte, bekam also weniger Hilfe beim Wählen als bei der
+ * Registrierung — und das ist genau der Moment, in dem jemand sich ein neues
+ * ausdenkt.
+ *
+ * Bewusst gesteuert („controlled“): beide Aufrufer prüfen beim Absenden selbst
+ * und brauchen die Werte ohnehin.
+ */
+export function NewPasswordFields({
+    idPrefix,
+    label = "Passwort",
+    confirmLabel = "Passwort wiederholen",
+    name = "password",
+    confirmName = "confirmPassword",
+    password,
+    onPasswordChange,
+    confirmPassword,
+    onConfirmPasswordChange,
+}: {
+    /** Basis für die Feld-ids — muss je Formular eindeutig sein. */
+    idPrefix: string;
+    label?: string;
+    confirmLabel?: string;
+    name?: string;
+    confirmName?: string;
+    password: string;
+    onPasswordChange: (value: string) => void;
+    confirmPassword: string;
+    onConfirmPasswordChange: (value: string) => void;
+}) {
+    // Erst melden, wenn im zweiten Feld überhaupt etwas steht — sonst stünde
+    // schon beim ersten Tastendruck im ersten Feld „stimmen nicht überein“.
+    const mismatch = confirmPassword.length > 0 && password !== confirmPassword;
+    const matches = confirmPassword.length > 0 && password === confirmPassword;
+
+    return (
+        <>
+            <div className="grid gap-2">
+                <Field label={label} htmlFor={`${idPrefix}-password`} required>
+                    <PasswordInput
+                        id={`${idPrefix}-password`}
+                        name={name}
+                        autoComplete="new-password"
+                        required
+                        minLength={PASSWORD_MIN_LENGTH}
+                        value={password}
+                        onChange={(event) => onPasswordChange(event.target.value)}
+                        aria-describedby={`${idPrefix}-strength`}
+                        placeholder={`Mindestens ${PASSWORD_MIN_LENGTH} Zeichen`}
+                    />
+                </Field>
+                <PasswordStrengthMeter id={`${idPrefix}-strength`} password={password} />
+            </div>
+
+            <Field
+                label={confirmLabel}
+                htmlFor={`${idPrefix}-confirm`}
+                required
+                error={mismatch ? "Die Passwörter stimmen nicht überein." : undefined}
+            >
+                <PasswordInput
+                    id={`${idPrefix}-confirm`}
+                    name={confirmName}
+                    autoComplete="new-password"
+                    required
+                    value={confirmPassword}
+                    onChange={(event) => onConfirmPasswordChange(event.target.value)}
+                    aria-invalid={mismatch || undefined}
+                    placeholder="Zur Sicherheit noch einmal"
+                />
+            </Field>
+
+            {/* `aria-live`, damit der Screenreader die Bestätigung mitbekommt —
+                sichtbar ist sie ohnehin nur kurz. */}
+            {matches && (
+                <p
+                    aria-live="polite"
+                    className="-mt-2 flex items-center gap-1.5 text-xs font-medium text-positive"
+                >
+                    <Check size={13} aria-hidden="true" />
+                    Die Passwörter stimmen überein.
+                </p>
+            )}
+        </>
+    );
+}
+
+/**
+ * Die beiden Prüfungen, die nur der Browser machen kann: der Server sieht das
+ * Bestätigungsfeld nie. Gibt die Meldung zurück oder `null`, wenn alles passt.
+ */
+export function validateNewPassword(
+    password: string,
+    confirmPassword: string,
+): string | null {
+    if (password.length < PASSWORD_MIN_LENGTH) {
+        return `Das Passwort muss mindestens ${PASSWORD_MIN_LENGTH} Zeichen lang sein.`;
+    }
+    if (password !== confirmPassword) {
+        return "Die Passwörter stimmen nicht überein.";
+    }
+    return null;
 }

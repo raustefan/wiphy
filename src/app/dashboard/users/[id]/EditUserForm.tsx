@@ -285,6 +285,35 @@ export function EditUserForm({
         }
     }
 
+    /* `beforeunload` greift nur bei echten Seitenwechseln. Ein Klick auf einen
+       `next/link` — die Abschnittsnavigation über der Seite, die Kopfzeile, die
+       Fußzeile — wechselt die Route im Browser, ohne das Dokument zu verlassen:
+       das Formular verschwand samt Eingaben, ohne dass jemand gefragt wurde.
+       Deshalb werden Klicks auf interne Verweise abgefangen, solange
+       ungespeicherte Änderungen offen sind, und durch dieselbe Rückfrage
+       geleitet wie der Abbrechen-Knopf. */
+    useEffect(() => {
+        if (!isDirty) return;
+        function handleClick(event: MouseEvent) {
+            // Modifiziertes Klicken öffnet einen neuen Tab — die Seite hier
+            // bleibt dann stehen, es geht nichts verloren.
+            if (event.defaultPrevented || event.button !== 0) return;
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            const anchor = (event.target as Element | null)?.closest?.("a");
+            if (!(anchor instanceof HTMLAnchorElement)) return;
+            if (anchor.target && anchor.target !== "_self") return;
+            if (anchor.hasAttribute("download")) return;
+            const url = new URL(anchor.href, window.location.href);
+            if (url.origin !== window.location.origin) return;
+            // Sprungmarken innerhalb der Seite verlassen sie nicht.
+            if (url.pathname === window.location.pathname && url.hash) return;
+            event.preventDefault();
+            guardNavigate(url.pathname + url.search);
+        }
+        document.addEventListener("click", handleClick, true);
+        return () => document.removeEventListener("click", handleClick, true);
+    });
+
     return (
         <>
             <form ref={formRef} action={action} onSubmit={handleFormSubmit} onChange={computeDirty}>

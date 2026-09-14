@@ -11,9 +11,12 @@ import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
+import { PasswordInput } from "@/components/PasswordField";
+import { PASSWORD_MIN_LENGTH } from "@/lib/passwordStrength";
 import {
     Button,
     ButtonLink,
+    Callout,
     Card,
     Container,
     Field,
@@ -81,12 +84,9 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
 
             <Card className="p-5 sm:p-6">
                 {errorMessage && (
-                    <p
-                        role="alert"
-                        className="mb-4 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3 text-sm font-semibold text-negative"
-                    >
+                    <Callout tone="danger" className="mb-4">
                         {errorMessage}
-                    </p>
+                    </Callout>
                 )}
 
                 <form action={createUserAction} className="grid gap-4">
@@ -102,12 +102,20 @@ export default async function NewUserPage({ searchParams }: { searchParams?: Pro
                         <Input id="new-user-email" name="email" type="email" required />
                     </Field>
 
-                    <Field label="Passwort" required htmlFor="new-user-password">
-                        <Input
+                    {/* Sichtbar schaltbar: dieses Passwort muss der Admin
+                        anschließend weitergeben — blind getippt landet ein
+                        Tippfehler direkt beim neuen Konto. */}
+                    <Field
+                        label="Passwort"
+                        required
+                        htmlFor="new-user-password"
+                        hint={`Mindestens ${PASSWORD_MIN_LENGTH} Zeichen. Gib es der Person weiter — sie kann es danach selbst ändern.`}
+                    >
+                        <PasswordInput
                             id="new-user-password"
                             name="password"
-                            type="password"
                             autoComplete="new-password"
+                            minLength={PASSWORD_MIN_LENGTH}
                             required
                         />
                     </Field>

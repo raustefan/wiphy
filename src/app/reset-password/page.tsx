@@ -2,8 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle2, KeyRound, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { Button, ButtonLink, Callout, Field, Input, Spinner } from "@/components/ui";
+import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
+import { Button, ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { postJson } from "@/lib/client/postJson";
 
@@ -28,14 +30,9 @@ function ResetPasswordForm() {
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
 
-        // Beide Prüfungen kann nur der Browser machen — der Server sieht das
-        // Bestätigungsfeld nie.
-        if (password.length < 8) {
-            form.setError("Das Passwort muss mindestens 8 Zeichen lang sein.");
-            return;
-        }
-        if (password !== confirmPassword) {
-            form.setError("Die Passwörter stimmen nicht überein.");
+        const problem = validateNewPassword(password, confirmPassword);
+        if (problem) {
+            form.setError(problem);
             return;
         }
 
@@ -45,7 +42,8 @@ function ResetPasswordForm() {
     if (!token) {
         return (
             <AuthShell
-                title="Passwort zurücksetzen"
+                icon={<Unlink size={22} aria-hidden="true" />}
+                title="Link ungültig"
                 footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
             >
                 <Callout tone="danger">
@@ -61,7 +59,10 @@ function ResetPasswordForm() {
 
     if (done) {
         return (
-            <AuthShell title="Erfolgreich!">
+            <AuthShell
+                icon={<CheckCircle2 size={22} aria-hidden="true" />}
+                title="Passwort geändert"
+            >
                 <Callout tone="success">
                     Dein Passwort wurde zurückgesetzt. Du kannst dich jetzt mit deinem neuen
                     Passwort anmelden.
@@ -75,33 +76,23 @@ function ResetPasswordForm() {
 
     return (
         <AuthShell
+            icon={<KeyRound size={22} aria-hidden="true" />}
             title="Neues Passwort festlegen"
+            description="Wähle ein Passwort, das du noch nirgends sonst benutzt."
             footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
         >
             <form onSubmit={handleSubmit} className="grid gap-4">
                 {form.feedback}
 
-                <Field label="Neues Passwort" htmlFor="reset-password" hint="Mindestens 8 Zeichen.">
-                    <Input
-                        id="reset-password"
-                        type="password"
-                        autoComplete="new-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </Field>
-
-                <Field label="Passwort bestätigen" htmlFor="reset-password-confirm">
-                    <Input
-                        id="reset-password-confirm"
-                        type="password"
-                        autoComplete="new-password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                    />
-                </Field>
+                <NewPasswordFields
+                    idPrefix="reset"
+                    label="Neues Passwort"
+                    confirmLabel="Neues Passwort bestätigen"
+                    password={password}
+                    onPasswordChange={setPassword}
+                    confirmPassword={confirmPassword}
+                    onConfirmPasswordChange={setConfirmPassword}
+                />
 
                 <Button type="submit" size="lg" loading={form.pending} className="w-full">
                     Passwort speichern

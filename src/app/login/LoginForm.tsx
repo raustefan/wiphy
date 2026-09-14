@@ -1,8 +1,9 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Suspense, useEffect, useState, type CSSProperties } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AlertCircle, LogIn, MailCheck } from "lucide-react";
 import { RegSuccessDialog } from "./RegSuccessDialog";
 import { LoginFaq } from "./LoginFaq";
 import {
@@ -13,19 +14,9 @@ import {
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
-import { Button, Container, Field, Input } from "@/components/ui";
-
-/** Altcha-Widget an die Design-Tokens angleichen. */
-const ALTCHA_STYLE = {
-    display: "block",
-    width: "100%",
-    "--altcha-max-width": "100%",
-    "--altcha-border-radius": "0.75rem",
-    "--altcha-border-color": "var(--line-strong)",
-    "--altcha-color-base": "var(--surface)",
-    "--altcha-color-base-content": "var(--foreground)",
-    "--altcha-color-primary": "var(--physics)",
-} as CSSProperties;
+import { AltchaField } from "@/components/AltchaField";
+import { PasswordInput } from "@/components/PasswordField";
+import { Button, Callout, Container, Field, Input } from "@/components/ui";
 
 export function LoginForm({ challengeJson }: { challengeJson: string }) {
     const router = useRouter();
@@ -43,10 +34,6 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
     const resend = useActionForm(() => resendVerificationEmail(email), {
         onSuccess: () => setResendSent(true),
     });
-
-    useEffect(() => {
-        import("altcha");
-    }, []);
 
     // A solved challenge is single-use on the server, so every failed attempt
     // needs a fresh one. Changing the `key` remounts the widget, which clears
@@ -131,8 +118,9 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
             <div className="flex flex-col items-center justify-center gap-6 lg:flex-row-reverse lg:items-start lg:gap-10">
                 <div className="w-full max-w-md shrink-0">
                     <AuthShell
+                        icon={<LogIn size={22} aria-hidden="true" />}
                         title="Mitgliederbereich"
-                        description="Melde dich an, um fortzufahren."
+                        description="Melde dich mit deiner E-Mail-Adresse an."
                         footer={
                             <>
                                 Noch nicht registriert?{" "}
@@ -142,35 +130,37 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                     >
                         <form onSubmit={handleSubmit} className="grid gap-4">
                             {error && (
-                                <div
-                                    role="alert"
-                                    className="grid gap-2 rounded-xl border-l-4 border-negative bg-negative/8 px-3.5 py-3"
-                                >
-                                    <p className="text-sm text-negative">{error}</p>
-                                    {emailUnverified && !resendSent && (
-                                        <Button
-                                            type="button"
-                                            variant="soft"
-                                            color="neutral"
-                                            size="sm"
-                                            onClick={() => void resend.run()}
-                                            loading={resend.pending}
-                                            className="w-full"
-                                        >
-                                            Bestätigungs-E-Mail erneut senden
-                                        </Button>
-                                    )}
-                                    {resendSent && (
-                                        <p className="text-sm text-positive">
-                                            Wir haben dir eine neue E-Mail zur Bestätigung
-                                            geschickt. Bitte prüfe dein Postfach (auch den
-                                            Spam-Ordner).
-                                        </p>
-                                    )}
-                                    {resend.error && (
-                                        <p className="text-sm text-negative">{resend.error}</p>
-                                    )}
-                                </div>
+                                <Callout tone="danger" icon={<AlertCircle size={16} />}>
+                                    <span className="grid gap-2">
+                                        <span className="block text-foreground">{error}</span>
+                                        {emailUnverified && !resendSent && (
+                                            <Button
+                                                type="button"
+                                                variant="soft"
+                                                color="neutral"
+                                                size="sm"
+                                                onClick={() => void resend.run()}
+                                                loading={resend.pending}
+                                                className="w-full"
+                                            >
+                                                <MailCheck size={15} aria-hidden="true" />
+                                                Bestätigungs-E-Mail erneut senden
+                                            </Button>
+                                        )}
+                                        {resendSent && (
+                                            <span className="block font-medium text-positive">
+                                                Wir haben dir eine neue E-Mail zur Bestätigung
+                                                geschickt. Bitte prüfe dein Postfach (auch den
+                                                Spam-Ordner).
+                                            </span>
+                                        )}
+                                        {resend.error && (
+                                            <span className="block text-negative">
+                                                {resend.error}
+                                            </span>
+                                        )}
+                                    </span>
+                                </Callout>
                             )}
 
                             <Field label="E-Mail-Adresse" htmlFor="login-email">
@@ -194,12 +184,16 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                                         Passwort
                                     </label>
                                     <AuthLink href="/forgot-password">
-                                        <span className="text-xs">Passwort zurücksetzen</span>
+                                        <span className="text-xs">Passwort vergessen?</span>
                                     </AuthLink>
                                 </div>
-                                <Input
+                                {/* Sichtbarkeitsschalter wie im Registrierungs-
+                                    formular: ein vertipptes Passwort ist hier
+                                    der häufigste Grund für „Login
+                                    fehlgeschlagen“, und blind zu tippen macht
+                                    es auf dem Telefon nicht besser. */}
+                                <PasswordInput
                                     id="login-password"
-                                    type="password"
                                     autoComplete="current-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -208,19 +202,10 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                                 />
                             </div>
 
-                            <div className="grid gap-1.5">
-                                <span className="text-sm font-semibold text-foreground">
-                                    Sicherheitsüberprüfung
-                                </span>
-                                <altcha-widget
-                                    key={challenge}
-                                    challenge={challenge}
-                                    name="altcha"
-                                    style={ALTCHA_STYLE}
-                                />
-                            </div>
+                            <AltchaField key={challenge} challengeJson={challenge} />
 
                             <Button type="submit" size="lg" loading={submitting} className="w-full">
+                                <LogIn size={16} aria-hidden="true" />
                                 Anmelden
                             </Button>
                         </form>

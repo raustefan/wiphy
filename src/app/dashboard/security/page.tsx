@@ -21,6 +21,7 @@ import {
     Callout,
     Card,
     Container,
+    EmptyState,
     SectionTitle,
     Table,
     TableWrap,
@@ -315,9 +316,10 @@ export default async function SecurityPage({
                     Häufigste Gründe für abgewehrte und fehlgeschlagene Vorgänge im Zeitraum.
                 </p>
                 {overview.reasons.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-muted">
-                        Keine abgewiesenen Vorgänge im Zeitraum.
-                    </p>
+                    <EmptyState
+                        title="Keine abgewiesenen Vorgänge"
+                        description="Im gewählten Zeitraum wurde nichts abgewehrt und nichts ist fehlgeschlagen."
+                    />
                 ) : (
                     <ReasonBars reasons={overview.reasons} />
                 )}
@@ -331,7 +333,7 @@ export default async function SecurityPage({
                     scrollbar.
                 </p>
                 {overview.recent.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-muted">Noch keine Einträge.</p>
+                    <EmptyState title="Noch keine Ereignisse protokolliert" />
                 ) : (
                     /* Eigener Rahmen statt `TableWrap`: hier wird in beide
                        Richtungen gescrollt. Ohne die Höhenbegrenzung schiebt die
@@ -405,10 +407,11 @@ export default async function SecurityPage({
                         : " Zurzeit ist nichts blockiert."}
                 </p>
                 {rateLimitEntries.length === 0 ? (
-                    <Card className="p-6">
-                        <p className="py-8 text-center text-sm text-muted">
-                            Aktuell keine aktiven Rate-Limit-Einträge.
-                        </p>
+                    <Card>
+                        <EmptyState
+                            title="Keine aktiven Rate-Limit-Einträge"
+                            description="Zurzeit wird nichts gebremst. Zähler entstehen erst bei gehäuften Versuchen und laufen danach von selbst ab."
+                        />
                     </Card>
                 ) : (
                     <RateLimitTable summary={rateLimitSummary} entries={rateLimitEntries} />

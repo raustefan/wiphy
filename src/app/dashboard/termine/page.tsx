@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Megaphone, Newspaper, Pencil, Plus } from "lucide-react";
+import { CalendarPlus, Megaphone, Newspaper, Pencil, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminEvents } from "@/lib/server/services/eventService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -13,6 +13,7 @@ import {
     ButtonLink,
     Card,
     Container,
+    EmptyState,
     Table,
     TableWrap,
     Td,
@@ -137,8 +138,20 @@ export default async function AdminEventsPage() {
                             })}
                             {events.length === 0 && (
                                 <tr>
-                                    <Td colSpan={5} className="py-8 text-center text-muted">
-                                        Noch keine Termine angelegt.
+                                    <Td colSpan={5} className="p-0">
+                                        <EmptyState
+                                            icon={<CalendarPlus size={22} />}
+                                            title="Noch keine Termine"
+                                            description="Angelegte Termine bleiben Entwürfe, bis du sie veröffentlichst."
+                                            action={
+                                                <form action={createEventDraft}>
+                                                    <Button type="submit" variant="soft">
+                                                        <Plus size={16} aria-hidden="true" />
+                                                        Ersten Termin anlegen
+                                                    </Button>
+                                                </form>
+                                            }
+                                        />
                                     </Td>
                                 </tr>
                             )}

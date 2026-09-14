@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminPosts } from "@/lib/server/services/blogService";
-import { Images, Pencil, Plus } from "lucide-react";
+import { BookOpen, Images, Pencil, Plus } from "lucide-react";
 import { createDraft, deletePost } from "./actions";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -14,6 +14,7 @@ import {
     ButtonLink,
     Card,
     Container,
+    EmptyState,
     Table,
     TableWrap,
     Td,
@@ -115,8 +116,20 @@ export default async function AdminBlogPage() {
                             ))}
                             {posts.length === 0 && (
                                 <tr>
-                                    <Td colSpan={5} className="py-8 text-center text-muted">
-                                        Noch keine Beiträge vorhanden.
+                                    <Td colSpan={5} className="p-0">
+                                        <EmptyState
+                                            icon={<BookOpen size={22} />}
+                                            title="Noch keine Beiträge"
+                                            description="Lege einen Entwurf an, schreib ihn fertig und veröffentliche ihn — bis dahin sieht ihn niemand außer dir."
+                                            action={
+                                                <form action={createDraft}>
+                                                    <Button type="submit" variant="soft">
+                                                        <Plus size={16} aria-hidden="true" />
+                                                        Ersten Beitrag anlegen
+                                                    </Button>
+                                                </form>
+                                            }
+                                        />
                                     </Td>
                                 </tr>
                             )}

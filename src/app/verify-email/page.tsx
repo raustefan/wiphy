@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle2, MailCheck, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -32,7 +33,10 @@ function VerifyEmailContent() {
 
     if (!token) {
         return (
-            <AuthShell title="E-Mail bestätigen">
+            <AuthShell
+                icon={<Unlink size={22} aria-hidden="true" />}
+                title="Link unvollständig"
+            >
                 <Callout tone="danger">
                     Der Bestätigungslink ist ungültig oder unvollständig. Bitte registriere dich
                     erneut oder nutze den Link aus deiner E-Mail.
@@ -46,8 +50,13 @@ function VerifyEmailContent() {
 
     if (verified) {
         return (
-            <AuthShell title="Erfolgreich bestätigt!">
-                <Callout tone="success">Deine E-Mail-Adresse wurde bestätigt.</Callout>
+            <AuthShell
+                icon={<CheckCircle2 size={22} aria-hidden="true" />}
+                title="E-Mail bestätigt"
+            >
+                <Callout tone="success">
+                    Deine E-Mail-Adresse wurde bestätigt. Du kannst dich jetzt anmelden.
+                </Callout>
                 <ButtonLink href="/login" size="lg" className="w-full">
                     Zum Login
                 </ButtonLink>
@@ -58,7 +67,8 @@ function VerifyEmailContent() {
     if (!form.error && !form.featureDisabled) {
         return (
             <AuthShell
-                title="E-Mail wird verifiziert …"
+                icon={<MailCheck size={22} aria-hidden="true" />}
+                title="E-Mail wird bestätigt …"
                 description="Bitte habe einen Augenblick Geduld."
             >
                 <div className="grid place-items-center py-2 text-muted">
@@ -70,7 +80,8 @@ function VerifyEmailContent() {
 
     return (
         <AuthShell
-            title="Fehler bei der Verifizierung"
+            icon={<Unlink size={22} aria-hidden="true" />}
+            title="Bestätigung fehlgeschlagen"
             footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
         >
             {form.feedback}
@@ -79,8 +90,16 @@ function VerifyEmailContent() {
                     Der Bestätigungslink ist ungültig oder abgelaufen.
                 </Callout>
             )}
-            <ButtonLink href="/login" size="lg" color="neutral" variant="soft" className="w-full">
-                Zurück zum Login
+            {/* Der Link hält 24 Stunden. Abgelaufen ist damit der häufigste
+                Fehlerfall — und einen neuen gibt es über den Anmeldeversuch,
+                der den Knopf „erneut senden“ einblendet. */}
+            <Callout tone="info">
+                Bestätigungslinks sind 24 Stunden gültig. Melde dich einfach an: falls deine
+                Adresse noch unbestätigt ist, kannst du dir dort eine neue Bestätigungs-E-Mail
+                schicken lassen.
+            </Callout>
+            <ButtonLink href="/login" size="lg" className="w-full">
+                Zum Login
             </ButtonLink>
         </AuthShell>
     );

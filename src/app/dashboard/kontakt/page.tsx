@@ -1,10 +1,10 @@
-import { Info } from "lucide-react";
+import { Info, MailOpen } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getContactRequests } from "@/lib/server/services/contactService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ContactRequestList } from "./ContactRequestList";
-import { Callout, Card, Container } from "@/components/ui";
+import { Callout, Card, Container, EmptyState } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -42,10 +42,12 @@ export default async function ContactRequestsPage() {
             )}
 
             {requests.length === 0 ? (
-                <Card className="p-6">
-                    <p className="py-8 text-center text-sm text-muted">
-                        Noch keine Kontaktanfragen.
-                    </p>
+                <Card>
+                    <EmptyState
+                        icon={<MailOpen size={22} />}
+                        title="Noch keine Kontaktanfragen"
+                        description="Nachrichten über das öffentliche Kontaktformular erscheinen hier."
+                    />
                 </Card>
             ) : (
                 <ContactRequestList requests={requests} />

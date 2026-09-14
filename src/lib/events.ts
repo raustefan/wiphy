@@ -111,6 +111,25 @@ export function formatEventRange(event: EventTiming): string {
   return `${WEEKDAY_SHORT.format(event.start)}, ${DAY_MONTH.format(event.start)}, ${formatEventTime(event.start)} Uhr – ${WEEKDAY_SHORT.format(end)}, ${DAY_MONTH_YEAR.format(end)}, ${formatEventTime(end)} Uhr`;
 }
 
+/**
+ * Nur der Uhrzeit-Teil: `19:00–22:00 Uhr`, `ab 19:00 Uhr`, `ganztägig`.
+ *
+ * Für Stellen, an denen das Datum schon danebensteht — etwa neben dem
+ * Datumswürfel, wo `formatEventRange` es ein zweites Mal ausschriebe und dafür
+ * drei Zeilen brauchte. Über mehrere Tage gibt es keinen reinen Uhrzeit-Teil;
+ * dann fällt die Angabe auf den vollen Zeitraum zurück, sonst verschwände der
+ * zweite Tag.
+ */
+export function formatEventClock(event: EventTiming): string {
+  const end = event.end;
+  const sameDay = end ? isSameBerlinDay(event.start, end) : true;
+
+  if (!sameDay) return formatEventRange(event);
+  if (event.allDay) return "ganztägig";
+  if (!end) return `ab ${formatEventTime(event.start)} Uhr`;
+  return `${formatEventTime(event.start)}–${formatEventTime(end)} Uhr`;
+}
+
 /** Kurzfassung für Listen und Badges: `Sa, 14. März 2026, 19:00 Uhr`. */
 export function formatEventShort(event: EventTiming): string {
   const day = `${WEEKDAY_SHORT.format(event.start)}, ${DAY_MONTH_YEAR.format(event.start)}`;

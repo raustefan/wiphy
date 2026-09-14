@@ -1,10 +1,10 @@
-import { Info } from "lucide-react";
+import { FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getApplications } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { planApplicationFees } from "@/lib/feeDefaults";
-import { Callout, Card, Container } from "@/components/ui";
+import { Callout, Card, Container, EmptyState } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ApplicationList } from "./ApplicationList";
 
@@ -110,10 +110,12 @@ export default async function MembershipApplicationsPage() {
             )}
 
             {items.length === 0 ? (
-                <Card className="p-6">
-                    <p className="py-8 text-center text-sm text-muted">
-                        Noch keine Mitgliedsanträge.
-                    </p>
+                <Card>
+                    <EmptyState
+                        icon={<FileText size={22} />}
+                        title="Noch keine Mitgliedsanträge"
+                        description="Anträge aus dem Mitgliederbereich landen hier zur Entscheidung durch den Vorstand."
+                    />
                 </Card>
             ) : (
                 <ApplicationList applications={items} />

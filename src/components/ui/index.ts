@@ -3,6 +3,7 @@ export { Button, ButtonLink, buttonClasses } from "./Button";
 export { Callout, type CalloutTone } from "./Callout";
 export { Card } from "./Card";
 export { Container } from "./Container";
+export { EmptyState } from "./EmptyState";
 export { Dialog, DialogFooter } from "./Dialog";
 export { Field, Input, TextArea, Select, Checkbox, controlClasses } from "./Field";
 export { IconButton, IconButtonLink, iconButtonClasses } from "./IconButton";
