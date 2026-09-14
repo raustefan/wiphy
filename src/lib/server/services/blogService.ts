@@ -10,6 +10,7 @@ import {
   findPostById,
   findPublishedPostById,
   findPublishedPosts,
+  findPublishedPostsPage,
   insertImage,
   postExists as postExistsInDb,
   updateImageAlt,
@@ -89,6 +90,43 @@ export async function getPostForEdit(id: string): Promise<BlogPostWithImages | n
 
 export async function getPublishedPosts(): Promise<BlogPostWithImages[]> {
   return (await findPublishedPosts()).map(toPost);
+}
+
+/** Beiträge pro Seite der öffentlichen Übersicht. */
+export const BLOG_PAGE_SIZE = 9;
+
+export type PublishedPostPage = {
+  posts: BlogPostWithImages[];
+  total: number;
+  /** Bereits normalisiert: mindestens 1, höchstens `pageCount`. */
+  page: number;
+  pageCount: number;
+};
+
+/**
+ * Eine Seite der Blog-Übersicht, optional gefiltert.
+ *
+ * Die Seitenzahl wird hier eingefangen statt in der Seitenkomponente: `?seite=`
+ * kommt aus der URL und darf `0`, `-3` oder `banane` sein, ohne dass daraus ein
+ * negatives `skip` und damit ein Datenbankfehler wird.
+ */
+export async function getPublishedPostPage(input: {
+  query?: string;
+  page?: number;
+}): Promise<PublishedPostPage> {
+  const query = input.query?.trim() || undefined;
+  const requested = Number.isFinite(input.page) ? Math.trunc(input.page as number) : 1;
+  const page = Math.max(1, requested);
+
+  const { posts, total } = await findPublishedPostsPage({
+    query,
+    skip: (page - 1) * BLOG_PAGE_SIZE,
+    take: BLOG_PAGE_SIZE,
+  });
+
+  const pageCount = Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE));
+
+  return { posts: posts.map(toPost), total, page: Math.min(page, pageCount), pageCount };
 }
 
 export async function getPublishedPost(id: string): Promise<BlogPostWithImages | null> {

@@ -21,6 +21,7 @@ import {
   isPastEvent,
 } from "@/lib/events";
 import { getPublicEvent } from "@/lib/server/services/eventService";
+import { pageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +32,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const event = await getPublicEvent(id);
   if (!event) return { title: "Termin nicht gefunden" };
 
-  return {
+  return pageMetadata({
     title: event.title,
-    description: event.summary || `${formatEventRange(event)} — Termin des WirtschaftsPhysik Alumni e.V.`,
-  };
+    description:
+      event.summary || `${formatEventRange(event)} — Termin des WirtschaftsPhysik Alumni e.V.`,
+    path: `/termine/${event.id}`,
+  });
 }
 
 export default async function EventDetailPage({ params }: Props) {

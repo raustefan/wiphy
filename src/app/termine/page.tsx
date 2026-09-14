@@ -14,12 +14,14 @@ import { EventCard, EventDateCube, EventFacts } from "@/components/EventCard";
 import { cn } from "@/lib/cn";
 import { CALENDAR_ICS_PATH, eventIcsPath, eventPath, formatCountdown } from "@/lib/events";
 import { getPastEvents, getUpcomingEvents, type PublicEvent } from "@/lib/server/services/eventService";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Termine",
   description:
     "Stammtische, Exkursionen, Vorträge und Mitgliederversammlungen des WirtschaftsPhysik Alumni e.V. — mit Kalenderdatei zum Eintragen in den eigenen Kalender.",
-};
+  path: "/termine",
+});
 
 /** Ob ein Termin vorbei ist, hängt an der aktuellen Uhrzeit — nie vorrendern. */
 export const dynamic = "force-dynamic";

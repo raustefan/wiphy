@@ -2,19 +2,48 @@ import "./globals.css";
 import AppThemeProvider from "@/components/AppThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { Spline_Sans_Mono } from "next/font/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/siteUrl";
+import { OrganizationJsonLd } from "@/components/JsonLd";
 
-export const metadata = {
+export const metadata: Metadata = {
+  /**
+   * `metadataBase` macht aus jedem relativen Pfad in `openGraph`/`twitter` eine
+   * absolute URL. Ohne ihn lässt Next diese Felder weg — die Vorschau in
+   * LinkedIn oder WhatsApp bliebe leer, ohne dass irgendwo ein Fehler auftaucht.
+   */
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "WirtschaftsPhysik Alumni e.V.",
-    template: "%s — WirtschaftsPhysik Alumni e.V.",
+    default: SITE_NAME,
+    template: `%s — ${SITE_NAME}`,
   },
-  description:
-    "Verein für Physik- und Wirtschaftsphysik-Alumni sowie Studierende der Universität Ulm. Statistische Physik, Modellbildung und Datenanalyse — angewendet auf reale Systeme.",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/logo-plain.png",
+    apple: "/apple-icon.png",
+  },
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": [{ url: "/blog/feed.xml", title: `${SITE_NAME} — Blog` }],
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    siteName: SITE_NAME,
+    url: "/",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -59,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
+        <OrganizationJsonLd />
         <AppThemeProvider>
           {/* Sprungmarke: ohne sie führt jeder Tastaturbesuch zuerst durch
               Wortmarke, sechs Navigationspunkte, Themenumschalter und

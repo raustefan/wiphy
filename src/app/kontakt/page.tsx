@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { ALTCHA_COMPLEXITY, createAltchaChallenge } from "@/lib/server/altcha";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { ContactForm } from "./ContactForm";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-    title: "Kontakt | WirtschaftsPhysik Alumni e.V.",
+/* Ohne den Vereinsnamen im Titel: den hängt die Vorlage im Root-Layout an. */
+export const metadata: Metadata = pageMetadata({
+    title: "Kontakt",
     description:
         "Nimm Kontakt zum Vorstand des WirtschaftsPhysik Alumni e.V. auf — für Fragen zur Mitgliedschaft, zum Verein oder zu Veranstaltungen.",
-};
+    path: "/kontakt",
+});
 
 // A fresh challenge must be minted on every request, never cached.
 export const dynamic = "force-dynamic";

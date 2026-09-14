@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowRight, Calendar, CalendarDays, Clock, User } from "lucide-react";
 import Link from "next/link";
@@ -10,8 +11,53 @@ import { BlogGallery } from "@/components/BlogGallery";
 import { getPublishedPost } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
 import { formatDate } from "@/lib/format";
+import { blogImageUrl } from "@/lib/blogImages";
+import { absoluteUrl } from "@/lib/siteUrl";
+import { pageMetadata } from "@/lib/metadata";
+import { BlogPostingJsonLd } from "@/components/JsonLd";
 
-export default async function PublicBlogPost({ params }: { params: Promise<{ id: string }> }) {
+type Props = { params: Promise<{ id: string }> };
+
+/**
+ * Ohne das hier trägt jeder geteilte Beitrag den Seitentitel des Vereins und
+ * dessen Beschreibung — in LinkedIn und WhatsApp sehen zehn verschiedene
+ * Beiträge dann identisch aus. Als Vorschaubild dient das Titelbild des
+ * Beitrags; hat er keines, greift das Standardbild aus `opengraph-image.tsx`.
+ */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { id } = await params;
+    const post = await getPublishedPost(id);
+
+    if (!post) return { title: "Beitrag nicht gefunden", robots: { index: false } };
+
+    const description =
+        post.preview || "Beitrag im Vereins-Blog der WirtschaftsPhysik Alumni e.V.";
+
+    return pageMetadata({
+        title: post.title,
+        description,
+        path: `/blog/${post.id}`,
+        type: "article",
+        // Ohne Titelbild greift das gezeichnete Standardbild des Vereins.
+        images: post.cover
+            ? [
+                  {
+                      url: absoluteUrl(blogImageUrl(post.cover.id)),
+                      alt: post.cover.alt || post.title,
+                      width: post.cover.width,
+                      height: post.cover.height,
+                  },
+              ]
+            : undefined,
+        article: {
+            publishedTime: post.publishedAt.toISOString(),
+            modifiedTime: post.updatedAt.toISOString(),
+            authors: post.author ? [post.author] : undefined,
+        },
+    });
+}
+
+export default async function PublicBlogPost({ params }: Props) {
     const resolvedParams = await params;
 
     const post = await getPublishedPost(resolvedParams.id);
@@ -23,6 +69,15 @@ export default async function PublicBlogPost({ params }: { params: Promise<{ id:
 
     return (
         <Container size="3" className="py-8 sm:py-12">
+            <BlogPostingJsonLd
+                id={post.id}
+                title={post.title}
+                preview={post.preview}
+                author={post.author}
+                publishedAt={post.publishedAt}
+                updatedAt={post.updatedAt}
+                imageUrl={post.cover ? absoluteUrl(blogImageUrl(post.cover.id)) : undefined}
+            />
             <Link
                 href="/blog"
                 className="mb-6 inline-flex h-9 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"

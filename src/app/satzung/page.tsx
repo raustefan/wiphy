@@ -7,12 +7,14 @@ import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { formatEuro } from "@/lib/format";
 import { SATZUNG } from "./satzungstext";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
     title: "Satzung & Ziele",
     description:
         "Satzung und Beitragsordnung des Wirtschaftsphysik Alumni e.V. — Vereinszweck, Mitgliedschaft, Organe und Mitgliedsbeiträge.",
-};
+    path: "/satzung",
+});
 
 export const dynamic = "force-dynamic";
 

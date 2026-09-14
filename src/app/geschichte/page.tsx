@@ -1,12 +1,15 @@
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Lead } from "@/components/ui";
 import PhysicsHero from "@/components/PhysicsHeroLazy";
 import { PhysicsTimeline } from "./PhysicsTimeline";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Geschichte der Physik und Wirtschaftsphysik in Ulm",
   description: "Interaktive Zeitleiste zur Physik und Wirtschaftsphysik an der Universität Ulm.",
-};
+  path: "/geschichte",
+});
 
 export default function GeschichtePage() {
   return (

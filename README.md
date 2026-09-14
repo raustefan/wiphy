@@ -98,7 +98,14 @@ Diese Anwendung ist so vorkonfiguriert, dass sie reibungslos auf einem Ubuntu-Se
    NEXTAUTH_URL="http://DEINE_SERVER_IP"     # Oder deine Domain
    AUTH_TRUST_HOST=true
    SECURITY_LOG_PEPPER="DEIN_PROTOKOLL_GEHEIMNIS" # Optional, sonst wird NEXTAUTH_SECRET benutzt
+   NEXT_PUBLIC_SITE_URL="https://deine-domain.de" # Optional, sonst wird NEXTAUTH_URL benutzt
    ```
+   `NEXT_PUBLIC_SITE_URL` ist die öffentliche Adresse der Seite und steckt in
+   Sitemap, `robots.txt`, RSS-Feed, Link-Vorschauen und strukturierten Daten.
+   Ohne eigenen Wert greift `NEXTAUTH_URL`; fehlen beide, bricht `pnpm build`
+   ab — ein stiller Rückfall auf `localhost` würde erst auffallen, wenn jemand
+   einen Link in LinkedIn oder WhatsApp einfügt.
+
    `SECURITY_LOG_PEPPER` pseudonymisiert IP- und E-Mail-Adressen im
    Sicherheitsprotokoll (`SecurityEvent`). Ohne eigenen Wert greift
    `NEXTAUTH_SECRET`; ein separater Wert lässt sich unabhängig von den Sessions

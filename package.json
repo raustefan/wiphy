@@ -8,7 +8,8 @@
     "start": "next start -H 127.0.0.1",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --import tsx tests/*.test.ts"
+    "test": "node --test --import tsx tests/*.test.ts",
+    "icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",

@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
+import { pageMetadata } from "@/lib/metadata";
+
+const TITLE = "Vorstand";
+const DESCRIPTION =
+  "Der gewählte Vorstand des WirtschaftsPhysik Alumni e.V. — Vorsitz, Finanzen, Schriftführung sowie Medien & IT, mit Kontaktmöglichkeit über den Verein.";
+
+export const metadata: Metadata = pageMetadata({
+  title: TITLE,
+  description: DESCRIPTION,
+  path: "/vorstand",
+});
 
 const vorstand = [
   {

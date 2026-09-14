@@ -68,6 +68,56 @@ export function findPublishedPosts() {
   });
 }
 
+/**
+ * Eine Seite der öffentlichen Beitragsliste, wahlweise auf einen Suchbegriff
+ * eingegrenzt.
+ *
+ * Die Übersicht hat früher *alle* Beiträge geladen — inklusive `content`, also
+ * dem vollständigen Markdown jedes Beitrags, nur um daraus eine Lesedauer zu
+ * schätzen. Das skaliert mit der Zahl der Beiträge und nicht mit dem, was auf
+ * dem Bildschirm steht. `count` und `findMany` laufen parallel; die Gesamtzahl
+ * braucht die Seite ohnehin für die Blätter-Navigation.
+ *
+ * Gesucht wird in Titel, Vorschautext und Inhalt. `mode: "insensitive"` ist
+ * nötig, weil Postgres `LIKE` sonst auf Groß-/Kleinschreibung achtet.
+ */
+export async function findPublishedPostsPage({
+  query,
+  skip,
+  take,
+}: {
+  query?: string;
+  skip: number;
+  take: number;
+}) {
+  const where = {
+    published: true,
+    publishedAt: { lte: new Date() },
+    ...(query
+      ? {
+          OR: [
+            { title: { contains: query, mode: "insensitive" as const } },
+            { preview: { contains: query, mode: "insensitive" as const } },
+            { content: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const [posts, total] = await Promise.all([
+    prisma.blogPost.findMany({
+      where,
+      orderBy: { publishedAt: "desc" },
+      skip,
+      take,
+      include: withImages,
+    }),
+    prisma.blogPost.count({ where }),
+  ]);
+
+  return { posts, total };
+}
+
 export async function postExists(id: string) {
   return (await prisma.blogPost.count({ where: { id } })) > 0;
 }

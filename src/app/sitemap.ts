@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/siteUrl";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { getPastEvents, getUpcomingEvents } from "@/lib/server/services/eventService";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const baseUrl = SITE_URL;
     const now = new Date();
     const [posts, upcoming, past] = await Promise.all([
         getPublishedPosts(),
