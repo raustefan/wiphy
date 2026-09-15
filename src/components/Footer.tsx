@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const columns: Array<{ heading: string; links: Array<{ href: string; label: string }> }> = [
   {
@@ -17,7 +18,7 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
     heading: "Mitglieder",
     links: [
       { href: "/login", label: "Anmelden" },
-      { href: "/register", label: "Mitglied werden" },
+      { href: MEMBERSHIP_APPLICATION_PATH, label: "Mitglied werden" },
       { href: "/forgot-password", label: "Passwort vergessen" },
     ],
   },

@@ -26,6 +26,7 @@ import {
     Input,
     Separator,
 } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { formatIban } from "@/lib/iban";
 import { IbanInput } from "@/components/IbanInput";
 import {
@@ -118,7 +119,10 @@ export function ApplicationWizard({
         }
         if (target === STEPS.length - 1) setSummary(currentFormValues());
         setStep(target);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        // An den Anfang des Formulars, nicht an den der Seite: darüber stehen
+        // Titel und Fortschrittsleiste, an denen man sonst bei jedem Schritt
+        // erneut vorbeiscrollen müsste. `scroll-mt` hält die Kopfzeile frei.
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function submit() {
@@ -143,7 +147,7 @@ export function ApplicationWizard({
     const remainingMonths = billableMonths(feeYear, new Date());
 
     return (
-        <form ref={formRef} onSubmit={(event) => event.preventDefault()} className="grid gap-6">
+        <form ref={formRef} onSubmit={(event) => event.preventDefault()} className="grid scroll-mt-20 gap-4 sm:gap-6">
             <StepIndicator step={step} onSelect={goToStep} />
 
             <Card className="p-5 sm:p-6">
@@ -442,18 +446,30 @@ export function ApplicationWizard({
                             {remainingMonths} von 12 Monaten). Den endgültigen Betrag setzt der
                             Vorstand mit dem Aufnahmebeschluss fest.
                         </p>
-                        <p className="text-sm text-muted text-pretty">
-                            Beiträge ohne Teilnahme am Lastschriftverfahren erhöhen sich nach § 5
-                            Abs. 5 um 10 %, aufgerundet auf volle Euro (
-                            {formatEuro(withSurcharge(annualFee(rates.regular)))} bzw.{" "}
-                            {formatEuro(withSurcharge(annualFee(rates.student)))} im vollen Jahr).{" "}
-                            {zahlungsweise === "lastschrift"
-                                ? "Mit deinem Lastschriftmandat entfällt dieser Aufschlag."
-                                : "Du hast die Überweisung gewählt — der Aufschlag ist in deinem Beitrag also enthalten."}
-                        </p>
-                        <p className="text-sm text-muted text-pretty">
-                            Die Beiträge sind in vollem Umfang steuerlich anrechenbar.
-                        </p>
+                        {/* Die Herleitung ist wichtig, aber nicht beim ersten
+                            Blick: eingeklappt steht der Betrag oben, ohne dass
+                            zwei Absätze Satzungstext den Abschluss nach unten
+                            schieben. */}
+                        <details className="group">
+                            <summary className="cursor-pointer list-none text-sm font-semibold text-physics [&::-webkit-details-marker]:hidden">
+                                Wie der Beitrag zustande kommt
+                            </summary>
+                            <div className="mt-2 grid gap-2">
+                                <p className="text-sm text-muted text-pretty">
+                                    Beiträge ohne Teilnahme am Lastschriftverfahren erhöhen sich
+                                    nach § 5 Abs. 5 um 10 %, aufgerundet auf volle Euro (
+                                    {formatEuro(withSurcharge(annualFee(rates.regular)))} bzw.{" "}
+                                    {formatEuro(withSurcharge(annualFee(rates.student)))} im
+                                    vollen Jahr).{" "}
+                                    {zahlungsweise === "lastschrift"
+                                        ? "Mit deinem Lastschriftmandat entfällt dieser Aufschlag."
+                                        : "Du hast die Überweisung gewählt — der Aufschlag ist in deinem Beitrag also enthalten."}
+                                </p>
+                                <p className="text-sm text-muted text-pretty">
+                                    Die Beiträge sind in vollem Umfang steuerlich anrechenbar.
+                                </p>
+                            </div>
+                        </details>
                         {studentYears.length > 0 && (
                             <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
                                 Ermäßigung beantragt für:
@@ -509,7 +525,15 @@ export function ApplicationWizard({
                 </Callout>
             )}
 
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            {/*
+              Auf dem Telefon klebt die Navigation am unteren Rand: die Schritte
+              sind unterschiedlich lang, und „Weiter“ erst nach dem Scrollen ans
+              Formularende zu finden, war der längste Weg im ganzen Antrag.
+              Deckende Fläche statt `backdrop-blur` — aus demselben Grund wie in
+              der Kopfzeile: der Filter kostet und erzeugt einen Containing
+              Block. Ab `sm` steht die Leiste wieder still im Fluss.
+            */}
+            <div className="sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t border-line bg-background px-4 py-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
                 <Button
                     variant="soft"
                     color="neutral"
@@ -520,10 +544,17 @@ export function ApplicationWizard({
                     Zurück
                 </Button>
 
+                <span
+                    aria-hidden="true"
+                    className="font-mono text-xs tracking-wide text-faint tabular-nums sm:hidden"
+                >
+                    {step + 1}/{STEPS.length}
+                </span>
+
                 {isLast ? (
                     <Button onClick={submit} loading={isPending}>
                         <Send size={16} aria-hidden="true" />
-                        Antrag verbindlich absenden
+                        Antrag absenden
                     </Button>
                 ) : (
                     <Button onClick={() => goToStep(step + 1)}>
@@ -536,9 +567,32 @@ export function ApplicationWizard({
     );
 }
 
+/**
+ * Sechs Kacheln waren auf dem Telefon sechs Zeilen — ein halber Bildschirm
+ * Wegweiser, bevor das erste Feld zu sehen war. Dort bleibt deshalb nur ein
+ * Balken; welcher Schritt gerade läuft, sagen die Überschrift im Formular und
+ * der Zähler in der Aktionsleiste.
+ */
 function StepIndicator({ step, onSelect }: { step: number; onSelect: (index: number) => void }) {
     return (
-        <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <>
+            <ol aria-hidden="true" className="flex gap-1 sm:hidden">
+                {STEPS.map((entry, index) => (
+                    <li
+                        key={entry.id}
+                        className={cn(
+                            "h-1.5 flex-1 rounded-full transition-colors",
+                            index < step
+                                ? "bg-physics"
+                                : index === step
+                                  ? "bg-physics/45"
+                                  : "bg-line",
+                        )}
+                    />
+                ))}
+            </ol>
+
+        <ol className="hidden gap-2 sm:grid sm:grid-cols-3 lg:grid-cols-6">
             {STEPS.map((entry, index) => {
                 const Icon = STEP_ICONS[index];
                 const isDone = index < step;
@@ -570,6 +624,7 @@ function StepIndicator({ step, onSelect }: { step: number; onSelect: (index: num
                 );
             })}
         </ol>
+        </>
     );
 }
 
@@ -590,7 +645,9 @@ function IntroStep() {
                 description="Ein kurzer Überblick, worauf du dich einlässt — danach dauert der Antrag nur wenige Minuten."
             />
 
-            <ul className="grid gap-3 text-sm">
+            {/* Ab `sm` zweispaltig: vier Absätze untereinander sind auf dem
+                Telefon unvermeidlich, auf dem Bildschirm aber verschenkte Höhe. */}
+            <ul className="grid gap-3 text-sm sm:grid-cols-2">
                 <li className="flex gap-3">
                     <BookOpen size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
                     <span className="text-pretty">

@@ -6,7 +6,9 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: "*",
             allow: "/",
-            disallow: ["/login", "/register", "/dashboard", "/api"],
+            // `/register` fehlt hier bewusst: der Pfad leitet dauerhaft auf
+            // die öffentliche Seite „Mitglied werden“ um, die gefunden werden soll.
+            disallow: ["/login", "/dashboard", "/api"],
         },
         sitemap: `${SITE_URL}/sitemap.xml`,
     };

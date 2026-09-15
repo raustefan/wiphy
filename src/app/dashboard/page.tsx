@@ -202,7 +202,7 @@ export default async function DashboardPage() {
                         description={
                             openApplication
                                 ? "Der Vorstand entscheidet über deinen Antrag. Hier siehst du den aktuellen Stand."
-                                : "Du bist derzeit als „Kein Mitglied“ geführt. In fünf Schritten stellst du deinen Aufnahmeantrag."
+                                : "Du bist derzeit als „Kein Mitglied“ geführt. Die Seite „Mitglied werden“ führt dich durch den Aufnahmeantrag."
                         }
                         action={openApplication ? "Status ansehen" : "Antrag starten"}
                     />

@@ -38,8 +38,33 @@ export const SEPA_CREDITOR_ID = "";
 export const SATZUNG_URL = "/satzung";
 export const DATENSCHUTZ_URL = "/datenschutz";
 
-export const MEMBERSHIP_APPLICATION_PATH = "/dashboard/mitgliedschaft";
+/**
+ * Die öffentliche Seite „Mitglied werden“ — zugleich Registrierung, Wegweiser
+ * und Antragsformular. Sie löst `/register` und `/dashboard/mitgliedschaft` ab:
+ * beide Wege liefen vorher nebeneinander und niemand sagte dem Besucher, dass
+ * sie zusammengehören.
+ */
+export const MEMBERSHIP_APPLICATION_PATH = "/mitglied-werden";
 export const MEMBERSHIP_ADMIN_PATH = "/dashboard/mitgliedsantraege";
+
+/**
+ * Ziel nach einer abgeschickten Registrierung. Der Parameter ist das einzige
+ * Signal, dass gerade ein Konto entstanden ist — eine Sitzung gibt es vor der
+ * E-Mail-Bestätigung noch nicht.
+ */
+export const REGISTERED_PATH = `${MEMBERSHIP_APPLICATION_PATH}?konto=erstellt`;
+
+/** Kennzeichnet Bestätigungslinks, die aus dem Weg in den Verein stammen. */
+export const MEMBERSHIP_JOURNEY_MARKER = "mitglied-werden";
+
+/**
+ * Anmeldung, die anschließend zurück auf die Antragsseite führt. Ohne das Ziel
+ * landete jemand mitten im Ablauf nach dem Login im Dashboard und müsste den
+ * Weg dorthin selbst wiederfinden.
+ */
+export const MEMBERSHIP_LOGIN_PATH = `/login?next=${encodeURIComponent(
+  MEMBERSHIP_APPLICATION_PATH,
+)}`;
 
 /** Fallback, solange für kein Jahr ein Beitragssatz gepflegt ist. */
 export const FALLBACK_FEE_DEFAULT = { regular: 0, student: 0 };

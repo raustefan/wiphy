@@ -8,6 +8,7 @@ import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { formatEuro } from "@/lib/format";
 import { SATZUNG } from "./satzungstext";
 import { pageMetadata } from "@/lib/metadata";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 export const metadata: Metadata = pageMetadata({
     title: "Satzung & Ziele",
@@ -104,7 +105,7 @@ export default async function SatzungPage() {
                     anrechenbar.
                 </p>
 
-                <ButtonLink href="/register" className="justify-self-start">
+                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} className="justify-self-start">
                     Mitglied werden
                 </ButtonLink>
             </Card>

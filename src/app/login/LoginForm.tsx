@@ -1,10 +1,9 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, LogIn, MailCheck } from "lucide-react";
-import { RegSuccessDialog } from "./RegSuccessDialog";
 import { LoginFaq } from "./LoginFaq";
 import {
     checkLoginFeatureEnabled,
@@ -17,8 +16,16 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { AltchaField } from "@/components/AltchaField";
 import { PasswordInput } from "@/components/PasswordField";
 import { Button, Callout, Container, Field, Input } from "@/components/ui";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
-export function LoginForm({ challengeJson }: { challengeJson: string }) {
+export function LoginForm({
+    challengeJson,
+    next,
+}: {
+    challengeJson: string;
+    /** Wohin nach erfolgreicher Anmeldung — vom Server auf eigene Pfade begrenzt. */
+    next?: string | null;
+}) {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -94,7 +101,7 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                 setPassword("");
                 await renewChallenge();
             } else {
-                router.push("/dashboard");
+                router.push(next ?? "/dashboard");
                 router.refresh();
             }
         } finally {
@@ -106,9 +113,6 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
 
     return (
         <Container size="4" className="py-8 sm:py-14">
-            <Suspense fallback={null}>
-                <RegSuccessDialog />
-            </Suspense>
             <FeatureDisabledDialog
                 open={featureDisabled}
                 featureLabel="Login"
@@ -120,11 +124,20 @@ export function LoginForm({ challengeJson }: { challengeJson: string }) {
                     <AuthShell
                         icon={<LogIn size={22} aria-hidden="true" />}
                         title="Mitgliederbereich"
-                        description="Melde dich mit deiner E-Mail-Adresse an."
+                        description={
+                            // Wer aus dem Aufnahmeantrag hierher geschickt
+                            // wurde, soll wissen, dass die Anmeldung kein
+                            // Umweg ist, sondern der nächste Schritt.
+                            next === MEMBERSHIP_APPLICATION_PATH
+                                ? "Melde dich an — danach geht es direkt mit deinem Aufnahmeantrag weiter."
+                                : "Melde dich mit deiner E-Mail-Adresse an."
+                        }
                         footer={
                             <>
-                                Noch nicht registriert?{" "}
-                                <AuthLink href="/register">Jetzt Konto erstellen</AuthLink>
+                                Noch kein Konto?{" "}
+                                <AuthLink href={MEMBERSHIP_APPLICATION_PATH}>
+                                    Konto erstellen und Mitglied werden
+                                </AuthLink>
                             </>
                         }
                     >

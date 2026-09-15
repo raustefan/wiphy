@@ -19,6 +19,7 @@ import {
     pruneUnverifiedRegistrations,
     UNVERIFIED_TTL_HOURS,
 } from "@/lib/server/registrationCleanup";
+import { MEMBERSHIP_JOURNEY_MARKER, REGISTERED_PATH } from "@/lib/membership";
 
 /** Sitz der Universität — die Antwort auf die Sicherheitsfrage im Formular. */
 const SECURITY_ANSWER = "ulm";
@@ -62,12 +63,12 @@ export async function registerUser(formData: FormData) {
         // steht dagegen der echte Grund.
         if (website && website.trim() !== "") {
             await logAttempt("BLOCKED", "honeypot");
-            redirect("/login?register=success");
+            redirect(REGISTERED_PATH);
         }
         const renderedAtMs = Number(renderedAt);
         if (Number.isFinite(renderedAtMs) && Date.now() - renderedAtMs < MIN_FILL_TIME_MS) {
             await logAttempt("BLOCKED", "too_fast");
-            redirect("/login?register=success");
+            redirect(REGISTERED_PATH);
         }
 
         try {
@@ -126,7 +127,7 @@ export async function registerUser(formData: FormData) {
             // Don't reveal whether the email is already registered (avoids account enumeration).
             // Pretend registration succeeded without creating a duplicate account or sending mail.
             await logAttempt("FAILURE", "email_taken", existingUser.id);
-            redirect("/login?register=success");
+            redirect(REGISTERED_PATH);
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -163,7 +164,13 @@ export async function registerUser(formData: FormData) {
 
         await logAttempt("SUCCESS", undefined, user.id);
 
-        const verificationUrl = siteUrl(`/verify-email?token=${token}`);
+        // `weiter` sagt der Bestätigungsseite, dass dieser Link aus dem Weg in den
+        // Verein stammt: sie schickt danach zur Anmeldung *mit* Ziel Antrag,
+        // statt den Bestätigten nur allgemein auf den Login zu verweisen. Bei
+        // einer reinen Adressänderung fehlt der Zusatz.
+        const verificationUrl = siteUrl(
+            `/verify-email?token=${token}&weiter=${MEMBERSHIP_JOURNEY_MARKER}`,
+        );
 
         // Hier geht *nur* die Bestätigungsmail an den Anmelder raus. Die
         // Benachrichtigung der Admins verschickt erst der Klick auf den
@@ -179,6 +186,6 @@ export async function registerUser(formData: FormData) {
             console.error("Failed to send registration confirmation email:", error);
         }
 
-        redirect("/login?register=success");
+        redirect(REGISTERED_PATH);
     });
 }

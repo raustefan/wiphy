@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 type FaqItem = {
     question: string;
@@ -17,9 +18,9 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
                 question: "Wie erstelle ich einen Account?",
                 answer: (
                     <>
-                        Über{" "}
-                        <Link href="/register" className={linkClass}>
-                            „Jetzt Konto erstellen“
+                        Auf{" "}
+                        <Link href={MEMBERSHIP_APPLICATION_PATH} className={linkClass}>
+                            „Mitglied werden“
                         </Link>{" "}
                         gibst du Vorname, Nachname, E-Mail-Adresse und ein Passwort ein. Danach
                         schicken wir dir eine E-Mail mit einem Bestätigungslink. Erst wenn du diesen
@@ -83,7 +84,21 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
             },
             {
                 question: "Wie werde ich Vereinsmitglied?",
-                answer: <>Das ist eine gute Frage.</>,
+                answer: (
+                    <>
+                        In vier Schritten, die dich{" "}
+                        <Link href={MEMBERSHIP_APPLICATION_PATH} className={linkClass}>
+                            „Mitglied werden“
+                        </Link>{" "}
+                        der Reihe nach abfragt: Konto anlegen, E-Mail-Adresse bestätigen,
+                        Aufnahmeantrag ausfüllen (Person, Studium, Zahlungsweise,
+                        Einwilligungen). Über die Aufnahme entscheidet danach der Vorstand —
+                        bis zu diesem Beschluss besteht weder Mitgliedschaft noch
+                        Beitragspflicht. Du kannst den Antrag jederzeit unterbrechen und
+                        später fortsetzen; angefangene Anträge lassen sich vor der
+                        Entscheidung auch zurückziehen.
+                    </>
+                ),
             },
             {
                 question: "Wofür ist das Dashboard da?",

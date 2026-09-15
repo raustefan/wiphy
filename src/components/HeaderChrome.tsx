@@ -8,6 +8,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ButtonLink } from "@/components/ui/Button";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const links = [
   { href: "/termine", label: "Termine" },
@@ -97,8 +98,11 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
     }
   };
 
-  const memberHref = signedIn ? "/dashboard" : "/login";
-  const memberLabel = signedIn ? "Dashboard" : "Mitgliederbereich";
+  /* Für Gäste sind das zwei verschiedene Absichten, die vorher unter einer
+     Schaltfläche („Mitgliederbereich“) lagen: anmelden kann nur, wer schon ein
+     Konto hat — der Weg in den Verein beginnt woanders. Er steht deshalb als
+     gefüllte Schaltfläche daneben, die Anmeldung als ruhiger Link. */
+  const signedInAction = { href: "/dashboard", label: "Dashboard" };
 
   return (
     <header
@@ -159,9 +163,20 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           })}
           <div className="ml-2 flex items-center gap-2">
             <ThemeToggle />
-            <ButtonLink href={memberHref} size="sm">
-              {memberLabel}
-            </ButtonLink>
+            {signedIn ? (
+              <ButtonLink href={signedInAction.href} size="sm">
+                {signedInAction.label}
+              </ButtonLink>
+            ) : (
+              <>
+                <ButtonLink href="/login" size="sm" variant="ghost" color="neutral">
+                  Anmelden
+                </ButtonLink>
+                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="sm">
+                  Mitglied werden
+                </ButtonLink>
+              </>
+            )}
           </div>
         </nav>
 
@@ -247,14 +262,35 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
             })}
           </nav>
 
-          <div className="border-t border-line p-4">
-            <ButtonLink
-              href={memberHref}
-              className="w-full"
-              onClick={() => setMenuOpen(false)}
-            >
-              {memberLabel}
-            </ButtonLink>
+          <div className="grid gap-2 border-t border-line p-4">
+            {signedIn ? (
+              <ButtonLink
+                href={signedInAction.href}
+                className="w-full"
+                onClick={() => setMenuOpen(false)}
+              >
+                {signedInAction.label}
+              </ButtonLink>
+            ) : (
+              <>
+                <ButtonLink
+                  href={MEMBERSHIP_APPLICATION_PATH}
+                  className="w-full"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Mitglied werden
+                </ButtonLink>
+                <ButtonLink
+                  href="/login"
+                  variant="soft"
+                  color="neutral"
+                  className="w-full"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Anmelden
+                </ButtonLink>
+              </>
+            )}
           </div>
         </div>
       </div>

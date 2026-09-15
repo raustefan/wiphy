@@ -94,6 +94,7 @@ src/
     api/                  # REST-artige Endpunkte (NextAuth, Bild-Auslieferung, PDF, Nutzerliste)
     blog/                 # Öffentlicher Blog inkl. RSS-Feed
     dashboard/            # Geschützter Mitglieder- und Admin-Bereich
+    mitglied-werden/      # Weg in den Verein: Konto, Bestätigung, Antrag, Aufnahme
     kontakt/, termine/,   # Weitere öffentliche Seiten
     vorstand/, geschichte/, satzung/, impressum/, datenschutz/ ...
   components/              # Wiederverwendbare React-Komponenten
@@ -207,6 +208,16 @@ stiller Fallback auf unsichere Standardwerte.
   herunterladbarer **Kalenderdatei** (`.ics`) — einzeln oder als Sammeldatei
   aller kommenden Termine (`/termine/kalender.ics`). Termine ohne Enddatum
   gelten am Starttag als vorbei; es gibt bewusst kein separates Statusfeld.
+- **Mitglied werden** (`/mitglied-werden`) — Der ganze Weg in den Verein auf
+  einer Seite: eine Fortschrittsleiste über vier Stationen (Konto →
+  E-Mail-Bestätigung → Aufnahmeantrag → Aufnahme durch den Vorstand) und
+  darunter genau die Station, die gerade dran ist. Welche das ist, ergibt sich
+  aus dem Zustand des Kontos (`src/lib/membershipJourney.ts`), nicht aus einem
+  Klickpfad — die Seite zeigt Gästen die Registrierung, frisch Registrierten
+  den Hinweis auf die Bestätigungsmail, angemeldeten Nicht-Mitgliedern den
+  Antragsassistenten und danach den Bearbeitungsstand. Ersetzt die früheren
+  Seiten `/register` und `/dashboard/mitgliedschaft`; beide leiten dauerhaft
+  (308) hierher um.
 - **Vorstand** (`/vorstand`) — Öffentliche Übersicht der Vorstandsmitglieder
   mit Foto, Rolle und optionalem LinkedIn-Link.
 - **Geschichte** (`/geschichte`) — Zeitleiste zur Vereinsgeschichte.
@@ -224,18 +235,27 @@ stiller Fallback auf unsichere Standardwerte.
 
 ### Authentifizierung & Konten
 
-- **Registrierung** (`/register`) — Self-Service-Anmeldung mit E-Mail und
-  Passwort; das Konto muss per E-Mail-Bestätigungslink verifiziert werden.
-  Unbestätigte Selbstregistrierungen werden nach einer konfigurierbaren Frist
-  automatisch gelöscht (`REGISTRATION_CLEANUP`-Flag), von Admins angelegte
-  Konten sind davon nie betroffen.
+- **Registrierung** (`/mitglied-werden`) — Self-Service-Anmeldung mit E-Mail
+  und Passwort, aufgeteilt auf zwei kurze Hälften (Name/E-Mail, dann Passwort
+  und Botprüfung); das Konto muss per E-Mail-Bestätigungslink verifiziert
+  werden. Unbestätigte Selbstregistrierungen werden nach einer
+  konfigurierbaren Frist automatisch gelöscht (`REGISTRATION_CLEANUP`-Flag),
+  von Admins angelegte Konten sind davon nie betroffen. Ein Konto ist
+  ausdrücklich noch keine Vereinsmitgliedschaft — das sagt die Seite an jeder
+  Station.
 - **Login** (`/login`) — E-Mail/Passwort über NextAuth Credentials-Provider,
-  zusätzlich durch ALTCHA und mehrstufiges Rate-Limiting geschützt.
+  zusätzlich durch ALTCHA und mehrstufiges Rate-Limiting geschützt. Ein
+  `?next=`-Parameter führt nach der Anmeldung zurück an die Stelle, von der
+  jemand kam (z. B. den Aufnahmeantrag); zugelassen sind ausschließlich
+  seiteneigene Pfade, damit daraus keine offene Weiterleitung wird.
 - **Passwort vergessen** (`/forgot-password`, `/reset-password`) — Reset per
   E-Mail-Token; ein Passwortwechsel invalidiert automatisch alle laufenden
   Sitzungen (JWT wird gegen den `passwordChangedAt`-Zeitstempel geprüft).
 - **E-Mail-Verifizierung** (`/verify-email`) — schließt sowohl die
-  Registrierung als auch spätere E-Mail-Änderungen ab.
+  Registrierung als auch spätere E-Mail-Änderungen ab. Links aus einer
+  Registrierung tragen `&weiter=mitglied-werden`: die Seite schickt danach zur
+  Anmeldung *mit* Ziel Aufnahmeantrag, während eine reine Adressänderung wie
+  bisher nur zum Login führt.
 
 ### Mitgliederbereich (`/dashboard`)
 
@@ -248,11 +268,15 @@ Mitgliedsstatus an:
   (bzw. seit Aufnahme), Zahlstatus (bezahlt/offen), Beitragsstufe
   (regulär/Student) und können unter `/dashboard/zahlungen` ihre
   Bankverbindung pflegen sowie ihre Zahlungshistorie als **PDF** exportieren.
-- **Mitgliedsantrag** (`/dashboard/mitgliedschaft`) — für Konten ohne
-  Mitgliedschaft: ein fünfstufiger Assistent (Mitgliedschaft → Person &
-  Adresse → Studium & Beruf → Zahlungsweise → Bankverbindung → Beitrag &
-  Abschluss) inklusive Beitragsvorschau, Einwilligungen (Satzung,
-  Datenschutz) und optionalem SEPA-Lastschriftmandat. Anträge lassen sich vor
+- **Mitgliedsantrag** (`/mitglied-werden`) — für Konten ohne Mitgliedschaft
+  verlinkt das Dashboard prominent auf die öffentliche Seite; der Antrag
+  selbst ist dort die dritte Station. Er bleibt ein sechsstufiger Assistent
+  (Mitgliedschaft → Person & Adresse → Studium & Beruf → Zahlungsweise →
+  Bankverbindung → Beitrag & Abschluss) inklusive Beitragsvorschau,
+  Einwilligungen (Satzung, Datenschutz) und optionalem
+  SEPA-Lastschriftmandat. Auf dem Telefon bleiben „Zurück“, der Zähler
+  „x/6“ und „Weiter“ als Leiste am unteren Bildschirmrand stehen, statt erst
+  am Ende des jeweiligen Schritts aufzutauchen. Anträge lassen sich vor
   Entscheidung zurückziehen; der Beitrag wird zum Antragszeitpunkt
   „eingefroren“ (Snapshot), damit spätere Satzungsänderungen laufende
   Anträge nicht rückwirkend verändern. Mindestalter 18 Jahre.

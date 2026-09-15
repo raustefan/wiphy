@@ -7,10 +7,19 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { postJson } from "@/lib/client/postJson";
+import {
+    MEMBERSHIP_APPLICATION_PATH,
+    MEMBERSHIP_JOURNEY_MARKER,
+    MEMBERSHIP_LOGIN_PATH,
+} from "@/lib/membership";
 
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token") || "";
+    // Gesetzt, wenn der Link aus einer Registrierung auf „Mitglied werden“
+    // stammt. Bei einer reinen Adressänderung fehlt er — dann wäre ein Hinweis
+    // auf den Aufnahmeantrag nur verwirrend.
+    const fromJourney = searchParams.get("weiter") === MEMBERSHIP_JOURNEY_MARKER;
     const [verified, setVerified] = useState(false);
 
     const form = useActionForm(
@@ -38,11 +47,11 @@ function VerifyEmailContent() {
                 title="Link unvollständig"
             >
                 <Callout tone="danger">
-                    Der Bestätigungslink ist ungültig oder unvollständig. Bitte registriere dich
-                    erneut oder nutze den Link aus deiner E-Mail.
+                    Der Bestätigungslink ist ungültig oder unvollständig. Bitte nutze den Link
+                    aus deiner E-Mail oder beginne von vorn.
                 </Callout>
-                <ButtonLink href="/register" size="lg" className="w-full">
-                    Zur Registrierung
+                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="lg" className="w-full">
+                    Zu „Mitglied werden“
                 </ButtonLink>
             </AuthShell>
         );
@@ -55,10 +64,17 @@ function VerifyEmailContent() {
                 title="E-Mail bestätigt"
             >
                 <Callout tone="success">
-                    Deine E-Mail-Adresse wurde bestätigt. Du kannst dich jetzt anmelden.
+                    Deine E-Mail-Adresse wurde bestätigt.
+                    {fromJourney
+                        ? " Zwei von vier Schritten sind damit erledigt: Melde dich an, dann geht es direkt mit dem Aufnahmeantrag weiter."
+                        : " Du kannst dich jetzt anmelden."}
                 </Callout>
-                <ButtonLink href="/login" size="lg" className="w-full">
-                    Zum Login
+                <ButtonLink
+                    href={fromJourney ? MEMBERSHIP_LOGIN_PATH : "/login"}
+                    size="lg"
+                    className="w-full"
+                >
+                    {fromJourney ? "Anmelden und Antrag stellen" : "Zum Login"}
                 </ButtonLink>
             </AuthShell>
         );

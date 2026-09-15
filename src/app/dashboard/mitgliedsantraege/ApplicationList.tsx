@@ -383,9 +383,6 @@ export function ApplicationList({
                             onChange={(event) => setAufnahmedatum(event.target.value)}
                         />
                     </Field>
-                    <Field label="Interne Notiz (optional)">
-                        <TextArea value={note} onChange={(event) => setNote(event.target.value)} />
-                    </Field>
                     <Field label="Mitglieds-ID" hint="Bei Bedarf überschreiben (falls noch nicht vergeben).">
                         <Input
                             type="number"

@@ -14,6 +14,7 @@ import { EventDateCube, EventFacts } from "@/components/EventCard";
 import { eventIcsPath, eventPath, formatCountdown } from "@/lib/events";
 import { formatDateShort } from "@/lib/format";
 import { blogImageUrl } from "@/lib/blogImages";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const pillars = [
   {
@@ -399,14 +400,15 @@ export default async function HomePage() {
                 </PageTitle>
                 <Lead>
                   Offen für Alumni und Studierende der Physik und
-                  Wirtschaftsphysik an der Universität Ulm. Die Registrierung
-                  dauert wenige Minuten — den Rest übernehmen wir.
+                  Wirtschaftsphysik an der Universität Ulm. Vier Schritte:
+                  Konto anlegen, E-Mail bestätigen, Antrag ausfüllen — über die
+                  Aufnahme entscheidet dann der Vorstand.
                 </Lead>
               </div>
 
               <div className="flex w-full flex-col gap-3 md:w-auto min-[420px]:flex-row">
-                <ButtonLink href="/register" size="lg">
-                  Jetzt registrieren <ArrowRight size={16} aria-hidden="true" />
+                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="lg">
+                  Mitglied werden <ArrowRight size={16} aria-hidden="true" />
                 </ButtonLink>
                 <ButtonLink href="/vorstand" size="lg" variant="soft" color="neutral">
                   Unser Vorstand
