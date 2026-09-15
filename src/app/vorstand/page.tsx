@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { pageMetadata } from "@/lib/metadata";
 import { getPublicMembers } from "@/lib/server/services/boardService";
@@ -41,45 +42,57 @@ export default async function VorstandPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
         {vorstand.map((entry) => (
-          <Card
-            key={entry.id}
-            className="flex flex-col items-center gap-3 p-5 text-center transition-shadow hover:shadow-md sm:p-7"
-          >
-            {entry.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={boardPhotoUrl(entry.photo.id)}
-                alt=""
-                className="size-14 rounded-full border border-line-strong object-cover sm:size-16"
-              />
-            ) : (
-              <div
-                aria-hidden="true"
-                className="grid size-14 place-items-center rounded-full border border-line-strong bg-gradient-to-br from-physics/20 to-market/15 text-base font-bold tracking-wide sm:size-16 sm:text-lg"
-              >
-                {getInitials(entry.name)}
+          <li key={entry.id}>
+            <Card className="flex h-full flex-col items-center gap-3 p-4 text-center transition-shadow hover:shadow-lg sm:gap-4 sm:p-7">
+              {/* Der Farbring greift die beiden Akzente des Logos auf und hebt
+                  das Foto von der ruhigen Kartenfläche ab. */}
+              <div className="rounded-full bg-gradient-to-br from-physics/35 to-market/25 p-[3px]">
+                {entry.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={boardPhotoUrl(entry.photo.id)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="size-20 rounded-full border-2 border-surface object-cover sm:size-28"
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    className="grid size-20 place-items-center rounded-full border-2 border-surface bg-gradient-to-br from-physics/15 to-market/10 text-xl font-bold tracking-wide sm:size-28 sm:text-3xl"
+                  >
+                    {getInitials(entry.name)}
+                  </div>
+                )}
               </div>
-            )}
-            <div>
-              <p className="text-sm font-bold sm:text-base">{entry.name}</p>
-              <p className="mt-1 text-sm text-muted">{entry.role}</p>
-            </div>
-            {entry.linkedin && (
-              <a
-                href={entry.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${entry.name} auf LinkedIn`}
-                className="grid size-10 cursor-pointer place-items-center rounded-full text-physics transition-colors hover:bg-physics/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-              >
-                <LinkedInGlyph />
-              </a>
-            )}
-          </Card>
+
+              <div className="flex flex-col items-center gap-1.5">
+                <p className="text-sm font-bold tracking-tight text-balance sm:text-lg">
+                  {entry.name}
+                </p>
+                <Badge tone="physics" className="whitespace-normal">
+                  {entry.role}
+                </Badge>
+              </div>
+
+              {entry.linkedin && (
+                <a
+                  href={entry.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${entry.name} auf LinkedIn`}
+                  className="mt-auto grid size-10 cursor-pointer place-items-center rounded-full border border-line text-muted transition-colors hover:border-physics/40 hover:bg-physics/10 hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                >
+                  <LinkedInGlyph />
+                </a>
+              )}
+            </Card>
+          </li>
         ))}
-      </div>
+      </ul>
+
     </Container>
   );
 }
