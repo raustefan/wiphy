@@ -169,6 +169,14 @@ export const DATENSCHUTZ: LegalDocument = [
     ],
   },
   {
+    title: "Vorstandsdarstellung",
+    blocks: [
+      "Von unseren Vorstandsmitgliedern verarbeiten und veröffentlichen wir Name, Funktion, optional einen Link zu ihrem LinkedIn-Profil sowie optional ein Profilfoto auf der Seite „Vorstand“ unseres Onlineangebotes. Zweck ist die satzungsgemäße Außendarstellung und Erreichbarkeit des Vorstands (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an Transparenz und Öffentlichkeitsarbeit eines eingetragenen Vereins).",
+      "Die Namen und Funktionen der beiden Vorsitzenden können zusätzlich zur Unterzeichnung von E-Mails verwendet werden, die im Namen des Vorstands verschickt werden.",
+      "Diese Daten werden gelöscht bzw. angepasst, sobald das jeweilige Mitglied aus dem Vorstandsamt ausscheidet.",
+    ],
+  },
+  {
     title: "Abruf von Emojis und Smilies",
     blocks: [
       "Innerhalb unseres WordPress-Blogs werden grafische Emojis (bzw. Smilies), d.h. kleine grafische Dateien, die Gefühle ausdrücken, eingesetzt, die von externen Servern bezogen werden. Hierbei erheben die Anbieter der Server, die IP-Adressen der Nutzer. Dies ist notwendig, damit die Emojie-Dateien an die Browser der Nutzer übermittelt werden können. Der Emojie-Service wird von der Automattic Inc., 60 29th Street #343, San Francisco, CA 94110, USA, angeboten. Datenschutzhinweise von Automattic: [automattic.com/privacy](https://automattic.com/privacy/) . Die verwendeten Server-Domains sind s.w.org und twemoji.maxcdn.com, wobei es sich unseres Wissens nach um sog. Content-Delivery-Networks handelt, also Server, die lediglich einer schnellen und sicheren Übermittlung der Dateien dienen und die personenbezogenen Daten der Nutzer nach der Übermittlung gelöscht werden.",

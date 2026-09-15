@@ -1,6 +1,6 @@
 import { FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
-import { getApplications } from "@/lib/server/services/membershipService";
+import { getApplications, getMaxMitgliedId } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { planApplicationFees } from "@/lib/feeDefaults";
@@ -13,12 +13,16 @@ export const dynamic = "force-dynamic";
 export default async function MembershipApplicationsPage() {
     await requireAdmin();
 
-    const [applications, feeDefaults, applicationEnabled, mailEnabled] = await Promise.all([
-        getApplications(),
-        getFeeDefaults(),
-        isFeatureEnabled("MEMBERSHIP_APPLICATION"),
-        isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL"),
-    ]);
+    const [applications, feeDefaults, applicationEnabled, mailEnabled, maxMitgliedId] =
+        await Promise.all([
+            getApplications(),
+            getFeeDefaults(),
+            isFeatureEnabled("MEMBERSHIP_APPLICATION"),
+            isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL"),
+            getMaxMitgliedId(),
+        ]);
+    // Vorschau der ID, die eine Annahme vergeben würde (nächste freie ID).
+    const nextMitgliedId = maxMitgliedId + 1;
 
     // Vorschau für „heute beschlossen“; die Annahme rechnet mit dem im Dialog
     // gewählten Beschlussdatum neu.
@@ -118,7 +122,7 @@ export default async function MembershipApplicationsPage() {
                     />
                 </Card>
             ) : (
-                <ApplicationList applications={items} />
+                <ApplicationList applications={items} nextMitgliedId={nextMitgliedId} />
             )}
         </Container>
     );

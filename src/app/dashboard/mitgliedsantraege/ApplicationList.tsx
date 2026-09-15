@@ -79,7 +79,13 @@ function todayInputValue() {
     return new Date().toISOString().slice(0, 10);
 }
 
-export function ApplicationList({ applications }: { applications: ApplicationItem[] }) {
+export function ApplicationList({
+    applications,
+    nextMitgliedId,
+}: {
+    applications: ApplicationItem[];
+    nextMitgliedId: number;
+}) {
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
     const [expanded, setExpanded] = useState<string | null>(null);
@@ -89,6 +95,7 @@ export function ApplicationList({ applications }: { applications: ApplicationIte
     const [pendingDelete, setPendingDelete] = useState<ApplicationItem | null>(null);
     const [aufnahmedatum, setAufnahmedatum] = useState(todayInputValue);
     const [note, setNote] = useState("");
+    const [mitgliedIdOverride, setMitgliedIdOverride] = useState("");
 
     function run(
         action: (fd: FormData) => Promise<{ ok: boolean; message?: string }>,
@@ -109,6 +116,7 @@ export function ApplicationList({ applications }: { applications: ApplicationIte
     function openAccept(application: ApplicationItem) {
         setAufnahmedatum(todayInputValue());
         setNote("");
+        setMitgliedIdOverride(String(application.applicant.mitgliedId ?? nextMitgliedId));
         setAccepting(application);
     }
 
@@ -118,6 +126,7 @@ export function ApplicationList({ applications }: { applications: ApplicationIte
         fd.set("id", accepting.id);
         fd.set("aufnahmedatum", aufnahmedatum);
         fd.set("note", note);
+        fd.set("mitgliedId", mitgliedIdOverride);
         run(acceptMembershipApplication, fd, () => setAccepting(null));
     }
 
@@ -376,6 +385,16 @@ export function ApplicationList({ applications }: { applications: ApplicationIte
                     </Field>
                     <Field label="Interne Notiz (optional)">
                         <TextArea value={note} onChange={(event) => setNote(event.target.value)} />
+                    </Field>
+                    <Field label="Mitglieds-ID" hint="Bei Bedarf überschreiben (falls noch nicht vergeben).">
+                        <Input
+                            type="number"
+                            min={1}
+                            step={1}
+                            className="max-w-32"
+                            value={mitgliedIdOverride}
+                            onChange={(event) => setMitgliedIdOverride(event.target.value)}
+                        />
                     </Field>
                     {accepting && (
                         <div className="grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">

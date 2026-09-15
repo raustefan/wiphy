@@ -248,6 +248,49 @@ model BlogImage {
   @@index([postId, position])
 }
 
+/// Ein Vorstandsmitglied für die öffentliche Seite `/vorstand` und die
+/// Mail-Signatur. Ersetzt die zuvor im Code fest verdrahteten Listen in
+/// `src/app/vorstand/page.tsx` und `src/lib/email/branding.ts`.
+model BoardMember {
+  id       String @id @default(cuid())
+  name     String
+  role     String
+  linkedin String @default("")
+
+  /// Reihenfolge auf /vorstand und im Dashboard.
+  position Int @default(0)
+  /// Entwurf vs. öffentlich sichtbar — wie BlogPost.published.
+  published Boolean @default(false)
+  /// Ob dieses Mitglied in der Mail-Signatur genannt wird.
+  inSignature Boolean @default(false)
+
+  photo BoardMemberPhoto?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, position])
+}
+
+/// Profilfoto eines Vorstandsmitglieds, quadratisch zugeschnitten und als
+/// WebP re-kodiert (siehe `processBoardPhoto()`) — dieselbe Begründung wie bei
+/// `BlogImage`: die Bytes liegen in der Datenbank, weil der Betrieb nur ein
+/// Backup davon kennt.
+model BoardMemberPhoto {
+  id       String      @id @default(cuid())
+  member   BoardMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String      @unique
+
+  mimeType String @default("image/webp")
+  width    Int
+  height   Int
+  byteSize Int
+  data     Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum FeatureFlagKey {
   LOGIN
   PASSWORD_RESET
@@ -268,6 +311,7 @@ enum FeatureFlagKey {
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL
   REGISTRATION_CLEANUP
   EVENT_MANAGEMENT
+  BOARD_MANAGEMENT
 }
 
 model FeatureFlag {

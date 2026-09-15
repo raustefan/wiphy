@@ -22,6 +22,16 @@ export const applicationDecisionSchema = z.object({
   // dem Absenden des Formulars.
   aufnahmedatum: z.coerce.date({ message: "Bitte ein gültiges Beschlussdatum angeben." }),
   note: optionalNote,
+  // Leer = automatische Vergabe (nächste freie ID). Nur zum Übertragen von
+  // Mitgliedern mit bereits bestehender ID aus dem alten System gedacht.
+  mitgliedId: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z.coerce
+      .number({ message: "Mitglieds-ID muss eine Zahl sein." })
+      .int()
+      .positive()
+      .optional(),
+  ),
 });
 
 export const applicationRejectSchema = z.object({

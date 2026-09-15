@@ -44,6 +44,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
+import { IbanInput } from "@/components/IbanInput";
 
 type UserData = {
     id: string;
@@ -559,7 +560,7 @@ export function EditUserForm({
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <Field label="IBAN">
-                                        <IconInput icon={<CreditCard size={15} />} name="IBAN" defaultValue={initialValues.IBAN} />
+                                        <IbanInput name="IBAN" defaultValue={initialValues.IBAN} />
                                     </Field>
                                     <Field label="BIC">
                                         <IconInput icon={<CreditCard size={15} />} name="BIC" defaultValue={initialValues.BIC} />

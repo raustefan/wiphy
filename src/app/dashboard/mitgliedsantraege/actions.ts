@@ -38,7 +38,12 @@ async function notifyApplicant(email: string | undefined, message: EmailMessage)
 export async function acceptMembershipApplication(formData: FormData) {
   return executeAction(async () => {
     const admin = await requireAdmin();
-    const { id, aufnahmedatum, note } = parseFormData(applicationDecisionSchema, formData);
+    const {
+      id,
+      aufnahmedatum,
+      note,
+      mitgliedId: mitgliedIdOverride,
+    } = parseFormData(applicationDecisionSchema, formData);
 
     const application = await getApplication(id);
     if (!application) throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
@@ -48,6 +53,7 @@ export async function acceptMembershipApplication(formData: FormData) {
       adminId: admin.id,
       aufnahmedatum,
       note,
+      mitgliedId: mitgliedIdOverride,
     });
 
     await notifyApplicant(

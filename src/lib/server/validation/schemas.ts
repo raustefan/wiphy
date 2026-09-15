@@ -362,75 +362,124 @@ export const blogImageAltSchema = blogImageSchema.extend({
   alt: z.string().trim().max(300, "Der Alternativtext ist zu lang."),
 });
 
-export const userUpdateSchema = z.object({
-  id: z.string().min(1, "Ungültige Benutzer-ID."),
+// ─────────────────────────── Vorstand ───────────────────────────
 
-  // basic
-  name: z
+export const boardSaveSchema = z.object({
+  id: z.string().min(1, "Ungültige Mitglieds-ID.").max(64),
+  name: z.string().trim().min(1, "Bitte einen Namen angeben.").max(200, "Name ist zu lang."),
+  role: z.string().trim().max(200, "Funktion ist zu lang."),
+  linkedin: z
     .string()
     .trim()
-    .min(1, "Bitte einen Namen angeben.")
-    .max(200, "Name ist zu lang."),
-  vorname: optionalString(200),
-  email: emailField,
-  titel: optionalString(120),
-
-  // kontakt & adresse
-  berufsstand: optionalString(200),
-  plz: optionalString(20),
-  stadt: optionalString(120),
-  strasse: optionalString(200),
-  telefon: optionalString(50),
-  arbeitgeber: optionalString(200),
-  land: optionalString(120),
-  website: optionalString(200),
-
-  // dates
-  geburtsdatum: optionalDate(),
-
-  // studium
-  studiengang: optionalString(200),
-  studienbeginn: optionalDate(),
-  studienende: optionalDate(),
-  diplomarbeit: optionalString(200),
-  bachelorarbeit: optionalString(200),
-  masterarbeit: optionalString(200),
-  dissertation: optionalString(200),
-
-  // beruf
-  berufszweig: optionalString(200),
-  position: optionalString(200),
-  praktika: optionalString(2000),
-  berufserfahrung: optionalString(5000),
-
-  // zahlungs/admin info
-  zahlungsKommentar: optionalString(10_000),
-  bank: optionalString(200),
-  BLZ: optionalString(50),
-  KTO: optionalString(50),
-  bankeinzug: preprocessBoolean,
-  zuwendungsbesch: preprocessBoolean,
-  mahnung: optionalString(2000),
-  IBAN: optionalString(80),
-  BIC: optionalString(40),
-  mandatserteilung: optionalDate(),
-
-  // admin-only flags
-  datensperren: preprocessBoolean,
-  ausschluss: preprocessBoolean,
-
-  // Mitglieds- / admin-only fields
-  /** Present only for admins; omit or empty for members */
-  role: optionalEnum(["ADMIN", "MEMBER"]),
-  status: optionalEnum(["ORDENTLICHES_MITGLIED", "EHRENMITGLIED", "KEIN_MITGLIED"]),
-  mitgliedId: z
-    .string()
+    .max(500, "LinkedIn-Link ist zu lang.")
     .optional()
-    .refine(
-      (v) => v === undefined || v === "" || /^\d+$/.test(String(v)),
-      "Mitglieds-ID muss eine gültige nicht-negative Ganzzahl sein."
-    ),
+    .transform((v) => v ?? "")
+    .refine((v) => v === "" || v.startsWith("https://"), {
+      message: "Der LinkedIn-Link muss mit https:// beginnen.",
+    }),
+  published: z.preprocess((v) => v === "on", z.boolean()),
+  inSignature: z.preprocess((v) => v === "on", z.boolean()),
 });
+
+export const boardDeleteSchema = z.object({
+  id: z.string().min(1, "Ungültige Mitglieds-ID.").max(64),
+});
+
+export const boardMoveSchema = z.object({
+  id: z.string().min(1, "Ungültige Mitglieds-ID.").max(64),
+  direction: z.enum(["up", "down"]),
+});
+
+export const userUpdateSchema = z
+  .object({
+    id: z.string().min(1, "Ungültige Benutzer-ID."),
+
+    // basic
+    name: z
+      .string()
+      .trim()
+      .min(1, "Bitte einen Namen angeben.")
+      .max(200, "Name ist zu lang."),
+    vorname: optionalString(200),
+    email: emailField,
+    titel: optionalString(120),
+
+    // kontakt & adresse
+    berufsstand: optionalString(200),
+    plz: optionalString(20),
+    stadt: optionalString(120),
+    strasse: optionalString(200),
+    telefon: optionalString(50),
+    arbeitgeber: optionalString(200),
+    land: optionalString(120),
+    website: optionalString(200),
+
+    // dates
+    geburtsdatum: optionalDate(),
+
+    // studium
+    studiengang: optionalString(200),
+    studienbeginn: optionalDate(),
+    studienende: optionalDate(),
+    diplomarbeit: optionalString(200),
+    bachelorarbeit: optionalString(200),
+    masterarbeit: optionalString(200),
+    dissertation: optionalString(200),
+
+    // beruf
+    berufszweig: optionalString(200),
+    position: optionalString(200),
+    praktika: optionalString(2000),
+    berufserfahrung: optionalString(5000),
+
+    // zahlungs/admin info
+    zahlungsKommentar: optionalString(10_000),
+    bank: optionalString(200),
+    BLZ: optionalString(50),
+    KTO: optionalString(50),
+    bankeinzug: preprocessBoolean,
+    zuwendungsbesch: preprocessBoolean,
+    mahnung: optionalString(2000),
+    IBAN: optionalString(80),
+    BIC: optionalString(40),
+    mandatserteilung: optionalDate(),
+
+    // admin-only flags
+    datensperren: preprocessBoolean,
+    ausschluss: preprocessBoolean,
+
+    // Mitglieds- / admin-only fields
+    /** Present only for admins; omit or empty for members */
+    role: optionalEnum(["ADMIN", "MEMBER"]),
+    status: optionalEnum(["ORDENTLICHES_MITGLIED", "EHRENMITGLIED", "KEIN_MITGLIED"]),
+    mitgliedId: z
+      .string()
+      .optional()
+      .refine(
+        (v) => v === undefined || v === "" || /^\d+$/.test(String(v)),
+        "Mitglieds-ID muss eine gültige nicht-negative Ganzzahl sein."
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.IBAN && !isValidIban(normalizeIban(data.IBAN))) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Diese IBAN ist ungültig. Bitte prüfe die Eingabe.",
+        path: ["IBAN"],
+      });
+    }
+    if (data.BIC && !isValidBic(data.BIC)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
+        path: ["BIC"],
+      });
+    }
+  })
+  .transform((data) => ({
+    ...data,
+    IBAN: data.IBAN ? normalizeIban(data.IBAN) : data.IBAN,
+  }));
 
 export type UserUpdateParsed = z.infer<typeof userUpdateSchema>;
 

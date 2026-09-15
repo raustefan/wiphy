@@ -23,9 +23,7 @@ import {
 } from "@/lib/email/blocks";
 import { siteUrl } from "@/lib/server/siteUrl";
 
-const BOARD_LINE = VEREIN.board.map((member) => `${member.name} (${member.role})`).join(" · ");
-
-function signatureHtml(signature: EmailSignature): string {
+function signatureHtml(signature: EmailSignature, boardLine: string): string {
   if (signature === "none") return "";
 
   if (signature === "system") {
@@ -39,16 +37,20 @@ function signatureHtml(signature: EmailSignature): string {
     `<div style="height:1px;line-height:1px;font-size:0;background:${C.line};margin:28px 0 16px;">&nbsp;</div>`,
     `<p style="margin:0 0 4px;font-family:${FONT};font-size:16px;line-height:1.6;color:${C.foreground};">Viele Grüße</p>`,
     `<p style="margin:0 0 8px;font-family:${FONT};font-size:16px;line-height:1.6;font-weight:600;color:${C.foreground};">Dein Vorstand des ${escapeHtml(VEREIN.name)}</p>`,
-    `<p style="margin:0;font-family:${FONT};font-size:13px;line-height:1.5;color:${C.faint};">${escapeHtml(BOARD_LINE)}</p>`,
+    boardLine
+      ? `<p style="margin:0;font-family:${FONT};font-size:13px;line-height:1.5;color:${C.faint};">${escapeHtml(boardLine)}</p>`
+      : "",
   ].join("");
 }
 
-function signatureText(signature: EmailSignature): string {
+function signatureText(signature: EmailSignature, boardLine: string): string {
   if (signature === "none") return "";
   if (signature === "system") {
     return `--\nDiese Nachricht wurde automatisch vom System des ${VEREIN.name} erzeugt.`;
   }
-  return `Viele Grüße\nDein Vorstand des ${VEREIN.name}\n${BOARD_LINE}`;
+  return [`Viele Grüße`, `Dein Vorstand des ${VEREIN.name}`, boardLine]
+    .filter((line) => line.length > 0)
+    .join("\n");
 }
 
 function headerHtml(): string {
@@ -84,7 +86,7 @@ function footerHtml(): string {
 }
 
 /** Vollständiges HTML-Dokument der Mail. */
-export function renderEmailHtml(message: EmailMessage): string {
+export function renderEmailHtml(message: EmailMessage, boardLine: string = ""): string {
   const signature = message.signature ?? "board";
   const preheader = derivePreheader(message);
 
@@ -106,7 +108,7 @@ export function renderEmailHtml(message: EmailMessage): string {
 ${headerHtml()}
 <tr><td style="padding:14px 32px 28px;">
 ${renderBlocksHtml(message.blocks)}
-${signatureHtml(signature)}
+${signatureHtml(signature, boardLine)}
 </td></tr>
 ${footerHtml()}
 </table>
@@ -117,8 +119,8 @@ ${footerHtml()}
 }
 
 /** Textfassung derselben Mail — identischer Inhalt, ohne Markup. */
-export function renderEmailText(message: EmailMessage): string {
-  const signature = signatureText(message.signature ?? "board");
+export function renderEmailText(message: EmailMessage, boardLine: string = ""): string {
+  const signature = signatureText(message.signature ?? "board", boardLine);
   const footer = [VEREIN.name, ...VEREIN.address, VEREIN.email, siteUrl("/")].join("\n");
 
   return [renderBlocksText(message.blocks), signature, `--\n${footer}`]

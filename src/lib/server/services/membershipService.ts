@@ -11,6 +11,7 @@ import {
   getMaxMitgliedId,
 } from "@/lib/server/repositories/membershipRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
+import { findUserByMitgliedIdExcludingUser } from "@/lib/server/repositories/userRepository";
 
 export {
   countOpenApplications,
@@ -19,6 +20,7 @@ export {
   findApplicationById as getApplication,
   findApplicationsForUser as getApplicationsForUser,
   findOpenApplication as getOpenApplication,
+  getMaxMitgliedId,
   markApplicationMailed,
 } from "@/lib/server/repositories/membershipRepository";
 
@@ -158,6 +160,9 @@ export async function approveApplication(params: {
   adminId: string;
   aufnahmedatum: Date;
   note: string | null;
+  // Manuelle Übersteuerung der automatischen Vergabe, z. B. beim Übertragen
+  // von Mitgliedern aus dem alten System mit bereits bestehender ID.
+  mitgliedId?: number;
 }) {
   const application = await findApplicationById(params.id);
   if (!application) throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
@@ -173,8 +178,19 @@ export async function approveApplication(params: {
     bankeinzug: application.bankeinzug,
   });
 
-  const nextMitgliedId =
-    application.user.mitgliedId ?? (await getMaxMitgliedId()) + 1;
+  let nextMitgliedId: number;
+  if (params.mitgliedId != null) {
+    const existing = await findUserByMitgliedIdExcludingUser(
+      params.mitgliedId,
+      application.userId,
+    );
+    if (existing) {
+      throw new AppError("CONFLICT", "Diese Mitglieds-ID ist bereits vergeben.");
+    }
+    nextMitgliedId = params.mitgliedId;
+  } else {
+    nextMitgliedId = application.user.mitgliedId ?? (await getMaxMitgliedId()) + 1;
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.membershipApplication.update({

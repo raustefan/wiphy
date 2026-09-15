@@ -9,6 +9,7 @@
 import nodemailer, { type Transporter } from "nodemailer";
 import { getSmtpConfig } from "@/lib/server/env";
 import type { EmailMessage } from "@/lib/email/blocks";
+import { getSignatureBoardLine } from "@/lib/server/services/boardService";
 import { renderEmailHtml, renderEmailText } from "./layout";
 
 let cachedTransporter: Transporter | null = null;
@@ -45,6 +46,7 @@ export async function sendEmail(input: Recipients & { message: EmailMessage }): 
   if (!to && !bcc) return;
 
   const { from } = getSmtpConfig();
+  const boardLine = await getSignatureBoardLine();
 
   await getMailTransporter().sendMail({
     from,
@@ -52,8 +54,8 @@ export async function sendEmail(input: Recipients & { message: EmailMessage }): 
     bcc,
     replyTo: input.replyTo,
     subject: input.message.subject,
-    text: renderEmailText(input.message),
-    html: renderEmailHtml(input.message),
+    text: renderEmailText(input.message, boardLine),
+    html: renderEmailHtml(input.message, boardLine),
     encoding: "utf-8",
   });
 }

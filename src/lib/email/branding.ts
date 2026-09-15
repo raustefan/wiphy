@@ -12,11 +12,6 @@ export const VEREIN = {
   email: "info@wirtschaftsphysik.de",
   address: ["c/o Universität Ulm, Studienkommission Physik", "Albert-Einstein-Allee 11", "89081 Ulm"],
   register: "Amtsgericht Ulm · VR 1891",
-  /** Unterzeichnet die Mails, die im Namen des Vorstands rausgehen. */
-  board: [
-    { name: "Nikolas Tomek", role: "1. Vorsitzender" },
-    { name: "Jannes Weghake", role: "2. Vorsitzender" },
-  ],
 } as const;
 
 /** Im Footer verlinkte Seiten — Pfade werden gegen die Basis-URL absolut gemacht. */

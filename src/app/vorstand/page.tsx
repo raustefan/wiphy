@@ -3,6 +3,8 @@ import { Users } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { pageMetadata } from "@/lib/metadata";
+import { getPublicMembers } from "@/lib/server/services/boardService";
+import { boardPhotoUrl } from "@/lib/boardImages";
 
 const TITLE = "Vorstand";
 const DESCRIPTION =
@@ -14,35 +16,6 @@ export const metadata: Metadata = pageMetadata({
   path: "/vorstand",
 });
 
-const vorstand = [
-  {
-    name: "Nikolas Tomek",
-    role: "1. Vorstandsvorsitzender",
-    linkedin: "https://www.linkedin.com/in/nikolas-tomek/",
-  },
-  {
-    name: "Jannes Weghake",
-    role: "2. Vorstandsvorsitzender",
-    linkedin: "https://www.linkedin.com/in/jannes-weghake-317b95274/",
-  },
-  {
-    name: "Carsten Schäfer-Siebert",
-    role: "Finanzen",
-    linkedin: "https://www.linkedin.com/in/carsten-sch%C3%A4fer-siebert/",
-  },
-  {
-    name: "Stefan Rau",
-    role: "Medien & IT",
-    linkedin: "https://www.linkedin.com/in/stefan-rau-91243721a/",
-  },
-  {
-    name: "Andreas Dietrich",
-    role: "Schriftführer",
-    linkedin: "https://www.linkedin.com/in/andreas-dietrich-3934282a6/",
-  },
-  { name: "André Knoll", role: "Fachschaftsbotschafter" },
-];
-
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -52,7 +25,9 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function VorstandPage() {
+export default async function VorstandPage() {
+  const vorstand = await getPublicMembers();
+
   return (
     <Container size="3" className="py-10 sm:py-14">
       <div className="mb-8 flex flex-col items-center gap-2 text-center sm:mb-10">
@@ -69,15 +44,24 @@ export default function VorstandPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {vorstand.map((entry) => (
           <Card
-            key={entry.name}
+            key={entry.id}
             className="flex flex-col items-center gap-3 p-5 text-center transition-shadow hover:shadow-md sm:p-7"
           >
-            <div
-              aria-hidden="true"
-              className="grid size-14 place-items-center rounded-full border border-line-strong bg-gradient-to-br from-physics/20 to-market/15 text-base font-bold tracking-wide sm:size-16 sm:text-lg"
-            >
-              {getInitials(entry.name)}
-            </div>
+            {entry.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={boardPhotoUrl(entry.photo.id)}
+                alt=""
+                className="size-14 rounded-full border border-line-strong object-cover sm:size-16"
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                className="grid size-14 place-items-center rounded-full border border-line-strong bg-gradient-to-br from-physics/20 to-market/15 text-base font-bold tracking-wide sm:size-16 sm:text-lg"
+              >
+                {getInitials(entry.name)}
+              </div>
+            )}
             <div>
               <p className="text-sm font-bold sm:text-base">{entry.name}</p>
               <p className="mt-1 text-sm text-muted">{entry.role}</p>

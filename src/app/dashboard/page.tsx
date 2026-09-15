@@ -27,6 +27,7 @@ import {
     ShieldAlert,
     Pencil,
     ChevronRight,
+    Users,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
@@ -52,6 +53,7 @@ import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/member
 
 const ADMIN_ACTIONS = [
     { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
+    { href: "/dashboard/vorstand", label: "Vorstand", Icon: Users },
     { href: "/dashboard/users/new", label: "Neuer User", Icon: User },
     { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
     { href: "/dashboard/termine", label: "Termine", Icon: CalendarDays },
