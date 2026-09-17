@@ -26,7 +26,9 @@ function ToolbarButton({
       aria-label={title}
       aria-pressed={active}
       className={cn(
-        "min-h-8 cursor-pointer rounded-md border border-line-strong px-2 py-1 text-sm transition-colors",
+        // `min-w-8`: die Knöpfe mit schmalem Symbol (Kursiv, Liste) waren nur
+        // 22px breit und damit kleiner als jede Fingerkuppe.
+        "min-h-8 min-w-8 cursor-pointer rounded-md border border-line-strong px-2 py-1 text-sm transition-colors",
         active
           ? "border-physics bg-physics font-bold text-on-physics"
           : "bg-surface text-foreground hover:bg-raised",

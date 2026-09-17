@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
 import { Badge, Card, Container } from "@/components/ui";
 import { FeatureFlagToggle } from "./FeatureFlagToggle";
 import { DashboardPageHeader } from "../DashboardPageHeader";
+
+export const metadata: Metadata = { title: "Feature Flags" };
 
 export default async function FeatureFlagsPage() {
     await requireAdmin();

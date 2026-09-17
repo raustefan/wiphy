@@ -1,5 +1,6 @@
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { blogImageUrl } from "@/lib/blogImages";
+import { blogPostPath } from "@/lib/slug";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/siteUrl";
 
 /**
@@ -32,13 +33,17 @@ export async function GET() {
 
   const items = posts
     .map((post) => {
-      const url = absoluteUrl(`/blog/${post.id}`);
+      const url = absoluteUrl(blogPostPath(post));
+      // Die guid bleibt die alte Adresse ohne Titelteil: sie leitet weiter und
+      // ändert sich nie — sonst meldeten Feedreader jeden Beitrag als neu,
+      // sobald sich sein Titel oder das Adressformat ändert.
+      const guid = absoluteUrl(`/blog/${post.id}`);
       const cover = post.cover ? absoluteUrl(blogImageUrl(post.cover.id)) : null;
 
       return `    <item>
       <title>${escapeXml(post.title)}</title>
       <link>${escapeXml(url)}</link>
-      <guid isPermaLink="true">${escapeXml(url)}</guid>
+      <guid isPermaLink="true">${escapeXml(guid)}</guid>
       <pubDate>${post.publishedAt.toUTCString()}</pubDate>
       ${post.author ? `<dc:creator>${escapeXml(post.author)}</dc:creator>` : ""}
       <description>${escapeXml(post.preview)}</description>

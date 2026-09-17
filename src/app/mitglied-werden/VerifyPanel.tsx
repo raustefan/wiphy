@@ -50,7 +50,7 @@ export function VerifyPanel({ email }: { email?: string | null }) {
                     <li key={index} className="flex gap-3">
                         <span
                             aria-hidden="true"
-                            className="grid size-6 shrink-0 place-items-center rounded-full bg-physics/12 text-[11px] font-bold text-physics"
+                            className="grid size-6 shrink-0 place-items-center rounded-full bg-physics/12 text-xs font-bold text-physics"
                         >
                             {index + 1}
                         </span>

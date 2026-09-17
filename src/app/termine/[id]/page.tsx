@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, CalendarPlus, MessageCircleQuestion, Newspaper } from "lucide-react";
+import { ArrowRight, CalendarDays, CalendarPlus, MessageCircleQuestion, Newspaper } from "lucide-react";
 import {
   Badge,
   ButtonLink,
   Card,
   Container,
+  Eyebrow,
   Lead,
   SectionTitle,
 } from "@/components/ui";
@@ -16,36 +17,44 @@ import { formatDate } from "@/lib/format";
 import {
   eventContactPath,
   eventIcsPath,
+  eventPath,
   formatCountdown,
   formatEventRange,
   isPastEvent,
 } from "@/lib/events";
 import { getPublicEvent } from "@/lib/server/services/eventService";
 import { pageMetadata } from "@/lib/metadata";
+import { blogPostPath, idFromSegment } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const event = await getPublicEvent(id);
+  const { id: segment } = await params;
+  const event = await getPublicEvent(idFromSegment(segment));
   if (!event) return { title: "Termin nicht gefunden" };
 
   return pageMetadata({
     title: event.title,
     description:
       event.summary || `${formatEventRange(event)} — Termin des WirtschaftsPhysik Alumni e.V.`,
-    path: `/termine/${event.id}`,
+    path: eventPath(event),
   });
 }
 
 export default async function EventDetailPage({ params }: Props) {
-  const { id } = await params;
+  const { id: segment } = await params;
   const now = new Date();
-  const event = await getPublicEvent(id, now);
+  const event = await getPublicEvent(idFromSegment(segment), now);
 
   if (!event) return notFound();
+
+  // Alte Links (`/termine/<id>`) und veraltete Titelteile leiten auf die
+  // aktuelle Adresse um — Mails und Kalendereinträge mit der alten Form
+  // bleiben so gültig.
+  const canonicalPath = eventPath(event);
+  if (`/termine/${segment}` !== canonicalPath) permanentRedirect(canonicalPath);
 
   const past = isPastEvent(event, now);
   const countdown = past ? "" : formatCountdown(event, now);
@@ -62,9 +71,10 @@ export default async function EventDetailPage({ params }: Props) {
       <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <p className="font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+            <Eyebrow>
+              <CalendarDays size={14} aria-hidden="true" />
               Termin
-            </p>
+            </Eyebrow>
             {past ? <Badge>Vergangen</Badge> : countdown && <Badge tone="physics">{countdown}</Badge>}
           </div>
 
@@ -130,7 +140,7 @@ export default async function EventDetailPage({ params }: Props) {
             {event.posts.map((post) => (
               <Card key={post.id} className="group transition-shadow hover:shadow-lg">
                 <Link
-                  href={`/blog/${post.id}`}
+                  href={blogPostPath(post)}
                   className="grid h-full gap-2 p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                 >
                   <span className="font-mono text-xs text-faint">

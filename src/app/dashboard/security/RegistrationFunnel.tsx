@@ -79,6 +79,18 @@ export function RegistrationFunnel({ data, days }: { data: FunnelData; days: num
                   <ArrowDown size={13} className="shrink-0 text-faint" aria-hidden="true" />
                   {step === null ? (
                     <span className="text-faint">keine Grundlage im Zeitraum</span>
+                  ) : step > 100 ? (
+                    // Gezählt werden Vorgänge im Zeitraum, keine Personen: mehr
+                    // Anträge als Bestätigungen kommen von Leuten, die sich schon
+                    // früher registriert haben. Eine Quote von „300 %“ wäre
+                    // dafür keine sinnvolle Angabe.
+                    <>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        +{formatNumber(value - (previous ?? 0))}
+                      </span>
+                      <span>mehr als in der Stufe davor</span>
+                      <span className="text-faint">· auch von früher Registrierten</span>
+                    </>
                   ) : (
                     <>
                       <span className="font-semibold tabular-nums text-foreground">{step} %</span>

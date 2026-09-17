@@ -16,20 +16,26 @@
   --surface: #ffffff;
   --raised: #f4f4f5;
   --foreground: #18181b;
-  --muted: #52525b;
-  --faint: #71717a;
-  --line: #e4e4e7;
-  --line-strong: #d4d4d8;
+  /* Kontrast gegen --background/--surface/--raised (WCAG):
+     muted >= 9.5:1, faint >= 6:1 — auch für die kleinen Mono-Labels.
+     line-strong umrandet Bedienelemente (Felder, Schalter) und braucht als
+     solche >= 3:1; line bleibt als reine Gliederung bewusst leiser. */
+  --muted: #3f3f46;
+  --faint: #5c5c64;
+  --line: #dcdce0;
+  --line-strong: #8f8f98;
 
-  --physics: #0f766e;
+  /* Akzent- und Statusfarben halten >= 5:1 auch auf ihrer eigenen
+     12-%-Tönung (Badges, Soft-Buttons) und tragen weißen Text >= 6:1. */
+  --physics: #0b6560;
   --physics-strong: #00a896;
-  --market: #a81a52;
+  --market: #9a1449;
   --market-strong: #ec5c86;
 
-  --positive: #15803d;
-  --negative: #dc2626;
-  --warning: #b45309;
-  --info: #1d4ed8;
+  --positive: #166534;
+  --negative: #b91c1c;
+  --warning: #92400e;
+  --info: #1e40af;
 
   /* Text auf gefüllten Akzentflächen */
   --on-physics: #ffffff;
@@ -86,10 +92,10 @@ html[data-theme-appearance="dark"] {
   --surface: #131316;
   --raised: #1d1d21;
   --foreground: #f4f4f5;
-  --muted: #b4b4bd;
-  --faint: #8b8b96;
-  --line: #26262b;
-  --line-strong: #3a3a41;
+  --muted: #c4c4cc;
+  --faint: #a5a5b0;
+  --line: #2e2e34;
+  --line-strong: #62626c;
 
   --physics: #2dd4bf;
   --physics-strong: #2dd4bf;
@@ -103,7 +109,8 @@ html[data-theme-appearance="dark"] {
 
   /* Text auf gefüllten Akzentflächen */
   --on-physics: #052e2b;
-  --on-market: #ffffff;
+  /* Weiß auf dem hellen Rosa läge bei 3.3:1 — dunkler Text hält 6:1. */
+  --on-market: #1a0610;
   --on-negative: #450a0a;
 
   /* Hellere Rampe für die dunkle Fläche — die hellen Werte verschwänden darauf. */
@@ -281,20 +288,28 @@ html[data-theme-appearance="dark"] {
   letter-spacing: -0.01em;
 }
 
-.markdown-content h1 {
+/* Eine Ebene tiefer als im Markdown geschrieben (siehe MarkdownViewer):
+   `#` wird zur h2 und behält die Größe der obersten Inhaltsüberschrift. */
+.markdown-content h2 {
   font-size: 1.7rem;
 }
 
-.markdown-content h2 {
+.markdown-content h3 {
   font-size: 1.4rem;
 }
 
-.markdown-content h3 {
+.markdown-content h4 {
   font-size: 1.2rem;
 }
 
-.markdown-content h4 {
+.markdown-content :where(h5, h6) {
   font-size: 1.05rem;
+}
+
+/* Kein Außenabstand über dem ersten Element — sonst addiert er sich zum
+   Innenabstand des Containers und zur Trennlinie darüber. */
+.markdown-content > :first-child {
+  margin-top: 0;
 }
 
 .markdown-content :where(p, ul, ol, blockquote, pre, table) {

@@ -71,8 +71,8 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
         <Container size="3" className="py-8 sm:py-12">
             <header className="grid gap-2">
                 <Eyebrow>
-                    <Sparkles size={16} aria-hidden="true" />
-                    WirtschaftsPhysik Alumni e.V.
+                    <Sparkles size={14} aria-hidden="true" />
+                    Mitgliedschaft
                 </Eyebrow>
                 <PageTitle>Mitglied werden</PageTitle>
                 <p className="max-w-prose text-sm leading-relaxed text-muted text-pretty sm:text-base">

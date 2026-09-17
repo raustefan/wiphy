@@ -330,7 +330,7 @@ export function BlogImageManager({
                                 </IconButton>
                             </div>
 
-                            <p className="font-mono text-[0.68rem] text-faint">
+                            <p className="font-mono text-[0.75rem] text-faint">
                                 {image.width}×{image.height} px · {formatBytes(image.byteSize)}
                                 {image.fileName ? ` · ${image.fileName}` : ""}
                             </p>

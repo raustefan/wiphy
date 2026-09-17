@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CreditCard, Download, Rows3 } from "lucide-react";
 import { requireUser } from "@/lib/server/authz";
@@ -11,6 +12,8 @@ import { DashboardPageHeader } from "../DashboardPageHeader";
 import { SectionHeader } from "../SectionHeader";
 import { PaymentHistoryTable } from "./PaymentHistoryTable";
 import { BankDetailsForm } from "./BankDetailsForm";
+
+export const metadata: Metadata = { title: "Zahlungen" };
 
 export const dynamic = "force-dynamic";
 

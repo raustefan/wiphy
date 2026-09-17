@@ -759,7 +759,7 @@ export function FeesTable({
                           openUserHistory(user);
                         }}
                         title={displayName(user) || undefined}
-                        className="cursor-pointer truncate rounded-sm text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
+                        className="min-h-6 cursor-pointer truncate rounded-sm py-0.5 text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
                       >
                         {displayName(user) || "—"}
                         <span className="sr-only"> — Beitragsverlauf öffnen</span>

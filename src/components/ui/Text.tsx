@@ -74,7 +74,14 @@ export function Lead({
   );
 }
 
-/** Kleine Auszeichnung über einem Titel („Verein“, „Mitgliederbereich“ …). */
+/**
+ * Kleine Auszeichnung über einem Titel („Verein“, „Mitgliederbereich“ …).
+ *
+ * Stand vorher in vier Varianten im Markup — Mono-Versalien mit und ohne
+ * Symbol, normale Schrift mit Symbol, schlichtes Grau im Dashboard. Jetzt
+ * überall dieselbe: Mono-Versalien in der Akzentfarbe, Symbol optional
+ * (`size={14}`). Zentriert wird über `justify-center`.
+ */
 export function Eyebrow({
   className,
   ...props
@@ -82,7 +89,7 @@ export function Eyebrow({
   return (
     <p
       className={cn(
-        "flex items-center gap-2 text-sm font-medium text-physics",
+        "flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase",
         className,
       )}
       {...props}

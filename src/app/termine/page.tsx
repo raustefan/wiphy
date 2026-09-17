@@ -57,7 +57,7 @@ function NextEventCard({ event }: { event: PublicEvent }) {
           <div className="grid min-w-0 flex-1 content-start gap-3">
             <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
               <Link
-                href={eventPath(event.id)}
+                href={eventPath(event)}
                 className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics hover:text-physics"
               >
                 {event.title}
@@ -74,7 +74,7 @@ function NextEventCard({ event }: { event: PublicEvent }) {
         )}
 
         <div className="flex flex-col gap-3 min-[420px]:flex-row">
-          <ButtonLink href={eventPath(event.id)} size="lg">
+          <ButtonLink href={eventPath(event)} size="lg">
             Zum Termin
           </ButtonLink>
           <ButtonLink
@@ -133,7 +133,7 @@ function ViewSwitch({
         >
           <tab.icon size={15} aria-hidden="true" />
           {tab.label}
-          <span className="font-mono text-xs opacity-70 tabular-nums">{tab.count}</span>
+          <span className="font-mono text-xs opacity-85 tabular-nums">{tab.count}</span>
         </Link>
       ))}
     </nav>
@@ -159,7 +159,7 @@ export default async function TerminePage({
       <header className="grid gap-4">
         <div className="grid gap-3">
           <Eyebrow>
-            <CalendarDays size={16} aria-hidden="true" />
+            <CalendarDays size={14} aria-hidden="true" />
             Der Verein
           </Eyebrow>
           <PageTitle>Termine</PageTitle>
@@ -193,12 +193,12 @@ export default async function TerminePage({
       {list.length > 0 && (
         <section className="grid gap-4">
           {!showPast && next && (
-            <h2 className="font-mono text-[0.68rem] font-semibold tracking-[0.16em] text-faint uppercase">
+            <h2 className="font-mono text-[0.75rem] font-semibold tracking-[0.16em] text-faint uppercase">
               Weitere Termine
             </h2>
           )}
           {showPast && (
-            <h2 className="font-mono text-[0.68rem] font-semibold tracking-[0.16em] text-faint uppercase">
+            <h2 className="font-mono text-[0.75rem] font-semibold tracking-[0.16em] text-faint uppercase">
               Vergangene Termine
             </h2>
           )}

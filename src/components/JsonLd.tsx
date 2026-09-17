@@ -1,4 +1,5 @@
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/siteUrl";
+import { blogPostPath } from "@/lib/slug";
 
 /**
  * Strukturierte Daten als `<script type="application/ld+json">`.
@@ -71,8 +72,8 @@ export function BlogPostingJsonLd({
         "@type": "BlogPosting",
         headline: title,
         description: preview || undefined,
-        url: absoluteUrl(`/blog/${id}`),
-        mainEntityOfPage: absoluteUrl(`/blog/${id}`),
+        url: absoluteUrl(blogPostPath({ id, title })),
+        mainEntityOfPage: absoluteUrl(blogPostPath({ id, title })),
         datePublished: publishedAt.toISOString(),
         dateModified: updatedAt.toISOString(),
         inLanguage: "de-DE",

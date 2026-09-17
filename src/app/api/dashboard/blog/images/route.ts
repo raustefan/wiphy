@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     });
 
     revalidatePath("/blog");
-    revalidatePath(`/blog/${postId}`);
+    revalidatePath("/blog/[id]", "page");
     revalidatePath("/dashboard/blog");
 
     return NextResponse.json({ image }, { status: 201 });

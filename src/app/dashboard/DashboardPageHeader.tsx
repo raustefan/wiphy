@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Eyebrow } from "@/components/ui";
 
 type DashboardPageHeaderProps = {
     eyebrow: string;
@@ -56,7 +57,7 @@ export function DashboardPageHeader({
 
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
                 <div className="min-w-0">
-                    <p className="text-sm text-muted">{eyebrow}</p>
+                    <Eyebrow className="mb-1">{eyebrow}</Eyebrow>
                     <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
                         {title}
                     </h1>

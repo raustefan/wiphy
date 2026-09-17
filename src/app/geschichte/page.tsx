@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { Lead } from "@/components/ui";
+import { Eyebrow, Lead } from "@/components/ui";
 import PhysicsHero from "@/components/PhysicsHeroLazy";
 import { PhysicsTimeline } from "./PhysicsTimeline";
 import { pageMetadata } from "@/lib/metadata";
@@ -28,9 +28,9 @@ export default function GeschichtePage() {
           />
 
           <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 py-14 text-center sm:py-20">
-            <p className="font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+            <Eyebrow className="justify-center">
               Seit 1960 gewachsen, seit 2004 organisiert
-            </p>
+            </Eyebrow>
 
             <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-6xl">
               Unsere Geschichte

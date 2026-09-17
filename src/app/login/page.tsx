@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 import { LoginForm } from "./LoginForm";
+
+export const metadata: Metadata = { title: "Anmelden" };
 
 // A fresh challenge must be minted on every request, never cached.
 export const dynamic = "force-dynamic";

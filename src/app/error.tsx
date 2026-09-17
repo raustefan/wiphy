@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button, ButtonLink, Container, PageTitle } from "@/components/ui";
+import { Button, ButtonLink, Container, Eyebrow, PageTitle } from "@/components/ui";
 
 /**
  * Auffangseite für unbehandelte Fehler auf dem Server oder beim Rendern.
@@ -31,9 +31,7 @@ export default function Error({
     return (
         <Container size="1" className="grid place-items-center py-24 sm:py-32">
             <div className="grid justify-items-center gap-4 text-center">
-                <p className="font-mono text-sm font-semibold tracking-widest text-physics uppercase">
-                    Fehler
-                </p>
+                <Eyebrow className="justify-center">Fehler</Eyebrow>
                 <PageTitle>Da ist etwas schiefgelaufen</PageTitle>
                 <p className="max-w-prose text-muted text-pretty">
                     Die Seite konnte nicht geladen werden. Bitte versuche es noch einmal — bleibt

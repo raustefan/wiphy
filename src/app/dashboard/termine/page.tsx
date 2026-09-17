@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CalendarPlus, Megaphone, Newspaper, Pencil, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
@@ -19,6 +20,8 @@ import {
     Td,
     Th,
 } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Termine verwalten" };
 
 export const dynamic = "force-dynamic";
 

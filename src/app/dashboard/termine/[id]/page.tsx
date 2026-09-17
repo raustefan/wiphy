@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Newspaper } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
@@ -5,6 +6,8 @@ import { getEventForEdit } from "@/lib/server/services/eventService";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
 import { EventForm } from "./EventForm";
 import { Card, Container } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Termin bearbeiten" };
 
 export const dynamic = "force-dynamic";
 

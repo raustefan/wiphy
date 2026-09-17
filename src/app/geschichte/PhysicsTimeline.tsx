@@ -201,6 +201,47 @@ function categoryIcon(category: TimelineCategory, size = 13) {
   return <TrendingUp size={size} aria-hidden="true" />;
 }
 
+function TimelineDetail({ event, compact = false }: { event: TimelineEvent; compact?: boolean }) {
+  const Heading = compact ? "h3" : "h2";
+  return (
+    <>
+      <div className={cn("flex items-start justify-between gap-3", compact ? "mb-3" : "mb-4")}>
+        <Badge tone="physics">
+          {categoryIcon(event.category)}
+          {categoryLabel(event.category)}
+        </Badge>
+        {!compact && (
+          <span className="font-mono text-2xl leading-none font-extrabold text-physics sm:text-3xl">
+            {event.label}
+          </span>
+        )}
+      </div>
+
+      {!compact && (
+        <Heading className="mb-2 text-xl font-bold tracking-tight text-balance sm:text-3xl">
+          {event.title}
+        </Heading>
+      )}
+      <p className={cn("leading-relaxed text-muted", compact ? "mb-3 text-sm" : "mb-5")}>
+        {event.summary}
+      </p>
+
+      <ul className="grid gap-2.5">
+        {event.details.map((detail) => (
+          <li key={detail} className="flex items-start gap-2.5 text-sm leading-relaxed">
+            <CheckCircle2
+              size={16}
+              aria-hidden="true"
+              className="mt-0.5 shrink-0 text-physics"
+            />
+            {detail}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export function PhysicsTimeline() {
   const [filter, setFilter] = useState<"alle" | TimelineCategory>("alle");
   const [activeId, setActiveId] = useState("jubiläum-2024");
@@ -261,9 +302,9 @@ export function PhysicsTimeline() {
               aria-hidden="true"
               className="absolute top-4 bottom-4 left-[15px] w-0.5 rounded-full bg-gradient-to-b from-physics/40 via-physics to-market/60"
             />
-            {visibleEvents.map((event) => {
+            {visibleEvents.flatMap((event) => {
               const isActive = event.id === activeEvent.id;
-              return (
+              const item = (
                 <button
                   key={event.id}
                   type="button"
@@ -292,39 +333,28 @@ export function PhysicsTimeline() {
                   <span className="text-[15px] font-semibold">{event.title}</span>
                 </button>
               );
+              if (!isActive) return [item];
+
+              // Unterhalb von `lg` steht die Detailkarte erst unter der ganzen
+              // Liste — ein Tipp auf einen Meilenstein änderte dann etwas weit
+              // außerhalb des Bildschirms. Dort klappt das Detail deshalb
+              // direkt unter dem gewählten Eintrag auf.
+              return [
+                item,
+                <div
+                  key={`${event.id}-detail`}
+                  className="mb-2 ml-10 rounded-xl border border-line bg-raised/60 p-4 lg:hidden"
+                >
+                  <TimelineDetail event={event} compact />
+                </div>,
+              ];
             })}
           </div>
         </Card>
 
-        {/* ---------- Detail ---------- */}
-        <Card className="p-5 sm:p-7 lg:sticky lg:top-24">
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <Badge tone="physics">
-              {categoryIcon(activeEvent.category)}
-              {categoryLabel(activeEvent.category)}
-            </Badge>
-            <span className="font-mono text-2xl leading-none font-extrabold text-physics/60 sm:text-3xl">
-              {activeEvent.label}
-            </span>
-          </div>
-
-          <h2 className="mb-2 text-xl font-bold tracking-tight text-balance sm:text-3xl">
-            {activeEvent.title}
-          </h2>
-          <p className="mb-5 leading-relaxed text-muted">{activeEvent.summary}</p>
-
-          <ul className="grid gap-2.5">
-            {activeEvent.details.map((detail) => (
-              <li key={detail} className="flex items-start gap-2.5 text-sm leading-relaxed">
-                <CheckCircle2
-                  size={16}
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-physics"
-                />
-                {detail}
-              </li>
-            ))}
-          </ul>
+        {/* ---------- Detail (ab lg neben der Liste) ---------- */}
+        <Card className="hidden p-5 sm:p-7 lg:sticky lg:top-24 lg:block">
+          <TimelineDetail event={activeEvent} />
         </Card>
       </div>
 

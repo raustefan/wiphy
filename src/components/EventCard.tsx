@@ -47,7 +47,7 @@ export function EventDateCube({
         size === "lg" ? "w-20 p-3 sm:w-24" : "w-16 p-2 sm:w-[4.5rem]",
       )}
     >
-      <span className="font-mono text-[0.6rem] tracking-[0.12em] text-faint uppercase">
+      <span className="font-mono text-[0.7rem] tracking-[0.1em] text-faint uppercase">
         {badge.weekday}
       </span>
       <span
@@ -61,13 +61,13 @@ export function EventDateCube({
       </span>
       <span
         className={cn(
-          "font-mono text-[0.65rem] font-semibold tracking-[0.12em] uppercase",
+          "font-mono text-[0.72rem] font-semibold tracking-[0.1em] uppercase",
           past ? "text-faint" : "text-physics",
         )}
       >
         {badge.month}
       </span>
-      <span className="font-mono text-[0.58rem] tracking-[0.1em] text-faint">{badge.year}</span>
+      <span className="font-mono text-[0.7rem] tracking-[0.06em] text-faint">{badge.year}</span>
     </div>
   );
 }
@@ -161,7 +161,7 @@ export function EventCard({
   return (
     <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
       <Link
-        href={eventPath(event.id)}
+        href={eventPath(event)}
         className="flex gap-4 p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics sm:gap-5 sm:p-6"
       >
         <EventDateCube date={event.start} past={past} />

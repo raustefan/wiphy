@@ -86,7 +86,7 @@ export function ActivityHeatmap({ data }: { data: ActivityHeatmapData }) {
             wären auf einem Telefon ein grauer Strich. */}
         <span />
         {Array.from({ length: 24 }, (_, hour) => (
-          <span key={hour} className="pt-1 text-center text-[10px] text-faint tabular-nums">
+          <span key={hour} className="pt-1 text-center text-[11px] text-faint tabular-nums">
             {hour % 3 === 0 ? String(hour).padStart(2, "0") : ""}
           </span>
         ))}

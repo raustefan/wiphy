@@ -486,7 +486,7 @@ function Segmented({
 }) {
   return (
     <div className="grid gap-1.5">
-      <span className="font-mono text-[0.62rem] tracking-[0.16em] text-faint uppercase">
+      <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
         {label}
       </span>
       <div

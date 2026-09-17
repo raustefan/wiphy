@@ -151,7 +151,7 @@ export default async function DashboardPage() {
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="grid min-w-0 gap-1">
                             <Eyebrow>
-                                <User size={16} aria-hidden="true" />
+                                <User size={14} aria-hidden="true" />
                                 Mitgliederbereich
                             </Eyebrow>
                             <PageTitle>

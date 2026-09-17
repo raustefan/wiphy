@@ -5,7 +5,7 @@ import { Check, Eye, Megaphone, X } from "lucide-react";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { parseBerlinLocalInput, toBerlinDateInput, toBerlinLocalInput } from "@/lib/berlinTime";
-import { formatEventRange } from "@/lib/events";
+import { eventPath, formatEventRange } from "@/lib/events";
 import {
     Button,
     ButtonLink,
@@ -247,7 +247,7 @@ export function EventForm({ event }: { event: EventFormData }) {
                                 <Megaphone size={16} aria-hidden="true" /> Termin ankündigen
                             </ButtonLink>
                             <ButtonLink
-                                href={`/termine/${event.id}`}
+                                href={eventPath(event)}
                                 size="lg"
                                 variant="ghost"
                                 color="neutral"

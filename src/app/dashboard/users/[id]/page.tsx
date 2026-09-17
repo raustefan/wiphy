@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { assertCanEditUser, requireUser } from "@/lib/server/authz";
 import { AppError } from "@/lib/server/errors";
@@ -19,6 +20,8 @@ import { EditUserForm } from "./EditUserForm";
 import { DeleteMemberSection } from "./DeleteMemberSection";
 import { EmailChangeDialog } from "../../EmailChangeDialog";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
+
+export const metadata: Metadata = { title: "Mitgliedsdaten" };
 
 async function updateUser(formData: FormData) {
     "use server";

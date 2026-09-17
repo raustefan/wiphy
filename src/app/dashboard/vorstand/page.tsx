@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminMembers } from "@/lib/server/services/boardService";
 import { ChevronDown, ChevronUp, Pencil, Plus, Users } from "lucide-react";
@@ -19,6 +20,8 @@ import {
     Td,
     Th,
 } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Vorstand verwalten" };
 
 export default async function AdminBoardPage() {
     await requireAdmin();

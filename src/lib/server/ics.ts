@@ -12,7 +12,7 @@
  * kennt jeder Client, und die Umrechnung in die Ortszeit des Betrachters ist
  * genau das, was ein Kalender ohnehin tut.
  */
-import { icsEnd, type EventTiming } from "@/lib/events";
+import { eventPath, icsEnd, type EventTiming } from "@/lib/events";
 import { berlinParts } from "@/lib/berlinTime";
 import { VEREIN } from "@/lib/email/branding";
 import { siteUrl } from "@/lib/server/siteUrl";
@@ -106,7 +106,7 @@ function line(name: string, value: string): string {
 function describe(event: IcsEvent): string {
   const parts = [event.summary.trim()];
   if (event.onlineUrl.trim()) parts.push(`Online: ${event.onlineUrl.trim()}`);
-  parts.push(`Alle Infos: ${siteUrl(`/termine/${event.id}`)}`);
+  parts.push(`Alle Infos: ${siteUrl(eventPath(event))}`);
   return parts.filter(Boolean).join("\n\n");
 }
 
@@ -136,7 +136,7 @@ function vevent(event: IcsEvent, stamp: Date): string[] {
     line("SUMMARY", escapeText(event.title)),
     line("DESCRIPTION", escapeText(describe(event))),
     ...(location ? [line("LOCATION", escapeText(location))] : []),
-    line("URL", siteUrl(`/termine/${event.id}`)),
+    line("URL", siteUrl(eventPath(event))),
     line("LAST-MODIFIED", utcStamp(event.updatedAt)),
     "STATUS:CONFIRMED",
     "TRANSP:OPAQUE",

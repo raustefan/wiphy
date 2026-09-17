@@ -1,12 +1,13 @@
-import { ButtonLink, Container, PageTitle } from "@/components/ui";
+import type { Metadata } from "next";
+import { ButtonLink, Container, Eyebrow, PageTitle } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Seite nicht gefunden" };
 
 export default function NotFound() {
     return (
         <Container size="1" className="grid place-items-center py-24 sm:py-32">
             <div className="grid justify-items-center gap-4 text-center">
-                <p className="font-mono text-sm font-semibold tracking-widest text-physics uppercase">
-                    404
-                </p>
+                <Eyebrow className="justify-center">Fehler 404</Eyebrow>
                 <PageTitle>
                     Seite nicht gefunden
                 </PageTitle>

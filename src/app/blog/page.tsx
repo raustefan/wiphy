@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Calendar, CalendarDays, Clock, Search, User } from "lucide-react";
-import { Lead } from "@/components/ui";
+import { Calendar, CalendarDays, Clock, Newspaper, Search, User } from "lucide-react";
+import { Eyebrow, Lead } from "@/components/ui";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/format";
 import { blogImageSrcSet, blogImageUrl } from "@/lib/blogImages";
 import { SITE_NAME } from "@/lib/siteUrl";
 import { pageMetadata } from "@/lib/metadata";
+import { blogPostPath } from "@/lib/slug";
 
 const TITLE = "Vereins-Blog";
 const DESCRIPTION =
@@ -95,7 +96,7 @@ function PostCard({ post }: { post: BlogPostWithImages }) {
     return (
         <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
             <Link
-                href={`/blog/${post.id}`}
+                href={blogPostPath(post)}
                 className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
             >
                 {post.cover && (
@@ -190,24 +191,19 @@ export default async function BlogIndexPage({ searchParams }: Props) {
 
     return (
         <Container size="4" className="py-8 sm:py-12">
-            <div className="mb-8 flex flex-col gap-4 sm:mb-10 min-[480px]:flex-row min-[480px]:items-end min-[480px]:justify-between">
-                <div>
-                    <p className="mb-2 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
-                        Aus dem Verein
-                    </p>
-                    <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-                        {TITLE}
-                    </h1>
-                    <p className="mt-3 text-base text-muted sm:text-lg">
-                        Berichte, Ankündigungen und Notizen aus der Wirtschaftsphysik.
-                    </p>
-                </div>
-                <Link
-                    href="/"
-                    className="inline-flex h-9 w-fit shrink-0 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"
-                >
-                    ← Zurück zur Startseite
-                </Link>
+            {/* Kein eigener „Zurück zur Startseite“-Knopf: Logo und Navigation
+                führen ohnehin dorthin. */}
+            <div className="mb-8 sm:mb-10">
+                <Eyebrow className="mb-2">
+                    <Newspaper size={14} aria-hidden="true" />
+                    Aus dem Verein
+                </Eyebrow>
+                <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+                    {TITLE}
+                </h1>
+                <p className="mt-3 text-base text-muted sm:text-lg">
+                    Berichte, Ankündigungen und Notizen aus der Wirtschaftsphysik.
+                </p>
             </div>
 
             {/* Ein gewöhnliches GET-Formular: die Suche funktioniert damit auch
@@ -261,7 +257,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
                     {showLead && (
                         <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
                             <Link
-                                href={`/blog/${lead.id}`}
+                                href={blogPostPath(lead)}
                                 className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                             >
                                 {lead.cover && (

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
@@ -19,6 +20,8 @@ import {
     Select,
     TextArea,
 } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Beitrag bearbeiten" };
 
 export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;

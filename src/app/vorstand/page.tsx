@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { Eyebrow } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { pageMetadata } from "@/lib/metadata";
@@ -32,10 +33,10 @@ export default async function VorstandPage() {
   return (
     <Container size="3" className="py-10 sm:py-14">
       <div className="mb-8 flex flex-col items-center gap-2 text-center sm:mb-10">
-        <p className="flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+        <Eyebrow className="justify-center">
           <Users size={14} aria-hidden="true" />
           Der Verein
-        </p>
+        </Eyebrow>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Vorstand</h1>
         <p className="max-w-md text-base text-muted">
           Aktuelle Besetzung des Vorstands
@@ -77,16 +78,21 @@ export default async function VorstandPage() {
                 </Badge>
               </div>
 
-              {entry.linkedin && (
+              {/* Ohne LinkedIn hält ein gleich hoher Platzhalter die Karten
+                  im Raster gleich aufgebaut — sonst stand der Name in dieser
+                  einen Karte höher als in allen anderen der Reihe. */}
+              {entry.linkedin ? (
                 <a
                   href={entry.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${entry.name} auf LinkedIn`}
-                  className="mt-auto grid size-10 cursor-pointer place-items-center rounded-full border border-line text-muted transition-colors hover:border-physics/40 hover:bg-physics/10 hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                  className="mt-auto grid size-10 cursor-pointer place-items-center rounded-full border border-line-strong text-muted transition-colors hover:border-physics/40 hover:bg-physics/10 hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                 >
                   <LinkedInGlyph />
                 </a>
+              ) : (
+                <span aria-hidden="true" className="mt-auto size-10" />
               )}
             </Card>
           </li>

@@ -21,6 +21,33 @@ const ALTCHA_STYLE = {
 } as CSSProperties;
 
 /**
+ * Deutsche Texte für das Widget. Altcha bringt zwar eine deutsche Übersetzung
+ * mit, die siezt aber — die Formulare hier duzen. Das Widget wählt die
+ * Sprache über `<html lang="de">`; ohne Eintrag für „de“ fiele es auf
+ * Englisch zurück („I'm not a robot“).
+ */
+const ALTCHA_STRINGS_DE = {
+    ariaLinkLabel: "Altcha (offizielle Website)",
+    enterCode: "Code eingeben",
+    enterCodeAria:
+        "Gib den Code ein, den du hörst. Mit der Leertaste spielst du die Audiodatei ab.",
+    enterCodeFromImage: "Gib zum Fortfahren den Code aus dem Bild unten ein.",
+    error: "Überprüfung fehlgeschlagen. Bitte versuch es später noch einmal.",
+    expired: "Überprüfung abgelaufen. Bitte versuch es noch einmal.",
+    footer: 'Geschützt durch <a href="https://altcha.org/" tabindex="-1" target="_blank" aria-label="Altcha (offizielle Website)">ALTCHA</a>',
+    getAudioChallenge: "Audio-Aufgabe anfordern",
+    label: "Ich bin kein Roboter",
+    loading: "Lädt …",
+    reload: "Neu laden",
+    verify: "Überprüfen",
+    verificationRequired: "Bitte bestätige zuerst, dass du kein Roboter bist.",
+    verified: "Überprüft",
+    verifying: "Wird überprüft …",
+    waitAlert: "Überprüfung läuft … bitte kurz warten.",
+    cancel: "Abbrechen",
+};
+
+/**
  * Beschriftete Botprüfung. Das Widget löst die Aufgabe lokal im Browser; das
  * Ergebnis landet als Feld `altcha` in der FormData des umgebenden Formulars.
  *
@@ -37,7 +64,10 @@ export function AltchaField({
     label?: string;
 }) {
     useEffect(() => {
-        import("altcha");
+        import("altcha").then(() => {
+            const altcha = (globalThis as { $altcha?: { i18n: { set(code: string, strings: object): void } } }).$altcha;
+            altcha?.i18n.set("de", ALTCHA_STRINGS_DE);
+        });
     }, []);
 
     return (

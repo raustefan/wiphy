@@ -16,7 +16,10 @@ export function TableWrap({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <div className={cn("overflow-x-auto", className)}>{children}</div>;
+  // `relative`: absolut positionierte Kinder (die `sr-only`-Beschriftung in
+  // `SortableTh`) beziehen sich sonst auf einen Vorfahren außerhalb des
+  // Scrollbereichs, werden nicht mit abgeschnitten und verbreitern die Seite.
+  return <div className={cn("relative overflow-x-auto", className)}>{children}</div>;
 }
 
 export function Table({

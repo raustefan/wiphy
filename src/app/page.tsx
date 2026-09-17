@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { Lead, PageTitle, Prose } from "@/components/ui";
+import { Eyebrow, Lead, PageTitle, Prose } from "@/components/ui";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, CalendarPlus, PenLine } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -15,6 +15,7 @@ import { eventIcsPath, eventPath, formatCountdown } from "@/lib/events";
 import { formatDateShort } from "@/lib/format";
 import { blogImageUrl } from "@/lib/blogImages";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
+import { blogPostPath } from "@/lib/slug";
 
 const pillars = [
   {
@@ -46,7 +47,7 @@ const heroMetrics = [
 /** Kleiner Kapitelkopf: Mono-Nummer + Label + Haarlinie. */
 function SectionMarker({ index, label }: { index: string; label: string }) {
   return (
-    <div className="mb-6 flex items-center gap-3 font-mono text-[0.68rem] tracking-[0.16em] text-faint uppercase">
+    <div className="mb-6 flex items-center gap-3 font-mono text-[0.75rem] tracking-[0.16em] text-faint uppercase">
       <span className="font-bold text-physics">{index}</span>
       <span>{label}</span>
       <span className="h-px flex-1 bg-line" aria-hidden="true" />
@@ -78,9 +79,9 @@ export default async function HomePage() {
           />
 
           <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5 px-4 py-14 text-center sm:gap-6 sm:py-20">
-            <p className="font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+            <Eyebrow className="justify-center">
               Universität Ulm · Alumni &amp; Studierende
-            </p>
+            </Eyebrow>
 
             <h1 className="text-4xl font-bold tracking-tight text-balance [overflow-wrap:break-word] sm:text-6xl">
               Wirtschafts<span className="text-physics">Physik</span> Alumni
@@ -108,12 +109,15 @@ export default async function HomePage() {
                 /* `flex-col-reverse`: der Wert steht oben, im Markup aber die
                    Beschreibung zuerst — eine `<dd>` vor ihrer `<dt>` ist
                    ungültig, und Screenreader lesen das Paar dann verdreht
-                   („1967“ als Begriff, „Universität Ulm“ als Erklärung). */
+                   („1967“ als Begriff, „Universität Ulm“ als Erklärung).
+                   `justify-end` packt in der umgekehrten Achse nach *oben*:
+                   so stehen die Werte auf einer Linie, auch wenn ein Label
+                   zweizeilig umbricht. */
                 <div
                   key={metric.label}
-                  className={`flex flex-col-reverse gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
+                  className={`flex flex-col-reverse justify-end gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
                 >
-                  <dt className="font-mono text-[0.58rem] tracking-[0.12em] text-faint uppercase sm:text-[0.65rem]">
+                  <dt className="font-mono text-[0.68rem] tracking-[0.08em] text-faint uppercase sm:text-[0.72rem]">
                     {metric.label}
                   </dt>
                   <dd className="font-mono text-base font-bold tracking-tight sm:text-xl">
@@ -209,7 +213,7 @@ export default async function HomePage() {
                 </div>
 
                 <div className="grid gap-3 lg:w-56">
-                  <ButtonLink href={eventPath(featured.event.id)} size="lg">
+                  <ButtonLink href={eventPath(featured.event)} size="lg">
                     Zum Termin <ArrowRight size={16} aria-hidden="true" />
                   </ButtonLink>
                   {!featured.isPast && (
@@ -325,7 +329,7 @@ export default async function HomePage() {
 
             <Card className="p-5 sm:p-8 lg:p-10">
               <Link
-                href={`/blog/${latestPost.id}`}
+                href={blogPostPath(latestPost)}
                 className="grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
               >
                 <Badge tone="market" className="w-fit">

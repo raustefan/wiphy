@@ -6,6 +6,7 @@
  * Startseite, die Zeile im Dashboard und die Ankündigungsmail.
  */
 import { berlinParts, endOfBerlinDay, isSameBerlinDay, TIME_ZONE } from "@/lib/berlinTime";
+import { slugSegment } from "@/lib/slug";
 
 /** Ab wann im Dashboard auf einen Termin hingewiesen wird. */
 export const UPCOMING_ALERT_MONTHS = 3;
@@ -173,8 +174,8 @@ export function formatCountdown(event: EventTiming, now: Date = new Date()): str
 
 // ─────────────────────────── Adressen ───────────────────────────
 
-export function eventPath(id: string): string {
-  return `/termine/${id}`;
+export function eventPath(event: { id: string; title: string }): string {
+  return `/termine/${slugSegment(event)}`;
 }
 
 /** Kalenderdatei eines einzelnen Termins. */

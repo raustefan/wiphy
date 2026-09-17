@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildEventIcs, icsFileName } from "@/lib/server/ics";
 import { getPublicEvent } from "@/lib/server/services/eventService";
+import { idFromSegment } from "@/lib/slug";
 
 /**
  * Kalenderdatei eines einzelnen Termins.
@@ -14,8 +15,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const event = await getPublicEvent(id);
+  const { id: segment } = await params;
+  const event = await getPublicEvent(idFromSegment(segment));
 
   if (!event) {
     return new NextResponse(null, { status: 404 });

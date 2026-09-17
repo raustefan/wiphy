@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Info, MailOpen } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getContactRequests } from "@/lib/server/services/contactService";
@@ -5,6 +6,8 @@ import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ContactRequestList } from "./ContactRequestList";
 import { Callout, Card, Container, EmptyState } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Kontaktanfragen" };
 
 export const dynamic = "force-dynamic";
 

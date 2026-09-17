@@ -137,7 +137,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
             <span className="truncate text-[15px] font-bold tracking-tight">
               WirtschaftsPhysik Alumni
             </span>
-            <span className="font-mono text-[0.62rem] tracking-[0.16em] text-faint uppercase">
+            <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
               Universität Ulm · e.V.
             </span>
           </span>

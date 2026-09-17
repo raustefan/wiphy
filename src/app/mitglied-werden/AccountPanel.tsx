@@ -13,6 +13,10 @@ import { MEMBERSHIP_LOGIN_PATH } from "@/lib/membership";
 /** Reicht für die Rückmeldung im Browser; verbindlich prüft der Server. */
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+/** In Anzeigereihenfolge — der Fokus springt auf das erste fehlerhafte Feld. */
+const FIRST_HALF_FIELDS = ["vorname", "name", "email"] as const;
+type FirstHalfField = (typeof FIRST_HALF_FIELDS)[number];
+
 /**
  * Erste Station: das Konto.
  *
@@ -36,18 +40,28 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<Partial<Record<FirstHalfField, string>>>({});
 
     useEffect(() => {
         renderedAt.current = Date.now();
     }, []);
 
     function goToSecondHalf() {
-        if (!vorname.trim() || !name.trim()) {
-            form.setError("Bitte gib deinen Vor- und Nachnamen an.");
-            return;
+        // Alle Felder auf einmal prüfen und die Meldung ans jeweilige Feld
+        // hängen — vorher stand nur der erste Fehler als Banner über dem
+        // Formular, und die Felder selbst blieben unmarkiert.
+        const errors: Partial<Record<FirstHalfField, string>> = {};
+        if (!vorname.trim()) errors.vorname = "Bitte gib deinen Vornamen an.";
+        if (!name.trim()) errors.name = "Bitte gib deinen Nachnamen an.";
+        if (!email.trim()) errors.email = "Bitte gib deine E-Mail-Adresse an.";
+        else if (!EMAIL_PATTERN.test(email.trim())) {
+            errors.email = "Diese E-Mail-Adresse sieht nicht vollständig aus.";
         }
-        if (!EMAIL_PATTERN.test(email.trim())) {
-            form.setError("Bitte gib eine gültige E-Mail-Adresse an.");
+        setFieldErrors(errors);
+
+        const firstInvalid = FIRST_HALF_FIELDS.find((field) => errors[field]);
+        if (firstInvalid) {
+            document.getElementById(`register-${firstInvalid}`)?.focus();
             return;
         }
         form.setError("");
@@ -55,6 +69,10 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
         // Der Fokus bleibt sonst am „Weiter“-Knopf, der gerade verschwunden
         // ist: Screenreader lesen den ausgetauschten Inhalt dann nicht vor.
         headingRef.current?.focus();
+    }
+
+    function clearFieldError(field: FirstHalfField) {
+        setFieldErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
     }
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -104,23 +122,39 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
             {half === 0 ? (
                 <div className="grid gap-4">
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="Vorname" htmlFor="register-vorname" required>
+                        <Field
+                            label="Vorname"
+                            htmlFor="register-vorname"
+                            required
+                            error={fieldErrors.vorname}
+                        >
                             <Input
                                 id="register-vorname"
                                 name="vorname"
                                 autoComplete="given-name"
                                 value={vorname}
-                                onChange={(event) => setVorname(event.target.value)}
+                                onChange={(event) => {
+                                    setVorname(event.target.value);
+                                    clearFieldError("vorname");
+                                }}
                                 placeholder="Marie"
                             />
                         </Field>
-                        <Field label="Nachname" htmlFor="register-name" required>
+                        <Field
+                            label="Nachname"
+                            htmlFor="register-name"
+                            required
+                            error={fieldErrors.name}
+                        >
                             <Input
                                 id="register-name"
                                 name="name"
                                 autoComplete="family-name"
                                 value={name}
-                                onChange={(event) => setName(event.target.value)}
+                                onChange={(event) => {
+                                    setName(event.target.value);
+                                    clearFieldError("name");
+                                }}
                                 placeholder="Musterfrau"
                             />
                         </Field>
@@ -131,6 +165,7 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                         htmlFor="register-email"
                         required
                         hint="An diese Adresse geht der Bestätigungslink."
+                        error={fieldErrors.email}
                     >
                         <Input
                             id="register-email"
@@ -138,7 +173,10 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                             type="email"
                             autoComplete="email"
                             value={email}
-                            onChange={(event) => setEmail(event.target.value)}
+                            onChange={(event) => {
+                                setEmail(event.target.value);
+                                clearFieldError("email");
+                            }}
                             placeholder="deine@email.de"
                         />
                     </Field>

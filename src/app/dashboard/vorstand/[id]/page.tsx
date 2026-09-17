@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getMemberForEdit } from "@/lib/server/services/boardService";
 import { Check, X } from "lucide-react";
@@ -5,6 +6,8 @@ import { saveMember } from "../actions";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
 import { BoardPhotoUploader } from "./BoardPhotoUploader";
 import { Button, ButtonLink, Card, Checkbox, Container, Field, Input } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Vorstandsmitglied bearbeiten" };
 
 export default async function EditBoardMemberPage({
     params,

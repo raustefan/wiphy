@@ -15,7 +15,7 @@ import { createDraftEvent, removeEvent, saveEvent } from "@/lib/server/services/
  */
 function revalidateEvent(id?: string) {
   revalidatePath("/termine");
-  if (id) revalidatePath(`/termine/${id}`);
+  if (id) revalidatePath("/termine/[id]", "page");
   revalidatePath("/");
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/termine");

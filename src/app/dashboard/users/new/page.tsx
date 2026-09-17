@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { adminCreateUser } from "@/lib/server/services/userService";
@@ -23,6 +24,8 @@ import {
     Input,
     Select,
 } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Benutzer hinzufügen" };
 
 async function createUserAction(formData: FormData) {
     "use server";

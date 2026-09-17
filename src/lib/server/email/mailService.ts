@@ -133,7 +133,7 @@ function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
     {
       type: "button",
       label: "Termin ansehen & in den Kalender eintragen",
-      url: siteUrl(eventPath(event.id)),
+      url: siteUrl(eventPath(event)),
     },
     {
       type: "note",

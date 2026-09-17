@@ -77,10 +77,10 @@ export async function savePost(formData: FormData) {
         await saveAdminPost(parsed.data);
         revalidatePath("/dashboard/blog");
         revalidatePath("/blog");
-        revalidatePath(`/blog/${parsed.data.id}`);
+        revalidatePath("/blog/[id]", "page");
         // Der Rückblick erscheint auf der Terminseite — die muss ihn mitbekommen.
         revalidatePath("/termine");
-        if (parsed.data.eventId) revalidatePath(`/termine/${parsed.data.eventId}`);
+        if (parsed.data.eventId) revalidatePath("/termine/[id]", "page");
         redirect("/dashboard/blog");
     });
 }
@@ -120,7 +120,7 @@ function revalidateBlogImages(postId: string) {
     revalidatePath(`/dashboard/blog/${postId}`);
     revalidatePath("/dashboard/blog");
     revalidatePath("/blog");
-    revalidatePath(`/blog/${postId}`);
+    revalidatePath("/blog/[id]", "page");
 }
 
 export async function deleteBlogImage(formData: FormData) {

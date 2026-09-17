@@ -93,11 +93,18 @@ export function BankDetailsForm({
                     type="button"
                     variant="soft"
                     color="neutral"
-                    className="justify-self-start"
+                    className="h-auto justify-self-start py-2.5"
                     onClick={() => setEditing(true)}
                 >
-                    <Pencil size={16} aria-hidden="true" />
-                    Zahlungsweise oder Bankverbindung ändern
+                    <Pencil size={16} aria-hidden="true" className="shrink-0" />
+                    {/* Der Umbruch steht am Text, nicht am Knopf: `cn` führt
+                        Tailwind-Klassen nicht zusammen, ein `whitespace-normal`
+                        am Knopf träfe also auf dessen `whitespace-nowrap` und
+                        welche gewinnt, entscheidet die Reihenfolge im CSS.
+                        Ohne Umbruch wäre der Knopf 379px breit. */}
+                    <span className="text-left whitespace-normal">
+                        Zahlungsweise oder Bankverbindung ändern
+                    </span>
                 </Button>
             </div>
         );

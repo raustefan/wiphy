@@ -181,7 +181,7 @@ export function BoardPhotoUploader({
                         GPS-Standort) befreit.
                     </p>
                     {photo && (
-                        <p className="font-mono text-[0.68rem] text-faint">
+                        <p className="font-mono text-[0.75rem] text-faint">
                             {photo.width}×{photo.height} px · {formatBytes(photo.byteSize)}
                         </p>
                     )}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, AlertTriangle, Filter, Info, ShieldAlert, UserX } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
@@ -38,6 +39,8 @@ import { ActivityHeatmap } from "./ActivityHeatmap";
 import { RegistrationFunnel } from "./RegistrationFunnel";
 import { RateLimitTable } from "./RateLimitTable";
 import { OUTCOME_LABELS, OUTCOME_TONES, reasonLabel, TYPE_ORDER, typeLabel } from "./securityLabels";
+
+export const metadata: Metadata = { title: "Sicherheit" };
 
 export const dynamic = "force-dynamic";
 

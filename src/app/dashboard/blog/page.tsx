@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminPosts } from "@/lib/server/services/blogService";
 import { BookOpen, Images, Pencil, Plus } from "lucide-react";
@@ -20,6 +21,8 @@ import {
     Td,
     Th,
 } from "@/components/ui";
+
+export const metadata: Metadata = { title: "Blog verwalten" };
 
 export default async function AdminBlogPage() {
     await requireAdmin();

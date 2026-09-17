@@ -189,7 +189,9 @@ export function Checkbox({
   return (
     <input
       type="checkbox"
-      className={cn("size-4.5 shrink-0 cursor-pointer rounded accent-physics", className)}
+      // 24px Kantenlänge: die Mindestgröße für Tippflächen (WCAG 2.2, 2.5.8).
+      // Vorher waren es 18px — auf dem Telefon traf man daneben.
+      className={cn("size-6 shrink-0 cursor-pointer rounded accent-physics", className)}
       {...props}
     />
   );

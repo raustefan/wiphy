@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getEventForEdit, getUpcomingEvents } from "@/lib/server/services/eventService";
 import { escapeHtml } from "@/lib/email/escapeHtml";
 import { formatEventRange, formatEventShort } from "@/lib/events";
 import { MailDashboard, type MailAnnouncement, type MailEventOption } from "./MailDashboard";
+
+export const metadata: Metadata = { title: "Rundmail" };
 
 export const dynamic = "force-dynamic";
 

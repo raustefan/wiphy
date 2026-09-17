@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
 import { getFeeDashboardData, getExistingFeeYears } from "@/lib/server/services/feeService";
@@ -8,6 +9,8 @@ import { FeeDefaultsCard } from "./FeeDefaultsCard";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { DashboardPageHeader } from "../DashboardPageHeader";
+
+export const metadata: Metadata = { title: "Beiträge" };
 
 export default async function FeesDashboardPage({
   searchParams,

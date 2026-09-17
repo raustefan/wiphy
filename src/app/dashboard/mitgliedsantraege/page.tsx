@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getApplications, getMaxMitgliedId } from "@/lib/server/services/membershipService";
@@ -7,6 +8,8 @@ import { planApplicationFees } from "@/lib/feeDefaults";
 import { Callout, Card, Container, EmptyState } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ApplicationList } from "./ApplicationList";
+
+export const metadata: Metadata = { title: "Mitgliedsanträge" };
 
 export const dynamic = "force-dynamic";
 

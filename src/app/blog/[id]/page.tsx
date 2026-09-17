@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { ArrowRight, Calendar, CalendarDays, Clock, User } from "lucide-react";
+import { notFound, permanentRedirect } from "next/navigation";
+import { ArrowRight, Calendar, CalendarDays, Clock, Newspaper, User } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
-import { ButtonLink } from "@/components/ui";
+import { ButtonLink, Eyebrow } from "@/components/ui";
 import { eventPath, formatEventShort } from "@/lib/events";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { BlogGallery } from "@/components/BlogGallery";
@@ -13,6 +13,7 @@ import { readingTimeMinutes } from "@/lib/readingTime";
 import { formatDate } from "@/lib/format";
 import { blogImageUrl } from "@/lib/blogImages";
 import { absoluteUrl } from "@/lib/siteUrl";
+import { blogPostPath, idFromSegment } from "@/lib/slug";
 import { pageMetadata } from "@/lib/metadata";
 import { BlogPostingJsonLd } from "@/components/JsonLd";
 
@@ -25,8 +26,8 @@ type Props = { params: Promise<{ id: string }> };
  * Beitrags; hat er keines, greift das Standardbild aus `opengraph-image.tsx`.
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { id } = await params;
-    const post = await getPublishedPost(id);
+    const { id: segment } = await params;
+    const post = await getPublishedPost(idFromSegment(segment));
 
     if (!post) return { title: "Beitrag nicht gefunden", robots: { index: false } };
 
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return pageMetadata({
         title: post.title,
         description,
-        path: `/blog/${post.id}`,
+        path: blogPostPath(post),
         type: "article",
         // Ohne Titelbild greift das gezeichnete Standardbild des Vereins.
         images: post.cover
@@ -58,11 +59,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicBlogPost({ params }: Props) {
-    const resolvedParams = await params;
+    const { id: segment } = await params;
 
-    const post = await getPublishedPost(resolvedParams.id);
+    const post = await getPublishedPost(idFromSegment(segment));
 
     if (!post) return notFound();
+
+    // Alte Links (`/blog/<id>`) und Adressen mit veraltetem Titelteil landen
+    // auf der aktuellen Adresse — so gibt es für Suchmaschinen nur eine.
+    const canonicalPath = blogPostPath(post);
+    if (`/blog/${segment}` !== canonicalPath) permanentRedirect(canonicalPath);
 
     const minutes = readingTimeMinutes(post.content);
     const published = formatDate(post.publishedAt);
@@ -87,9 +93,10 @@ export default async function PublicBlogPost({ params }: Props) {
 
             <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
                 <div className="min-w-0">
-                    <p className="mb-3 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase">
+                    <Eyebrow className="mb-3">
+                        <Newspaper size={14} aria-hidden="true" />
                         Vereins-Blog
-                    </p>
+                    </Eyebrow>
                     <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
                         {post.title}
                     </h1>
@@ -98,12 +105,29 @@ export default async function PublicBlogPost({ params }: Props) {
                             {post.preview}
                         </p>
                     )}
+                    {/* Unterhalb von `lg` eine Zeile statt der Karte: die Karte
+                        füllte auf dem Telefon den ersten Bildschirm, bevor der
+                        Artikel überhaupt anfing. */}
+                    <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted lg:hidden">
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                            <User size={15} aria-hidden="true" className="text-faint" />
+                            {post.author || "Redaktion"}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <Calendar size={15} aria-hidden="true" className="text-faint" />
+                            {published}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <Clock size={15} aria-hidden="true" className="text-faint" />
+                            ca. {minutes} Min.
+                        </span>
+                    </p>
                 </div>
 
-                <Card className="h-fit p-5 lg:sticky lg:top-24">
+                <Card className="hidden h-fit p-5 lg:sticky lg:top-24 lg:block">
                     <dl className="grid gap-4">
                         <div className="grid gap-1">
-                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
                                 Autor
                             </dt>
                             <dd className="flex items-center gap-2 text-sm font-semibold">
@@ -112,7 +136,7 @@ export default async function PublicBlogPost({ params }: Props) {
                             </dd>
                         </div>
                         <div className="grid gap-1 border-t border-line pt-4">
-                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
                                 Veröffentlicht
                             </dt>
                             <dd className="flex items-center gap-2 text-sm">
@@ -121,7 +145,7 @@ export default async function PublicBlogPost({ params }: Props) {
                             </dd>
                         </div>
                         <div className="grid gap-1 border-t border-line pt-4">
-                            <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
+                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
                                 Lesedauer
                             </dt>
                             <dd className="flex items-center gap-2 text-sm">
@@ -129,26 +153,6 @@ export default async function PublicBlogPost({ params }: Props) {
                                 ca. {minutes} Min.
                             </dd>
                         </div>
-                        {/* Nur veröffentlichte Termine: ein Entwurf hätte keine
-                            Seite, auf die der Link führen könnte. */}
-                        {post.event?.published && (
-                            <div className="grid gap-1 border-t border-line pt-4">
-                                <dt className="font-mono text-[0.68rem] tracking-[0.14em] text-faint uppercase">
-                                    Gehört zum Termin
-                                </dt>
-                                <dd className="grid gap-1 text-sm">
-                                    <Link
-                                        href={eventPath(post.event.id)}
-                                        className="font-semibold text-physics underline-offset-4 hover:underline"
-                                    >
-                                        {post.event.title}
-                                    </Link>
-                                    <span className="font-mono text-xs text-faint">
-                                        {formatEventShort(post.event)}
-                                    </span>
-                                </dd>
-                            </div>
-                        )}
                     </dl>
                 </Card>
             </header>
@@ -167,7 +171,10 @@ export default async function PublicBlogPost({ params }: Props) {
 
             {post.event?.published && (
                 <Card className="mt-8 grid gap-3 p-5 sm:mt-10 sm:p-6">
-                    <p className="flex items-center gap-2 font-mono text-[0.68rem] font-semibold tracking-[0.16em] text-faint uppercase">
+                    {/* Nur veröffentlichte Termine: ein Entwurf hätte keine
+                        Seite, auf die der Link führen könnte. Der Termin steht
+                        bewusst nur hier und nicht zusätzlich in der Infokarte. */}
+                    <p className="flex items-center gap-2 font-mono text-[0.75rem] font-semibold tracking-[0.16em] text-faint uppercase">
                         <CalendarDays size={14} aria-hidden="true" />
                         Zugehöriger Termin
                     </p>
@@ -181,7 +188,7 @@ export default async function PublicBlogPost({ params }: Props) {
                             </p>
                         </div>
                         <ButtonLink
-                            href={eventPath(post.event.id)}
+                            href={eventPath(post.event)}
                             variant="soft"
                             color="neutral"
                             className="shrink-0"
