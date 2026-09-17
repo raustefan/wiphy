@@ -6,10 +6,13 @@ import type { RegistrationFunnel as FunnelData } from "@/lib/server/services/sec
  * Der Weg vom Registrierungsformular bis zur beschlossenen Mitgliedschaft.
  *
  * Alle Balken teilen sich dieselbe Grundlinie und dieselbe Skala — die Breite
- * ist immer der Anteil an der ersten Stufe. Die verbreitete Trichterform mit
- * mittig zulaufenden Trapezen sieht hübscher aus, verschiebt aber jede Stufe
- * gegen die vorige und macht damit genau den Vergleich schwer, für den die
- * Grafik da ist.
+ * ist der Anteil an der größten Stufe. Meist ist das die erste; weil aber
+ * Vorgänge im Zeitraum gezählt werden und nicht Personen, kann eine spätere
+ * Stufe größer sein (Aufnahmen von Leuten, die sich früher registriert haben).
+ *
+ * Die verbreitete Trichterform mit mittig zulaufenden Trapezen sieht hübscher
+ * aus, verschiebt aber jede Stufe gegen die vorige und macht damit genau den
+ * Vergleich schwer, für den die Grafik da ist.
  *
  * Die Farben sind eine Reihenfolge, keine Kategorien: ein Farbton, von Stufe zu
  * Stufe dunkler. Man sieht die Richtung des Ablaufs also auch dann, wenn zwei
@@ -55,7 +58,7 @@ function share(value: number, base: number) {
 }
 
 export function RegistrationFunnel({ data, days }: { data: FunnelData; days: number }) {
-  const base = Math.max(data.registered, 1);
+  const base = Math.max(...STAGES.map((stage) => data[stage.key]), 1);
 
   return (
     <figure className="m-0">
@@ -103,7 +106,7 @@ export function RegistrationFunnel({ data, days }: { data: FunnelData; days: num
                   style={{
                     // Mindestbreite, damit eine Stufe mit wenigen Vorgängen
                     // sichtbar bleibt statt zu einem Strich zu werden.
-                    width: value > 0 ? `${Math.max((value / base) * 100, 1.5)}%` : "0%",
+                    width: value > 0 ? `${Math.min(Math.max((value / base) * 100, 1.5), 100)}%` : "0%",
                     background: `var(--chart-stage-${index + 1})`,
                   }}
                 />
