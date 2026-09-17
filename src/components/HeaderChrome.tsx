@@ -68,7 +68,10 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     if (menuOpen) {
       hadFocusInside.current = true;
-      closeButtonRef.current?.focus();
+      // `preventScroll`: Das Panel steht beim Fokussieren noch off-canvas —
+      // ohne die Option scrollt der Browser den Container seitwärts zum Knopf,
+      // und das Panel ruckelt, bis die Einfahr-Transition vorbei ist.
+      closeButtonRef.current?.focus({ preventScroll: true });
       return;
     }
     if (!hadFocusInside.current) return;
@@ -206,8 +209,9 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
         className={cn(
           // `overflow-hidden` klammert das ausgefahrene Panel ein: sonst
           // meldet das Dokument im geschlossenen Zustand die Breite des
-          // off-canvas geschobenen Drawers.
-          "fixed inset-0 z-50 overflow-hidden md:hidden",
+          // off-canvas geschobenen Drawers. `clip` statt `hidden`, damit der
+          // Container auch per Fokus nicht seitwärts gescrollt werden kann.
+          "fixed inset-0 z-50 overflow-clip md:hidden",
           menuOpen ? "visible" : "pointer-events-none invisible",
         )}
       >
