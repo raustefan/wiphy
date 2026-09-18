@@ -61,6 +61,12 @@ export function buttonClasses({
     // `ButtonLink` (ein `<a>`) die Hand zeigten — im selben Dialog
     // nebeneinander.
     "inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors duration-150",
+    // Symbole dürfen nicht schrumpfen: die Beschriftung bricht wegen
+    // `whitespace-nowrap` nicht um, also ist das Icon das einzige Kind, das
+    // Flexbox zusammendrücken kann, sobald der Knopf neben einem breiten
+    // Nachbarn zu wenig Platz bekommt. Aus einem 16-px-Symbol wurde so ein
+    // 3 px breiter Strich, der wie ein Satzzeichen aussah.
+    "[&>svg]:shrink-0",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
     "disabled:pointer-events-none disabled:opacity-50",
     sizeClasses[size],

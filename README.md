@@ -79,7 +79,7 @@ Nützliche Skripte aus `package.json`:
 | Markdown-Editor        | `@uiw/react-md-editor` (Split-Screen), Anzeige über `react-markdown` + `remark-gfm` |
 | Rich-Text (Mail)       | `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`               |
 | Bildverarbeitung       | **sharp** — verkleinert & re-kodiert Bilder serverseitig zu WebP               |
-| PDF-Erzeugung          | `@react-pdf/renderer` für Zahlungshistorien                                   |
+| PDF-Erzeugung          | `@react-pdf/renderer` für Zahlungshistorien und Mitgliedschaftszertifikate     |
 | E-Mail-Versand         | **Nodemailer** über SMTP oder Gmail Workspace                                  |
 | Captcha / Spamschutz   | **ALTCHA** (Proof-of-Work-Captcha ohne Tracking, `altcha` + `altcha-lib`)       |
 | HTML-Sanitizing        | `sanitize-html` für Nutzereingaben, die als HTML ausgeliefert werden           |
@@ -268,6 +268,21 @@ Mitgliedsstatus an:
   (bzw. seit Aufnahme), Zahlstatus (bezahlt/offen), Beitragsstufe
   (regulär/Student) und können unter `/dashboard/zahlungen` ihre
   Bankverbindung pflegen sowie ihre Zahlungshistorie als **PDF** exportieren.
+- **Mitgliedschaftszertifikat** — ordentliche Mitglieder und Ehrenmitglieder
+  laden im Dashboard eine Urkunde als **PDF** herunter
+  (`/api/dashboard/zertifikat/pdf`), die Mitgliedsdaten, Aufnahmedatum,
+  Mitgliedschaftsdauer und die entrichteten Beitragsjahre bescheinigt. Die
+  Kernaussage ist das Datum, bis zu dem die Mitgliedschaft *gesichert* ist:
+  das Ende der lückenlos ab dem laufenden Jahr bezahlten Beitragsreihe. Weil
+  der Beitrag nach § 5 Abs. 3 im Voraus für das ganze Geschäftsjahr fällig ist
+  und ein Austritt nach § 6 Abs. 2 nur zum Ende eines Geschäftsjahres erklärt
+  werden kann, ist das zugleich die Mindestdauer der Mitgliedschaft. Ist der
+  Beitrag des laufenden Jahres offen, wird bewusst keine Mindestdauer
+  bescheinigt; Ehrenmitglieder sind nach § 5 Abs. 7 beitragsfrei und bekommen
+  stattdessen den Vermerk „Unbefristet“. Die Rechnung steht in
+  `lib/membershipCertificate.ts` und ist vollständig getestet. Das Blatt trägt
+  bewusst **keine Beträge und keine Bankverbindung** — bescheinigt wird die
+  Mitgliedschaft, nicht der Kontostand.
 - **Mitgliedsantrag** (`/mitglied-werden`) — für Konten ohne Mitgliedschaft
   verlinkt das Dashboard prominent auf die öffentliche Seite; der Antrag
   selbst ist dort die dritte Station. Er bleibt ein sechsstufiger Assistent

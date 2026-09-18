@@ -45,6 +45,8 @@ import {
 } from "@/components/ui";
 import { SectionHeader } from "./SectionHeader";
 import { CtaCard } from "./CtaCard";
+import { MembershipCertificateCard } from "./MembershipCertificateCard";
+import { certificateFacts, isCertifiableStatus } from "@/lib/membershipCertificate";
 import { countOpenApplications, getOpenApplication } from "@/lib/server/services/membershipService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { getDashboardEvent } from "@/lib/server/services/eventService";
@@ -121,6 +123,21 @@ export default async function DashboardPage() {
 
     // Der Antrags-CTA ist nur für Konten ohne Mitgliedschaft relevant.
     const isNonMember = userStatus === "KEIN_MITGLIED";
+
+    /*
+     * Das Zertifikat gibt es für ordentliche Mitglieder und Ehrenmitglieder —
+     * ein Konto ohne Mitgliedschaft hat nichts zu bescheinigen. Die Angaben
+     * werden hier schon berechnet, damit die Kachel sie zeigen kann, ohne dass
+     * jemand dafür das PDF öffnen muss.
+     */
+    const certificate = isCertifiableStatus(userStatus)
+        ? certificateFacts({
+              status: userStatus,
+              aufnahmedatum: profile?.aufnahmedatum ?? null,
+              fees: myFees,
+              issuedAt: new Date(),
+          })
+        : null;
     const [openApplication, applicationEnabled, openApplicationCount, upcomingEvent] =
         await Promise.all([
             isNonMember ? getOpenApplication(currentUser.id) : null,
@@ -354,6 +371,9 @@ export default async function DashboardPage() {
                                 </ul>
                             </Card>
                         )}
+
+                        {/* ---------- Mitgliedschaftszertifikat ---------- */}
+                        {certificate && <MembershipCertificateCard facts={certificate} />}
 
                         {/* ---------- Konten ---------- */}
                         <Card className="p-5 sm:p-6">

@@ -66,12 +66,22 @@ export async function getPublicMembers(): Promise<BoardMember[]> {
 }
 
 /**
+ * Die Vorstandsmitglieder, die für den Verein zeichnen — dieselbe Auswahl wie
+ * in der Mail-Signatur (`inSignature`). Das Mitgliedschaftszertifikat braucht
+ * Name und Rolle getrennt, weil beide auf verschiedenen Zeilen der
+ * Unterschriftenleiste stehen.
+ */
+export function getSignatureBoardMembers(): Promise<{ name: string; role: string }[]> {
+  return findSignatureMembers();
+}
+
+/**
  * Zeile für die Mail-Signatur, z. B. „Nikolas Tomek (1. Vorsitzender) ·
  * Jannes Weghake (2. Vorsitzender)“. Leer, wenn niemand markiert ist —
  * `layout.ts` fällt dann auf eine Signatur ohne Namensliste zurück.
  */
 export async function getSignatureBoardLine(): Promise<string> {
-  const members = await findSignatureMembers();
+  const members = await getSignatureBoardMembers();
   return members.map((member) => `${member.name} (${member.role})`).join(" · ");
 }
 
