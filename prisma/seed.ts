@@ -7,7 +7,12 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    const hashed = await bcrypt.hash("admin123", 12);
+    // Kein Standardpasswort: ein bekanntes Admin-Passwort in Produktion ist ein offenes Tor.
+    const password = process.env.SEED_ADMIN_PASSWORD;
+    if (!password || password.length < 12) {
+        throw new Error("SEED_ADMIN_PASSWORD fehlt oder ist kürzer als 12 Zeichen.");
+    }
+    const hashed = await bcrypt.hash(password, 12);
     await prisma.user.upsert({
         where: { email: "admin@wiphy.de" },
         update: {},
@@ -24,7 +29,10 @@ async function main() {
 }
 
 main()
-    .catch(console.error)
+    .catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    })
     .finally(async () => {
         await prisma.$disconnect();
     });

@@ -109,6 +109,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
                 const user = await prisma.user.findUnique({
                     where: { email },
+                    omit: { password: false },
                 });
                 // Unbekannte Adresse und falsches Passwort teilen sich denselben
                 // Grund: die Unterscheidung stünde sonst dauerhaft im Protokoll,
@@ -138,10 +139,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     where: { id: user.id },
                     data: { lastLogin: new Date() },
                 });
-                // Clear both buckets: leaving "login-ip" armed lets a handful of
-                // legitimate users behind one NAT/office IP exhaust the shared cap.
+                // Only the per-(IP, email) bucket: resetting "login-ip" here would let
+                // anyone with a valid account wipe the IP cap and keep spraying.
                 await resetRateLimit("login", rateLimitKey);
-                await resetRateLimit("login-ip", ipRateLimitKey);
                 await logAttempt("SUCCESS", undefined, user.id);
                 return {
                     id: user.id,

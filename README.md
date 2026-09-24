@@ -38,9 +38,8 @@ cp .env.example .env   # falls vorhanden, sonst .env von Hand anlegen
 # 3. Datenbankschema anlegen
 npx prisma db push
 
-# 4. Admin-Konto erzeugen (admin@wiphy.de / admin123 — Passwort nach dem
-#    ersten Login unbedingt ändern)
-npx prisma db seed
+# 4. Admin-Konto erzeugen (admin@wiphy.de, Passwort mind. 12 Zeichen)
+SEED_ADMIN_PASSWORD='…' npx prisma db seed
 
 # 5. Entwicklungsserver starten
 pnpm dev
@@ -471,7 +470,7 @@ Ubuntu-Server (z. B. in der Hetzner Cloud) betrieben werden kann.
 5. **Datenbank & Anwendung initialisieren:**
    ```bash
    npx prisma db push
-   npx prisma db seed # Erstellt den Admin-Nutzer (admin@wiphy.de / admin123)
+   SEED_ADMIN_PASSWORD='…' npx prisma db seed # Admin-Nutzer admin@wiphy.de, Passwort mind. 12 Zeichen
    pnpm build
    pm2 start pnpm --name "wiphy-app" -- start
    pm2 startup
