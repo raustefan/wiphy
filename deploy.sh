@@ -22,6 +22,8 @@ npx prisma db push
 
 # Build Next.js app
 echo "🏗️ Building Next.js application..."
+# Stale dev route types (from a `next dev` run) break the build's type check
+rm -rf .next/dev
 pnpm build
 
 # Restart application via PM2
