@@ -296,7 +296,7 @@ export default async function DashboardPage() {
                                                 <ChevronRight
                                                     size={15}
                                                     aria-hidden="true"
-                                                    className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
+                                                    className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100 pointer-coarse:opacity-100"
                                                 />
                                             </Link>
                                         </li>

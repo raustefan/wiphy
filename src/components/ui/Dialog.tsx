@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 
 /**
  * Modaler Dialog auf Basis des nativen <dialog>-Elements: kein Portal, kein
@@ -31,6 +32,7 @@ export function Dialog({
      folgt erst, wenn man sich durch den Inhalt liest. */
   const headingId = useId();
   const descriptionId = useId();
+  const swipe = useSwipeToClose(onClose);
 
   useEffect(() => {
     const el = ref.current;
@@ -59,13 +61,19 @@ export function Dialog({
       }}
       className={cn(
         "dialog-panel m-auto w-[calc(100vw-2rem)] rounded-2xl border border-line bg-surface p-0 text-foreground shadow-2xl",
-        "max-h-[calc(100dvh-3rem)] overflow-y-auto",
+        "max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain",
         "backdrop:bg-black/45",
         sizeClasses[size],
+        // Telefon: Bottom Sheet — unten angedockt, volle Breite, in
+        // Daumenreichweite und über der Home-Leiste.
+        "max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0 max-sm:pb-[env(safe-area-inset-bottom)]",
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6">
+      <div
+        {...swipe}
+        className="flex touch-none items-start justify-between gap-4 px-5 pt-5 sm:px-6"
+      >
         <div className="grid gap-1">
           {title && (
             <h2 id={headingId} className="text-lg font-bold tracking-tight text-balance">

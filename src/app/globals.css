@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Läuft die Seite als installierte App vom Homescreen, bringt sie ihren
+   eigenen Fensterrahmen mit: `standalone:hidden` & Co. blenden dann doppelte
+   Browser-Chrome aus (z. B. die Kopfzeile auf dem Telefon). */
+@custom-variant standalone (@media (display-mode: standalone));
+
 /* ==========================================================================
    WirtschaftsPhysik Alumni e.V. — Design-System
    --------------------------------------------------------------------------
@@ -172,6 +177,22 @@ html[data-theme-appearance="dark"] {
 }
 
 @layer base {
+  /* iOS Safari gibt Datumsfeldern eine eigene Mindestbreite, die `w-full`
+     übersteuert — sie ragen dann über die Textfelder hinaus. Ohne native
+     Optik und Mindestbreite verhalten sie sich wie jedes andere Feld. */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+  }
+
+  input::-webkit-date-and-time-value {
+    text-align: start;
+  }
+
   *,
   ::before,
   ::after {
@@ -182,6 +203,15 @@ html[data-theme-appearance="dark"] {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Anker und fokussierte Felder landen nicht unter der klebenden Kopfzeile
+       (h-16) — und auf dem Telefon nicht unter der Daumenleiste unten. */
+    scroll-padding-top: 5rem;
+  }
+
+  @media (max-width: 767px) {
+    html {
+      scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -209,6 +239,39 @@ html[data-theme-appearance="dark"] {
   video,
   canvas {
     max-width: 100%;
+  }
+
+  /* Kein Doppeltipp-Zoom: der Browser muss dann auch nicht 300 ms auf einen
+     zweiten Tipp warten. Pinch-Zoom bleibt erlaubt (Barrierefreiheit). */
+  * {
+    touch-action: manipulation;
+  }
+
+  /* Schnelles Tippen auf Bedienelemente markiert sonst deren Beschriftung. */
+  :where(button, [role="button"], [role="switch"], summary, nav a) {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Touch-Ergonomie: auf Fingerbedienung bekommt jedes Bedienelement
+     mindestens 48 × 48 px Trefferfläche. `:where` hält die Spezifität bei 0,
+     damit ein bewusst gesetztes `min-h-*` am Element weiterhin gewinnt.
+     Schalter (`role="switch"`) sind ausgenommen — sie würden zur Scheibe
+     verzerrt und erweitern ihre Trefferfläche stattdessen unsichtbar. */
+  @media (pointer: coarse) {
+    :where(
+        button:not([role="switch"]),
+        [role="button"],
+        select,
+        summary,
+        input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="range"], [type="file"])
+      ) {
+      min-height: 48px;
+    }
+
+    :where(button:not([role="switch"]), [role="button"]) {
+      min-width: 48px;
+    }
   }
 
   /* iOS zoomt beim Fokussieren in jedes Feld, dessen Schrift kleiner als
@@ -427,6 +490,22 @@ html[data-theme-appearance="dark"] {
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Auf dem Telefon fährt der Dialog als Bottom Sheet von unten herein. */
+@media (max-width: 639px) {
+  .dialog-panel[open] {
+    animation: sheet-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
   }
 }
 

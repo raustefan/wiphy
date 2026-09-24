@@ -2,6 +2,7 @@ import { z } from "zod";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
 import { parseBerlinLocalInput, startOfBerlinDay } from "@/lib/berlinTime";
+import { birthDateField } from "@/lib/membershipFormSchemas";
 
 /**
  * Email addresses are always stored lowercased — `User.email` is case-sensitive
@@ -131,6 +132,8 @@ export const contactSchema = z.object({
  * Anlegen eines Kontos mitbeantworten.
  */
 export const registerFormSchema = registerSchema.extend({
+  // Beitreten kann nur, wer volljährig ist — das soll nicht erst im Antrag auffallen.
+  geburtsdatum: birthDateField,
   securityAnswer: z
     .string()
     .trim()

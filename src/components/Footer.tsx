@@ -2,6 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
+const legalLinks = [
+  { href: "/impressum", label: "Impressum" },
+  { href: "/datenschutz", label: "Datenschutz" },
+];
+
 const columns: Array<{ heading: string; links: Array<{ href: string; label: string }> }> = [
   {
     heading: "Verein",
@@ -24,27 +29,41 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
   },
   {
     heading: "Rechtliches",
-    links: [
-      { href: "/impressum", label: "Impressum" },
-      { href: "/datenschutz", label: "Datenschutz" },
-    ],
+    links: legalLinks,
   },
 ];
 
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-line bg-surface">
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-        {/* Schon auf dem Telefon zweispaltig: einspaltig standen elf Links
-            untereinander, und die Fußzeile war länger als manche Seite. */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-10">
-          <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
+      {/* Telefon: nur das Pflichtprogramm. Die Navigation steckt dort schon in
+          Daumenleiste und „Mehr“-Menü — eine volle Linkliste darunter ließe
+          die Seite wie eine Website statt wie eine App wirken. */}
+      <div className="flex flex-col items-center px-4 pt-4 text-xs text-faint md:hidden">
+        <p>© {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.</p>
+        <div className="flex gap-4">
+          {legalLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="inline-flex min-h-12 items-center rounded-sm transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="mx-auto hidden w-full max-w-6xl px-6 py-14 md:block">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-10">
+          <div className="flex flex-col gap-3">
             <Image
               src="/logo-plain.png"
               alt="WirtschaftsPhysik Alumni e.V."
               width={56}
               height={30}
               style={{ objectFit: "contain" }}
+              className="h-[30px] w-14"
             />
             <p className="max-w-xs text-sm leading-relaxed text-muted">
               Gemeinnütziger Verein für Physik- und Wirtschaftsphysik-Alumni

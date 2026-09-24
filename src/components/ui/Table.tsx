@@ -62,7 +62,7 @@ export function Td({
 }: React.TdHTMLAttributes<HTMLTableCellElement>) {
   return (
     <td
-      className={cn("border-t border-line px-3 py-3 align-middle", className)}
+      className={cn("border-t border-line px-3 py-3 align-middle pointer-coarse:py-4", className)}
       {...props}
     />
   );

@@ -23,6 +23,8 @@ export function Switch({
       onClick={() => onCheckedChange(!checked)}
       className={cn(
         "relative inline-flex h-6.5 w-11.5 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-150",
+        // Unsichtbar auf 48 px Trefferfläche erweitert, ohne die Form zu ändern.
+        "pointer-coarse:after:absolute pointer-coarse:after:-inset-x-0.5 pointer-coarse:after:-inset-y-2.75 pointer-coarse:after:content-['']",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
         "disabled:cursor-not-allowed disabled:opacity-50",
         checked ? "bg-physics" : "bg-line-strong",

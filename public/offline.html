@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Offline — WiPhy Alumni</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #fafafa;
+        --foreground: #18181b;
+        --muted: #3f3f46;
+        --physics: #0b6560;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #0a0a0b;
+          --foreground: #f4f4f5;
+          --muted: #c4c4cc;
+          --physics: #2dd4bf;
+        }
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        background: var(--background);
+        color: var(--foreground);
+        font: 16px/1.5 system-ui, sans-serif;
+        text-align: center;
+      }
+      h1 {
+        margin: 1rem 0 0.5rem;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0 0 1.5rem;
+        color: var(--muted);
+      }
+      button {
+        min-height: 48px;
+        padding: 0 1.5rem;
+        border: 0;
+        border-radius: 0.75rem;
+        background: var(--physics);
+        color: var(--background);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Keine Verbindung</h1>
+      <p>Sobald du wieder online bist, geht es hier weiter.</p>
+      <button type="button" onclick="location.reload()">Erneut versuchen</button>
+    </main>
+  </body>
+</html>

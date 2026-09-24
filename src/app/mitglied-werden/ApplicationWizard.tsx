@@ -142,12 +142,45 @@ export function ApplicationWizard({
         });
     }
 
+    /**
+     * Enter auf der Handytastatur springt ins nächste sichtbare Feld und am
+     * Schrittende weiter — sonst tat die Taste hier gar nichts, und man musste
+     * zum Tippen jedes Feld einzeln antippen.
+     */
+    function handleEnter(event: React.KeyboardEvent<HTMLFormElement>) {
+        const field = event.target;
+        if (
+            event.key !== "Enter" ||
+            event.nativeEvent.isComposing ||
+            !(field instanceof HTMLInputElement) ||
+            field.type === "checkbox" ||
+            field.type === "radio"
+        ) {
+            return;
+        }
+        event.preventDefault();
+        // Felder verborgener Schritte haben keine Box und fallen heraus.
+        const fields = [
+            ...event.currentTarget.querySelectorAll<HTMLElement>(
+                "input:not([type=hidden],[type=checkbox],[type=radio]), select, textarea",
+            ),
+        ].filter((element) => element.getClientRects().length > 0);
+        const next = fields[fields.indexOf(field) + 1];
+        if (next) next.focus();
+        else if (isLast) submit();
+        else goToStep(step + 1);
+    }
+
     const isLast = step === STEPS.length - 1;
     // Verbleibende Beitragsmonate bei einer Aufnahme im aktuellen Monat (§ 5 Abs. 3).
     const remainingMonths = billableMonths(feeYear, new Date());
 
     return (
-        <form ref={formRef} onSubmit={(event) => event.preventDefault()} className="grid scroll-mt-20 gap-4 sm:gap-6">
+        <form
+            ref={formRef}
+            onSubmit={(event) => event.preventDefault()}
+            onKeyDown={handleEnter}
+            className="grid scroll-mt-20 gap-4 sm:gap-6">
             <StepIndicator step={step} onSelect={goToStep} />
 
             <Card className="p-5 sm:p-6">
@@ -164,34 +197,34 @@ export function ApplicationWizard({
                     />
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Vorname">
-                            <Input name="vorname" defaultValue={initial.vorname} autoComplete="given-name" />
+                            <Input enterKeyHint="next" name="vorname" defaultValue={initial.vorname} autoComplete="given-name" />
                         </Field>
                         <Field label="Nachname">
-                            <Input name="name" defaultValue={initial.name} autoComplete="family-name" />
+                            <Input enterKeyHint="next" name="name" defaultValue={initial.name} autoComplete="family-name" />
                         </Field>
                         <Field label="Titel (optional)">
-                            <Input name="titel" defaultValue={initial.titel} />
+                            <Input enterKeyHint="next" name="titel" defaultValue={initial.titel} />
                         </Field>
                         <Field label="Geburtsdatum">
-                            <Input type="date" name="geburtsdatum" defaultValue={initial.geburtsdatum} />
+                            <Input enterKeyHint="next" type="date" name="geburtsdatum" defaultValue={initial.geburtsdatum} />
                         </Field>
                     </div>
                     <Field label="Straße und Hausnummer">
-                        <Input name="strasse" defaultValue={initial.strasse} autoComplete="street-address" />
+                        <Input enterKeyHint="next" name="strasse" defaultValue={initial.strasse} autoComplete="street-address" />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-3">
                         <Field label="PLZ">
-                            <Input name="plz" defaultValue={initial.plz} autoComplete="postal-code" />
+                            <Input enterKeyHint="next" name="plz" defaultValue={initial.plz} autoComplete="postal-code" />
                         </Field>
                         <Field label="Ort">
-                            <Input name="stadt" defaultValue={initial.stadt} autoComplete="address-level2" />
+                            <Input enterKeyHint="next" name="stadt" defaultValue={initial.stadt} autoComplete="address-level2" />
                         </Field>
                         <Field label="Land">
-                            <Input name="land" defaultValue={initial.land} autoComplete="country-name" />
+                            <Input enterKeyHint="next" name="land" defaultValue={initial.land} autoComplete="country-name" />
                         </Field>
                     </div>
                     <Field label="Telefon (optional)">
-                        <Input name="telefon" defaultValue={initial.telefon} autoComplete="tel" />
+                        <Input enterKeyHint="next" name="telefon" defaultValue={initial.telefon} autoComplete="tel" />
                     </Field>
                 </div>
 
@@ -201,17 +234,17 @@ export function ApplicationWizard({
                         description="Alle Angaben sind freiwillig — außer den Studienjahren, wenn du die ermäßigte Beitragsstufe nutzen möchtest."
                     />
                     <Field label="Studiengang">
-                        <Input name="studiengang" defaultValue={initial.studiengang} />
+                        <Input enterKeyHint="next" name="studiengang" defaultValue={initial.studiengang} />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Studienbeginn">
-                            <Input type="date" name="studienbeginn" defaultValue={initial.studienbeginn} />
+                            <Input enterKeyHint="next" type="date" name="studienbeginn" defaultValue={initial.studienbeginn} />
                         </Field>
                         <Field
                             label="Studienende (ggf. voraussichtlich)"
                             hint="Bestimmt die Vorauswahl der Studienjahre."
                         >
-                            <Input type="date" name="studienende" defaultValue={initial.studienende} />
+                            <Input enterKeyHint="next" type="date" name="studienende" defaultValue={initial.studienende} />
                         </Field>
                     </div>
 
@@ -254,16 +287,16 @@ export function ApplicationWizard({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Arbeitgeber">
-                            <Input name="arbeitgeber" defaultValue={initial.arbeitgeber} />
+                            <Input enterKeyHint="next" name="arbeitgeber" defaultValue={initial.arbeitgeber} />
                         </Field>
                         <Field label="Position">
-                            <Input name="position" defaultValue={initial.position} />
+                            <Input enterKeyHint="next" name="position" defaultValue={initial.position} />
                         </Field>
                         <Field label="Berufsstand">
-                            <Input name="berufsstand" defaultValue={initial.berufsstand} />
+                            <Input enterKeyHint="next" name="berufsstand" defaultValue={initial.berufsstand} />
                         </Field>
                         <Field label="Berufszweig">
-                            <Input name="berufszweig" defaultValue={initial.berufszweig} />
+                            <Input enterKeyHint="next" name="berufszweig" defaultValue={initial.berufszweig} />
                         </Field>
                     </div>
                 </div>
@@ -332,6 +365,7 @@ export function ApplicationWizard({
                             />
                             <Field label="Kontoinhaber:in">
                                 <Input
+                                    enterKeyHint="next"
                                     name="kontoinhaber"
                                     defaultValue={initial.kontoinhaber}
                                     autoComplete="name"
@@ -345,10 +379,10 @@ export function ApplicationWizard({
                                     label="BIC (optional)"
                                     hint="Für Konten im SEPA-Raum nicht erforderlich."
                                 >
-                                    <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
+                                    <Input enterKeyHint="next" name="BIC" defaultValue={initial.BIC} autoComplete="off" />
                                 </Field>
                                 <Field label="Kreditinstitut (optional)">
-                                    <Input name="bank" defaultValue={initial.bank} />
+                                    <Input enterKeyHint="next" name="bank" defaultValue={initial.bank} />
                                 </Field>
                             </div>
 

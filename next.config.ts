@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 
   /**
+   * Handy-Test im WLAN: Next blockiert Dev-Anfragen von fremden Hostnamen.
+   * Die Seite lädt dann zwar, React startet aber nie — Links gehen, Knöpfe
+   * nicht. Nur für `next dev` relevant.
+   */
+  allowedDevOrigins: ["192.168.178.196", "MacBook-Pro-4.local"],
+
+  /**
    * Die Registrierung und der Aufnahmeantrag sind in der öffentlichen Seite
    * „Mitglied werden“ aufgegangen. Beide alten Pfade stehen in Lesezeichen,
    * alten E-Mails und Suchergebnissen und leiten deshalb dauerhaft dorthin

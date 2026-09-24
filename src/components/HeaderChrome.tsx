@@ -4,8 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import {
+  CalendarDays,
+  House,
+  LayoutDashboard,
+  LogIn,
+  Menu,
+  Newspaper,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ButtonLink } from "@/components/ui/Button";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
@@ -43,6 +52,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   const openButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const swipe = useSwipeToClose(() => setMenuOpen(false));
 
   /* Scroll-Sperre und Esc-Handling, solange das Drawer offen ist. */
   useEffect(() => {
@@ -107,100 +117,161 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
      gefüllte Schaltfläche daneben, die Anmeldung als ruhiger Link. */
   const signedInAction = { href: "/dashboard", label: "Dashboard" };
 
-  return (
-    <header
-      className={cn(
-        // Deckende Fläche statt `backdrop-blur`: Der Filter wäre nicht nur
-        // teuer, er erzeugt auch einen Containing Block — das Drawer mit
-        // `position: fixed` würde dann auf Kopfzeilenhöhe zusammenschrumpfen.
-        "sticky top-0 z-40 border-b bg-background transition-shadow",
-        scrolled ? "border-line shadow-sm" : "border-transparent",
-      )}
-    >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        {/* Wortmarke */}
-        <Link
-          href="/"
-          aria-label="Zur Startseite"
-          className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
-        >
-          <Image
-            src="/logo-plain.png"
-            alt=""
-            width={48}
-            height={25}
-            style={{ objectFit: "contain" }}
-            className="shrink-0"
-            priority
-          />
-          <span className="hidden min-w-0 flex-col border-l border-line pl-3 leading-tight sm:flex">
-            <span className="truncate text-[15px] font-bold tracking-tight">
-              WirtschaftsPhysik Alumni
-            </span>
-            <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
-              Universität Ulm · e.V.
-            </span>
-          </span>
-        </Link>
+  /* Daumenleiste (Telefon): die häufigsten Ziele direkt, alles Weitere im
+     Bottom Sheet hinter „Mehr“. */
+  const tabs = [
+    { href: "/", label: "Start", icon: House },
+    { href: "/termine", label: "Termine", icon: CalendarDays },
+    { href: "/blog", label: "Blog", icon: Newspaper },
+    signedIn
+      ? {
+          href: signedInAction.href,
+          label: signedInAction.label,
+          icon: LayoutDashboard,
+        }
+      : { href: "/login", label: "Anmelden", icon: LogIn },
+  ];
 
-        {/* Navigation (Desktop) */}
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
-          {links.map((link) => {
-            const active = pathname.startsWith(link.href);
+  return (
+    <>
+      <header
+        className={cn(
+          // Deckende Fläche statt `backdrop-blur`: Der Filter wäre nicht nur
+          // teuer, er erzeugt auch einen Containing Block — das Drawer mit
+          // `position: fixed` würde dann auf Kopfzeilenhöhe zusammenschrumpfen.
+          "sticky top-0 z-40 border-b bg-background transition-shadow",
+          // Als installierte App übernimmt auf dem Telefon die Daumenleiste die
+          // Navigation; die Kopfzeile wäre nur doppelter Fensterrahmen.
+          "standalone:max-md:hidden",
+          scrolled ? "border-line shadow-sm" : "border-transparent",
+        )}
+      >
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          {/* Wortmarke */}
+          <Link
+            href="/"
+            aria-label="Zur Startseite"
+            className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
+          >
+            <Image
+              src="/logo-plain.png"
+              alt=""
+              width={48}
+              height={25}
+              style={{ objectFit: "contain" }}
+              // Feste Höhe statt Preflight-`height: auto`: 48 × 25 trifft das
+              // Seitenverhältnis nicht exakt, auf 3×-Displays würden daraus
+              // 25,5 px — und Next warnt, weil nur eine Kante abweicht.
+              className="h-[25px] w-12 shrink-0"
+              priority
+            />
+            <span className="hidden min-w-0 flex-col border-l border-line pl-3 leading-tight sm:flex">
+              <span className="truncate text-[15px] font-bold tracking-tight">
+                WirtschaftsPhysik Alumni
+              </span>
+              <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
+                Universität Ulm · e.V.
+              </span>
+            </span>
+          </Link>
+
+          {/* Navigation (Desktop) */}
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Hauptnavigation"
+          >
+            {links.map((link) => {
+              const active = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+                    active
+                      ? "bg-raised text-foreground"
+                      : "text-muted hover:bg-raised hover:text-foreground",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <div className="ml-2 flex items-center gap-2">
+              <ThemeToggle />
+              {signedIn ? (
+                <ButtonLink href={signedInAction.href} size="sm">
+                  {signedInAction.label}
+                </ButtonLink>
+              ) : (
+                <>
+                  <ButtonLink
+                    href="/login"
+                    size="sm"
+                    variant="ghost"
+                    color="neutral"
+                  >
+                    Anmelden
+                  </ButtonLink>
+                  <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="sm">
+                    Mitglied werden
+                  </ButtonLink>
+                </>
+              )}
+            </div>
+          </nav>
+
+          {/* Mobil: Navigation sitzt unten in der Daumenleiste */}
+          <ThemeToggle className="md:hidden" />
+        </div>
+      </header>
+
+      {/* Daumenleiste (Mobil) */}
+      <nav
+        aria-label="Schnellnavigation"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden"
+      >
+        <div className="grid h-16 grid-cols-5">
+          {tabs.map(({ href, label, icon: Icon }) => {
+            const active =
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link
-                key={link.href}
-                href={link.href}
+                key={href}
+                href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
-                  active
-                    ? "bg-raised text-foreground"
-                    : "text-muted hover:bg-raised hover:text-foreground",
+                  "flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors",
+                  "focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-physics",
+                  active ? "text-physics" : "text-muted",
                 )}
               >
-                {link.label}
+                <Icon size={22} aria-hidden="true" />
+                {label}
               </Link>
             );
           })}
-          <div className="ml-2 flex items-center gap-2">
-            <ThemeToggle />
-            {signedIn ? (
-              <ButtonLink href={signedInAction.href} size="sm">
-                {signedInAction.label}
-              </ButtonLink>
-            ) : (
-              <>
-                <ButtonLink href="/login" size="sm" variant="ghost" color="neutral">
-                  Anmelden
-                </ButtonLink>
-                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="sm">
-                  Mitglied werden
-                </ButtonLink>
-              </>
-            )}
-          </div>
-        </nav>
-
-        {/* Navigation (Mobil) */}
-        <div className="flex items-center gap-1 md:hidden">
-          <ThemeToggle />
           <button
             ref={openButtonRef}
             type="button"
-            aria-label="Menü öffnen"
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             onClick={() => setMenuOpen(true)}
-            className="grid size-10 cursor-pointer place-items-center rounded-full text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+            className={cn(
+              "flex cursor-pointer flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors",
+              "focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-physics",
+              menuOpen ? "text-physics" : "text-muted",
+            )}
           >
-            <Menu size={20} />
+            <Menu size={22} aria-hidden="true" />
+            Mehr
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Drawer */}
+      {/* Bottom Sheet (Mobil) */}
       <div
         id="mobile-menu"
         role="dialog"
@@ -227,26 +298,36 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           ref={drawerRef}
           onKeyDown={trapTab}
           className={cn(
-            "absolute inset-y-0 right-0 flex w-full max-w-xs flex-col bg-surface shadow-2xl transition-transform duration-250 ease-out motion-reduce:transition-none",
-            menuOpen ? "translate-x-0" : "translate-x-full",
+            "absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-2xl bg-surface pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-250 ease-out motion-reduce:transition-none",
+            menuOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
-          <div className="flex h-16 items-center justify-between border-b border-line px-4">
+          <div
+            {...swipe}
+            className="flex h-16 shrink-0 touch-none items-center justify-between border-b border-line px-4"
+          >
             <span className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
               Menü
             </span>
-            <button
-              ref={closeButtonRef}
-              type="button"
-              aria-label="Menü schließen"
-              onClick={() => setMenuOpen(false)}
-              className="grid size-10 cursor-pointer place-items-center rounded-full text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-physics"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Hier statt nur in der Kopfzeile: die fehlt in der installierten App. */}
+              <ThemeToggle />
+              <button
+                ref={closeButtonRef}
+                type="button"
+                aria-label="Menü schließen"
+                onClick={() => setMenuOpen(false)}
+                className="grid size-10 cursor-pointer place-items-center rounded-full text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-physics"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Mobile Navigation">
+          <nav
+            className="flex flex-1 flex-col gap-1 overflow-y-auto p-3"
+            aria-label="Mobile Navigation"
+          >
             {links.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
@@ -255,9 +336,11 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors",
+                    "flex min-h-12 items-center rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
-                    active ? "bg-physics/12 text-physics" : "text-foreground hover:bg-raised",
+                    active
+                      ? "bg-physics/12 text-physics"
+                      : "text-foreground hover:bg-raised",
                   )}
                 >
                   {link.label}
@@ -298,6 +381,6 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }

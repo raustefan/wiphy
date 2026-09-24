@@ -39,15 +39,18 @@ const checkedBox = z
   .transform((v) => v === "on" || v === "true")
   .pipe(z.literal(true, { message: "Bitte bestätige diesen Punkt, um fortzufahren." }));
 
+/** Auch die Registrierung fragt es schon ab — der Antrag übernimmt es dann vom Konto. */
+export const birthDateField = z.coerce
+  .date({ message: "Bitte ein gültiges Geburtsdatum angeben." })
+  .refine((d) => d <= new Date(), "Das Geburtsdatum kann nicht in der Zukunft liegen.")
+  .refine((d) => isOldEnough(d), MINOR_HINT);
+
 /** Die Steps validieren im Wizard einzeln; der Server prüft immer alles zusammen. */
 export const applicationPersonSchema = z.object({
   vorname: required(200, "einen Vornamen"),
   name: required(200, "einen Nachnamen"),
   titel: optional(120),
-  geburtsdatum: z.coerce
-    .date({ message: "Bitte ein gültiges Geburtsdatum angeben." })
-    .refine((d) => d <= new Date(), "Das Geburtsdatum kann nicht in der Zukunft liegen.")
-    .refine((d) => isOldEnough(d), MINOR_HINT),
+  geburtsdatum: birthDateField,
   strasse: required(200, "eine Straße und Hausnummer"),
   plz: required(20, "eine Postleitzahl"),
   stadt: required(120, "einen Ort"),

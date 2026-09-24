@@ -9,12 +9,13 @@ import { AltchaField } from "@/components/AltchaField";
 import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
 import { Button, Field, Input } from "@/components/ui";
 import { MEMBERSHIP_LOGIN_PATH } from "@/lib/membership";
+import { birthDateField } from "@/lib/membershipFormSchemas";
 
 /** Reicht für die Rückmeldung im Browser; verbindlich prüft der Server. */
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /** In Anzeigereihenfolge — der Fokus springt auf das erste fehlerhafte Feld. */
-const FIRST_HALF_FIELDS = ["vorname", "name", "email"] as const;
+const FIRST_HALF_FIELDS = ["vorname", "name", "email", "geburtsdatum"] as const;
 type FirstHalfField = (typeof FIRST_HALF_FIELDS)[number];
 
 /**
@@ -38,6 +39,7 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
     const [vorname, setVorname] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
+    const [geburtsdatum, setGeburtsdatum] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<FirstHalfField, string>>>({});
@@ -57,6 +59,8 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
         else if (!EMAIL_PATTERN.test(email.trim())) {
             errors.email = "Diese E-Mail-Adresse sieht nicht vollständig aus.";
         }
+        const birthDate = birthDateField.safeParse(geburtsdatum);
+        if (!birthDate.success) errors.geburtsdatum = birthDate.error.issues[0].message;
         setFieldErrors(errors);
 
         const firstInvalid = FIRST_HALF_FIELDS.find((field) => errors[field]);
@@ -106,7 +110,7 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                     <span className="mr-2 font-mono text-xs tracking-wide text-faint">
                         {half + 1}/2
                     </span>
-                    {half === 0 ? "Name und E-Mail" : "Passwort und Sicherheitsprüfung"}
+                    {half === 0 ? "Name, E-Mail und Alter" : "Passwort und Sicherheitsprüfung"}
                 </p>
                 {half === 0 && (
                     <Link
@@ -180,6 +184,26 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                             placeholder="deine@email.de"
                         />
                     </Field>
+
+                    <Field
+                        label="Geburtsdatum"
+                        htmlFor="register-geburtsdatum"
+                        required
+                        hint="Beitreten kannst du ab 18 Jahren."
+                        error={fieldErrors.geburtsdatum}
+                    >
+                        <Input
+                            id="register-geburtsdatum"
+                            name="geburtsdatum"
+                            type="date"
+                            autoComplete="bday"
+                            value={geburtsdatum}
+                            onChange={(event) => {
+                                setGeburtsdatum(event.target.value);
+                                clearFieldError("geburtsdatum");
+                            }}
+                        />
+                    </Field>
                 </div>
             ) : (
                 <div className="grid gap-4">
@@ -189,6 +213,7 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                     <input type="hidden" name="vorname" value={vorname} />
                     <input type="hidden" name="name" value={name} />
                     <input type="hidden" name="email" value={email} />
+                    <input type="hidden" name="geburtsdatum" value={geburtsdatum} />
 
                     <NewPasswordFields
                         idPrefix="register"

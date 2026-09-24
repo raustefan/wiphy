@@ -31,7 +31,7 @@ export async function registerUser(formData: FormData) {
     return executeAction(async () => {
         await requireFeatureEnabled("REGISTRATION");
 
-        const { vorname, name, email, password, securityAnswer, website, renderedAt } =
+        const { vorname, name, email, geburtsdatum, password, securityAnswer, website, renderedAt } =
             parseFormData(registerFormSchema, formData);
 
         // Vorgezogen, weil auch die stillen Abbrüche unten protokolliert werden
@@ -137,6 +137,7 @@ export async function registerUser(formData: FormData) {
                 vorname,
                 name,
                 email,
+                geburtsdatum,
                 password: hashedPassword,
                 emailVerified: false,
                 // Markiert das Konto als „öffentlich registriert, noch nicht

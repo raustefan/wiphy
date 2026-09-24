@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { EventDateCube, EventFacts } from "@/components/EventCard";
 import MarkdownViewer from "@/components/MarkdownViewer";
+import ShareButton from "@/components/ShareButton";
 import { formatDate } from "@/lib/format";
 import {
   eventContactPath,
@@ -109,6 +110,7 @@ export default async function EventDetailPage({ params }: Props) {
             >
               <MessageCircleQuestion size={16} aria-hidden="true" /> Frage zum Termin
             </ButtonLink>
+            <ShareButton title={event.title} className="w-full" />
             <p className="mt-1 text-xs leading-relaxed text-faint">
               Die Kalenderdatei (.ics) öffnet sich in Apple Kalender, Google Kalender, Outlook
               und Thunderbird.

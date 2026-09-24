@@ -2,7 +2,9 @@ import "./globals.css";
 import AppThemeProvider from "@/components/AppThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import InstallHint from "@/components/InstallHint";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Instrument_Sans } from "next/font/google";
 import { Spline_Sans_Mono } from "next/font/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/siteUrl";
@@ -53,11 +55,24 @@ export const metadata: Metadata = {
  * das Inline-Skript unten bzw. `AppThemeProvider`, weil ein Media-Query-
  * basiertes theme-color den manuellen Umschalter ignorieren würde.
  */
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#fafafa",
-};
+export async function generateViewport(): Promise<Viewport> {
+  const userAgent = (await headers()).get("user-agent") ?? "";
+  return {
+    width: "device-width",
+    initialScale: 1,
+    // iOS-Safari zoomt beim Antippen eines Formularfelds heran und nicht wieder
+    // heraus. `maximum-scale=1` unterbindet dort nur diesen Auto-Zoom, Pinch-
+    // Zoom erlaubt Safari trotzdem. Nur für iOS: Android würde damit wirklich
+    // das Zoomen sperren. iPadOS meldet sich als Mac, ist aber am Server nicht
+    // von einem Mac zu unterscheiden; dort bleibt es bei den 16-px-Feldern.
+    // Serverseitig, weil Next das Meta-Tag nach der Hydration neu setzt.
+    ...(/iPhone|iPad|iPod/.test(userAgent) && { maximumScale: 1 }),
+    // Ohne `cover` liefert `env(safe-area-inset-*)` auf iOS immer 0 — die
+    // Daumenleiste säße dann unter der Home-Leiste.
+    viewportFit: "cover",
+    themeColor: "#fafafa",
+  };
+}
 
 const body = Instrument_Sans({
   subsets: ["latin"],
@@ -87,7 +102,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
+      <body
+        // Platz für die fixe Daumenleiste (nur Telefon), damit sie den Footer
+        // nicht verdeckt.
+        className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0"
+        suppressHydrationWarning
+      >
         <OrganizationJsonLd />
         <AppThemeProvider>
           {/* Sprungmarke: ohne sie führt jeder Tastaturbesuch zuerst durch
@@ -105,6 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
+          <InstallHint />
         </AppThemeProvider>
       </body>
     </html>
