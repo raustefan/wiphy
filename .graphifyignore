@@ -1,0 +1,3 @@
+# vendored agent skills + app icons: not project knowledge
+.claude/skills/
+*.png

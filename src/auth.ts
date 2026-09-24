@@ -179,16 +179,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // On every subsequent request (no `user`, just re-reading the token):
             // if the password changed after this token was issued (e.g. via a
             // password reset), drop the session instead of trusting a stale JWT.
+            // Role and status are re-read too — otherwise a demoted admin would
+            // keep admin rights for the whole lifetime of their token.
             if (typeof token.id === "string") {
                 const dbUser = await prisma.user.findUnique({
                     where: { id: token.id },
-                    select: { passwordChangedAt: true },
+                    select: { passwordChangedAt: true, role: true, status: true },
                 });
                 if (!dbUser || dbUser.passwordChangedAt.getTime() !== token.pwdChangedAt) {
                     delete token.id;
                     delete token.role;
                     delete token.status;
                     delete token.pwdChangedAt;
+                } else {
+                    token.role = dbUser.role;
+                    token.status = dbUser.status;
                 }
             }
 

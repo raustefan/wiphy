@@ -15,6 +15,28 @@ const nextConfig: NextConfig = {
    * Der Pfad steht bewusst wörtlich da: `next.config` wird außerhalb des
    * Anwendungs-Bundles ausgewertet und kennt den `@/`-Alias nicht.
    */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Reset-/Bestätigungslinks tragen ihr Token in der URL — nie an Dritte weiterreichen.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          // ponytail: kein script-src — Next- und Theme-Inline-Skripte bräuchten Nonces
+          // (Middleware, alle Seiten dynamisch). Nachziehen, wenn XSS-Härtung ansteht.
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+          },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       { source: "/register", destination: "/mitglied-werden", permanent: true },

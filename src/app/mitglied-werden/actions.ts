@@ -24,10 +24,7 @@ import {
   membershipReceivedMessage,
 } from "@/lib/email/messages";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
-
-function absoluteUrl(path: string, host: string | null, proto: string) {
-  return host ? `${proto}://${host}${path}` : path;
-}
+import { siteUrl } from "@/lib/server/siteUrl";
 
 /**
  * Nimmt den Aufnahmeantrag entgegen.
@@ -75,9 +72,6 @@ export async function submitMembershipApplication(formData: FormData) {
       userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
     });
 
-    const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
-    const host = requestHeaders.get("host");
-
     if (await isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL")) {
       try {
         const adminEmails = await getAdminNotificationEmails();
@@ -88,7 +82,8 @@ export async function submitMembershipApplication(formData: FormData) {
             vorname: parsed.data.vorname,
             name: parsed.data.name,
             email: currentUser.email ?? "",
-            dashboardUrl: absoluteUrl(MEMBERSHIP_ADMIN_PATH, host, proto),
+            // Nie aus dem Host-Header: der ist vom Client steuerbar (Phishing-Link an Admins).
+            dashboardUrl: siteUrl(MEMBERSHIP_ADMIN_PATH),
           }),
         });
         await markApplicationMailed(application.id);
