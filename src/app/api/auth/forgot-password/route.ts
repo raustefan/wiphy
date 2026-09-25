@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
+import { after } from "next/server";
+import { newToken } from "@/lib/server/tokens";
 import { sendEmail } from "@/lib/server/email/mailer";
 import { passwordResetMessage } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
@@ -76,6 +77,21 @@ export async function POST(request: Request) {
       where: { email: trimmedEmail },
     });
 
+    // Gesperrter Login: nach außen wie eine unbekannte Adresse, sonst ließe
+    // sich die Sperre über „Passwort vergessen“ erfragen. Der Link hülfe ohnehin
+    // nicht — der Login bleibt gesperrt.
+    if (user?.loginDisabled) {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_REQUEST",
+        outcome: "BLOCKED",
+        reason: "account_disabled",
+        userId: user.id,
+        ip: clientIp,
+        userAgent,
+      });
+      return NextResponse.json({ success: true });
+    }
+
     // If no user found, still return { success: true } (no enumeration).
     // Im Protokoll steht der echte Ausgang: eine Serie von Anfragen für
     // Adressen ohne Konto ist genau das Muster, das man sehen will.
@@ -91,8 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    // Generate secure random token
-    const token = crypto.randomBytes(32).toString("hex");
+    const { token, hash } = newToken();
 
     // Delete existing PasswordResetToken rows for that email
     await prisma.passwordResetToken.deleteMany({
@@ -104,36 +119,42 @@ export async function POST(request: Request) {
     await prisma.passwordResetToken.create({
       data: {
         email: trimmedEmail,
-        token,
+        token: hash,
         expires,
       },
     });
 
-    try {
-      await sendEmail({
-        to: trimmedEmail,
-        message: passwordResetMessage(siteUrl(`/reset-password?token=${token}`)),
-      });
-    } catch (error) {
-      // Der Vorgang gilt erst als erfolgreich, wenn die Mail draußen ist —
-      // sonst zählt das Protokoll versendete Links, die es nie gab.
+    // Versand erst nach der Antwort: sonst wartet nur die Anfrage für ein
+    // existierendes Konto auf den SMTP-Server, und die Antwortzeit verrät,
+    // welche Adressen registriert sind.
+    after(async () => {
+      try {
+        await sendEmail({
+          to: trimmedEmail,
+          message: passwordResetMessage(siteUrl(`/reset-password?token=${token}`)),
+        });
+      } catch (error) {
+        // Der Vorgang gilt erst als erfolgreich, wenn die Mail draußen ist —
+        // sonst zählt das Protokoll versendete Links, die es nie gab.
+        console.error("Failed to send password reset email:", error);
+        await logSecurityEvent({
+          type: "PASSWORD_RESET_REQUEST",
+          outcome: "FAILURE",
+          reason: "mail_failed",
+          userId: user.id,
+          ip: clientIp,
+          userAgent,
+        });
+        return;
+      }
+
       await logSecurityEvent({
         type: "PASSWORD_RESET_REQUEST",
-        outcome: "FAILURE",
-        reason: "mail_failed",
+        outcome: "SUCCESS",
         userId: user.id,
         ip: clientIp,
         userAgent,
       });
-      throw error;
-    }
-
-    await logSecurityEvent({
-      type: "PASSWORD_RESET_REQUEST",
-      outcome: "SUCCESS",
-      userId: user.id,
-      ip: clientIp,
-      userAgent,
     });
 
     return NextResponse.json({ success: true });

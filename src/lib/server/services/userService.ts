@@ -4,7 +4,6 @@ import {
   findUserByMitgliedIdExcludingUser,
   findUsersForDashboard,
   updateUserById,
-  deleteUserById,
   createUser,
 } from "@/lib/server/repositories/userRepository";
 import bcrypt from "bcryptjs";
@@ -14,6 +13,10 @@ import { sendEmail } from "@/lib/server/email/mailer";
 import { adminCreatedUserMessage, emailChangeMessage } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
 import { logSecurityEvent } from "@/lib/server/securityLog";
+import { newToken } from "@/lib/server/tokens";
+import { AppError } from "@/lib/server/errors";
+import { consumeRateLimit } from "@/lib/server/rateLimit";
+import { deleteAccountWithoutMembership } from "./accountService";
 
 export async function getDashboardUsers(userId: string, role: Role) {
   return findUsersForDashboard(userId, role);
@@ -53,7 +56,12 @@ export async function updateOwnBankDetails(
   });
 }
 
-export async function updateUserProfile(input: UpdateUserInput) {
+/**
+ * `currentPassword` ist nur für die Änderung der eigenen Adresse nötig: wer die
+ * Adresse ändert, kann danach per „Passwort vergessen“ das Passwort setzen. Eine
+ * übernommene Session allein soll dafür nicht reichen.
+ */
+export async function updateUserProfile(input: UpdateUserInput, currentPassword?: string) {
   const data = buildUserUpdateData(input);
 
   const user = await findUserById(input.idToEdit);
@@ -69,6 +77,39 @@ export async function updateUserProfile(input: UpdateUserInput) {
     const newEmail = normalizeEmail(input.email);
 
     const { prisma } = await import("@/lib/prisma");
+
+    // Pro Konto: bremst das Raten des Passworts über dieses Formular und den
+    // Versand von Bestätigungsmails an frei gewählte Adressen.
+    try {
+      await consumeRateLimit({
+        bucket: "email-change",
+        keyParts: [user.id],
+        limit: 5,
+        windowMs: 60 * 60 * 1000,
+        blockMs: 60 * 60 * 1000,
+        message: "Zu viele Versuche, die E-Mail-Adresse zu ändern.",
+      });
+    } catch (error) {
+      if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+        await logSecurityEvent({ type: "EMAIL_CHANGE", outcome: "BLOCKED", reason: "rate_limited", userId: user.id });
+        return { ok: false as const, reason: "rate_limited" as const };
+      }
+      throw error;
+    }
+
+    const stored = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { password: true },
+    });
+    if (!currentPassword || !stored || !(await bcrypt.compare(currentPassword, stored.password))) {
+      await logSecurityEvent({
+        type: "EMAIL_CHANGE",
+        outcome: "FAILURE",
+        reason: "invalid_credentials",
+        userId: user.id,
+      });
+      return { ok: false as const, reason: "wrong_password" as const };
+    }
     const existing = await prisma.user.findUnique({ where: { email: newEmail } });
     if (existing) {
       // Reported as a result, not thrown: the caller is a plain form action, so
@@ -85,8 +126,7 @@ export async function updateUserProfile(input: UpdateUserInput) {
 
     emailChanged = true;
 
-    const crypto = await import("crypto");
-    const token = crypto.randomBytes(32).toString("hex");
+    const { token, hash } = newToken();
     const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
     await prisma.emailVerificationToken.deleteMany({
@@ -97,7 +137,7 @@ export async function updateUserProfile(input: UpdateUserInput) {
       data: {
         userId: user.id,
         email: newEmail,
-        token,
+        token: hash,
         expires,
       },
     });
@@ -158,7 +198,7 @@ export async function adminDeleteUser(userIdToDelete: string, currentUserRole: R
   if (currentUserRole !== "ADMIN") {
     throw new Error("Unauthorized: Only admins can delete users");
   }
-  await deleteUserById(userIdToDelete);
+  await deleteAccountWithoutMembership(userIdToDelete);
   return { ok: true as const };
 }
 
@@ -172,8 +212,7 @@ export async function adminCreateUser(input: Prisma.UserCreateInput, currentUser
   const user = await createUser(data);
 
   // Generate email verification token
-  const crypto = await import("crypto");
-  const token = crypto.randomBytes(32).toString("hex");
+  const { token, hash } = newToken();
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
   const { prisma } = await import("@/lib/prisma");
@@ -181,7 +220,7 @@ export async function adminCreateUser(input: Prisma.UserCreateInput, currentUser
     data: {
       userId: user.id,
       email: user.email,
-      token,
+      token: hash,
       expires,
     },
   });

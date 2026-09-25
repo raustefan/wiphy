@@ -86,6 +86,14 @@ model User {
   registrationPendingSince DateTime?
   /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
   passwordChangedAt DateTime    @default(now())
+  /// Bumped on logout; JWT sessions carrying an older value are rejected, so a
+  /// copied cookie dies with the logout instead of living on until it expires.
+  sessionVersion    Int         @default(0)
+  /// Login gesperrt, der Datensatz bleibt. So „löscht“ ein Mitglied seinen
+  /// Zugang, ohne dass die Mitgliedschaft (und damit die Daten, die der Verein
+  /// für sie braucht) endet. Admins heben die Sperre im Adminbereich auf.
+  loginDisabled     Boolean     @default(false)
+  terminations      MembershipTermination[]
 
   @@index([registrationPendingSince])
 }
@@ -102,9 +110,11 @@ enum Status {
 }
 
 model MemberFee {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
+  id     String  @id @default(cuid())
+  /// NULL nach dem Löschen des Kontos: die Zeile bleibt als Buchhaltungs-
+  /// aufzeichnung stehen (§ 147 AO), siehe `archiveFeesOfUser`.
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
 
   // Jahr des Mitgliedsbeitrags (z.B. 2000, 2001, ...)
   jahr      Int
@@ -117,10 +127,19 @@ model MemberFee {
   /// Solange false, folgt die Zeile automatisch den Standardbeiträgen.
   beitragManuell Boolean @default(false)
 
+  /// Beim Löschen des Kontos eingefroren: wem die Zeile gehörte. Mehr als
+  /// Name und Mitgliedsnummer braucht die Aufzeichnung nicht (Datenminimierung).
+  archivName       String?
+  archivMitgliedId Int?
+  /// Gesetzt = archiviert und gesperrt (Art. 18 DSGVO): nur noch lesbar, gelöscht
+  /// nach Ablauf der Aufbewahrungsfrist (`pruneArchivedFees`).
+  archivedAt       DateTime?
+
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
   @@unique([userId, jahr])
+  @@index([archivedAt, jahr])
 }
 
 model BlogPost {
@@ -312,6 +331,10 @@ enum FeatureFlagKey {
   REGISTRATION_CLEANUP
   EVENT_MANAGEMENT
   BOARD_MANAGEMENT
+  MEMBERSHIP_TERMINATION
+  MEMBERSHIP_TERMINATION_MAIL
+  MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL
+  ACCOUNT_NOTICE_MAIL
 }
 
 model FeatureFlag {
@@ -494,6 +517,54 @@ model MembershipApplication {
   updatedAt DateTime @updatedAt
 
   @@index([status, submittedAt])
+  @@index([userId])
+}
+
+enum MembershipTerminationStatus {
+  /// Eingegangen, Austritt ist damit erklärt; der Vorstand hat noch nicht bestätigt.
+  EINGEREICHT
+  /// Vom Vorstand bestätigt. Wirksam wird der Austritt erst zu `effectiveAt`.
+  BESTAETIGT
+  ZURUECKGEZOGEN
+}
+
+/// Austrittserklärung eines Mitglieds (§ 6 Satzung: schriftlich, vier Wochen
+/// zum Ende des Geschäftsjahres).
+///
+/// Der Austritt ist eine einseitige Erklärung und wirkt mit dem Zugang — der
+/// Vorstand „genehmigt“ ihn nicht, er bestätigt den Eingang und hält das
+/// Austrittsdatum fest. Die Zeile ist zugleich der Nachweis, wann die Erklärung
+/// eingegangen ist; sie wird drei Jahre nach dem Austritt gelöscht
+/// (Regelverjährung, siehe `pruneTerminations`).
+model MembershipTermination {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  status MembershipTerminationStatus @default(EINGEREICHT)
+
+  /// `userId`, solange die Kündigung noch nicht vollzogen ist — gleicher
+  /// Trick wie bei `MembershipApplication.openForUserId`.
+  openForUserId String? @unique
+
+  submittedAt DateTime @default(now())
+  /// Letzter Tag der Mitgliedschaft (Datum, 00:00 UTC — wie alle reinen
+  /// Datumsfelder). Beim Eingang berechnet, bei der Bestätigung korrigierbar.
+  effectiveAt DateTime
+  /// Wunsch des Mitglieds: nach dem Austritt als Konto ohne Mitgliedschaft
+  /// weiter anmelden können. Sonst wird der Login zum Austritt gesperrt.
+  keepAccount Boolean  @default(false)
+
+  decidedAt    DateTime?
+  decidedById  String?
+  decisionNote String?
+  /// Gesetzt, sobald der Status des Mitglieds auf KEIN_MITGLIED umgestellt wurde.
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, effectiveAt])
   @@index([userId])
 }
 

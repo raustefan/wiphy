@@ -39,6 +39,12 @@ export const applicationRejectSchema = z.object({
   note: optionalNote,
 });
 
+export const terminationConfirmSchema = z.object({
+  id: z.string().min(1, "Ungültige Kündigung."),
+  effectiveAt: z.coerce.date({ message: "Bitte ein gültiges Austrittsdatum angeben." }),
+  note: optionalNote,
+});
+
 export const applicationIdSchema = z.object({
   id: z.string().min(1, "Ungültiger Antrag."),
 });

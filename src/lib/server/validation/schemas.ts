@@ -450,6 +450,7 @@ export const userUpdateSchema = z
     // admin-only flags
     datensperren: preprocessBoolean,
     ausschluss: preprocessBoolean,
+    loginDisabled: preprocessBoolean,
 
     // Mitglieds- / admin-only fields
     /** Present only for admins; omit or empty for members */

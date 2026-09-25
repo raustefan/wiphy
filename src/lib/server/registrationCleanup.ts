@@ -80,9 +80,6 @@ export async function pruneUnverifiedRegistrations(force = false): Promise<numbe
     let deleted = 0;
     for (const user of expired) {
       try {
-        // `EmailVerificationToken` hängt nicht am Fremdschlüssel und bliebe
-        // sonst als verwaiste Zeile mit der E-Mail-Adresse im Klartext zurück.
-        await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
         await deleteUserById(user.id);
         deleted += 1;
       } catch (error) {

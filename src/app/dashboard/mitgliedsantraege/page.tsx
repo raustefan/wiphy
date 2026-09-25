@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FileText, Info } from "lucide-react";
+import { DoorOpen, FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getApplications, getMaxMitgliedId } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
@@ -8,21 +8,40 @@ import { planApplicationFees } from "@/lib/feeDefaults";
 import { Callout, Card, Container, EmptyState } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ApplicationList } from "./ApplicationList";
+import { TerminationList } from "./TerminationList";
+import { SectionHeader } from "../SectionHeader";
+import { getTerminations, processTerminations } from "@/lib/server/services/terminationService";
+import { isTerminationDue } from "@/lib/membershipTermination";
 
-export const metadata: Metadata = { title: "Mitgliedsanträge" };
+export const metadata: Metadata = { title: "Anträge & Austritte" };
 
 export const dynamic = "force-dynamic";
 
 export default async function MembershipApplicationsPage() {
     await requireAdmin();
+    // Vor dem Laden: fällige Austritte sollen hier schon vollzogen erscheinen.
+    await processTerminations();
 
-    const [applications, feeDefaults, applicationEnabled, mailEnabled, maxMitgliedId] =
-        await Promise.all([
+    const [
+        applications,
+        feeDefaults,
+        applicationEnabled,
+        mailEnabled,
+        maxMitgliedId,
+        terminations,
+        terminationEnabled,
+        terminationMailEnabled,
+        terminationConfirmationMailEnabled,
+    ] = await Promise.all([
             getApplications(),
             getFeeDefaults(),
             isFeatureEnabled("MEMBERSHIP_APPLICATION"),
             isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL"),
             getMaxMitgliedId(),
+            getTerminations(),
+            isFeatureEnabled("MEMBERSHIP_TERMINATION"),
+            isFeatureEnabled("MEMBERSHIP_TERMINATION_MAIL"),
+            isFeatureEnabled("MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL"),
         ]);
     // Vorschau der ID, die eine Annahme vergeben würde (nächste freie ID).
     const nextMitgliedId = maxMitgliedId + 1;
@@ -80,6 +99,25 @@ export default async function MembershipApplicationsPage() {
         }),
     }));
 
+    const terminationItems = terminations.map((t) => ({
+        id: t.id,
+        status: t.status,
+        submittedAt: t.submittedAt.toISOString(),
+        effectiveAt: t.effectiveAt.toISOString(),
+        keepAccount: t.keepAccount,
+        decisionNote: t.decisionNote,
+        completedAt: t.completedAt?.toISOString() ?? null,
+        overdue: t.status === "EINGEREICHT" && isTerminationDue(t.effectiveAt, today),
+        member: {
+            id: t.user.id,
+            email: t.user.email,
+            vorname: t.user.vorname,
+            name: t.user.name,
+            mitgliedId: t.user.mitgliedId,
+            loginDisabled: t.user.loginDisabled,
+        },
+    }));
+
     return (
         <Container size="3" className="py-8 sm:py-12">
             <DashboardPageHeader
@@ -127,6 +165,49 @@ export default async function MembershipApplicationsPage() {
             ) : (
                 <ApplicationList applications={items} nextMitgliedId={nextMitgliedId} />
             )}
+
+            <div className="mt-10 grid gap-4">
+                <SectionHeader
+                    icon={<DoorOpen size={16} />}
+                    eyebrow="Kündigungen"
+                    title="Austritte"
+                    description="Austrittserklärungen aus dem Mitgliederbereich. Nach der Bestätigung wird der Status am Tag nach dem Austrittsdatum automatisch auf „Kein Mitglied“ gesetzt."
+                />
+                {!terminationEnabled && (
+                    <Callout tone="warning" icon={<Info size={16} />}>
+                        Die Online-Kündigung ist deaktiviert. Mitglieder werden auf Kontaktformular
+                        und E-Mail an den Vorstand verwiesen — solche Kündigungen erscheinen nicht
+                        hier und müssen von Hand erfasst werden (Status im Profil).
+                    </Callout>
+                )}
+                {terminationEnabled && !terminationMailEnabled && (
+                    <Callout tone="warning" icon={<Info size={16} />}>
+                        Die Mail-Benachrichtigung für Kündigungen ist deaktiviert. Neue Kündigungen
+                        landen nur hier — bitte regelmäßig prüfen, die Frist läuft ab Eingang.
+                    </Callout>
+                )}
+                {!terminationConfirmationMailEnabled && (
+                    <Callout tone="warning" icon={<Info size={16} />}>
+                        Die Mails an Mitglieder zur Kündigung sind deaktiviert. Eine Bestätigung
+                        verschickt dann keine Mail — bitte den Austritt anderweitig schriftlich
+                        bestätigen.
+                    </Callout>
+                )}
+                {terminationItems.length === 0 ? (
+                    <Card>
+                        <EmptyState
+                            icon={<DoorOpen size={22} />}
+                            title="Keine Austritte"
+                            description="Kündigungen von Mitgliedern erscheinen hier zur Bestätigung."
+                        />
+                    </Card>
+                ) : (
+                    <TerminationList
+                        terminations={terminationItems}
+                        mailEnabled={terminationConfirmationMailEnabled}
+                    />
+                )}
+            </div>
         </Container>
     );
 }

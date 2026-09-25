@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { logSecurityEvent } from "@/lib/server/securityLog";
+import { hashToken } from "@/lib/server/tokens";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { passwordChangedNoticeMessage } from "@/lib/email/messages";
 
 export async function POST(request: Request) {
   try {
@@ -64,13 +67,22 @@ export async function POST(request: Request) {
     }
 
     // Look up PasswordResetToken by token
+    const tokenHash = hashToken(token);
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
+      where: { token: tokenHash },
     });
 
     // Check if token exists and is not expired. Der Token selbst wird nie
     // protokolliert — er wäre bis zum Ablauf ein gültiger Kontozugang.
-    if (!resetToken || resetToken.expires < new Date()) {
+    // Einlösen *vor* dem Passwortwechsel und nur weiter, wenn genau diese
+    // Anfrage die Zeile gelöscht hat — sonst setzen zwei parallele Anfragen mit
+    // demselben Link beide ein Passwort.
+    const consumed =
+      resetToken && resetToken.expires >= new Date()
+        ? (await prisma.passwordResetToken.deleteMany({ where: { token: tokenHash } })).count === 1
+        : false;
+
+    if (!resetToken || !consumed) {
       await logSecurityEvent({
         type: "PASSWORD_RESET_COMPLETE",
         outcome: "FAILURE",
@@ -117,9 +129,12 @@ export async function POST(request: Request) {
       where: { email: resetToken.email },
     });
 
-    // Delete the used PasswordResetToken
-    await prisma.passwordResetToken.delete({
-      where: { token },
+    after(async () => {
+      try {
+        await sendEmail({ to: resetToken.email, message: passwordChangedNoticeMessage() });
+      } catch (error) {
+        console.error("Failed to send password changed notice:", error);
+      }
     });
 
     return NextResponse.json({ success: true });

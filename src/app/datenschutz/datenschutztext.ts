@@ -152,6 +152,16 @@ export const DATENSCHUTZ: LegalDocument = [
     ],
   },
   {
+    title: "Austritt, Sperrung und Löschung des Nutzerkontos",
+    blocks: [
+      "Mitglieder können ihren Austritt über den Mitgliederbereich erklären. Dabei speichern wir den Zeitpunkt des Eingangs, das sich daraus nach der Satzung ergebende Austrittsdatum, ob das Nutzerkonto nach dem Austritt weitergeführt werden soll, sowie Zeitpunkt und Vermerk der Bestätigung durch den Vorstand. Diese Angaben dienen dem Nachweis des fristgerechten Zugangs (Art. 6 Abs. 1 lit. b und f DSGVO) und werden drei Jahre nach dem Austritt gelöscht; eine zurückgenommene Kündigung drei Jahre nach der Rücknahme.",
+      "Mit dem Austrittsdatum endet die Mitgliedschaft; der Login wird gesperrt, sofern nicht die Weiterführung als Konto ohne Mitgliedschaft gewünscht wurde. Die übrigen Mitgliedsdaten werden gelöscht, sobald offene Beiträge abgewickelt sind; für die Beitragsaufzeichnungen gilt die am Ende dieses Abschnitts genannte Aufbewahrungsfrist.",
+      "Mitglieder können ihren Zugang zum Mitgliederbereich jederzeit deaktivieren. Da die Mitgliedschaft fortbesteht, bleiben die dafür erforderlichen Daten (insbesondere Name, Anschrift, Kontakt- und Zahlungsdaten) gespeichert (Art. 6 Abs. 1 lit. b DSGVO); gesperrt wird lediglich die Anmeldung. Auf Wunsch reaktiviert der Vorstand den Zugang.",
+      "Nutzerkonten ohne Mitgliedschaft können von den Nutzern selbst oder vom Vorstand jederzeit gelöscht werden. Die Löschung erfolgt sofort und vollständig, einschließlich gestellter Anträge und offener Bestätigungs- oder Passwort-Links; Einträge im Sicherheitsprotokoll verlieren dabei jeden Personenbezug.",
+      "Ausgenommen sind Aufzeichnungen über Mitgliedsbeiträge (Beitragsjahr, Betrag, Zahlungsstatus). Sie bleiben mit Name und Mitgliedsnummer zur Erfüllung der steuerlichen Aufbewahrungspflicht nach § 147 AO (Art. 6 Abs. 1 lit. c, Art. 17 Abs. 3 lit. b DSGVO) zehn Jahre nach Ende des jeweiligen Beitragsjahres erhalten. Ihre Verarbeitung ist in dieser Zeit eingeschränkt (Art. 18 DSGVO): Sie sind nur für den Vorstand einsehbar, werden nicht verändert und nach Ablauf der Frist automatisch gelöscht.",
+    ],
+  },
+  {
     title: "Registrierfunktion",
     blocks: [
       "Nutzer können ein Nutzerkonto anlegen. Im Rahmen der Registrierung werden die erforderlichen Pflichtangaben den Nutzern mitgeteilt und auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO zu Zwecken der Bereitstellung des Nutzerkontos verarbeitet. Zu den verarbeiteten Daten gehören insbesondere die Login-Informationen (Name, Passwort sowie eine E-Mailadresse) sowie das Geburtsdatum, da eine Mitgliedschaft über das Online-Formular erst ab 18 Jahren möglich ist; es wird für einen späteren Aufnahmeantrag übernommen. Die im Rahmen der Registrierung eingegebenen Daten werden für die Zwecke der Nutzung des Nutzerkontos und dessen Zwecks verwendet.",

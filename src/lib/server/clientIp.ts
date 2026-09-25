@@ -6,7 +6,25 @@
  * Request und ohne Datenbank testbar sein.
  */
 
+import { isIPv6 } from "node:net";
+
 type HeaderBag = Pick<Headers, "get">;
+
+/**
+ * IPv6-Adressen zählen als ihr /64-Netz. Ein gewöhnlicher Anschluss bekommt ein
+ * ganzes /64 zugeteilt und kann daraus beliebig viele Adressen ziehen — pro
+ * Einzeladresse gezählt, stünde für jeden Versuch ein frischer Zähler bereit.
+ * IPv4 (auch als `::ffff:1.2.3.4`) und Unlesbares bleiben unverändert.
+ */
+export function addressKey(ip: string): string {
+  if (!isIPv6(ip) || ip.includes(".")) return ip;
+  const [head, tail] = ip.split("%")[0].split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const groups =
+    tail === undefined ? left : [...left, ...Array(8 - left.length - right.length).fill("0"), ...right];
+  return `${groups.slice(0, 4).map((g) => parseInt(g, 16).toString(16)).join(":")}::/64`;
+}
 
 /**
  * Die Adresse, unter der ein Zugriff gezählt wird — oder `"unknown"`.
@@ -30,7 +48,7 @@ type HeaderBag = Pick<Headers, "get">;
 export function extractClientIp(headerBag: HeaderBag) {
   const realIp = headerBag.get("x-real-ip")?.trim();
   if (realIp) {
-    return realIp;
+    return addressKey(realIp);
   }
 
   const forwardedFor = headerBag.get("x-forwarded-for");
@@ -41,7 +59,7 @@ export function extractClientIp(headerBag: HeaderBag) {
       .filter((hop) => hop.length > 0);
     const nearest = hops[hops.length - 1];
     if (nearest) {
-      return nearest;
+      return addressKey(nearest);
     }
   }
 

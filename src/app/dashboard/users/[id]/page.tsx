@@ -18,6 +18,9 @@ import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 import { EditUserForm } from "./EditUserForm";
 import { DeleteMemberSection } from "./DeleteMemberSection";
+import { AccountSection } from "./AccountSection";
+import { getOpenTermination } from "@/lib/server/services/terminationService";
+import { terminationDate } from "@/lib/membershipTermination";
 import { EmailChangeDialog } from "../../EmailChangeDialog";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
 
@@ -107,6 +110,10 @@ async function updateUser(formData: FormData) {
         mandatserteilung: parsed.mandatserteilung,
         datensperren: parsed.datensperren ?? false,
         ausschluss: parsed.ausschluss ?? false,
+        // Das eigene Konto kann ein Admin hier nicht sperren (das Kästchen
+        // fehlt dann im Formular) — sonst sperrte er sich selbst aus.
+        loginDisabled:
+            currentUser.id === parsed.id ? undefined : (parsed.loginDisabled ?? false),
         // Mitglieds- / role (admin only allowed to change)
         role:
             parsed.role === "ADMIN" || parsed.role === "MEMBER"
@@ -119,11 +126,17 @@ async function updateUser(formData: FormData) {
                 ? parsed.status
                 : undefined,
         mitgliedId: parsed.mitgliedId,
-    });
+    }, typeof formData.get("currentPassword") === "string" ? (formData.get("currentPassword") as string) : undefined);
 
     if (!result.ok) {
         if (result.reason === "email_taken") {
             redirect(`${editPath}?emailTakenError=1`);
+        }
+        if (result.reason === "wrong_password") {
+            redirect(`${editPath}?passwordError=1`);
+        }
+        if (result.reason === "rate_limited") {
+            redirect(`${editPath}?emailRateLimited=1`);
         }
         redirect(`/dashboard/users/${parsed.id}?mitgliedIdError=1`);
     }
@@ -158,6 +171,8 @@ export default async function EditUserPage({
         mitgliedIdError?: string;
         validationError?: string;
         emailTakenError?: string;
+        passwordError?: string;
+        emailRateLimited?: string;
     }>;
 }) {
     const resolvedParams = await params;
@@ -189,7 +204,16 @@ export default async function EditUserPage({
         );
     }
 
-    const canDelete = isAdmin && currentUser.id !== resolvedParams.id;
+    const isSelf = currentUser.id === user.id;
+    const isMember = user.status !== "KEIN_MITGLIED";
+    const canDelete = isAdmin && !isSelf;
+    const [ownTermination, terminationEnabled, contactFormEnabled] = isSelf
+        ? await Promise.all([
+              getOpenTermination(user.id),
+              isFeatureEnabled("MEMBERSHIP_TERMINATION"),
+              isFeatureEnabled("CONTACT_FORM"),
+          ])
+        : [null, false, false];
     const displayName = [user.vorname, user.name].filter(Boolean).join(" ") || user.email;
 
     const formErrors: { title: string; detail: string }[] = [];
@@ -204,6 +228,19 @@ export default async function EditUserPage({
             title: "Diese E-Mail-Adresse wird bereits verwendet.",
             detail:
                 "Bitte wähle eine andere Adresse. Deine übrigen Änderungen wurden nicht gespeichert.",
+        });
+    }
+    if (resolvedSearchParams?.passwordError === "1") {
+        formErrors.push({
+            title: "Das aktuelle Passwort stimmt nicht.",
+            detail:
+                "Zum Ändern deiner E-Mail-Adresse brauchen wir dein aktuelles Passwort. Deine übrigen Änderungen wurden nicht gespeichert.",
+        });
+    }
+    if (resolvedSearchParams?.emailRateLimited === "1") {
+        formErrors.push({
+            title: "Zu viele Versuche.",
+            detail: "Bitte versuche in einer Stunde erneut, deine E-Mail-Adresse zu ändern. Deine übrigen Änderungen wurden nicht gespeichert.",
         });
     }
     if (isAdmin && resolvedSearchParams?.mitgliedIdError === "1") {
@@ -242,10 +279,42 @@ export default async function EditUserPage({
                     </Callout>
                 ))}
 
-                <EditUserForm user={user} isAdmin={isAdmin} action={updateUser} />
+                <EditUserForm
+                    user={user}
+                    isAdmin={isAdmin}
+                    isSelf={isSelf}
+                    action={updateUser}
+                />
             </Card>
 
-            {canDelete && (
+            {isSelf && (
+                <AccountSection
+                    isMember={isMember}
+                    isAdmin={isAdmin}
+                    termination={
+                        ownTermination && {
+                            id: ownTermination.id,
+                            status: ownTermination.status,
+                            submittedAt: ownTermination.submittedAt.toISOString(),
+                            effectiveAt: ownTermination.effectiveAt.toISOString(),
+                            keepAccount: ownTermination.keepAccount,
+                        }
+                    }
+                    terminationPreview={terminationDate(new Date()).toISOString()}
+                    terminationEnabled={terminationEnabled}
+                    contactFormEnabled={contactFormEnabled}
+                />
+            )}
+
+            {canDelete && isMember && (
+                <Callout tone="info" title="Konto löschen" className="mt-8">
+                    Solange eine Mitgliedschaft besteht, bleibt der Datensatz erhalten. Den Login
+                    sperrst du oben über „Login deaktiviert“. Endgültig löschen lässt sich das Konto
+                    erst, wenn der Status „Kein Mitglied“ ist.
+                </Callout>
+            )}
+
+            {canDelete && !isMember && (
                 <DeleteMemberSection
                     userId={user.id}
                     displayName={displayName}

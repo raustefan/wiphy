@@ -18,6 +18,10 @@ export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = [
   "MEMBERSHIP_APPLICATION",
   "MEMBERSHIP_APPLICATION_MAIL",
   "MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL",
+  "MEMBERSHIP_TERMINATION",
+  "MEMBERSHIP_TERMINATION_MAIL",
+  "MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL",
+  "ACCOUNT_NOTICE_MAIL",
   "REGISTRATION_CLEANUP",
   "EVENT_MANAGEMENT",
   "BOARD_MANAGEMENT",
@@ -41,6 +45,10 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   MEMBERSHIP_APPLICATION: "Mitgliedsantrag",
   MEMBERSHIP_APPLICATION_MAIL: "Mitgliedsantrag: Benachrichtigung an Admins",
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL: "Mitgliedsantrag: Eingangsbestätigung",
+  MEMBERSHIP_TERMINATION: "Mitgliedschaft kündigen",
+  MEMBERSHIP_TERMINATION_MAIL: "Kündigung: Benachrichtigung an Admins",
+  MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL: "Kündigung: Mails an das Mitglied",
+  ACCOUNT_NOTICE_MAIL: "Konto: Mail bei Sperrung oder Löschung",
   REGISTRATION_CLEANUP: "Registrierung: unbestätigte Konten löschen",
   EVENT_MANAGEMENT: "Termin-Verwaltung",
   BOARD_MANAGEMENT: "Vorstands-Verwaltung",
@@ -70,6 +78,14 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
     "Benachrichtigt alle Admins per Mail über einen neuen Aufnahmeantrag. Aus: Anträge werden nur noch im Dashboard gesammelt.",
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL:
     "Schickt dem Antragsteller eine Eingangsbestätigung sowie eine Mail bei Annahme oder Ablehnung.",
+  MEMBERSHIP_TERMINATION:
+    "Erlaubt Mitgliedern, ihre Mitgliedschaft im Mitgliederbereich zu kündigen. Aus: Mitglieder sehen stattdessen den Hinweis, per Kontaktformular oder E-Mail an den Vorstand zu kündigen; bereits eingegangene Kündigungen bleiben im Dashboard bearbeitbar.",
+  MEMBERSHIP_TERMINATION_MAIL:
+    "Benachrichtigt alle Admins per Mail über eine neue Kündigung. Aus: Kündigungen landen nur im Dashboard unter „Anträge & Austritte“ — bitte regelmäßig prüfen, die Frist läuft ab Eingang.",
+  MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL:
+    "Schickt dem Mitglied eine Eingangsbestätigung der Kündigung und die Bestätigung des Austritts durch den Vorstand. Aus: Der Austritt muss dem Mitglied anderweitig schriftlich bestätigt werden.",
+  ACCOUNT_NOTICE_MAIL:
+    "Informiert Nutzer per Mail, wenn sie ihren Zugang deaktiviert oder ihr Konto gelöscht haben — auch als Warnung, falls das jemand anderes war.",
   REGISTRATION_CLEANUP:
     "Löscht selbst registrierte Konten automatisch, deren E-Mail-Adresse nach 24 Stunden nicht bestätigt ist. Aus: Unbestätigte Registrierungen bleiben stehen und müssen von Hand gelöscht werden. Von Admins angelegte Konten und der Altbestand sind nie betroffen.",
   EVENT_MANAGEMENT:

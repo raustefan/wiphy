@@ -8,6 +8,7 @@
  */
 import type { EmailBlock, EmailMessage } from "./blocks";
 import { VEREIN } from "./branding";
+import { formatDate, formatDateTime } from "@/lib/format";
 
 type Person = { vorname?: string | null; name?: string | null };
 
@@ -44,6 +45,39 @@ export function emailChangeMessage(verificationUrl: string): EmailMessage {
       { type: "text", content: "um deine neue E-Mail-Adresse zu bestätigen, klicke bitte auf den folgenden Link:" },
       { type: "button", label: "E-Mail-Adresse bestätigen", url: verificationUrl },
       LINK_EXPIRY("30 Minuten"),
+    ],
+  };
+}
+
+/**
+ * Hinweis nach jeder Passwortänderung. Der einfachste Weg, eine Kontoübernahme
+ * zu bemerken: wer das nicht selbst war, erfährt es sofort.
+ */
+export function passwordChangedNoticeMessage(): EmailMessage {
+  return {
+    subject: "Dein Passwort wurde geändert",
+    preheader: "Das Passwort deines Kontos wurde soeben neu gesetzt.",
+    blocks: [
+      { type: "text", content: "Hallo," },
+      { type: "text", content: "das Passwort deines Kontos wurde soeben geändert. Alle bestehenden Anmeldungen wurden dabei beendet." },
+      { type: "note", content: `Warst du das nicht? Dann setze dein Passwort sofort über „Passwort vergessen“ neu und melde dich bei uns unter ${VEREIN.email}.` },
+    ],
+  };
+}
+
+/**
+ * Geht an die *alte* Adresse, sobald die neue bestätigt ist. Wer ein Konto
+ * übernommen hat, kontrolliert die neue Adresse — die alte ist der einzige
+ * Kanal, über den der eigentliche Inhaber noch davon erfährt.
+ */
+export function emailChangedNoticeMessage(newEmail: string): EmailMessage {
+  return {
+    subject: "Deine E-Mail-Adresse wurde geändert",
+    preheader: "Dein Konto ist jetzt mit einer neuen E-Mail-Adresse verknüpft.",
+    blocks: [
+      { type: "text", content: "Hallo," },
+      { type: "text", content: `dein Konto ist ab sofort mit der Adresse ${newEmail} verknüpft. An diese Adresse gehen keine weiteren Nachrichten zu deinem Konto.` },
+      { type: "note", content: `Warst du das nicht? Dann melde dich bitte umgehend bei uns unter ${VEREIN.email}.` },
     ],
   };
 }
@@ -227,6 +261,113 @@ export function feeReminderMessage(params: Person & { year: number }): EmailMess
       greeting(params),
       { type: "text", content: `wir möchten dich freundlich daran erinnern, dass der Mitgliedsbeitrag für das Jahr ${params.year} bei uns noch als offen geführt wird.` },
       { type: "text", content: "Bitte überweise den Beitrag zeitnah. Bei Fragen oder wenn du den Beitrag bereits gezahlt hast, melde dich gerne bei uns." },
+    ],
+  };
+}
+
+/**
+ * Eingangsbestätigung der Austrittserklärung. Dokumentiert den Zugang, auf den
+ * es für die Frist ankommt — und ist zugleich der Hinweis, falls jemand anderes
+ * die Kündigung abgeschickt hat.
+ */
+export function terminationReceivedMessage(params: Person & {
+  submittedAt: Date;
+  effectiveAt: Date;
+  keepAccount: boolean;
+}): EmailMessage {
+  return {
+    subject: "Deine Kündigung ist eingegangen",
+    preheader: `Austritt zum ${formatDate(params.effectiveAt)}.`,
+    blocks: [
+      greeting(params),
+      { type: "text", content: `deine Austrittserklärung aus dem ${VEREIN.name} ist bei uns eingegangen.` },
+      {
+        type: "facts",
+        items: [
+          { label: "Eingegangen am", value: formatDateTime(params.submittedAt) },
+          { label: "Mitglied bis einschließlich", value: formatDate(params.effectiveAt) },
+          { label: "Konto danach", value: params.keepAccount ? "bleibt ohne Mitgliedschaft bestehen" : "Login wird gesperrt" },
+        ],
+      },
+      { type: "text", content: "Der Vorstand bestätigt den Austritt in Kürze. Bis zum Austrittsdatum bleibst du Mitglied mit allen Rechten und Pflichten." },
+      { type: "note", content: `Hast du nicht gekündigt? Dann melde dich bitte umgehend bei uns unter ${VEREIN.email}.` },
+    ],
+  };
+}
+
+export function terminationNoticeMessage(params: {
+  vorname: string;
+  name: string;
+  email: string;
+  mitgliedId: number | null;
+  submittedAt: Date;
+  effectiveAt: Date;
+  dashboardUrl: string;
+}): EmailMessage {
+  return {
+    subject: `Austrittserklärung: ${params.vorname} ${params.name}`,
+    preheader: "Ein Mitglied hat die Mitgliedschaft gekündigt.",
+    blocks: [
+      { type: "text", content: "Hallo," },
+      { type: "text", content: "ein Mitglied hat den Austritt aus dem Verein erklärt:" },
+      {
+        type: "facts",
+        items: [
+          { label: "Name", value: `${params.vorname} ${params.name}` },
+          { label: "E-Mail", value: params.email },
+          { label: "Mitgliedsnummer", value: params.mitgliedId != null ? String(params.mitgliedId) : "—" },
+          { label: "Eingegangen am", value: formatDateTime(params.submittedAt) },
+          { label: "Austritt zum", value: formatDate(params.effectiveAt) },
+        ],
+      },
+      { type: "text", content: "Bitte bestätige den Austritt im Dashboard:" },
+      { type: "button", label: "Austritte im Dashboard öffnen", url: params.dashboardUrl },
+    ],
+  };
+}
+
+export function terminationConfirmedMessage(params: Person & {
+  effectiveAt: Date;
+  keepAccount: boolean;
+}): EmailMessage {
+  return {
+    subject: "Bestätigung deines Austritts",
+    preheader: `Deine Mitgliedschaft endet mit Ablauf des ${formatDate(params.effectiveAt)}.`,
+    blocks: [
+      greeting(params),
+      { type: "text", content: `hiermit bestätigen wir deinen Austritt aus dem ${VEREIN.name}. Deine Mitgliedschaft endet mit Ablauf des ${formatDate(params.effectiveAt)}.` },
+      {
+        type: "text",
+        content: params.keepAccount
+          ? "Dein Konto bleibt danach als Konto ohne Mitgliedschaft bestehen. Du kannst es jederzeit selbst vollständig löschen."
+          : "Danach wird dein Login gesperrt. Deine Daten bewahren wir nur so lange auf, wie es für die Abwicklung offener Beiträge und gesetzliche Aufbewahrungspflichten nötig ist.",
+      },
+      { type: "text", content: "Danke, dass du dabei warst!" },
+    ],
+  };
+}
+
+export function loginDisabledMessage(params: Person): EmailMessage {
+  return {
+    subject: "Dein Zugang wurde deaktiviert",
+    preheader: "Deine Mitgliedschaft besteht weiter.",
+    blocks: [
+      greeting(params),
+      { type: "text", content: "wie gewünscht haben wir deinen Zugang zum Mitgliederbereich deaktiviert. Alle Anmeldungen wurden beendet." },
+      { type: "text", content: "Deine Mitgliedschaft besteht unverändert weiter; der Vorstand erreicht dich wie bisher per E-Mail oder Post. Möchtest du den Zugang wieder nutzen, genügt eine Nachricht an den Vorstand." },
+      { type: "note", content: `Warst du das nicht? Dann melde dich bitte umgehend bei uns unter ${VEREIN.email}.` },
+    ],
+  };
+}
+
+export function accountDeletedMessage(params: Person): EmailMessage {
+  return {
+    subject: "Dein Konto wurde gelöscht",
+    preheader: "Dein Konto und alle zugehörigen Daten wurden entfernt.",
+    blocks: [
+      greeting(params),
+      { type: "text", content: `dein Konto beim ${VEREIN.name} wurde samt allen zugehörigen Daten gelöscht. Nur eventuelle Beitragsbuchungen bewahren wir wegen der steuerlichen Aufbewahrungspflicht gesperrt auf. Diese E-Mail ist die letzte, die du von uns zu diesem Konto erhältst.` },
+      { type: "note", content: `Warst du das nicht? Dann melde dich bitte bei uns unter ${VEREIN.email}.` },
     ],
   };
 }

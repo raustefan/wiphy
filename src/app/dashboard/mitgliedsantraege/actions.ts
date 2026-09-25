@@ -15,12 +15,15 @@ import {
   applicationDecisionSchema,
   applicationIdSchema,
   applicationRejectSchema,
+  terminationConfirmSchema,
 } from "@/lib/server/validation/membershipSchemas";
+import { confirmTermination, getTermination } from "@/lib/server/services/terminationService";
 import { sendEmail } from "@/lib/server/email/mailer";
 import type { EmailMessage } from "@/lib/email/blocks";
 import {
   membershipApprovedMessage,
   membershipRejectedMessage,
+  terminationConfirmedMessage,
 } from "@/lib/email/messages";
 import { MEMBERSHIP_ADMIN_PATH } from "@/lib/membership";
 
@@ -102,6 +105,41 @@ export async function removeMembershipApplication(formData: FormData) {
     const { id } = parseFormData(applicationIdSchema, formData);
 
     await deleteApplication(id);
+    revalidatePath(MEMBERSHIP_ADMIN_PATH);
+  });
+}
+
+/**
+ * Bestätigung einer Austrittserklärung. Die Mail ist die schriftliche
+ * Bestätigung des Austrittsdatums; ist sie per Flag aus, muss der Vorstand das
+ * Mitglied anderweitig informieren (Hinweis auf der Admin-Seite).
+ */
+export async function confirmMembershipTermination(formData: FormData) {
+  return executeAction(async () => {
+    const admin = await requireAdmin();
+    const { id, effectiveAt, note } = parseFormData(terminationConfirmSchema, formData);
+
+    const termination = await getTermination(id);
+    if (!termination) throw new AppError("NOT_FOUND", "Kündigung nicht gefunden.");
+
+    await confirmTermination({ id, adminId: admin.id, effectiveAt, note });
+
+    if (await isFeatureEnabled("MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL")) {
+      try {
+        await sendEmail({
+          to: termination.user.email,
+          message: terminationConfirmedMessage({
+            vorname: termination.user.vorname,
+            name: termination.user.name,
+            effectiveAt,
+            keepAccount: termination.keepAccount,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to send termination confirmation mail:", error);
+      }
+    }
+
     revalidatePath(MEMBERSHIP_ADMIN_PATH);
   });
 }

@@ -1,7 +1,7 @@
 "use server";
 
-import crypto from "crypto";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { executeAction } from "@/lib/server/errors";
@@ -12,6 +12,7 @@ import { sendEmail } from "@/lib/server/email/mailer";
 import { registrationConfirmationMessage } from "@/lib/email/messages";
 import { siteUrl } from "@/lib/server/siteUrl";
 import { createAltchaChallenge } from "@/lib/server/altcha";
+import { newToken } from "@/lib/server/tokens";
 
 /**
  * Mints a replacement ALTCHA challenge for the login form. A solved challenge
@@ -77,7 +78,7 @@ export async function resendVerificationEmail(email: string) {
         const user = await prisma.user.findUnique({ where: { email: trimmedEmail } });
         if (!user || user.emailVerified) return;
 
-        const token = crypto.randomBytes(32).toString("hex");
+        const { token, hash } = newToken();
         const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
@@ -85,23 +86,27 @@ export async function resendVerificationEmail(email: string) {
             data: {
                 userId: user.id,
                 email: user.email,
-                token,
+                token: hash,
                 expires,
             },
         });
 
         const verificationUrl = siteUrl(`/verify-email?token=${token}`);
 
-        try {
-            await sendEmail({
-                to: user.email,
-                message: registrationConfirmationMessage(
-                    { vorname: user.vorname, name: user.name },
-                    verificationUrl,
-                ),
-            });
-        } catch (error) {
-            console.error("Failed to resend verification email:", error);
-        }
+        // Nach der Antwort, damit die Antwortzeit nicht verrät, ob hier ein
+        // unbestätigtes Konto existiert.
+        after(async () => {
+            try {
+                await sendEmail({
+                    to: user.email,
+                    message: registrationConfirmationMessage(
+                        { vorname: user.vorname, name: user.name },
+                        verificationUrl,
+                    ),
+                });
+            } catch (error) {
+                console.error("Failed to resend verification email:", error);
+            }
+        });
     });
 }

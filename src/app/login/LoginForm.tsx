@@ -21,10 +21,13 @@ import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 export function LoginForm({
     challengeJson,
     next,
+    notice,
 }: {
     challengeJson: string;
     /** Wohin nach erfolgreicher Anmeldung — vom Server auf eigene Pfade begrenzt. */
     next?: string | null;
+    /** Rückmeldung nach Sperren/Löschen des eigenen Kontos. */
+    notice?: string | null;
 }) {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -91,6 +94,10 @@ export function LoginForm({
                     setError(
                         "Zu viele Login-Versuche. Bitte warte 10 Minuten und versuche es dann erneut.",
                     );
+                } else if (res.code === "account_disabled") {
+                    setError(
+                        "Dein Zugang ist deaktiviert. Wende dich bitte an den Vorstand, wenn du ihn wieder nutzen möchtest.",
+                    );
                 } else if (res.code === "captcha_failed") {
                     setError(
                         "Die Sicherheitsüberprüfung ist abgelaufen. Bitte führe sie erneut durch.",
@@ -142,6 +149,7 @@ export function LoginForm({
                         }
                     >
                         <form onSubmit={handleSubmit} className="grid gap-4">
+                            {notice && !error && <Callout tone="success">{notice}</Callout>}
                             {error && (
                                 <Callout tone="danger" icon={<AlertCircle size={16} />}>
                                     <span className="grid gap-2">

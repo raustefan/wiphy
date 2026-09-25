@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, Role } from "@prisma/client";
 import { anonymizeSecurityEventsForUser } from "@/lib/server/securityLog";
+import { archiveFeesOfUser } from "./feeRepository";
 
 export function findUsersForDashboard(userId: string, role: Role) {
   const where: Prisma.UserWhereInput | undefined = role === "ADMIN" ? undefined : { id: userId };
@@ -37,8 +38,20 @@ export async function deleteUserById(id: string) {
   const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
   await anonymizeSecurityEventsForUser(id, user?.email);
 
-  await prisma.memberFee.deleteMany({ where: { userId: id } });
-  return prisma.user.delete({ where: { id } });
+  return prisma.$transaction(async (tx) => {
+    // Die Token-Tabellen hängen nicht am Fremdschlüssel und behielten sonst die
+    // Adresse im Klartext.
+    if (user) {
+      await tx.passwordResetToken.deleteMany({ where: { email: user.email } });
+      await tx.emailVerificationToken.deleteMany({
+        where: { OR: [{ userId: id }, { email: user.email }] },
+      });
+    }
+    // Beitragszeilen bleiben als Aufzeichnung stehen; der Fremdschlüssel wird
+    // beim Löschen auf NULL gesetzt.
+    await archiveFeesOfUser(tx, id);
+    return tx.user.delete({ where: { id } });
+  });
 }
 
 export function createUser(data: Prisma.UserCreateInput) {

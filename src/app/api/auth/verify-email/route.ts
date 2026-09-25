@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { extractClientIp } from "@/lib/server/rateLimit";
 import { logSecurityEvent } from "@/lib/server/securityLog";
 import { pruneUnverifiedRegistrations } from "@/lib/server/registrationCleanup";
 import { sendEmail } from "@/lib/server/email/mailer";
-import { adminRegistrationNoticeMessage } from "@/lib/email/messages";
+import { adminRegistrationNoticeMessage, emailChangedNoticeMessage } from "@/lib/email/messages";
+import { hashToken } from "@/lib/server/tokens";
 
 /**
  * Benachrichtigt die Admins über eine neue Registrierung — bewusst erst hier
@@ -68,12 +69,19 @@ export async function POST(request: Request) {
     }
 
     // Look up EmailVerificationToken by token
+    const tokenHash = hashToken(token);
     const verificationToken = await prisma.emailVerificationToken.findUnique({
-      where: { token },
+      where: { token: tokenHash },
     });
 
-    // Check if token exists and is not expired
-    if (!verificationToken || verificationToken.expires < new Date()) {
+    // Einlösen vor allem anderen: nur die Anfrage, die die Zeile tatsächlich
+    // löscht, darf weitermachen.
+    const consumed =
+      verificationToken && verificationToken.expires >= new Date()
+        ? (await prisma.emailVerificationToken.deleteMany({ where: { token: tokenHash } })).count === 1
+        : false;
+
+    if (!verificationToken || !consumed) {
       await logSecurityEvent({
         type: "EMAIL_VERIFICATION",
         outcome: "FAILURE",
@@ -156,6 +164,17 @@ export async function POST(request: Request) {
         userAgent,
       });
 
+      if (isEmailChange) {
+        const oldEmail = user.email;
+        after(async () => {
+          try {
+            await sendEmail({ to: oldEmail, message: emailChangedNoticeMessage(verificationToken.email) });
+          } catch (error) {
+            console.error("Failed to notify the previous address about an email change:", error);
+          }
+        });
+      }
+
       if (!isEmailChange && user.registrationPendingSince) {
         await notifyAdminsAboutRegistration({
           vorname: user.vorname,
@@ -208,11 +227,6 @@ export async function POST(request: Request) {
         });
       }
     }
-
-    // Delete the used token
-    await prisma.emailVerificationToken.delete({
-      where: { token },
-    });
 
     // Zweiter Aufhänger für den Aufräumlauf neben der Registrierung — erst
     // hier, damit er nie das Konto löschen kann, dessen Link gerade eingelöst

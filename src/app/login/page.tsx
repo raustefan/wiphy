@@ -18,16 +18,31 @@ function internalPath(value: string | undefined): string | null {
     return value;
 }
 
-type Props = { searchParams: Promise<{ next?: string }> };
+/** Rückmeldung nach dem Sperren oder Löschen des eigenen Kontos. */
+const NOTICES: Record<string, string> = {
+    "zugang=deaktiviert":
+        "Dein Zugang wurde deaktiviert. Deine Mitgliedschaft besteht weiter; zum Reaktivieren wende dich an den Vorstand.",
+    "konto=geloescht": "Dein Konto wurde vollständig gelöscht.",
+};
+
+type Props = { searchParams: Promise<{ next?: string; zugang?: string; konto?: string }> };
 
 export default async function LoginPage({ searchParams }: Props) {
     // Generate the ALTCHA challenge on the server and embed it directly in the
     // page, exactly like the membership form does — the widget solves it
     // locally, so there's no challenge endpoint that can fail.
-    const [{ next }, challenge] = await Promise.all([
+    const [{ next, zugang, konto }, challenge] = await Promise.all([
         searchParams,
         createAltchaChallenge(),
     ]);
 
-    return <LoginForm challengeJson={JSON.stringify(challenge)} next={internalPath(next)} />;
+    const notice = NOTICES[`zugang=${zugang}`] ?? NOTICES[`konto=${konto}`] ?? null;
+
+    return (
+        <LoginForm
+            challengeJson={JSON.stringify(challenge)}
+            next={internalPath(next)}
+            notice={notice}
+        />
+    );
 }

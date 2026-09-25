@@ -34,3 +34,18 @@ test("whitespace and empty entries do not produce an empty key", () => {
 test("without any proxy header the address stays unknown", () => {
   assert.equal(extractClientIp(headers({})), "unknown");
 });
+
+test("IPv6 addresses count as their /64 network", () => {
+  // Zwei Adressen aus demselben Anschluss dürfen keinen eigenen Zähler bekommen.
+  const a = extractClientIp(headers({ "x-real-ip": "2001:db8:abcd:12::1" }));
+  const b = extractClientIp(headers({ "x-real-ip": "2001:0db8:abcd:0012:ffff:1:2:3" }));
+  assert.equal(a, "2001:db8:abcd:12::/64");
+  assert.equal(b, a);
+  assert.equal(extractClientIp(headers({ "x-forwarded-for": "1.2.3.4, 2001:db8::5" })), "2001:db8:0:0::/64");
+  assert.equal(extractClientIp(headers({ "x-real-ip": "::1" })), "0:0:0:0::/64");
+});
+
+test("IPv4 and IPv4-mapped addresses stay as they are", () => {
+  assert.equal(extractClientIp(headers({ "x-real-ip": "203.0.113.7" })), "203.0.113.7");
+  assert.equal(extractClientIp(headers({ "x-real-ip": "::ffff:203.0.113.7" })), "::ffff:203.0.113.7");
+});

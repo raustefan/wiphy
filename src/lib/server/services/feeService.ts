@@ -7,6 +7,7 @@ import {
   upsertFeeAmount,
   clearFeeAmountOverride,
   findExistingFeeYears,
+  findArchivedFees,
   updateFeeComment as updateFeeCommentRepo,
 } from "@/lib/server/repositories/feeRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
@@ -15,6 +16,10 @@ import { calculateFee, type FeeBreakdown } from "@/lib/feeCalculation";
 
 export function getFeeDashboardUsers(userId: string, role: Role) {
   return findUsersWithFees(userId, role);
+}
+
+export function getArchivedFees() {
+  return findArchivedFees();
 }
 
 export function getFeeLiableUsers() {

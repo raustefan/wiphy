@@ -50,7 +50,8 @@ export type SecurityEventReason =
   | "email_change"
   | "spam_filtered"
   | "mail_failed"
-  | "unverified_expired";
+  | "unverified_expired"
+  | "account_disabled";
 
 type SecurityEventInput = {
   type: SecurityEventType;

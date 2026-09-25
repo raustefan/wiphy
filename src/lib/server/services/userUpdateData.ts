@@ -51,6 +51,7 @@ export type UpdateUserInput = {
 
   datensperren?: MaybeBool;
   ausschluss?: MaybeBool;
+  loginDisabled?: MaybeBool;
 };
 
 function parseDateInput(val: MaybeDate): Date | null | undefined {
@@ -149,6 +150,9 @@ export function buildUserUpdateData(input: UpdateUserInput): Prisma.UserUpdateIn
 
     applyBool(data, "datensperren", input.datensperren);
     applyBool(data, "ausschluss", input.ausschluss);
+    // Nicht nullbar, deshalb ohne `applyBool`: „unbekannt“ heißt hier „nicht anfassen“.
+    const loginDisabled = parseBoolInput(input.loginDisabled);
+    if (loginDisabled != null) data.loginDisabled = loginDisabled;
 
     if (input.role) {
       data.role = input.role;

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
-import { getFeeDashboardData, getExistingFeeYears } from "@/lib/server/services/feeService";
+import {
+  getArchivedFees,
+  getFeeDashboardData,
+  getExistingFeeYears,
+} from "@/lib/server/services/feeService";
+import { formatDate, formatEuro } from "@/lib/format";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { Card, Container, Separator } from "@/components/ui";
 import { FeesTable } from "./FeesTable";
@@ -48,6 +53,7 @@ export default async function FeesDashboardPage({
 
   const users = await getFeeDashboardData(currentUser.id, currentUser.role, selectedYear);
   const feeDefaults = isAdmin ? await getFeeDefaults() : [];
+  const archivedFees = isAdmin ? await getArchivedFees() : [];
 
   const tableUsers = users.map((u) => ({
     id: u.id,
@@ -127,6 +133,51 @@ export default async function FeesDashboardPage({
           availableYears={availableYears}
         />
       </Card>
+
+      {/* Gesperrte Aufzeichnungen (Art. 18 DSGVO, § 147 AO): nur lesen, nichts
+          ändern — deshalb eine schlichte Tabelle statt der bearbeitbaren oben. */}
+      {archivedFees.length > 0 && (
+        <Card className="mt-4 p-4 sm:mt-6 sm:p-6">
+          <details>
+            <summary className="cursor-pointer font-semibold">
+              Archiv gelöschter Konten ({archivedFees.length} Beitragszeilen)
+            </summary>
+            <p className="mt-2 text-sm text-muted text-pretty">
+              Beitragszeilen von Konten, die gelöscht wurden. Sie bleiben wegen der steuerlichen
+              Aufbewahrungspflicht zehn Jahre nach dem Beitragsjahr gesperrt erhalten und werden
+              danach automatisch gelöscht.
+            </p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead className="text-left text-muted">
+                  <tr>
+                    <th className="py-1 pr-3 font-medium">Name</th>
+                    <th className="py-1 pr-3 font-medium">Nr.</th>
+                    <th className="py-1 pr-3 font-medium">Jahr</th>
+                    <th className="py-1 pr-3 text-right font-medium">Beitrag</th>
+                    <th className="py-1 pr-3 font-medium">Status</th>
+                    <th className="py-1 font-medium">Archiviert</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {archivedFees.map((fee) => (
+                    <tr key={fee.id}>
+                      <td className="py-1.5 pr-3">{fee.archivName ?? "—"}</td>
+                      <td className="py-1.5 pr-3 tabular-nums">{fee.archivMitgliedId ?? "—"}</td>
+                      <td className="py-1.5 pr-3 tabular-nums">{fee.jahr}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">
+                        {formatEuro(fee.beitrag)}
+                      </td>
+                      <td className="py-1.5 pr-3">{fee.bezahlt ? "Bezahlt" : "Offen"}</td>
+                      <td className="py-1.5">{formatDate(fee.archivedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </Card>
+      )}
     </Container>
   );
 }

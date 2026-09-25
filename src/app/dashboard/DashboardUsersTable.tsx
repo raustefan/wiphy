@@ -52,6 +52,8 @@ export type DashboardTableUser = {
     role: string;
     status: Status | string;
     emailVerified: boolean;
+    /** Zugang gesperrt, Mitglied besteht weiter — Admins sollen es sehen. */
+    loginDisabled: boolean;
 };
 
 export function DashboardUsersTable({
@@ -137,10 +139,13 @@ export function DashboardUsersTable({
                             icon={<CheckCircle2 size={15} aria-hidden="true" />}
                             label="Mitgliedschaft"
                             value={
-                                <Badge tone={getStatusTone(u.status)}>
-                                    {getStatusIcon(u.status)}
-                                    {formatStatus(u.status)}
-                                </Badge>
+                                <span className="flex flex-wrap gap-1.5">
+                                    <Badge tone={getStatusTone(u.status)}>
+                                        {getStatusIcon(u.status)}
+                                        {formatStatus(u.status)}
+                                    </Badge>
+                                    {u.loginDisabled && <Badge>Login gesperrt</Badge>}
+                                </span>
                             }
                         />
                     </Fragment>
@@ -262,6 +267,11 @@ export function DashboardUsersTable({
                                         >
                                             {formatStatusShort(u.status)}
                                         </Badge>
+                                        {u.loginDisabled && (
+                                            <Badge className="mt-1" title="Login gesperrt">
+                                                Gesperrt
+                                            </Badge>
+                                        )}
                                     </Td>
 
                                     <Td className="px-2 py-2 align-top text-right">

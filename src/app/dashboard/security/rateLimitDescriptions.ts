@@ -8,6 +8,8 @@
 const RATE_LIMIT_DESCRIPTIONS: Record<string, string> = {
     "login-ip":
         "Login-Versuche pro IP-Adresse, über alle E-Mail-Adressen hinweg. Grenze: 20 Versuche pro 10 Minuten, danach 10 Minuten gesperrt.",
+    "login-account":
+        "Login-Versuche für eine E-Mail-Adresse, egal von welcher IP — gegen verteiltes Raten eines Passworts. Zählt erst nach gelöstem Captcha. Grenze: 50 pro Stunde, danach 15 Minuten gesperrt.",
     login: "Login-Versuche für eine bestimmte Kombination aus IP-Adresse und E-Mail. Grenze: 5 Versuche pro 10 Minuten, danach 10 Minuten gesperrt.",
     "contact-ip":
         "Kontaktformular-Anfragen pro IP-Adresse. Grenze: 3 pro Stunde, danach 6 Stunden gesperrt.",
@@ -30,6 +32,10 @@ const RATE_LIMIT_DESCRIPTIONS: Record<string, string> = {
         "Erneutes Senden der Verifizierungs-Mail pro IP-Adresse. Grenze: 10 pro Stunde.",
     "resend-verification":
         "Erneutes Senden der Verifizierungs-Mail für eine bestimmte Kombination aus IP-Adresse und E-Mail. Grenze: 3 pro Stunde.",
+    "email-change":
+        "Versuche, die eigene E-Mail-Adresse zu ändern, pro Konto (inklusive falscher Passworteingaben). Grenze: 5 pro Stunde, danach 1 Stunde gesperrt.",
+    "account-action":
+        "Passwortbestätigungen für Kündigung, Zugangssperre und Kontolöschung pro Konto (inklusive falscher Eingaben). Grenze: 5 pro 15 Minuten, danach 15 Minuten gesperrt.",
     "admin-mail": "Von Admins versendete E-Mails, z. B. Rundmails. Grenze: 250 pro 10 Minuten.",
 };
 

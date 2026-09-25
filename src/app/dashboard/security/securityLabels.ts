@@ -98,6 +98,7 @@ const REASON_LABELS: Record<string, string> = {
   mail_failed: "Mailversand fehlgeschlagen",
   email_change: "Adressänderung bestätigt",
   unverified_expired: "Nicht binnen 24 Stunden bestätigt",
+  account_disabled: "Zugang gesperrt",
 };
 
 export function reasonLabel(reason: string | null): string {

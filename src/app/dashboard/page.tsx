@@ -51,6 +51,10 @@ import { countOpenApplications, getOpenApplication } from "@/lib/server/services
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { getDashboardEvent } from "@/lib/server/services/eventService";
 import { UpcomingEventAlert } from "./UpcomingEventAlert";
+import {
+    countOpenTerminations,
+    processTerminations,
+} from "@/lib/server/services/terminationService";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
@@ -61,7 +65,7 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/termine", label: "Termine", Icon: CalendarDays },
     { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
-    { href: MEMBERSHIP_ADMIN_PATH, label: "Mitgliedsanträge", Icon: FileText },
+    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", Icon: FileText },
     { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
     { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert },
 ];
@@ -101,6 +105,8 @@ export default async function DashboardPage() {
     const currentUser = await requireUser();
     const isAdmin = currentUser.role === "ADMIN";
     if (!currentUser.id) redirect("/login");
+    // Huckepack wie das Aufräumen der Registrierungen: gedrosselt, ohne Cron.
+    await processTerminations();
     const users = await getDashboardUsers(currentUser.id, currentUser.role);
     const profile = await getEditableUser(currentUser.id);
 
@@ -138,13 +144,15 @@ export default async function DashboardPage() {
               issuedAt: new Date(),
           })
         : null;
-    const [openApplication, applicationEnabled, openApplicationCount, upcomingEvent] =
+    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent] =
         await Promise.all([
             isNonMember ? getOpenApplication(currentUser.id) : null,
             isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
             isAdmin ? countOpenApplications() : 0,
+            isAdmin ? countOpenTerminations() : 0,
             getDashboardEvent(),
         ]);
+    const openMembershipTasks = openApplicationCount + openTerminationCount;
     const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
 
 
@@ -288,9 +296,9 @@ export default async function DashboardPage() {
                                                     {label}
                                                 </span>
                                                 {href === MEMBERSHIP_ADMIN_PATH &&
-                                                    openApplicationCount > 0 && (
+                                                    openMembershipTasks > 0 && (
                                                         <Badge tone="warning">
-                                                            {openApplicationCount}
+                                                            {openMembershipTasks}
                                                         </Badge>
                                                     )}
                                                 <ChevronRight
@@ -428,6 +436,7 @@ export default async function DashboardPage() {
                                     role: u.role,
                                     status: u.status,
                                     emailVerified: u.emailVerified,
+                                    loginDisabled: u.loginDisabled,
                                 }))}
                                 isAdmin={isAdmin}
                             />

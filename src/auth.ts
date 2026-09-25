@@ -8,6 +8,7 @@ import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { AppError } from "@/lib/server/errors";
 import { logSecurityEvent, type SecurityEventReason } from "@/lib/server/securityLog";
+import { adminSessionExpired } from "@/lib/server/sessionPolicy";
 
 /**
  * Thrown when the credentials are valid but the user hasn't confirmed their
@@ -28,12 +29,29 @@ export class LoginRateLimitedError extends CredentialsSignin {
     code = "rate_limited";
 }
 
+/** Login gesperrt (`loginDisabled`) — vom Mitglied selbst oder von einem Admin. */
+export class AccountDisabledError extends CredentialsSignin {
+    code = "account_disabled";
+}
+
 /** Thrown when the ALTCHA proof-of-work is missing, invalid, or already spent. */
 export class CaptchaFailedError extends CredentialsSignin {
     code = "captcha_failed";
 }
 
+/**
+ * Vergleichsziel für unbekannte Adressen, damit jeder Login-Versuch einen
+ * bcrypt-Vergleich kostet. Ohne ihn antwortet eine nicht registrierte Adresse
+ * um die Hash-Dauer schneller, und die Antwortzeit verrät, wer ein Konto hat.
+ * Gleiche Kostenstufe (12) wie die echten Hashes; einmal pro Prozess erzeugt.
+ */
+const dummyPasswordHash = bcrypt.hash(crypto.randomUUID(), 12);
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    // Auth.js leitet das Secure-Flag sonst aus NEXTAUTH_URL ab — steht dort
+    // `http://…` (so im README-Beispiel), geht das Session-Cookie ohne Secure
+    // raus und kann über jede unverschlüsselte Anfrage mitgelesen werden.
+    useSecureCookies: process.env.NODE_ENV === "production",
     providers: [
         Credentials({
             credentials: {
@@ -103,6 +121,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     throw new CaptchaFailedError();
                 }
 
+                // Pro Konto, egal von welcher IP: fängt verteiltes Raten gegen
+                // ein einzelnes Konto ab, das die IP-Buckets oben nie sehen.
+                // Bewusst erst nach dem Captcha, damit jeder gezählte Versuch
+                // Rechenarbeit kostet — sonst könnte jeder ein fremdes Konto
+                // gratis aussperren. Großzügig bemessen und ohne Reset beim
+                // erfolgreichen Login, aus demselben Grund.
+                if (email) {
+                    try {
+                        await consumeRateLimit({
+                            bucket: "login-account",
+                            keyParts: [email],
+                            limit: 50,
+                            windowMs: 60 * 60 * 1000,
+                            blockMs: 15 * 60 * 1000,
+                            message: "Zu viele Login-Versuche für dieses Konto. Bitte versuche es in 15 Minuten erneut.",
+                        });
+                    } catch (error) {
+                        if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+                            await logAttempt("BLOCKED", "rate_limited");
+                            throw new LoginRateLimitedError();
+                        }
+                        throw error;
+                    }
+                }
+
                 if (!email || !credentials?.password) {
                     await logAttempt("FAILURE", "invalid_credentials");
                     return null;
@@ -115,6 +158,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // Grund: die Unterscheidung stünde sonst dauerhaft im Protokoll,
                 // obwohl sie nach außen bewusst verborgen wird.
                 if (!user) {
+                    await bcrypt.compare(credentials.password as string, await dummyPasswordHash);
                     await logAttempt("FAILURE", "invalid_credentials");
                     return null;
                 }
@@ -122,6 +166,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 if (!valid) {
                     await logAttempt("FAILURE", "invalid_credentials", user.id);
                     return null;
+                }
+                // Wie beim unbestätigten Konto erst nach dem Passwortvergleich, damit
+                // sich darüber nicht erfragen lässt, welche Adressen gesperrt sind.
+                if (user.loginDisabled) {
+                    await logAttempt("BLOCKED", "account_disabled", user.id);
+                    throw new AccountDisabledError();
                 }
                 // Only reveal the unconfirmed-email state once the password checks
                 // out, so this can't be used to probe which emails have accounts.
@@ -150,6 +200,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     role: user.role,
                     status: user.status,
                     passwordChangedAt: user.passwordChangedAt,
+                    sessionVersion: user.sessionVersion,
                 };
             },
         }),
@@ -173,6 +224,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id;
                 // Stamp the token with the password's age at sign-in time.
                 token.pwdChangedAt = passwordChangedAt ? passwordChangedAt.getTime() : Date.now();
+                token.loginAt = Date.now();
+                token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion;
                 return token;
             }
 
@@ -184,13 +237,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (typeof token.id === "string") {
                 const dbUser = await prisma.user.findUnique({
                     where: { id: token.id },
-                    select: { passwordChangedAt: true, role: true, status: true },
+                    select: {
+                        passwordChangedAt: true,
+                        sessionVersion: true,
+                        role: true,
+                        status: true,
+                        loginDisabled: true,
+                    },
                 });
-                if (!dbUser || dbUser.passwordChangedAt.getTime() !== token.pwdChangedAt) {
+                if (
+                    !dbUser ||
+                    dbUser.loginDisabled ||
+                    dbUser.passwordChangedAt.getTime() !== token.pwdChangedAt ||
+                    dbUser.sessionVersion !== token.sessionVersion ||
+                    adminSessionExpired(dbUser.role, token.loginAt)
+                ) {
                     delete token.id;
                     delete token.role;
                     delete token.status;
                     delete token.pwdChangedAt;
+                    delete token.loginAt;
+                    delete token.sessionVersion;
                 } else {
                     token.role = dbUser.role;
                     token.status = dbUser.status;
@@ -216,6 +283,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
             }
             return session;
+        },
+    },
+    events: {
+        // signOut löscht sonst nur das Cookie im eigenen Browser. Das Hochzählen
+        // entwertet jede Kopie davon — und damit auch die Sitzungen auf allen
+        // anderen Geräten dieses Nutzers.
+        // ponytail: Logout beendet alle Geräte; eine Session-Tabelle, falls
+        // einzelne Geräte getrennt abgemeldet werden sollen.
+        async signOut(message) {
+            const id = "token" in message ? message.token?.id : undefined;
+            if (typeof id !== "string") return;
+            await prisma.user.updateMany({
+                where: { id },
+                data: { sessionVersion: { increment: 1 } },
+            });
         },
     },
     pages: {

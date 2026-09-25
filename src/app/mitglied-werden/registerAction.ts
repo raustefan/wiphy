@@ -2,9 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
@@ -20,6 +20,7 @@ import {
     UNVERIFIED_TTL_HOURS,
 } from "@/lib/server/registrationCleanup";
 import { MEMBERSHIP_JOURNEY_MARKER, REGISTERED_PATH } from "@/lib/membership";
+import { newToken } from "@/lib/server/tokens";
 
 /** Sitz der Universität — die Antwort auf die Sicherheitsfrage im Formular. */
 const SECURITY_ANSWER = "ulm";
@@ -122,6 +123,10 @@ export async function registerUser(formData: FormData) {
         // beim ersten Anlauf vertippt hat, kann es damit erneut versuchen.
         await pruneUnverifiedRegistrations();
 
+        // Vor der Kollisionsprüfung und damit auf beiden Wegen: sonst antwortet
+        // eine schon registrierte Adresse um die Dauer des Hashens schneller.
+        const hashedPassword = await bcrypt.hash(password, 12);
+
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             // Don't reveal whether the email is already registered (avoids account enumeration).
@@ -129,8 +134,6 @@ export async function registerUser(formData: FormData) {
             await logAttempt("FAILURE", "email_taken", existingUser.id);
             redirect(REGISTERED_PATH);
         }
-
-        const hashedPassword = await bcrypt.hash(password, 12);
 
         const user = await prisma.user.create({
             data: {
@@ -151,14 +154,14 @@ export async function registerUser(formData: FormData) {
         // Generate email verification token. Dieselbe Frist wie die Löschung
         // unbestätigter Konten: ein Link, der den Account überlebt, würde nur
         // auf einen 404 führen.
-        const token = crypto.randomBytes(32).toString("hex");
+        const { token, hash } = newToken();
         const expires = new Date(Date.now() + UNVERIFIED_TTL_HOURS * 60 * 60 * 1000);
 
         await prisma.emailVerificationToken.create({
             data: {
                 userId: user.id,
                 email,
-                token,
+                token: hash,
                 expires,
             },
         });
@@ -178,14 +181,18 @@ export async function registerUser(formData: FormData) {
         // Bestätigungslink (siehe `api/auth/verify-email`): eine erfundene
         // Adresse erzeugt sonst eine Mail an den ganzen Vorstand, und genau das
         // macht das Formular als Spam-Verstärker interessant.
-        try {
-            await sendEmail({
-                to: email,
-                message: registrationConfirmationMessage({ vorname, name }, verificationUrl),
-            });
-        } catch (error) {
-            console.error("Failed to send registration confirmation email:", error);
-        }
+        // Nach der Antwort — der Weg für eine schon registrierte Adresse
+        // verschickt nichts und wäre sonst um die SMTP-Dauer schneller.
+        after(async () => {
+            try {
+                await sendEmail({
+                    to: email,
+                    message: registrationConfirmationMessage({ vorname, name }, verificationUrl),
+                });
+            } catch (error) {
+                console.error("Failed to send registration confirmation email:", error);
+            }
+        });
 
         redirect(REGISTERED_PATH);
     });

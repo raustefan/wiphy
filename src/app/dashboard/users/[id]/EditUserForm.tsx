@@ -45,6 +45,7 @@ import {
 import { cn } from "@/lib/cn";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 import { IbanInput } from "@/components/IbanInput";
+import { PasswordInput } from "@/components/PasswordField";
 
 type UserData = {
     id: string;
@@ -87,6 +88,7 @@ type UserData = {
     status: string;
     datensperren: boolean | null;
     ausschluss: boolean | null;
+    loginDisabled: boolean;
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -129,6 +131,7 @@ const FIELD_LABELS: Record<string, string> = {
     status: "Status",
     datensperren: "Datensperren",
     ausschluss: "Ausschluss",
+    loginDisabled: "Login deaktiviert",
 };
 
 const ROLE_LABEL_MAP: Record<string, string> = Object.fromEntries(
@@ -149,7 +152,8 @@ function isCheckboxKey(key: string) {
         key === "bankeinzug" ||
         key === "zuwendungsbesch" ||
         key === "datensperren" ||
-        key === "ausschluss"
+        key === "ausschluss" ||
+        key === "loginDisabled"
     );
 }
 
@@ -172,6 +176,7 @@ const ADMIN_ONLY_KEYS = new Set([
     "status",
     "datensperren",
     "ausschluss",
+    "loginDisabled",
     "zahlungsKommentar",
     "mahnung",
     "bank",
@@ -187,10 +192,13 @@ const ADMIN_ONLY_KEYS = new Set([
 export function EditUserForm({
     user,
     isAdmin,
+    isSelf,
     action,
 }: {
     user: UserData;
     isAdmin: boolean;
+    /** Eigene Adresse ändern verlangt das aktuelle Passwort (siehe `updateUserProfile`). */
+    isSelf: boolean;
     action: (formData: FormData) => void | Promise<void>;
 }) {
     const router = useRouter();
@@ -238,6 +246,7 @@ export function EditUserForm({
             status: user.status,
             datensperren: user.datensperren ? "on" : "",
             ausschluss: user.ausschluss ? "on" : "",
+            loginDisabled: user.loginDisabled ? "on" : "",
         }),
         [user]
     );
@@ -411,6 +420,15 @@ export function EditUserForm({
                                 </p>
                             )}
                         </Field>
+                        {emailDirty && isSelf && (
+                            <Field label="Aktuelles Passwort" required>
+                                <PasswordInput
+                                    name="currentPassword"
+                                    autoComplete="current-password"
+                                    required
+                                />
+                            </Field>
+                        )}
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
                                 <IconInput icon={<Phone size={15} />} name="telefon" defaultValue={initialValues.telefon} />
@@ -636,6 +654,16 @@ export function EditUserForm({
                                         defaultChecked={Boolean(user.ausschluss)}
                                     />
                                 </div>
+                                {/* Gesperrter Login, Datensatz bleibt — so „löschen“
+                                    Mitglieder ihren Zugang. Abwählen reaktiviert ihn.
+                                    Fürs eigene Konto nicht angeboten: Selbstaussperrung. */}
+                                {!isSelf && (
+                                    <CheckboxField
+                                        label="Login deaktiviert"
+                                        name="loginDisabled"
+                                        defaultChecked={user.loginDisabled}
+                                    />
+                                )}
                             </Section>
 
                             <Separator />

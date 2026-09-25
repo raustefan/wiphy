@@ -60,43 +60,26 @@ export async function consumeRateLimit({
     },
   });
 
-  const record = await prisma.$transaction(async (tx) => {
-    const existing = await tx.rateLimitEntry.findUnique({ where: { key: storeKey } });
-
-    if (!existing || existing.resetAt <= currentTime) {
-      return tx.rateLimitEntry.upsert({
-        where: { key: storeKey },
-        update: {
-          count: 1,
-          resetAt,
-          blockedUntil: null,
-        },
-        create: {
-          key: storeKey,
-          count: 1,
-          resetAt,
-          blockedUntil: null,
-        },
-      });
-    }
-
-    if (existing.blockedUntil && existing.blockedUntil > currentTime) {
-      return existing;
-    }
-
-    return tx.rateLimitEntry.update({
-      where: { key: storeKey },
-      data: {
-        count: { increment: 1 },
-        blockedUntil:
-          existing.count + 1 > limit
-            ? new Date(currentTime.getTime() + blockMs)
-            : existing.blockedUntil,
-      },
-    });
+  // Abgelaufene Fenster sind oben schon gelöscht; was noch da ist, läuft oder
+  // ist gesperrt. Das Zählen selbst ist ein einziges INSERT … ON CONFLICT, und
+  // entschieden wird am *zurückgegebenen* Stand. Vorher wurde erst gelesen und
+  // dann geschrieben — parallel abgeschickte Versuche sahen alle denselben alten
+  // Zähler, und von 30 gleichzeitigen kamen 21 durch (Limit 5).
+  const record = await prisma.rateLimitEntry.upsert({
+    where: { key: storeKey },
+    create: { key: storeKey, count: 1, resetAt },
+    update: { count: { increment: 1 } },
   });
 
   if (record.blockedUntil && record.blockedUntil > currentTime) {
+    throw new AppError("TOO_MANY_REQUESTS", message);
+  }
+
+  if (record.count > limit) {
+    await prisma.rateLimitEntry.update({
+      where: { key: storeKey },
+      data: { blockedUntil: new Date(currentTime.getTime() + blockMs) },
+    });
     throw new AppError("TOO_MANY_REQUESTS", message);
   }
 }

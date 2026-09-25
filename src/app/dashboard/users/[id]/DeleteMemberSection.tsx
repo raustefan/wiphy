@@ -77,14 +77,12 @@ export function DeleteMemberSection({
                 title="Mitglied unwiderruflich löschen?"
             >
                 <Callout tone="danger" icon={<AlertTriangle size={16} />}>
-                    <span className="font-bold text-foreground">Achtung:</span> Beim Löschen von{" "}
+                    <span className="font-bold text-foreground">Achtung:</span> Das Konto von{" "}
                     <span className="font-bold text-foreground">{displayName}</span> ({email})
-                    werden auch{" "}
-                    <span className="font-bold text-foreground">
-                        alle Mitgliedsbeiträge (Zahlungshistorie)
-                    </span>{" "}
-                    dieses Mitglieds unwiderruflich gelöscht. Dieser Vorgang kann{" "}
-                    <span className="font-bold text-foreground">nicht rückgängig gemacht werden</span>.
+                    wird mit allen Daten{" "}
+                    <span className="font-bold text-foreground">unwiderruflich gelöscht</span>.
+                    Nur die Beitragszeilen bleiben — mit Name und Mitgliedsnummer — für die
+                    steuerliche Aufbewahrungsfrist gesperrt im Beitragsarchiv erhalten.
                 </Callout>
                 <DialogFooter>
                     <Button variant="soft" color="neutral" type="button" onClick={closeAll}>
