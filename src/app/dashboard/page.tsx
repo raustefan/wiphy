@@ -28,6 +28,7 @@ import {
     Pencil,
     ChevronRight,
     Users,
+    Server,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
@@ -68,6 +69,7 @@ const ADMIN_ACTIONS = [
     { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", Icon: FileText },
     { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
     { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert },
+    { href: "/dashboard/server", label: "Server", Icon: Server },
 ];
 
 /**

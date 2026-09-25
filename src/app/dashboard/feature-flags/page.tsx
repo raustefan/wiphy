@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
-import { Badge, Card, Container } from "@/components/ui";
+import { AlertTriangle } from "lucide-react";
+import { Badge, Callout, Card, Container } from "@/components/ui";
 import { FeatureFlagToggle } from "./FeatureFlagToggle";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 
@@ -19,6 +20,17 @@ export default async function FeatureFlagsPage() {
                 description="Schalte einzelne Funktionen für alle Nutzer ein oder aus. Deaktivierte Funktionen zeigen betroffenen Nutzern einen Hinweis-Dialog an."
                 backHref="/dashboard"
             />
+
+            <Callout
+                tone="warning"
+                icon={<AlertTriangle size={16} />}
+                title="Vorsicht bei Änderungen"
+                className="mb-6"
+            >
+                Änderungen an den Feature Flags wirken sofort für alle Nutzer und können massive
+                Auswirkungen auf die Website haben. Passe sie nur an, wenn du dir sicher bist, was
+                du tust.
+            </Callout>
 
             <Card className="divide-y divide-line">
                 {flags.map((flag) => (
