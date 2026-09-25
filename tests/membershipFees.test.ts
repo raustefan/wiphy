@@ -114,3 +114,17 @@ test("without direct debit the plan carries the rounded-up 10% surcharge", () =>
   // 36,- € + 10 % = 39,60 € -> auf volle Euro aufgerundet.
   assert.deepEqual(plan, [{ jahr: 2026, isStudent: false, beitrag: 40 }]);
 });
+
+test("a migrated member gets every year from joining up to untilYear", () => {
+  const plan = planApplicationFees({
+    aufnahmedatum: januar(2022),
+    studentYears: [2023],
+    defaults,
+    bankeinzug: true,
+    untilYear: 2026,
+  });
+  assert.deepEqual(
+    plan.map((f) => [f.jahr, f.isStudent]),
+    [[2022, false], [2023, true], [2024, false], [2025, false], [2026, false]],
+  );
+});

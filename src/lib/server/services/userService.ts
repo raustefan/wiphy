@@ -1,11 +1,14 @@
-import type { Prisma, Role } from "@prisma/client";
+import type { Role } from "@prisma/client";
 import {
   findUserById,
   findUserByMitgliedIdExcludingUser,
   findUsersForDashboard,
   updateUserById,
-  createUser,
 } from "@/lib/server/repositories/userRepository";
+import { getMaxMitgliedId } from "@/lib/server/repositories/membershipRepository";
+import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
+import { planApplicationFees } from "@/lib/feeDefaults";
+import type { AdminCreateUserInput } from "@/lib/server/validation/schemas";
 import bcrypt from "bcryptjs";
 import { buildUserUpdateData, type UpdateUserInput } from "./userUpdateData";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
@@ -202,40 +205,95 @@ export async function adminDeleteUser(userIdToDelete: string, currentUserRole: R
   return { ok: true as const };
 }
 
-export async function adminCreateUser(input: Prisma.UserCreateInput, currentUserRole: Role) {
+/**
+ * Legt ein Konto durch einen Admin an — vor allem beim Übernehmen von
+ * Mitgliedern aus dem alten System. Mit Beitrittsdatum entsteht dasselbe wie
+ * nach einem angenommenen Antrag (`approveApplication`): Mitglieds-ID,
+ * Studienjahre, Bankdaten und Beitragszeilen — hier bis zum laufenden Jahr,
+ * weil die Mitgliedschaft schon länger besteht.
+ */
+export async function adminCreateUser(input: AdminCreateUserInput, currentUserRole: Role) {
   if (currentUserRole !== "ADMIN") {
     throw new Error("Unauthorized: Only admins can create users");
   }
-  // Hash password before saving
-  const hashedPassword = await bcrypt.hash(input.password, 12);
-  const data = { ...input, password: hashedPassword, emailVerified: false };
-  const user = await createUser(data);
-
-  // Generate email verification token
-  const { token, hash } = newToken();
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
   const { prisma } = await import("@/lib/prisma");
-  await prisma.emailVerificationToken.create({
+
+  if (await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } })) {
+    return { ok: false as const, reason: "email_taken" as const };
+  }
+
+  const isMember = input.status !== "KEIN_MITGLIED";
+  let mitgliedId = input.mitgliedId;
+  if (mitgliedId != null) {
+    if (await prisma.user.findUnique({ where: { mitgliedId }, select: { id: true } })) {
+      return { ok: false as const, reason: "mitgliedId_conflict" as const };
+    }
+  } else if (isMember) {
+    mitgliedId = (await getMaxMitgliedId()) + 1;
+  }
+
+  const studentYears = [...new Set(input.studentYears)].sort((a, b) => a - b);
+  const bankeinzug = !input.selbstzahler;
+  const currentYear = new Date().getFullYear();
+  // Wie bei der Antragsannahme: Beiträge nur für beitragspflichtige Mitglieder.
+  const feePlan =
+    input.status === "ORDENTLICHES_MITGLIED" && input.aufnahmedatum
+      ? planApplicationFees({
+          aufnahmedatum: input.aufnahmedatum,
+          studentYears,
+          defaults: await findFeeDefaults(),
+          bankeinzug,
+          untilYear: currentYear,
+        })
+      : [];
+
+  const user = await prisma.user.create({
     data: {
-      userId: user.id,
-      email: user.email,
-      token: hash,
-      expires,
+      email: input.email,
+      password: await bcrypt.hash(input.password, 12),
+      name: input.name,
+      vorname: input.vorname,
+      role: input.role,
+      status: input.status,
+      // Vom Admin angelegt = Adresse gilt als bestätigt, Anmelden geht sofort.
+      emailVerified: true,
+      mitgliedId,
+      aufnahmedatum: input.aufnahmedatum,
+      geburtsdatum: input.geburtsdatum,
+      strasse: input.strasse,
+      plz: input.plz,
+      stadt: input.stadt,
+      land: input.land,
+      zahlungsKommentar: input.zahlungsKommentar,
+      studentYears,
+      bankeinzug: isMember ? bankeinzug : undefined,
+      mandatserteilung: bankeinzug ? input.mandatserteilung : undefined,
+      bank: input.bank,
+      IBAN: input.IBAN,
+      BIC: input.BIC,
+      fees: {
+        create: feePlan.map((fee) => ({
+          jahr: fee.jahr,
+          isStudent: fee.isStudent,
+          beitrag: fee.beitrag,
+          // Künftige Studienjahre sind noch nicht fällig, also nie „bezahlt“.
+          bezahlt: Boolean(input.allePaid) && fee.jahr <= currentYear,
+        })),
+      },
     },
   });
+
+  if (!input.notify) return { ok: true as const, mailed: false };
 
   try {
     await sendEmail({
       to: user.email,
-      message: adminCreatedUserMessage(
-        { vorname: user.vorname, name: user.name },
-        siteUrl(`/verify-email?token=${token}`),
-      ),
+      message: adminCreatedUserMessage(user, siteUrl("/login"), input.password),
     });
   } catch (error) {
     console.error("Failed to send admin created user notification email:", error);
+    return { ok: true as const, mailed: false };
   }
 
-  return { ok: true as const };
+  return { ok: true as const, mailed: true };
 }

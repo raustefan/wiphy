@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluatePassword, PASSWORD_MIN_LENGTH } from "../src/lib/passwordStrength";
+import { evaluatePassword, generatePassword, PASSWORD_MIN_LENGTH } from "../src/lib/passwordStrength";
 
 /**
  * Der Balken im Registrierungsformular soll die Wahl lenken, nicht nur bunt
@@ -54,4 +54,11 @@ test("Umlaute gelten als Buchstaben, nicht als Sonderzeichen", () => {
   );
   assert.equal(criteria.case, true);
   assert.equal(criteria.symbol, false);
+});
+
+test("generated passwords are always rated very strong and differ", () => {
+  const a = generatePassword();
+  assert.equal(evaluatePassword(a).score, 4);
+  assert.equal(a.length, 20);
+  assert.notEqual(a, generatePassword());
 });

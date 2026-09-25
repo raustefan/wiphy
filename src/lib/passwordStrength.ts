@@ -103,3 +103,17 @@ export function evaluatePassword(password: string): PasswordStrength {
 
   return { score, label: SCORE_LABELS[score], criteria };
 }
+
+/** Ohne leicht verwechselbare Zeichen (0/O, 1/l/I) — das Passwort wird oft abgetippt. */
+const GENERATOR_ALPHABET = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!#$%&*+-=?@_";
+
+/** Zufälliges Passwort mit Stufe „sehr stark“, über die Web-Crypto-API (Browser und Node). */
+export function generatePassword(length = 20): string {
+  for (;;) {
+    const values = crypto.getRandomValues(new Uint32Array(length));
+    const password = Array.from(values, (v) => GENERATOR_ALPHABET[v % GENERATOR_ALPHABET.length]).join("");
+    // Selten fehlt eine Zeichenklasse oder es entsteht ein „aaa“ — dann neu würfeln.
+    const { score, criteria } = evaluatePassword(password);
+    if (score === 4 && criteria.every((c) => c.met)) return password;
+  }
+}

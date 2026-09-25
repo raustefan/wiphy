@@ -288,10 +288,10 @@
     "semantic_hash": "402b222cebc24550fd334aae09b84899"
   },
   "src/app/dashboard/MailSuccessDialog.tsx": {
-    "mtime": 1788469298.0825937,
-    "seen": 1790242430.597049,
-    "ast_hash": "db1f1be59e58fdd6b921e051502c4c4f",
-    "semantic_hash": "db1f1be59e58fdd6b921e051502c4c4f"
+    "mtime": 1790355709.7230113,
+    "seen": 1790355902.177699,
+    "ast_hash": "4c91c8d27a7f67f0cb0c38b294ad4b4d",
+    "semantic_hash": ""
   },
   "src/app/dashboard/MembershipCertificateCard.tsx": {
     "mtime": 1789717662.7687237,
@@ -588,10 +588,10 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/page.tsx": {
-    "mtime": 1789665882.569507,
-    "seen": 1790242430.597076,
-    "ast_hash": "f25a41dd4de5d6f1a91fd42ef9ebd86a",
-    "semantic_hash": "f25a41dd4de5d6f1a91fd42ef9ebd86a"
+    "mtime": 1790355759.1654446,
+    "seen": 1790355902.1790552,
+    "ast_hash": "7195519794209be12c7aba6c011ca4ed",
+    "semantic_hash": ""
   },
   "src/app/dashboard/vorstand/DeleteMemberButton.tsx": {
     "mtime": 1789451602.6214683,
@@ -1236,9 +1236,9 @@
     "semantic_hash": "c06501a45bd966e35d50d8827239135d"
   },
   "src/lib/email/messages.ts": {
-    "mtime": 1790319001.7437797,
-    "seen": 1790319022.864662,
-    "ast_hash": "3a52714844363276923bcd29e93bba13",
+    "mtime": 1790356260.5862586,
+    "seen": 1790356276.935436,
+    "ast_hash": "315d7b3b081f5f6b5bca700d7c9ccbee",
     "semantic_hash": ""
   },
   "src/lib/events.ts": {
@@ -1260,10 +1260,10 @@
     "semantic_hash": "bd915d8921b8c8f8ea470d2fd6e486a9"
   },
   "src/lib/feeDefaults.ts": {
-    "mtime": 1788508315.2525003,
-    "seen": 1790242430.5971358,
-    "ast_hash": "081f03101a758dde53c859ea71be970c",
-    "semantic_hash": "081f03101a758dde53c859ea71be970c"
+    "mtime": 1790355637.9657047,
+    "seen": 1790355902.181427,
+    "ast_hash": "1d003e0140504cf94265ca8282afd3b7",
+    "semantic_hash": ""
   },
   "src/lib/format.ts": {
     "mtime": 1788810614.0260975,
@@ -1320,10 +1320,10 @@
     "semantic_hash": "516297d62acdabed34bf826e3cf4e6ba"
   },
   "src/lib/passwordStrength.ts": {
-    "mtime": 1789328799.32935,
-    "seen": 1790242430.597141,
-    "ast_hash": "aa6ac878beca2fe802500e22a3bf4bd3",
-    "semantic_hash": "aa6ac878beca2fe802500e22a3bf4bd3"
+    "mtime": 1790355719.0523894,
+    "seen": 1790355902.181612,
+    "ast_hash": "9f1f8f11f4d23bdb9422683fab1d4900",
+    "semantic_hash": ""
   },
   "src/lib/prisma.ts": {
     "mtime": 1790260419.7632446,
@@ -1524,9 +1524,9 @@
     "semantic_hash": "8d937e55d7aa5ecac298a9a943fee94a"
   },
   "src/lib/server/repositories/userRepository.ts": {
-    "mtime": 1790318975.7634175,
-    "seen": 1790319022.86572,
-    "ast_hash": "98ed51c480ea9148637a2d62983d3309",
+    "mtime": 1790355678.158949,
+    "seen": 1790355902.1823418,
+    "ast_hash": "caab79ef10bfaff766794d0cc3a90e4f",
     "semantic_hash": ""
   },
   "src/lib/server/securityLog.ts": {
@@ -1596,9 +1596,9 @@
     "semantic_hash": "60a80225bf86fc1f11f4c4bcd4c02e0b"
   },
   "src/lib/server/services/userService.ts": {
-    "mtime": 1790318353.6065714,
-    "seen": 1790318585.6170182,
-    "ast_hash": "95ec61a440c92cb3c5c210a24c8acfc3",
+    "mtime": 1790356260.5860353,
+    "seen": 1790356276.936748,
+    "ast_hash": "5fde43fd54a73ddaff98010ce1ef70e4",
     "semantic_hash": ""
   },
   "src/lib/server/services/userUpdateData.ts": {
@@ -1626,9 +1626,9 @@
     "semantic_hash": "c04fbcc2f66a2d2e3e50717b0e570089"
   },
   "src/lib/server/validation/schemas.ts": {
-    "mtime": 1790318497.643404,
-    "seen": 1790318585.617107,
-    "ast_hash": "df0609b5ad4024ad88257da2caaf7a47",
+    "mtime": 1790355647.2816792,
+    "seen": 1790355902.182794,
+    "ast_hash": "ff3961f0885887ac1fd9a6bacd8e4750",
     "semantic_hash": ""
   },
   "src/lib/siteUrl.ts": {
@@ -1722,10 +1722,10 @@
     "semantic_hash": "bd4c82ec68c0328f31d80bc14b0e02f0"
   },
   "tests/membershipFees.test.ts": {
-    "mtime": 1788508619.925499,
-    "seen": 1790242430.597176,
-    "ast_hash": "6067b0faa26c6f14bef958c6e706eacc",
-    "semantic_hash": "6067b0faa26c6f14bef958c6e706eacc"
+    "mtime": 1790355637.9709356,
+    "seen": 1790355902.18305,
+    "ast_hash": "573b9b4e55f790f50d424e607ce69883",
+    "semantic_hash": ""
   },
   "tests/membershipFormSchemas.test.ts": {
     "mtime": 1789401764.1027591,
@@ -1740,10 +1740,10 @@
     "semantic_hash": "7e1b0f888b02131a5d5392398de940ac"
   },
   "tests/passwordStrength.test.ts": {
-    "mtime": 1789328760.7513642,
-    "seen": 1790242430.5971782,
-    "ast_hash": "8f7665522e34cb3d5c5b139d9a61a132",
-    "semantic_hash": "8f7665522e34cb3d5c5b139d9a61a132"
+    "mtime": 1790355721.9055352,
+    "seen": 1790355902.183102,
+    "ast_hash": "ffc06e0d227e430776b703911ef75e2a",
+    "semantic_hash": ""
   },
   "tests/slug.test.ts": {
     "mtime": 1789666166.4751546,
@@ -1764,10 +1764,10 @@
     "semantic_hash": "ee17fd1c97c735e9f3564e3f5251f125"
   },
   "CLAUDE.md": {
-    "mtime": 1790322458.0321844,
-    "seen": 1790322471.422292,
-    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
-    "semantic_hash": "82efb97a359f5c7290bf2513d14686be"
+    "mtime": 1790355778.5871785,
+    "seen": 1790355902.183182,
+    "ast_hash": "11b97880f13de6fde79dc8a08a306dfe",
+    "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1790260428.8974311,
@@ -1923,6 +1923,18 @@
     "mtime": 1790322148.5384681,
     "seen": 1790322471.422186,
     "ast_hash": "a3f0c36e5bddd75dc7ab2381061df1b6",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/users/new/NewUserForm.tsx": {
+    "mtime": 1790356260.586404,
+    "seen": 1790356276.933075,
+    "ast_hash": "3cab71cd7b5a0b69af04ad88ba18284b",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/users/new/actions.ts": {
+    "mtime": 1790355709.7232,
+    "seen": 1790355902.179054,
+    "ast_hash": "7ced5648bc25970a3f55797d499d3b0a",
     "semantic_hash": ""
   }
 }

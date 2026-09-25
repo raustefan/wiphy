@@ -53,7 +53,3 @@ export async function deleteUserById(id: string) {
     return tx.user.delete({ where: { id } });
   });
 }
-
-export function createUser(data: Prisma.UserCreateInput) {
-  return prisma.user.create({ data });
-}

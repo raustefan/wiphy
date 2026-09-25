@@ -45,10 +45,13 @@ export function planApplicationFees(params: {
   defaults: FeeDefaultEntry[];
   /** Teilnahme am Lastschriftverfahren; ohne sie greift der 10-%-Aufschlag. */
   bankeinzug: boolean;
+  /** Spätestes Jahr, das mindestens angelegt wird — beim Übernehmen von
+   *  Bestandsmitgliedern das laufende Jahr, damit die Jahre dazwischen nicht fehlen. */
+  untilYear?: number;
 }): Array<{ jahr: number; isStudent: boolean; beitrag: number }> {
   const joinYear = params.aufnahmedatum.getFullYear();
   const futureStudentYears = params.studentYears.filter((y) => y >= joinYear);
-  const lastYear = Math.max(joinYear, ...futureStudentYears);
+  const lastYear = Math.max(joinYear, params.untilYear ?? joinYear, ...futureStudentYears);
 
   const plan: Array<{ jahr: number; isStudent: boolean; beitrag: number }> = [];
   for (let jahr = joinYear; jahr <= lastYear; jahr++) {

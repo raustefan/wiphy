@@ -96,17 +96,32 @@ export function registrationConfirmationMessage(user: Person, verificationUrl: s
   };
 }
 
-export function adminCreatedUserMessage(user: Person, verificationUrl: string): EmailMessage {
+/**
+ * Das Passwort steht hier im Klartext, weil der Admin es so will (Übernahme aus
+ * dem alten System). SMTP ist kein vertraulicher Kanal — deshalb die
+ * ausdrückliche Aufforderung, es sofort zu ändern.
+ */
+export function adminCreatedUserMessage(
+  user: Person & { email: string },
+  loginUrl: string,
+  password: string,
+): EmailMessage {
   return {
     subject: `Dein Account beim ${VEREIN.name} wurde erstellt`,
-    preheader: "Bestätige deine E-Mail-Adresse, um dich anmelden zu können.",
+    preheader: "Deine Zugangsdaten für den Internbereich.",
     blocks: [
       greeting(user),
       { type: "text", content: `dein Account beim ${VEREIN.name} wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).` },
-      { type: "text", content: "Bitte bestätige deine E-Mail-Adresse:" },
-      { type: "button", label: "E-Mail-Adresse bestätigen", url: verificationUrl },
-      { type: "text", content: "Danach kannst du dich mit deiner E-Mail-Adresse anmelden. Wir empfehlen dringend, anschließend im Portal ein eigenes Passwort zu setzen." },
-      { type: "note", content: "Falls du die Frist versäumst, kann auch ein Administrator dein Konto aktivieren." },
+      { type: "text", content: "Du kannst dich ab sofort mit diesen Zugangsdaten anmelden:" },
+      {
+        type: "facts",
+        items: [
+          { label: "E-Mail", value: user.email },
+          { label: "Passwort", value: password },
+        ],
+      },
+      { type: "button", label: "Zur Anmeldung", url: loginUrl },
+      { type: "text", content: "Wir empfehlen dringend, das Passwort nach der ersten Anmeldung im Internbereich zu ändern — diese E-Mail ist kein sicherer Aufbewahrungsort dafür." },
     ],
   };
 }

@@ -145,10 +145,60 @@ export const registerFormSchema = registerSchema.extend({
   renderedAt: z.string().optional(),
 });
 
-export const adminCreateUserSchema = registerSchema.extend({
-  role: roleEnum.default("MEMBER"),
-  status: statusEnum.default("KEIN_MITGLIED"),
-});
+/**
+ * Anlegen durch einen Admin — vor allem zum Übernehmen von Mitgliedern aus dem
+ * alten System. Alles außer Name, E-Mail und Passwort ist freiwillig.
+ */
+export const adminCreateUserSchema = registerSchema
+  .extend({
+    role: roleEnum.default("MEMBER"),
+    status: statusEnum.default("KEIN_MITGLIED"),
+    /** Zugangsdaten per Mail schicken (inkl. Passwort). */
+    notify: preprocessBoolean,
+
+    mitgliedId: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d+$/.test(v), "Mitglieds-ID muss eine nicht-negative Ganzzahl sein.")
+      .transform((v) => (v ? Number(v) : undefined)),
+    aufnahmedatum: optionalDate(),
+    geburtsdatum: optionalDate(),
+    strasse: optionalString(200),
+    plz: optionalString(20),
+    stadt: optionalString(120),
+    land: optionalString(120),
+    zahlungsKommentar: optionalString(10_000),
+
+    mandatserteilung: optionalDate(),
+    bank: optionalString(200),
+    IBAN: optionalString(80),
+    BIC: optionalString(40),
+    /** Überweist selbst statt SEPA-Lastschrift. */
+    selbstzahler: preprocessBoolean,
+    /** Alle Beiträge seit Beitritt bis zum laufenden Jahr als bezahlt markieren. */
+    allePaid: preprocessBoolean,
+    /** Kommagetrennte Jahre mit ermäßigtem Beitrag. */
+    studentYears: z
+      .string()
+      .optional()
+      .transform((v) =>
+        (v ?? "")
+          .split(",")
+          .map(Number)
+          .filter((y) => Number.isInteger(y) && y > 1900),
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.IBAN && !isValidIban(normalizeIban(data.IBAN))) {
+      ctx.addIssue({ code: "custom", message: "Diese IBAN ist ungültig. Bitte prüfe die Eingabe.", path: ["IBAN"] });
+    }
+    if (data.BIC && !isValidBic(data.BIC)) {
+      ctx.addIssue({ code: "custom", message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).", path: ["BIC"] });
+    }
+  })
+  .transform((data) => ({ ...data, IBAN: data.IBAN ? normalizeIban(data.IBAN) : undefined }));
+
+export type AdminCreateUserInput = z.infer<typeof adminCreateUserSchema>;
 
 /** Rundmail: Gruppen oder einzeln ausgewählte Nutzer (IDs per FormData getAll) */
 export const mailSendSchema = z
