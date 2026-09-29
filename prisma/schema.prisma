@@ -650,3 +650,21 @@ model SecurityEvent {
   @@index([subjectHash, createdAt])
   @@index([ipHash, createdAt])
 }
+
+/// Versandprotokoll der Mails aus dem Dashboard (Rundmail und Direktmail).
+/// Bewusst ohne Inhalt: Betreff (als Vorlage, Platzhalter unersetzt), Zeitpunkt
+/// und Empfänger — bei einer einzelnen Person deren Adresse, sonst nur Gruppe
+/// und Anzahl. Gelöscht nach `SENT_MAIL_RETENTION_DAYS` (`mailHistory.ts`).
+model SentMail {
+  id             String   @id @default(cuid())
+  subject        String
+  /// Empfängergruppe (`ALL` oder ein `Status`); NULL bei ausgewählten Empfängern.
+  recipientGroup String?
+  recipientCount Int
+  /// Nur bei genau einem ausgewählten Empfänger. Beim Löschen des Kontos genullt.
+  recipientEmail String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([recipientEmail])
+}

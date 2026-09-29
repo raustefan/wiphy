@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AlertTriangle } from "lucide-react";
-import { requireAdmin } from "@/lib/server/authz";
+import { requireDebugAdmin } from "@/lib/server/authz";
 import { Callout, Container } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ServerDashboard } from "./ServerDashboard";
@@ -8,7 +8,7 @@ import { ServerDashboard } from "./ServerDashboard";
 export const metadata: Metadata = { title: "Server" };
 
 export default async function ServerPage() {
-    await requireAdmin();
+    await requireDebugAdmin();
 
     return (
         <Container size="3" className="py-8 sm:py-12">

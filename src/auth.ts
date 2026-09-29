@@ -281,6 +281,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 ) {
                     (session.user as { status?: string }).status = token.status;
                 }
+                // Für die Debug-Leiste: wann die 12-h-Grenze der Admin-Sitzung greift.
+                if (typeof token.loginAt === "number") {
+                    (session.user as { loginAt?: number }).loginAt = token.loginAt;
+                }
             }
             return session;
         },

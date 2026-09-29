@@ -3,7 +3,15 @@ import { requireAdmin } from "@/lib/server/authz";
 import { getEventForEdit, getUpcomingEvents } from "@/lib/server/services/eventService";
 import { escapeHtml } from "@/lib/email/escapeHtml";
 import { formatEventRange, formatEventShort } from "@/lib/events";
-import { MailDashboard, type MailAnnouncement, type MailEventOption } from "./MailDashboard";
+import { getSentMails } from "@/lib/server/email/mailHistory";
+import { formatDateTime } from "@/lib/format";
+import { formatStatus } from "@/lib/statusLabels";
+import {
+    MailDashboard,
+    type MailAnnouncement,
+    type MailEventOption,
+    type MailHistoryEntry,
+} from "./MailDashboard";
 
 export const metadata: Metadata = { title: "Rundmail" };
 
@@ -44,9 +52,10 @@ export default async function MailDashboardPage({
     await requireAdmin();
 
     const { termin } = await searchParams;
-    const [selected, upcoming] = await Promise.all([
+    const [selected, upcoming, sentMails] = await Promise.all([
         termin ? getEventForEdit(termin) : null,
         getUpcomingEvents(new Date(), 8),
+        getSentMails(),
     ]);
 
     const announcement: MailAnnouncement | null = selected
@@ -66,5 +75,23 @@ export default async function MailDashboardPage({
         when: formatEventShort(event),
     }));
 
-    return <MailDashboard announcement={announcement} upcomingEvents={options} />;
+    const history: MailHistoryEntry[] = sentMails.map((mail) => ({
+        id: mail.id,
+        subject: mail.subject,
+        sentAt: formatDateTime(mail.createdAt),
+        recipients:
+            mail.recipientEmail ??
+            (mail.recipientGroup === "ALL"
+                ? "Alle Nutzer"
+                : mail.recipientGroup
+                  ? formatStatus(mail.recipientGroup)
+                  : mail.recipientCount === 1
+                    ? "Gelöschtes Konto"
+                    : "Auswahl"),
+        count: mail.recipientCount,
+    }));
+
+    return (
+        <MailDashboard announcement={announcement} upcomingEvents={options} history={history} />
+    );
 }

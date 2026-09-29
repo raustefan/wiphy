@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { requireUser } from "@/lib/server/authz";
+import { isDebugMode, requireUser } from "@/lib/server/authz";
+import { toggleDebugMode } from "./actions";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { EmailChangeDialog } from "./EmailChangeDialog";
 import {
@@ -29,6 +30,7 @@ import {
     ChevronRight,
     Users,
     Server,
+    Bug,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { DashboardUsersTable } from "./DashboardUsersTable";
@@ -67,9 +69,10 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
     { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", Icon: FileText },
-    { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft },
-    { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert },
-    { href: "/dashboard/server", label: "Server", Icon: Server },
+    // Nur im Debug-Modus sichtbar und erreichbar (`requireDebugAdmin`).
+    { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft, debug: true },
+    { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert, debug: true },
+    { href: "/dashboard/server", label: "Server", Icon: Server, debug: true },
 ];
 
 /**
@@ -146,13 +149,14 @@ export default async function DashboardPage() {
               issuedAt: new Date(),
           })
         : null;
-    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent] =
+    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent, debugMode] =
         await Promise.all([
             isNonMember ? getOpenApplication(currentUser.id) : null,
             isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
             isAdmin ? countOpenApplications() : 0,
             isAdmin ? countOpenTerminations() : 0,
             getDashboardEvent(),
+            isAdmin ? isDebugMode() : false,
         ]);
     const openMembershipTasks = openApplicationCount + openTerminationCount;
     const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
@@ -283,7 +287,7 @@ export default async function DashboardPage() {
                                   Hover-Fläche reicht bis an den Kartenrand.
                                 */}
                                 <ul className="mt-3 -mx-3 grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-1">
-                                    {ADMIN_ACTIONS.map(({ href, label, Icon }) => (
+                                    {ADMIN_ACTIONS.filter((a) => debugMode || !("debug" in a)).map(({ href, label, Icon, ...a }) => (
                                         <li key={href}>
                                             <Link
                                                 href={href}
@@ -303,6 +307,12 @@ export default async function DashboardPage() {
                                                             {openMembershipTasks}
                                                         </Badge>
                                                     )}
+                                                {"debug" in a && (
+                                                    <Badge tone="warning">
+                                                        <Bug size={12} aria-hidden="true" />
+                                                        Debug
+                                                    </Badge>
+                                                )}
                                                 <ChevronRight
                                                     size={15}
                                                     aria-hidden="true"
@@ -312,6 +322,25 @@ export default async function DashboardPage() {
                                         </li>
                                     ))}
                                 </ul>
+                                <Separator className="my-3" />
+                                <form action={toggleDebugMode}>
+                                    <button
+                                        type="submit"
+                                        className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
+                                    >
+                                        <Bug
+                                            size={16}
+                                            aria-hidden="true"
+                                            className={debugMode ? "shrink-0 text-warning" : "shrink-0 text-faint"}
+                                        />
+                                        <span className="min-w-0 flex-1 truncate text-left">
+                                            Debug-Modus {debugMode ? "beenden" : "aktivieren"}
+                                        </span>
+                                        <Badge tone={debugMode ? "warning" : "neutral"}>
+                                            {debugMode ? "An" : "Aus"}
+                                        </Badge>
+                                    </button>
+                                </form>
                             </Card>
                         )}
                     </div>

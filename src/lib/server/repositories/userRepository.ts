@@ -46,6 +46,11 @@ export async function deleteUserById(id: string) {
       await tx.emailVerificationToken.deleteMany({
         where: { OR: [{ userId: id }, { email: user.email }] },
       });
+      // Das Versandprotokoll bleibt als Zähler stehen, verliert aber die Adresse.
+      await tx.sentMail.updateMany({
+        where: { recipientEmail: user.email },
+        data: { recipientEmail: null },
+      });
     }
     // Beitragszeilen bleiben als Aufzeichnung stehen; der Fremdschlüssel wird
     // beim Löschen auf NULL gesetzt.

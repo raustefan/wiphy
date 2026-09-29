@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/server/authz";
+import { requireDebugAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
 import { AlertTriangle } from "lucide-react";
 import { Badge, Callout, Card, Container } from "@/components/ui";
@@ -9,7 +9,7 @@ import { DashboardPageHeader } from "../DashboardPageHeader";
 export const metadata: Metadata = { title: "Feature Flags" };
 
 export default async function FeatureFlagsPage() {
-    await requireAdmin();
+    await requireDebugAdmin();
     const flags = await getAllFeatureFlags();
 
     return (

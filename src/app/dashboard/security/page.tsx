@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, AlertTriangle, Filter, Info, ShieldAlert, UserX } from "lucide-react";
-import { requireAdmin } from "@/lib/server/authz";
+import { requireDebugAdmin } from "@/lib/server/authz";
 import {
     getActivityHeatmap,
     getRegistrationFunnel,
@@ -57,7 +57,7 @@ export default async function SecurityPage({
 }: {
     searchParams?: Promise<{ tage?: string }>;
 }) {
-    await requireAdmin();
+    await requireDebugAdmin();
 
     const resolvedParams = searchParams ? await searchParams : undefined;
     const days = parseWindowDays(resolvedParams?.tage);

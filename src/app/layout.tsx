@@ -3,6 +3,8 @@ import AppThemeProvider from "@/components/AppThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InstallHint from "@/components/InstallHint";
+import { DebugBar } from "@/components/DebugBar";
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Instrument_Sans } from "next/font/google";
@@ -126,6 +128,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
           <InstallHint />
+          <Suspense fallback={null}>
+            <DebugBar />
+          </Suspense>
         </AppThemeProvider>
       </body>
     </html>

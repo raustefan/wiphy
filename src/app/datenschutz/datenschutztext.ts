@@ -227,6 +227,13 @@ export const DATENSCHUTZ: LegalDocument = [
     ],
   },
   {
+    title: "Versandprotokoll von Vereinsmails",
+    blocks: [
+      "Für E-Mails, die der Vorstand über den Internbereich an Mitglieder und Nutzer verschickt, führen wir ein Versandprotokoll. Gespeichert werden der Betreff, der Zeitpunkt und die Empfänger: bei einer Mail an eine einzelne Person deren E-Mail-Adresse, bei Rundmails lediglich die Empfängergruppe (z.B. „Ehrenmitglieder“) und die Anzahl der Empfänger. Der Inhalt der Nachricht wird nicht gespeichert.",
+      "Rechtsgrundlage ist unser berechtigtes Interesse an einer nachvollziehbaren Vereinskommunikation (z.B. dem Nachweis, dass eine Einladung verschickt wurde) gem. Art. 6 Abs. 1 lit. f DSGVO. Das Protokoll ist ausschließlich für Administratoren des Vereins zugänglich. Einträge werden nach einem Jahr automatisch gelöscht; wird ein Nutzerkonto gelöscht, entfernen wir dessen E-Mail-Adresse sofort aus dem Protokoll.",
+    ],
+  },
+  {
     title: "Sicherheitsprotokoll (Anmeldung, Registrierung, Kontaktformular, Passwort- und E-Mail-Änderungen)",
     blocks: [
       "Um unbefugte Zugriffe auf Nutzerkonten, automatisierte Massenanfragen und Spam zu erkennen und abzuwehren, protokollieren wir sicherheitsrelevante Vorgänge unserer Anmelde- und Formularfunktionen. Erfasst werden: Anmeldeversuche und erfolgreiche Anmeldungen, Registrierungsversuche und abgeschlossene Registrierungen über das öffentliche Registrierungsformular, abgesendete Kontaktanfragen, angeforderte und tatsächlich durchgeführte Passwort-Zurücksetzungen, das Bestätigen einer E-Mail-Adresse über den zugesandten Link, angeforderte Änderungen der eigenen E-Mail-Adresse sowie die automatische Löschung nicht bestätigter Registrierungen.",

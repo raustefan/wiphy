@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getOptionalUser } from "@/lib/server/authz";
+import { getOptionalUser, isDebugMode } from "@/lib/server/authz";
 import { getDeployStatus, getSystemStats } from "@/lib/server/serverStatus";
 
 /**
@@ -11,7 +11,7 @@ import { getDeployStatus, getSystemStats } from "@/lib/server/serverStatus";
  */
 export async function GET() {
   const user = await getOptionalUser();
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== "ADMIN" || !(await isDebugMode())) {
     return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
   }
 

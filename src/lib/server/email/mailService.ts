@@ -15,6 +15,7 @@ import { siteUrl } from "@/lib/server/siteUrl";
 import { sanitizeEmailHtml } from "./sanitizeHtml";
 import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
+import { logSentMail } from "./mailHistory";
 
 type StatusTarget = "EHRENMITGLIED" | "ORDENTLICHES_MITGLIED" | "KEIN_MITGLIED";
 export type MailTarget = "ALL" | StatusTarget | "SELECTED";
@@ -162,6 +163,8 @@ export async function sendMailToUsers(input: {
   users: Recipient[];
   /** Gesetzt bei einer Terminankündigung — hängt den Terminblock an. */
   event?: AnnouncedEvent;
+  /** Empfängergruppe fürs Versandprotokoll; weggelassen bei ausgewählten Empfängern. */
+  recipientGroup?: string | null;
 }) {
   // Einmal zentral sanitisieren: entfernt Skripte, Event-Handler und unsichere
   // Link-Schemata, unabhängig davon, was der Editor clientseitig zugelassen hat.
@@ -172,15 +175,29 @@ export async function sendMailToUsers(input: {
   }
 
   // Einzelversand statt BCC, damit die Anrede pro Empfänger stimmt.
-  for (const user of input.users) {
-    await sendEmail({
-      to: user.email,
-      message: composeMessage(
-        replacePlaceholders(input.subject, user),
-        replacePlaceholders(template, user, { escape: true }),
-        input.event,
-      ),
-    });
+  // Protokolliert wird, was tatsächlich rausging — auch wenn der Versand
+  // mittendrin abbricht.
+  const sent: Recipient[] = [];
+  try {
+    for (const user of input.users) {
+      await sendEmail({
+        to: user.email,
+        message: composeMessage(
+          replacePlaceholders(input.subject, user),
+          replacePlaceholders(template, user, { escape: true }),
+          input.event,
+        ),
+      });
+      sent.push(user);
+    }
+  } finally {
+    if (sent.length > 0) {
+      await logSentMail({
+        subject: input.subject,
+        recipientGroup: input.recipientGroup ?? null,
+        recipients: sent,
+      });
+    }
   }
 
   if (input.bccToSelf) {
@@ -218,5 +235,6 @@ export async function sendMailForTarget(input: {
     adminEmail: input.adminEmail,
     users,
     event: input.event,
+    recipientGroup: input.target === "SELECTED" ? null : input.target,
   });
 }

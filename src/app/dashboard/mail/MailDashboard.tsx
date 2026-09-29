@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, CalendarDays, CheckCircle2, Megaphone, X } from "lucide-react";
 import { MailForm, type MailUserOption } from "./MailForm";
 import { DashboardPageHeader } from "../DashboardPageHeader";
-import { ButtonLink, Callout, Card, Container } from "@/components/ui";
+import { ButtonLink, Callout, Card, Container, Table, TableWrap, Td, Th } from "@/components/ui";
 
 /** Ein Termin, dessen Ankündigung gerade vorbereitet wird. */
 export type MailAnnouncement = {
@@ -23,6 +23,55 @@ export type MailEventOption = {
     title: string;
     when: string;
 };
+
+/** Eine Zeile des Versandprotokolls, serverseitig fertig formatiert. */
+export type MailHistoryEntry = {
+    id: string;
+    subject: string;
+    sentAt: string;
+    /** Adresse bei einer einzelnen Person, sonst Gruppe bzw. „Auswahl“. */
+    recipients: string;
+    count: number;
+};
+
+function MailHistory({ entries }: { entries: MailHistoryEntry[] }) {
+    return (
+        <Card className="mt-5 grid gap-3 p-5 sm:p-6">
+            <div className="grid gap-1">
+                <h2 className="text-lg font-semibold">Versandprotokoll</h2>
+                <p className="text-sm text-muted">
+                    Die letzten 50 Mails. Einträge werden nach einem Jahr gelöscht.
+                </p>
+            </div>
+            {entries.length === 0 ? (
+                <p className="text-sm text-muted">Noch keine Mails verschickt.</p>
+            ) : (
+                <TableWrap>
+                    <Table>
+                        <thead>
+                            <tr>
+                                <Th>Datum</Th>
+                                <Th>Betreff</Th>
+                                <Th>Empfänger</Th>
+                                <Th className="text-right">Anzahl</Th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {entries.map((entry) => (
+                                <tr key={entry.id}>
+                                    <Td className="font-mono whitespace-nowrap">{entry.sentAt}</Td>
+                                    <Td>{entry.subject}</Td>
+                                    <Td>{entry.recipients}</Td>
+                                    <Td className="text-right font-mono">{entry.count}</Td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </TableWrap>
+            )}
+        </Card>
+    );
+}
 
 /**
  * Die Terminauswahl über dem Formular.
@@ -93,9 +142,11 @@ function MailFormSkeleton() {
 export function MailDashboard({
     announcement,
     upcomingEvents,
+    history,
 }: {
     announcement: MailAnnouncement | null;
     upcomingEvents: MailEventOption[];
+    history: MailHistoryEntry[];
 }) {
     const [success, setSuccess] = useState(false);
     const [sentCount, setSentCount] = useState(0);
@@ -220,6 +271,8 @@ export function MailDashboard({
                     />
                 )}
             </Card>
+
+            <MailHistory entries={history} />
         </Container>
     );
 }
