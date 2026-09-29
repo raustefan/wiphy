@@ -372,21 +372,21 @@
     "semantic_hash": "669758eae1c6c288e241fa3a5dba2527"
   },
   "src/app/dashboard/fees/FeesTable.tsx": {
-    "mtime": 1789666920.5907443,
-    "seen": 1790242430.597056,
-    "ast_hash": "0f03451ea8578a9dbcb4d1afcf95199d",
-    "semantic_hash": "0f03451ea8578a9dbcb4d1afcf95199d"
+    "mtime": 1790712129.7600355,
+    "seen": 1790712135.238573,
+    "ast_hash": "ad737ca9e7943090190839a95f1e37fc",
+    "semantic_hash": ""
   },
   "src/app/dashboard/fees/actions.ts": {
-    "mtime": 1788509459.512467,
-    "seen": 1790242430.597057,
-    "ast_hash": "232764743230c1dc79b54ec1ced4ee37",
-    "semantic_hash": "232764743230c1dc79b54ec1ced4ee37"
+    "mtime": 1790712038.055741,
+    "seen": 1790712135.238574,
+    "ast_hash": "bbe06f4a37cc31265bbf2c4fe4318ba2",
+    "semantic_hash": ""
   },
   "src/app/dashboard/fees/page.tsx": {
-    "mtime": 1790319001.7431655,
-    "seen": 1790319022.861387,
-    "ast_hash": "44edfa27c93cafb5fe5bb8dd054c9592",
+    "mtime": 1790711266.9826121,
+    "seen": 1790711575.469049,
+    "ast_hash": "182dd6b852ec45d079c14f171e244fa6",
     "semantic_hash": ""
   },
   "src/app/dashboard/kontakt/ContactRequestList.tsx": {
@@ -1002,10 +1002,10 @@
     "semantic_hash": ""
   },
   "src/components/IbanInput.tsx": {
-    "mtime": 1789388697.4412985,
-    "seen": 1790242430.5971122,
-    "ast_hash": "de263d7af2319362485327e2eef4a715",
-    "semantic_hash": "de263d7af2319362485327e2eef4a715"
+    "mtime": 1790710247.8358982,
+    "seen": 1790710438.732702,
+    "ast_hash": "8ab1692b890ef62815caa69edb08cfd5",
+    "semantic_hash": ""
   },
   "src/components/JsonLd.tsx": {
     "mtime": 1789666202.641588,
@@ -1140,10 +1140,10 @@
     "semantic_hash": "bf5cfd0ec4241d885de528052f78a639"
   },
   "src/components/ui/SortableTh.tsx": {
-    "mtime": 1789385687.03459,
-    "seen": 1790242430.597125,
-    "ast_hash": "2be8458b4578b47daaa9188da3d7c544",
-    "semantic_hash": "2be8458b4578b47daaa9188da3d7c544"
+    "mtime": 1790711530.5595386,
+    "seen": 1790711575.4709918,
+    "ast_hash": "cf3da2113d7ad2b7acdc4a67b21c5bac",
+    "semantic_hash": ""
   },
   "src/components/ui/Spinner.tsx": {
     "mtime": 1788469298.0956113,
@@ -1254,10 +1254,10 @@
     "semantic_hash": ""
   },
   "src/lib/feeCalculation.ts": {
-    "mtime": 1788508276.4535112,
-    "seen": 1790242430.597135,
-    "ast_hash": "bd915d8921b8c8f8ea470d2fd6e486a9",
-    "semantic_hash": "bd915d8921b8c8f8ea470d2fd6e486a9"
+    "mtime": 1790712038.05476,
+    "seen": 1790712135.2408152,
+    "ast_hash": "b7cc009922f030a0e6e392624ebbeba5",
+    "semantic_hash": ""
   },
   "src/lib/feeDefaults.ts": {
     "mtime": 1790355637.9657047,
@@ -1512,9 +1512,9 @@
     "semantic_hash": "84acf08d9f734186cf2a3398fd4bc3dd"
   },
   "src/lib/server/repositories/feeRepository.ts": {
-    "mtime": 1790318975.7632325,
-    "seen": 1790319022.865696,
-    "ast_hash": "1f0066dd3d882a63e41547fd0609e1de",
+    "mtime": 1790712038.0551338,
+    "seen": 1790712135.241457,
+    "ast_hash": "3c956373e935c94ef2bef9c77d4aca6f",
     "semantic_hash": ""
   },
   "src/lib/server/repositories/membershipRepository.ts": {
@@ -1572,9 +1572,9 @@
     "semantic_hash": "b59ab6a44114aa8aca55455326742f0a"
   },
   "src/lib/server/services/feeService.ts": {
-    "mtime": 1790319001.7428272,
-    "seen": 1790319022.8659148,
-    "ast_hash": "dd0b6ad7cefd8ec5fff8096f8f343af5",
+    "mtime": 1790712093.218841,
+    "seen": 1790712135.24161,
+    "ast_hash": "58799483ef7eda1be3fdeeedffb44916",
     "semantic_hash": ""
   },
   "src/lib/server/services/membershipService.ts": {
@@ -1692,10 +1692,10 @@
     "semantic_hash": "0264dd8820388b4a5ba5e7d7da4ec9bd"
   },
   "tests/feeCalculation.test.ts": {
-    "mtime": 1788508634.9556086,
-    "seen": 1790242430.597173,
-    "ast_hash": "c5e98fbe97383575f3f6022597a521fe",
-    "semantic_hash": "c5e98fbe97383575f3f6022597a521fe"
+    "mtime": 1790712093.2189438,
+    "seen": 1790712135.241904,
+    "ast_hash": "0e3587b0d6b28a17cde7a5afcd478c2c",
+    "semantic_hash": ""
   },
   "tests/format.test.ts": {
     "mtime": 1788811159.958446,
@@ -1965,6 +1965,30 @@
     "mtime": 1790703660.9767578,
     "seen": 1790703708.668841,
     "ast_hash": "0b8ad585a8a29835e7a759ec473b37ed",
+    "semantic_hash": ""
+  },
+  "src/app/api/dashboard/fees/sepa/route.ts": {
+    "mtime": 1790710565.3202016,
+    "seen": 1790710576.3989918,
+    "ast_hash": "3533473dd0d1042cf7da9919821d25d2",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/fees/sepa/page.tsx": {
+    "mtime": 1790710758.8075151,
+    "seen": 1790710772.984202,
+    "ast_hash": "632178d03b6388f90d6f05f4b99853f0",
+    "semantic_hash": ""
+  },
+  "src/lib/sepa.ts": {
+    "mtime": 1790709535.806796,
+    "seen": 1790709717.298378,
+    "ast_hash": "1b7e21f29bcd6134c1c7fb652bf3be21",
+    "semantic_hash": ""
+  },
+  "tests/sepa.test.ts": {
+    "mtime": 1790709544.3112128,
+    "seen": 1790709717.299417,
+    "ast_hash": "9555468f7734efe4982ff79ae983f122",
     "semantic_hash": ""
   }
 }

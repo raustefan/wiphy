@@ -16,6 +16,7 @@ import { feeCommentSchema, feeToggleSchema, feeStatusUpdateSchema, feeAmountUpda
 import { feeDefaultSchema } from "@/lib/server/validation/membershipSchemas";
 import { removeFeeDefault, setFeeDefault } from "@/lib/server/services/feeDefaultService";
 import { prisma } from "@/lib/prisma";
+import { wasMemberInYear } from "@/lib/feeCalculation";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 
 export async function toggleFee(formData: FormData) {
@@ -73,8 +74,9 @@ export async function initializeBillingYear(formData: FormData) {
     const year = parseInt(formData.get("year") as string);
     if (!year || isNaN(year)) return;
 
-    // Nur beitragspflichtige Mitglieder — für alle anderen wäre die Zeile sinnlos.
-    const users = await getFeeLiableUsers();
+    // Nur beitragspflichtige Mitglieder, die in dem Jahr schon dabei waren —
+    // für alle anderen wäre die Zeile sinnlos.
+    const users = (await getFeeLiableUsers()).filter((u) => wasMemberInYear(year, u.aufnahmedatum));
 
     for (const user of users) {
       // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der

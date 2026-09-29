@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Input } from "@/components/ui";
-import { formatIban, normalizeIban } from "@/lib/iban";
+import { formatIban, isValidIban, normalizeIban } from "@/lib/iban";
+
+const INVALID_MESSAGE = "Diese IBAN ist ungültig — bitte auf Tippfehler prüfen.";
+
+function ibanError(value: string): string {
+    const iban = normalizeIban(value);
+    return iban === "" || isValidIban(iban) ? "" : INVALID_MESSAGE;
+}
 
 /**
  * IBAN-Feld, das beim Tippen in Viererblöcke gliedert — die Schreibweise, in
@@ -10,9 +17,11 @@ import { formatIban, normalizeIban } from "@/lib/iban";
  * niemand gegen, in Blöcken fällt ein Zahlendreher sofort auf.
  *
  * Der Wert wird zusätzlich in Großbuchstaben gewandelt und von Bindestrichen
- * befreit; die Prüfung der Prüfziffer bleibt beim Absenden, denn eine
- * halbfertige IBAN ist während des Tippens immer ungültig und dürfte deshalb
- * noch nichts anmeckern.
+ * befreit. Die Prüfziffer wird beim Verlassen des Feldes geprüft, nicht schon
+ * beim Tippen: eine halbfertige IBAN ist immer ungültig und dürfte deshalb noch
+ * nichts anmeckern. Steht der Fehler einmal da, verschwindet er aber sofort,
+ * sobald die Eingabe stimmt. `setCustomValidity` hält zusätzlich das Absenden
+ * auf — die Serverprüfung bleibt trotzdem maßgeblich.
  *
  * Der Schreibcursor ist der Grund für die Rechnerei unten: Ohne Korrektur
  * springt er bei jedem eingefügten Leerzeichen ans Ende, sodass eine
@@ -30,6 +39,14 @@ export function IbanInput({
     required?: boolean;
 }) {
     const [value, setValue] = useState(() => formatIban(defaultValue));
+    const [error, setError] = useState("");
+    const errorId = useId();
+
+    function check(input: HTMLInputElement, next: string) {
+        const message = ibanError(next);
+        setError(message);
+        input.setCustomValidity(message);
+    }
 
     function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
         const input = event.target;
@@ -40,6 +57,7 @@ export function IbanInput({
 
         const formatted = formatIban(input.value);
         setValue(formatted);
+        if (error) check(input, formatted);
 
         // Position neu bestimmen: je vier echte Zeichen kommt ein Leerzeichen
         // dazu. Nach dem Rendern setzen, sonst überschreibt React sie wieder.
@@ -49,17 +67,27 @@ export function IbanInput({
     }
 
     return (
-        <Input
-            id={id}
-            name={name}
-            value={value}
-            onChange={handleChange}
-            required={required}
-            placeholder="DE00 0000 0000 0000 0000 00"
-            inputMode="text"
-            autoComplete="off"
-            spellCheck={false}
-            className="font-mono"
-        />
+        <>
+            <Input
+                id={id}
+                name={name}
+                value={value}
+                onChange={handleChange}
+                onBlur={(event) => check(event.target, event.target.value)}
+                required={required}
+                invalid={Boolean(error)}
+                aria-describedby={error ? errorId : undefined}
+                placeholder="DE00 0000 0000 0000 0000 00"
+                inputMode="text"
+                autoComplete="off"
+                spellCheck={false}
+                className="font-mono"
+            />
+            {error && (
+                <span id={errorId} className="text-sm font-normal text-negative">
+                    {error}
+                </span>
+            )}
+        </>
     );
 }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  wasMemberInYear,
   annualFee,
   billableMonths,
   calculateFee,
@@ -82,4 +83,14 @@ test("a year before joining costs nothing", () => {
     aufnahmedatum: new Date(2026, 0, 1),
   });
   assert.equal(fee.total, 0);
+});
+
+test("wasMemberInYear: from the joining year on, unknown join date counts", () => {
+  const joined = new Date(2020, 6, 1);
+  assert.equal(wasMemberInYear(2018, joined), false);
+  assert.equal(wasMemberInYear(2020, joined), true);
+  assert.equal(wasMemberInYear(2021, joined), true);
+  assert.equal(wasMemberInYear(2018, null), true);
+  // Eintritt im Dezember: ein Monat beitragspflichtig, also Mitglied im Jahr.
+  assert.equal(wasMemberInYear(2020, new Date(2020, 11, 15)), true);
 });

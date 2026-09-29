@@ -58,7 +58,7 @@ export function SortableTh<K extends string>({
             >
                 {icon ? (
                     <>
-                        <span aria-hidden="true">{icon}</span>
+                        <span aria-hidden="true" className="shrink-0">{icon}</span>
                         <span className="sr-only">{label}</span>
                     </>
                 ) : (

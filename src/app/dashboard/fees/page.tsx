@@ -8,7 +8,8 @@ import {
 } from "@/lib/server/services/feeService";
 import { formatDate, formatEuro } from "@/lib/format";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
-import { Card, Container, Separator } from "@/components/ui";
+import { ButtonLink, Card, Container } from "@/components/ui";
+import { Landmark } from "lucide-react";
 import { FeesTable } from "./FeesTable";
 import { FeeDefaultsCard } from "./FeeDefaultsCard";
 import { Suspense } from "react";
@@ -93,7 +94,14 @@ export default async function FeesDashboardPage({
         title={isAdmin ? "Zahlungsübersicht der ordentlichen Mitglieder" : "Meine Mitgliedsbeiträge"}
         description={`Beiträge für ${selectedYear}`}
         backHref="/dashboard"
-      />
+      >
+        {isAdmin && (
+          <ButtonLink href={`/dashboard/fees/sepa?year=${selectedYear}`} variant="outline">
+            <Landmark size={16} aria-hidden="true" />
+            SEPA-Export {selectedYear}
+          </ButtonLink>
+        )}
+      </DashboardPageHeader>
 
       {isAdmin && (
         <Card className="mb-4 p-4 sm:mb-6 sm:p-6">
@@ -108,23 +116,14 @@ export default async function FeesDashboardPage({
       )}
 
       <Card className="p-4 sm:p-6">
-        <div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-baseline">
-          <div>
-            <p className="text-sm text-muted">
-              {isAdmin
-                ? "Admin-Sicht: beitragspflichtige Mitglieder; Beträge folgen automatisch den Standardsätzen"
-                : "Nur deine eigenen Beiträge, lesend"}
-            </p>
-            <h2 className="text-lg font-bold tracking-tight">
-              Jahresbeiträge {selectedYear}
-            </h2>
-          </div>
-          <p className="text-sm text-muted">
-            {users.length} {users.length === 1 ? "Mitglied" : "Mitglieder"}
+        <div className="mb-4">
+          <h2 className="text-lg font-bold tracking-tight">Jahresbeiträge {selectedYear}</h2>
+          <p className="text-sm text-muted text-pretty">
+            {isAdmin
+              ? "Alle beitragspflichtigen Mitglieder. Beträge folgen automatisch den Standardsätzen, außer sie sind als Ausnahme festgelegt."
+              : "Deine eigenen Beiträge."}
           </p>
         </div>
-
-        <Separator className="mb-3" />
 
         <FeesTable
           users={tableUsers}

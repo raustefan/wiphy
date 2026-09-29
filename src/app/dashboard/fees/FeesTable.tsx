@@ -3,21 +3,30 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  Check,
   Plus,
-  IdCard,
-  CheckCircle2,
-  Coins,
   Calendar,
   Pencil,
-  X,
+  PencilLine,
   Search,
+  SearchX,
   CircleEuro,
+  CircleAlert,
+  CircleCheck,
+  CircleDashed,
+  CirclePlus,
   GraduationCap,
   HandCoins,
   Landmark,
-  MessageSquare,
+  ListChecks,
+  Lock,
+  LockOpen,
+  Mail,
+  MessageSquarePlus,
+  MessageSquareText,
+  UserRound,
+  Users,
 } from "lucide-react";
+import { cn } from "@/lib/cn";
 import {
   EmailComposerDialog,
   type MailRecipient,
@@ -28,6 +37,7 @@ import { feeReminderMessage } from "@/lib/email/messages";
 import {
   Badge,
   Button,
+  Callout,
   Checkbox,
   Dialog,
   DialogFooter,
@@ -36,6 +46,7 @@ import {
   Input,
   Select,
   Separator,
+  Switch,
   SortableTh,
   Table,
   TableWrap,
@@ -181,6 +192,68 @@ function SepaMark({ bankeinzug }: { bankeinzug: boolean }) {
         <HandCoins size={14} aria-hidden="true" />
       )}
       <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
+const chipTones = {
+  neutral: "bg-raised text-muted",
+  warning: "bg-warning/15 text-warning",
+  info: "bg-info/12 text-info",
+  positive: "bg-positive/12 text-positive",
+  negative: "bg-negative/12 text-negative",
+} as const;
+
+/** Hinweis-Chips am Betrag („Ausnahme“, „Kein Eintrag“). */
+const noteClasses =
+  "inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap";
+
+/**
+ * Status als Chip mit Symbol und Wort — gesperrt reine Anzeige, freigeschaltet
+ * ein Knopf, der den Zustand umschaltet. Beide Formen sind exakt gleich groß:
+ * der Rand ist ein `ring-inset` und kostet keinen Platz, so springt beim
+ * Freischalten nichts. Auf dem Telefon bleibt nur das Symbol, das Wort steht
+ * dann im `title` und für Screenreader im `aria-label`.
+ */
+function StatusChip({
+  interactive,
+  tone,
+  icon,
+  label,
+  actionLabel,
+  title,
+}: {
+  interactive: boolean;
+  tone: keyof typeof chipTones;
+  icon: React.ReactNode;
+  label: string;
+  actionLabel: string;
+  title?: string;
+}) {
+  const className = cn(
+    "inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-full text-xs font-semibold whitespace-nowrap sm:w-26",
+    chipTones[tone],
+    interactive &&
+      "cursor-pointer ring-1 ring-current/35 ring-inset transition-shadow hover:ring-2 hover:ring-current/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+  );
+  const content = (
+    <>
+      <span aria-hidden="true" className="shrink-0">
+        {icon}
+      </span>
+      <span aria-hidden="true" className="hidden sm:inline">
+        {label}
+      </span>
+    </>
+  );
+
+  return interactive ? (
+    <button type="submit" className={className} aria-label={actionLabel} title={title}>
+      {content}
+    </button>
+  ) : (
+    <span role="img" className={className} aria-label={actionLabel} title={title ?? label}>
+      {content}
     </span>
   );
 }
@@ -422,6 +495,11 @@ export function FeesTable({
     fee: FeesTableUser["fees"][number];
   } | null>(null);
   const [search, setSearch] = useState("");
+  // Schutz vor Fehlklicks: Zahlungsstatus, Sonderstatus, Beträge und neue
+  // Beitragsjahre lassen sich erst nach bewusstem Freischalten ändern. Nach
+  // einem Neuladen ist wieder gesperrt.
+  const [editing, setEditing] = useState(false);
+  const canEdit = isAdmin && editing;
   // Voreinstellung wie die Reihenfolge aus der Datenbank: nach Mitglieds-ID,
   // Konten ohne ID hinten. Der erste Blick auf die Seite ändert sich dadurch
   // nicht.
@@ -460,6 +538,20 @@ export function FeesTable({
       return displayName(a).localeCompare(displayName(b), "de");
     });
   }, [users, search, sort, selectedYear]);
+
+  const stats = useMemo(() => {
+    let paid = 0;
+    let openSum = 0;
+    for (const u of users) {
+      const fee = u.fees.find((f) => f.jahr === selectedYear);
+      if (fee?.bezahlt) paid++;
+      else openSum += fee?.beitrag ?? 0;
+    }
+    const missing = users.filter(
+      (u) => u.fees.find((f) => f.jahr === selectedYear)?.angelegt === false,
+    ).length;
+    return { total: users.length, paid, open: users.length - paid, openSum, missing };
+  }, [users, selectedYear]);
 
   function toggleSort(key: FeesSortKey) {
     setSort((current) =>
@@ -538,7 +630,7 @@ export function FeesTable({
 
   return (
     <>
-      <div className="mb-4 rounded-2xl border border-line bg-raised/40 p-4">
+      <div className="mb-4 grid gap-3 rounded-2xl border border-line bg-raised/40 p-4">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <div className="flex items-center gap-2">
@@ -567,7 +659,7 @@ export function FeesTable({
                 className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint"
               />
               <Input
-                placeholder="Suche nach Name, E-Mail oder ID…"
+                placeholder="Name, E-Mail oder Nr.…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Mitglieder durchsuchen"
@@ -576,37 +668,77 @@ export function FeesTable({
             </div>
           </div>
 
+          {/* Schalter und „Neues Jahr“ stehen in beiden Zuständen an derselben
+              Stelle und in derselben Breite: vorher tauchte das Jahresformular
+              erst beim Freischalten auf und schob den Schalter ein Stück zur
+              Seite — genau unter den Mauszeiger, der ihn gerade bedient hatte. */}
           {isAdmin && (
-            <form action={initializeBillingYear} className="flex items-center gap-2">
-              <label htmlFor="fees-new-year" className="text-xs text-muted">
-                Neues Jahr anlegen:
-              </label>
-              <Input
-                id="fees-new-year"
-                type="number"
-                name="year"
-                defaultValue={new Date().getFullYear() + 1}
-                className="w-24 py-2"
-              />
-              <IconButton
-                type="submit"
-                variant="soft"
-                color="accent"
-                size="sm"
-                aria-label="Jahr für alle Mitglieder anlegen"
+            <div className="flex flex-wrap items-center gap-3">
+              <form action={initializeBillingYear} className="flex items-center gap-2">
+                <fieldset
+                  disabled={!canEdit}
+                  className="flex items-center gap-2"
+                  title={canEdit ? undefined : "Zum Anlegen erst „Bearbeiten“ freischalten"}
+                >
+                  <label htmlFor="fees-new-year" className="text-xs whitespace-nowrap text-muted">
+                    Neues Jahr
+                  </label>
+                  {/* Eigene Breite am Wrapper: `Input` bringt `w-full` mit, und
+                      `cn` führt keine Tailwind-Klassen zusammen. */}
+                  <div className="w-24">
+                    <Input
+                      id="fees-new-year"
+                      type="number"
+                      name="year"
+                      defaultValue={new Date().getFullYear() + 1}
+                      className="py-2"
+                    />
+                  </div>
+                  <IconButton
+                    type="submit"
+                    variant="soft"
+                    color="accent"
+                    size="sm"
+                    aria-label="Jahr für alle Mitglieder anlegen"
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                  </IconButton>
+                </fieldset>
+              </form>
+
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors",
+                  editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
+                )}
               >
-                <Plus size={16} aria-hidden="true" />
-              </IconButton>
-            </form>
+                <Switch
+                  checked={editing}
+                  onCheckedChange={setEditing}
+                  aria-label="Zahlungsdaten bearbeiten"
+                />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "flex items-center gap-1.5 text-sm font-medium",
+                    editing ? "text-physics" : "text-muted",
+                  )}
+                >
+                  {editing ? <LockOpen size={14} /> : <Lock size={14} />}
+                  Bearbeiten
+                </span>
+              </div>
+            </div>
           )}
         </div>
 
         {isAdmin && (
           <>
-            <Separator className="my-3" />
+            <Separator />
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={selectedIds.size > 0 ? "info" : "neutral"}>
+                  <ListChecks size={13} aria-hidden="true" />
                   {selectedIds.size} ausgewählt
                 </Badge>
                 <Button
@@ -616,6 +748,7 @@ export function FeesTable({
                   type="button"
                   onClick={selectAllWithOpenFees}
                 >
+                  <CircleAlert size={15} aria-hidden="true" />
                   Alle mit offenen Beiträgen
                 </Button>
                 {selectedIds.size > 0 && (
@@ -637,7 +770,7 @@ export function FeesTable({
                 onClick={() => setMailOpen(true)}
                 className="w-full sm:w-auto"
               >
-                <MessageSquare size={16} aria-hidden="true" />
+                <Mail size={16} aria-hidden="true" />
                 Erinnerung senden
               </Button>
             </div>
@@ -645,70 +778,126 @@ export function FeesTable({
         )}
       </div>
 
-      {/* Legende: die beiden Symbole am Namen stehen sonst ohne Erklärung da —
-          zu erraten ist ein Bankgebäude nur, wenn man schon weiß, worum es
-          geht. */}
-      <p className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-faint">
-        <span className="flex items-center gap-1.5">
-          <Landmark size={13} aria-hidden="true" className="text-physics" />
-          SEPA-Lastschrift
-        </span>
-        <span className="flex items-center gap-1.5">
-          <HandCoins size={13} aria-hidden="true" />
-          ohne Lastschrift — Aufschlag nach § 5 Abs. 5
-        </span>
-      </p>
+      {/* Kennzahlen des Jahres: beantworten die erste Frage beim Öffnen der
+          Seite, ohne dass man die Tabelle durchzählen muss. */}
+      <ul className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+        <li className="flex items-center gap-1.5 text-muted">
+          <Users size={15} aria-hidden="true" className="shrink-0" />
+          <span>
+            <strong className="font-semibold text-foreground tabular-nums">{stats.total}</strong>{" "}
+            {stats.total === 1 ? "Mitglied" : "Mitglieder"}
+          </span>
+        </li>
+        <li className="flex items-center gap-1.5 text-muted">
+          <CircleCheck size={15} aria-hidden="true" className="shrink-0 text-positive" />
+          <span>
+            <strong className="font-semibold text-foreground tabular-nums">{stats.paid}</strong>{" "}
+            bezahlt
+          </span>
+        </li>
+        <li className="flex items-center gap-1.5 text-muted">
+          <CircleAlert size={15} aria-hidden="true" className="shrink-0 text-negative" />
+          <span>
+            <strong className="font-semibold text-foreground tabular-nums">{stats.open}</strong>{" "}
+            offen
+            {stats.open > 0 && (
+              <>
+                {" "}
+                über{" "}
+                <strong className="font-semibold text-foreground tabular-nums">
+                  {formatEuro(stats.openSum)}
+                </strong>
+              </>
+            )}
+          </span>
+        </li>
+      </ul>
 
-      <TableWrap>
-        {/* Vorher `min-w-[720px]` bei acht Spalten. Vorname und Nachname
-            zusammengelegt spart eine ganze Spalte, und die Namensspalte nimmt
-            über `w-full max-w-0` den Rest der Zeile ein, statt ihn zu fordern:
-            lange Namen kürzen dann, anstatt die Tabelle breiter zu machen. */}
-        <Table className="min-w-[560px]">
+      {/* Erklärt die „Kein Eintrag“-Zeilen an einer Stelle, statt nur im
+          Tooltip jeder einzelnen Zeile — und bietet gleich den Weg an, sie
+          anzulegen. */}
+      {isAdmin && stats.missing > 0 && (
+        <Callout tone="info" className="mb-3" icon={<CircleDashed size={16} aria-hidden="true" />}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-pretty">
+              <strong className="font-semibold">
+                {stats.missing === stats.total
+                  ? `Das Beitragsjahr ${selectedYear} ist noch nicht angelegt.`
+                  : `${stats.missing} von ${stats.total} Mitgliedern ${stats.missing === 1 ? "hat" : "haben"} für ${selectedYear} noch keinen Beitragseintrag.`}
+              </strong>{" "}
+              {stats.missing === 1
+                ? "Der Betrag ist aus den Standardsätzen berechnet und gilt als offen, bis er als bezahlt markiert wird."
+                : "Die Beträge sind aus den Standardsätzen berechnet und gelten als offen, bis sie als bezahlt markiert werden."}
+            </p>
+            <form action={initializeBillingYear} className="shrink-0">
+              <input type="hidden" name="year" value={selectedYear} />
+              <Button
+                type="submit"
+                size="sm"
+                variant="outline"
+                disabled={!canEdit}
+                title={canEdit ? undefined : "Erst „Bearbeiten“ freischalten"}
+              >
+                <CirclePlus size={15} aria-hidden="true" />
+                Einträge für {selectedYear} anlegen
+              </Button>
+            </form>
+          </div>
+        </Callout>
+      )}
+
+      <TableWrap
+        className={cn(
+          "rounded-xl border transition-colors",
+          canEdit ? "border-physics/50" : "border-line",
+        )}
+      >
+        <Table className="sm:min-w-[560px]">
           <thead>
             <tr className="bg-raised/60">
-              {isAdmin && <Th className="w-10 px-2" />}
+              {isAdmin && <Th className="w-10 px-3" />}
               <SortableTh
                 sortKey="mitgliedId"
-                label="Mitglieds-ID"
-                icon={<IdCard size={16} />}
+                label="Nr."
                 sort={sort}
                 onSort={toggleSort}
-                className="w-16"
+                className="hidden w-16 sm:table-cell"
               />
               <SortableTh sortKey="name" label="Name" sort={sort} onSort={toggleSort} />
               {isAdmin && (
-                <Th className="hidden px-2 md:table-cell">
-                  <IconHeader icon={<MessageSquare size={16} />} label="Kommentar" />
-                </Th>
+                <Th className="hidden px-2 md:table-cell">Notiz</Th>
               )}
               <SortableTh
                 sortKey="student"
-                label="Studierendenstatus"
-                icon={<GraduationCap size={16} />}
+                label="Tarif"
                 sort={sort}
                 onSort={toggleSort}
-                align="center"
-                className="w-14"
+                // Auf dem Telefon fehlt die Spalte: dort zählen Name, Zahlung
+                // und Betrag, und für alle fünf Spalten reicht die Breite nicht.
+                className="hidden w-32 sm:table-cell"
               />
               <SortableTh
                 sortKey="paid"
-                label="Zahlungsstatus"
-                icon={<CheckCircle2 size={16} />}
+                label="Zahlung"
+                // Auf dem Telefon nur das Symbol — wie die Chips darunter.
+                icon={
+                  <>
+                    <CircleCheck size={15} className="sm:hidden" />
+                    <span className="hidden sm:inline">Zahlung</span>
+                  </>
+                }
                 sort={sort}
                 onSort={toggleSort}
-                align="center"
-                className="w-14"
+                className="w-12 sm:w-32"
               />
-              <Th className="w-33 px-2 text-center">
-                <IconHeader icon={<Coins size={16} />} label="Betrag" />
-              </Th>
+              <Th className="w-24 px-2 pr-3 text-right whitespace-nowrap sm:w-auto">Beitrag</Th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length === 0 && (
               <tr>
                 <Td colSpan={isAdmin ? 7 : 5} className="py-10 text-center text-muted">
+                  <SearchX size={20} aria-hidden="true" className="mx-auto mb-2 text-faint" />
                   Keine Mitglieder gefunden.
                 </Td>
               </tr>
@@ -723,17 +912,19 @@ export function FeesTable({
               // Für Jahre ohne Beitragszeile stammt der Sonderstatus aus der
               // Erklärung des Mitglieds — das soll man der Zeile ansehen.
               const declaredStudent = user.studentYears.includes(selectedYear);
+              const fullName = `${user.vorname} ${user.name ?? ""}`.trim();
 
               return (
                 <tr
                   key={user.id}
-                  className={`cursor-pointer transition-colors ${
-                    paid ? "hover:bg-raised/50" : "bg-negative/6 hover:bg-negative/10"
-                  }`}
+                  className={cn(
+                    "cursor-pointer transition-colors hover:bg-raised/50",
+                    isSelected && "bg-info/6",
+                  )}
                   onClick={() => openUserHistory(user)}
                 >
                   {isAdmin && (
-                    <Td onClick={stopRowClick}>
+                    <Td className="px-3" onClick={stopRowClick}>
                       <Checkbox
                         id={checkboxId}
                         checked={isSelected}
@@ -742,7 +933,7 @@ export function FeesTable({
                       />
                     </Td>
                   )}
-                  <Td className="px-2">
+                  <Td className="hidden px-2 sm:table-cell">
                     <Badge className="font-mono">{user.mitgliedId ?? "—"}</Badge>
                   </Td>
                   <Td className="w-full max-w-0 px-2 font-medium">
@@ -770,147 +961,128 @@ export function FeesTable({
                   {isAdmin && (
                     <Td className="hidden px-2 md:table-cell" onClick={stopRowClick}>
                       {user.zahlungsKommentar ? (
-                        <div className="flex items-center gap-1">
-                          <span
-                            className="max-w-45 flex-1 truncate text-sm"
-                            title={user.zahlungsKommentar}
-                          >
-                            {user.zahlungsKommentar}
-                          </span>
-                          <IconButton
-                            size="sm"
-                            variant="ghost"
-                            color="neutral"
-                            type="button"
-                            onClick={() => setCommentUser(user)}
-                            aria-label="Kommentar bearbeiten"
-                          >
-                            <Pencil size={15} aria-hidden="true" />
-                          </IconButton>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCommentUser(user)}
+                          title={user.zahlungsKommentar}
+                          aria-label={`Notiz bearbeiten: ${user.zahlungsKommentar}`}
+                          className="flex max-w-48 cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-left text-sm text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
+                        >
+                          <MessageSquareText size={15} aria-hidden="true" className="shrink-0 text-physics" />
+                          <span className="truncate">{user.zahlungsKommentar}</span>
+                        </button>
                       ) : (
                         <IconButton
                           size="sm"
-                          variant="soft"
+                          variant="ghost"
                           color="neutral"
                           type="button"
                           onClick={() => setCommentUser(user)}
-                          aria-label="Kommentar hinzufügen"
+                          aria-label="Notiz hinzufügen"
+                          title="Notiz hinzufügen"
+                          className="text-faint"
                         >
-                          <Plus size={15} aria-hidden="true" />
+                          <MessageSquarePlus size={16} aria-hidden="true" />
                         </IconButton>
                       )}
                     </Td>
                   )}
-                  <Td className="px-2 text-center" onClick={stopRowClick}>
-                    {isAdmin ? (
-                      <form action={updateFeeStatus}>
-                        <input type="hidden" name="userId" value={user.id} />
-                        <input type="hidden" name="year" value={selectedYear} />
-                        <input type="hidden" name="field" value="isStudent" />
-                        <input
-                          type="hidden"
-                          name="value"
-                          value={isStudent ? "false" : "true"}
-                        />
-                        <IconButton
-                          type="submit"
-                          size="sm"
-                          variant={isStudent ? "solid" : "outline"}
-                          color={isStudent ? "accent" : "neutral"}
-                          aria-label={
-                            isStudent
-                              ? "Sonderstatus (Klicken zum Ändern)"
-                              : "Regulär (Klicken zum Ändern)"
-                          }
-                          title={
-                            existing?.angelegt === false && declaredStudent
-                              ? `Sonderstatus laut Erklärung des Mitglieds für ${selectedYear}`
-                              : undefined
-                          }
-                        >
-                          <GraduationCap size={16} aria-hidden="true" />
-                        </IconButton>
-                      </form>
-                    ) : (
-                      <Badge tone={isStudent ? "info" : "neutral"}>
-                        {isStudent ? "Ja" : "Nein"}
-                      </Badge>
-                    )}
+                  <Td className="hidden px-2 sm:table-cell" onClick={stopRowClick}>
+                    <form action={updateFeeStatus}>
+                      <input type="hidden" name="userId" value={user.id} />
+                      <input type="hidden" name="year" value={selectedYear} />
+                      <input type="hidden" name="field" value="isStudent" />
+                      <input type="hidden" name="value" value={isStudent ? "false" : "true"} />
+                      <StatusChip
+                        interactive={canEdit}
+                        tone={isStudent ? "info" : "neutral"}
+                        icon={isStudent ? <GraduationCap size={14} /> : <UserRound size={14} />}
+                        label={isStudent ? "Sonder" : "Regulär"}
+                        actionLabel={`${fullName}: ${isStudent ? "Sonderstatus" : "regulärer Beitrag"}${canEdit ? " — klicken zum Ändern" : ""}`}
+                        title={
+                          existing?.angelegt === false && declaredStudent
+                            ? `Sonderstatus laut Erklärung des Mitglieds für ${selectedYear}`
+                            : isStudent
+                              ? "Sonderstatus nach § 5 (z. B. Studierende)"
+                              : "Regulärer Beitrag"
+                        }
+                      />
+                    </form>
                   </Td>
-                  <Td className="px-2 text-center" onClick={stopRowClick}>
-                    {isAdmin ? (
-                      <form
-                        action={updateFeeStatus}
-                        onSubmit={(e) => {
-                          // Extra confirmation only when reverting a paid fee to unpaid.
-                          const form = e.currentTarget;
-                          if (paid && !bypassFormsRef.current.has(form)) {
-                            e.preventDefault();
-                            setRevertConfirm({
-                              form,
-                              label: `${user.vorname} ${user.name ?? ""} (${selectedYear})`,
-                            });
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="userId" value={user.id} />
-                        <input type="hidden" name="year" value={selectedYear} />
-                        <input type="hidden" name="field" value="paid" />
-                        <input
-                          type="hidden"
-                          name="value"
-                          value={paid ? "false" : "true"}
-                        />
-                        <IconButton
-                          type="submit"
-                          size="sm"
-                          variant={paid ? "solid" : "outline"}
-                          color={paid ? "accent" : "danger"}
-                          aria-label={
-                            paid
-                              ? "Bezahlt (Klicken zum Ändern)"
-                              : "Offen (Klicken zum Ändern)"
-                          }
-                        >
-                          {paid ? (
-                            <Check size={16} aria-hidden="true" />
-                          ) : (
-                            <X size={16} aria-hidden="true" />
-                          )}
-                        </IconButton>
-                      </form>
-                    ) : (
-                      <Badge tone={paid ? "positive" : "negative"}>
-                        {paid ? "Bezahlt" : "Offen"}
-                      </Badge>
-                    )}
+                  <Td className="px-1 sm:px-2" onClick={stopRowClick}>
+                    <form
+                      action={updateFeeStatus}
+                      onSubmit={(e) => {
+                        // Extra confirmation only when reverting a paid fee to unpaid.
+                        const form = e.currentTarget;
+                        if (paid && !bypassFormsRef.current.has(form)) {
+                          e.preventDefault();
+                          setRevertConfirm({ form, label: `${fullName} (${selectedYear})` });
+                        }
+                      }}
+                    >
+                      <input type="hidden" name="userId" value={user.id} />
+                      <input type="hidden" name="year" value={selectedYear} />
+                      <input type="hidden" name="field" value="paid" />
+                      <input type="hidden" name="value" value={paid ? "false" : "true"} />
+                      <StatusChip
+                        interactive={canEdit}
+                        tone={paid ? "positive" : "negative"}
+                        icon={paid ? <CircleCheck size={14} /> : <CircleAlert size={14} />}
+                        label={paid ? "Bezahlt" : "Offen"}
+                        actionLabel={`${fullName}: ${paid ? "bezahlt" : "offen"}${canEdit ? " — klicken zum Ändern" : ""}`}
+                      />
+                    </form>
                   </Td>
-                  <Td className="px-2 text-center" onClick={stopRowClick}>
-                    <div className="flex items-center justify-center gap-1.5">
+                  <Td className="px-2 pr-3" onClick={stopRowClick}>
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Auf dem Telefon ohne Hinweise — der Betrag erklärt sich
+                          dort über sein `title`. `shrink-0`: in der engen Zelle
+                          drückte Flexbox die Badges sonst so weit zusammen, dass
+                          der Text über den Rand hinauslief. */}
+                      <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+                        {existing?.manuell && (
+                          <span
+                            className={cn(noteClasses, chipTones.warning)}
+                            title="Betrag abweichend vom Standard festgelegt"
+                          >
+                            <PencilLine size={13} aria-hidden="true" className="shrink-0" />
+                            Ausnahme
+                          </span>
+                        )}
+                        {existing?.angelegt === false && (
+                          <span
+                            className={cn(noteClasses, chipTones.neutral, "border border-dashed border-line-strong")}
+                            title={`Für ${selectedYear} gibt es noch keinen Beitragseintrag. Der Betrag ist aus den Standardsätzen berechnet; der Eintrag entsteht beim Anlegen des Jahres oder beim Markieren als bezahlt.`}
+                          >
+                            <CircleDashed size={13} aria-hidden="true" className="shrink-0" />
+                            Kein Eintrag
+                          </span>
+                        )}
+                      </span>
                       <span
-                        className="text-sm font-medium tabular-nums"
+                        className="text-sm font-semibold tabular-nums"
                         title={existing ? explainFee(existing) : undefined}
                       >
                         {formatEuro(existing?.beitrag ?? 0)}
                       </span>
-                      {existing?.manuell && <Badge tone="warning">Ausnahme</Badge>}
-                      {existing?.angelegt === false && (
-                        <Badge title={`Für ${selectedYear} ist noch keine Beitragszeile angelegt. Angezeigt wird der Standardbeitrag.`}>
-                          Vorschau
-                        </Badge>
-                      )}
-                      {isAdmin && existing && (
-                        <IconButton
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          color="neutral"
-                          onClick={() => setAmountTarget({ user, fee: existing })}
-                          aria-label={`Beitrag ${selectedYear} für ${user.vorname} ${user.name ?? ""} abweichend festlegen`}
-                        >
-                          <Pencil size={15} aria-hidden="true" />
-                        </IconButton>
+                      {/* Platz für den Stift bleibt immer reserviert, damit die
+                          Beträge beim Freischalten nicht verrutschen. */}
+                      {isAdmin && (
+                        <span className="grid size-8 shrink-0 place-items-center">
+                          {canEdit && existing && (
+                            <IconButton
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              color="neutral"
+                              onClick={() => setAmountTarget({ user, fee: existing })}
+                              aria-label={`Beitrag ${selectedYear} für ${fullName} abweichend festlegen`}
+                            >
+                              <Pencil size={15} aria-hidden="true" />
+                            </IconButton>
+                          )}
+                        </span>
                       )}
                     </div>
                   </Td>
@@ -920,6 +1092,28 @@ export function FeesTable({
           </tbody>
         </Table>
       </TableWrap>
+
+      {/* Legende: die Symbole am Namen und am Betrag stehen sonst ohne Erklärung
+          da — zu erraten ist ein Bankgebäude nur, wenn man schon weiß, worum es
+          geht. */}
+      <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-faint">
+        <span className="flex items-center gap-1.5">
+          <Landmark size={13} aria-hidden="true" className="text-physics" />
+          SEPA-Lastschrift
+        </span>
+        <span className="flex items-center gap-1.5">
+          <HandCoins size={13} aria-hidden="true" />
+          ohne Lastschrift, 10 % Aufschlag (§ 5 Abs. 5)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <PencilLine size={13} aria-hidden="true" />
+          Betrag als Ausnahme festgelegt
+        </span>
+        <span className="flex items-center gap-1.5">
+          <CircleDashed size={13} aria-hidden="true" />
+          noch kein Beitragseintrag, Betrag nach Standardsätzen berechnet
+        </span>
+      </p>
 
       <Dialog
         open={revertConfirm != null}

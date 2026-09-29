@@ -59,6 +59,15 @@ export function billableMonths(jahr: number, aufnahmedatum?: Date | null): numbe
 }
 
 /**
+ * War das Mitglied in `jahr` schon dabei? Ohne Aufnahmedatum lässt sich das
+ * nicht ausschließen — dann ja. Gleiche Grenze wie bei den Beitragsmonaten:
+ * wer erst später eintritt, schuldet für das Jahr nichts.
+ */
+export function wasMemberInYear(jahr: number, aufnahmedatum?: Date | null): boolean {
+  return billableMonths(jahr, aufnahmedatum) > 0;
+}
+
+/**
  * Der volle Jahresbeitrag für eine Beitragsstufe — die Zahl, die auf der
  * Beitragsseite und im Aufnahmeantrag als Regelbetrag genannt wird.
  */

@@ -12,9 +12,19 @@ import { feeRetentionCutoffYear } from "@/lib/membershipTermination";
  * oder noch keine Mitglieder — sie in der Zahlungsübersicht zu führen erzeugt
  * nur Zeilen, die dauerhaft „offen“ aussehen.
  */
-export function findUsersWithFees(userId: string, role: Role) {
+/**
+ * Admin-Sicht: aktuelle ordentliche Mitglieder und — ist ein Jahr angegeben —
+ * zusätzlich alle, die für dieses Jahr eine Beitragszeile haben. Sonst fehlten
+ * ausgetretene Mitglieder auch in den Jahren, in denen sie noch gezahlt haben.
+ */
+export function findUsersWithFees(userId: string, role: Role, year?: number) {
   return prisma.user.findMany({
-    where: role === "ADMIN" ? { status: "ORDENTLICHES_MITGLIED" } : { id: userId },
+    where:
+      role !== "ADMIN"
+        ? { id: userId }
+        : year === undefined
+          ? { status: "ORDENTLICHES_MITGLIED" }
+          : { OR: [{ status: "ORDENTLICHES_MITGLIED" }, { fees: { some: { jahr: year } } }] },
     orderBy: { createdAt: "asc" },
     include: { fees: true },
   });
@@ -24,7 +34,7 @@ export function findUsersWithFees(userId: string, role: Role) {
 export function findFeeLiableUsers() {
   return prisma.user.findMany({
     where: { status: "ORDENTLICHES_MITGLIED" },
-    select: { id: true, studentYears: true },
+    select: { id: true, studentYears: true, aufnahmedatum: true },
   });
 }
 

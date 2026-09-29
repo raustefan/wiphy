@@ -12,7 +12,9 @@ import {
 } from "@/lib/server/repositories/feeRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
 import { resolveFeeDefault } from "@/lib/feeDefaults";
-import { calculateFee, type FeeBreakdown } from "@/lib/feeCalculation";
+import { calculateFee, wasMemberInYear, type FeeBreakdown } from "@/lib/feeCalculation";
+import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
+import { isoDate } from "@/lib/sepa";
 
 export function getFeeDashboardUsers(userId: string, role: Role) {
   return findUsersWithFees(userId, role);
@@ -59,11 +61,28 @@ export async function getFeeDashboardData(
   ensureYear?: number,
 ) {
   const [users, defaults] = await Promise.all([
-    findUsersWithFees(userId, role),
+    findUsersWithFees(userId, role, ensureYear),
     findFeeDefaults(),
   ]);
 
-  return users.map((user) => {
+  // Admin-Sicht auf ein Jahr: nur wer damals schon Mitglied war — und entweder
+  // noch ist oder für das Jahr eine Beitragszeile hat (Ausgetretene). Eine
+  // Zeile allein reicht nicht: das Anlegen eines Jahres erzeugte früher auch
+  // Zeilen für Mitglieder, die erst später eintraten. Eine verbuchte Zahlung
+  // wird dagegen nie ausgeblendet.
+  const visible =
+    role === "ADMIN" && ensureYear !== undefined
+      ? users.filter((user) => {
+          const fee = user.fees.find((f) => f.jahr === ensureYear);
+          if (fee?.bezahlt) return true;
+          return (
+            wasMemberInYear(ensureYear, user.aufnahmedatum) &&
+            (user.status === "ORDENTLICHES_MITGLIED" || fee !== undefined)
+          );
+        })
+      : users;
+
+  return visible.map((user) => {
     function toDashboardFee(input: {
       jahr: number;
       bezahlt: boolean;
@@ -137,4 +156,47 @@ export async function getExistingFeeYears() {
 
 export async function setFeeComment(input: { userId: string; comment: string | null }) {
   await updateFeeCommentRepo(input.userId, input.comment);
+}
+
+export type SepaCandidate = {
+  id: string;
+  mitgliedId: number | null;
+  name: string;
+  iban: string | null;
+  bic: string | null;
+  amount: number;
+  /** YYYY-MM-DD, leer bei Altmandaten ohne erfasstes Datum. */
+  mandateDate: string;
+  aufnahmedatum: Date | null;
+  /** Grund, warum das Mitglied nicht eingezogen werden kann. */
+  problem: string | null;
+};
+
+/**
+ * Mitglieder mit Lastschriftmandat und offenem Beitrag für `year`. Wer per
+ * Überweisung zahlt, schon bezahlt hat oder nichts schuldet, fehlt ganz.
+ */
+export async function getSepaCandidates(adminId: string, year: number): Promise<SepaCandidate[]> {
+  const users = await getFeeDashboardData(adminId, "ADMIN", year);
+
+  return users.flatMap((user) => {
+    const fee = user.fees.find((f) => f.jahr === year);
+    // Nur aktuelle Mitglieder: bei Ausgetretenen ist das Mandat erloschen.
+    if (user.status !== "ORDENTLICHES_MITGLIED") return [];
+    if (!user.bankeinzug || !fee || fee.bezahlt || fee.beitrag <= 0) return [];
+
+    const iban = user.IBAN ? normalizeIban(user.IBAN) : null;
+    const bic = user.BIC?.replace(/\s/g, "").toUpperCase() || null;
+    return [{
+      id: user.id,
+      mitgliedId: user.mitgliedId,
+      name: `${user.vorname} ${user.name}`,
+      iban,
+      bic: bic && isValidBic(bic) ? bic : null,
+      amount: fee.beitrag,
+      mandateDate: user.mandatserteilung ? isoDate(user.mandatserteilung) : "",
+      aufnahmedatum: user.aufnahmedatum,
+      problem: !iban ? "Keine IBAN hinterlegt" : !isValidIban(iban) ? "IBAN ungültig" : null,
+    }];
+  });
 }
