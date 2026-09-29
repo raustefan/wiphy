@@ -9,9 +9,9 @@ import type { DeployStatus, SystemStats } from "@/lib/server/serverStatus";
 import { triggerDeploy } from "./actions";
 import { UsageChart, type UsagePoint } from "./UsageChart";
 
-const INTERVAL_SECONDS = 5;
+const INTERVAL_SECONDS = 1;
 /** Während eines Deploys öfter nachsehen, damit das Log mitläuft. */
-const DEPLOY_INTERVAL_SECONDS = 2;
+const DEPLOY_INTERVAL_SECONDS = 1;
 /** Zehn Minuten Verlauf bei einer Messung alle fünf Sekunden. */
 const SLOTS = 120;
 
