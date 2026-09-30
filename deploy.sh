@@ -16,9 +16,9 @@ pnpm install
 echo "🗃️ Generating Prisma Client..."
 npx prisma generate
 
-# Push database changes
-echo "🗄️ Pushing database changes..."
-npx prisma db push
+# Apply pending migrations
+echo "🗄️ Applying database migrations..."
+npx prisma migrate deploy
 
 # Build Next.js app
 echo "🏗️ Building Next.js application..."
