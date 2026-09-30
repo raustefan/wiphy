@@ -2,7 +2,6 @@ import type { Role } from "@prisma/client";
 import {
   findUsersWithFees,
   findFeeLiableUsers,
-  upsertMemberFee,
   upsertFeeStatus,
   upsertFeeAmount,
   clearFeeAmountOverride,
@@ -15,10 +14,6 @@ import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { calculateFee, wasMemberInYear, type FeeBreakdown } from "@/lib/feeCalculation";
 import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
 import { isoDate } from "@/lib/sepa";
-
-export function getFeeDashboardUsers(userId: string, role: Role) {
-  return findUsersWithFees(userId, role);
-}
 
 export function getArchivedFees() {
   return findArchivedFees();
@@ -131,10 +126,6 @@ export async function getFeeDashboardData(
 
     return { ...user, fees };
   });
-}
-
-export async function setFeePaidStatus(input: { userId: string; year: number; paid: boolean }) {
-  await upsertMemberFee(input.userId, input.year, input.paid);
 }
 
 export async function setFeeStatus(input: { userId: string; year: number; field: "paid" | "isStudent"; value: boolean }) {

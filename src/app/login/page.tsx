@@ -1,22 +1,12 @@
 import type { Metadata } from "next";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 import { LoginForm } from "./LoginForm";
+import { internalPath } from "@/lib/internalPath";
 
 export const metadata: Metadata = { title: "Anmelden" };
 
 // A fresh challenge must be minted on every request, never cached.
 export const dynamic = "force-dynamic";
-
-/**
- * Nur seiteneigene Pfade sind als Ziel zugelassen. Ein `next`, das irgendwo
- * herkommt, ist sonst eine offene Weiterleitung: `?next=https://…` schickte
- * frisch Angemeldete auf eine fremde Seite. `//host` zählt dabei als absolute
- * URL und muss deshalb mit ausgeschlossen werden.
- */
-function internalPath(value: string | undefined): string | null {
-    if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
-    return value;
-}
 
 /** Rückmeldung nach dem Sperren oder Löschen des eigenen Kontos. */
 const NOTICES: Record<string, string> = {

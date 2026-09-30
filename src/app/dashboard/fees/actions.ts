@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/server/authz";
 import {
   setFeeComment,
-  setFeePaidStatus,
   setFeeStatus,
   setFeeAmount,
   resetFeeAmount,
@@ -18,18 +17,6 @@ import { removeFeeDefault, setFeeDefault } from "@/lib/server/services/feeDefaul
 import { prisma } from "@/lib/prisma";
 import { wasMemberInYear } from "@/lib/feeCalculation";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
-
-export async function toggleFee(formData: FormData) {
-  await executeAction(async () => {
-    await requireAdmin();
-    await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/fees");
-
-    const { userId, year, paid } = parseFormData(feeToggleSchema, formData);
-
-    await setFeePaidStatus({ userId, year, paid });
-    revalidatePath("/dashboard/fees");
-  });
-}
 
 export async function updateFeeStatus(formData: FormData) {
   await executeAction(async () => {

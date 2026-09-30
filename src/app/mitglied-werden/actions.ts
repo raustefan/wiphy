@@ -14,10 +14,8 @@ import {
   submitApplication,
   withdrawApplication,
 } from "@/lib/server/services/membershipService";
-import {
-  applicationIdSchema,
-  membershipApplicationSchema,
-} from "@/lib/server/validation/membershipSchemas";
+import { applicationIdSchema } from "@/lib/server/validation/membershipSchemas";
+import { membershipApplicationSchema } from "@/lib/membershipFormSchemas";
 import { sendEmail } from "@/lib/server/email/mailer";
 import {
   membershipApplicationNoticeMessage,

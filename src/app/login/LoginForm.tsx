@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, LogIn, MailCheck } from "lucide-react";
 import { LoginFaq } from "./LoginFaq";
 import {
-    checkLoginFeatureEnabled,
     createLoginChallenge,
     resendVerificationEmail,
 } from "./actions";
@@ -71,12 +70,6 @@ export function LoginForm({
                 return;
             }
 
-            const loginEnabled = await checkLoginFeatureEnabled(email);
-            if (!loginEnabled) {
-                setFeatureDisabled(true);
-                return;
-            }
-
             const res = await signIn("credentials", {
                 email,
                 password,
@@ -85,7 +78,9 @@ export function LoginForm({
             });
 
             if (res?.error) {
-                if (res.code === "email_not_verified") {
+                if (res.code === "feature_disabled") {
+                    setFeatureDisabled(true);
+                } else if (res.code === "email_not_verified") {
                     setEmailUnverified(true);
                     setError(
                         "Deine E-Mail-Adresse ist noch nicht bestätigt. Bitte bestätige sie über den Link in deiner E-Mail, bevor du dich anmeldest.",

@@ -18,7 +18,6 @@ export {
   deleteApplication,
   findApplications as getApplications,
   findApplicationById as getApplication,
-  findApplicationsForUser as getApplicationsForUser,
   findOpenApplication as getOpenApplication,
   getMaxMitgliedId,
   markApplicationMailed,

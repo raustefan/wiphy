@@ -34,6 +34,14 @@ export class AccountDisabledError extends CredentialsSignin {
     code = "account_disabled";
 }
 
+/**
+ * LOGIN-Flag aus und kein Admin. Erst nach dem Passwortvergleich geworfen,
+ * damit sich darüber nicht erfragen lässt, welche Adressen Admins gehören.
+ */
+export class LoginFeatureDisabledError extends CredentialsSignin {
+    code = "feature_disabled";
+}
+
 /** Thrown when the ALTCHA proof-of-work is missing, invalid, or already spent. */
 export class CaptchaFailedError extends CredentialsSignin {
     code = "captcha_failed";
@@ -183,7 +191,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // so they can get back in to re-enable it.
                 if (user.role !== "ADMIN" && !(await isFeatureEnabled("LOGIN"))) {
                     await logAttempt("BLOCKED", "feature_disabled", user.id);
-                    return null;
+                    throw new LoginFeatureDisabledError();
                 }
                 await prisma.user.update({
                     where: { id: user.id },

@@ -3,7 +3,6 @@
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { executeAction } from "@/lib/server/errors";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
@@ -21,22 +20,6 @@ import { newToken } from "@/lib/server/tokens";
  */
 export async function createLoginChallenge(): Promise<string> {
     return JSON.stringify(await createAltchaChallenge());
-}
-
-// Admins must always be able to log in, even while LOGIN is disabled, so they
-// can get back in and re-enable it. Only an email lookup (no password check)
-// is needed here — this just gates the UI, `auth.ts` enforces it for real.
-export async function checkLoginFeatureEnabled(email: string): Promise<boolean> {
-    if (await isFeatureEnabled("LOGIN")) return true;
-
-    const trimmedEmail = normalizeEmail(email);
-    if (!trimmedEmail) return false;
-
-    const user = await prisma.user.findUnique({
-        where: { email: trimmedEmail },
-        select: { role: true },
-    });
-    return user?.role === "ADMIN";
 }
 
 /**

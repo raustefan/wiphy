@@ -124,9 +124,10 @@ export async function POST(request: Request) {
       userAgent,
     });
 
-    // Any outstanding confirmation link is redundant now.
+    // Any outstanding confirmation link is redundant now — including a pending
+    // email change, which may have been started by whoever the reset locks out.
     await prisma.emailVerificationToken.deleteMany({
-      where: { email: resetToken.email },
+      where: { OR: [{ email: resetToken.email }, { userId: updatedUser.id }] },
     });
 
     after(async () => {

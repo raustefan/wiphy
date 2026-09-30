@@ -17,13 +17,6 @@ export function findApplicationById(id: string) {
   });
 }
 
-export function findApplicationsForUser(userId: string) {
-  return prisma.membershipApplication.findMany({
-    where: { userId },
-    orderBy: { submittedAt: "desc" },
-  });
-}
-
 export function findApplications(status?: MembershipApplicationStatus, limit = 200) {
   return prisma.membershipApplication.findMany({
     where: status ? { status } : undefined,

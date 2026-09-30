@@ -172,6 +172,13 @@ export async function updateUserProfile(input: UpdateUserInput, currentPassword?
 
     // Keep the old email in updated data
     data.email = user.email;
+  } else if (input.email && normalizeEmail(input.email) !== normalizeEmail(user.email)) {
+    // Admin korrigiert eine fremde Adresse: Links, die an die alte Adresse
+    // gingen, dürfen die Korrektur nicht rückgängig machen.
+    const { prisma } = await import("@/lib/prisma");
+    data.email = normalizeEmail(input.email);
+    await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
+    await prisma.passwordResetToken.deleteMany({ where: { email: user.email } });
   }
 
   // Admin-only updates

@@ -27,8 +27,9 @@ type Recipients = {
   /**
    * Antwortadresse. Nötig z. B. beim Kontaktformular: die Adresse des Besuchers
    * darf nicht als `From` dienen, das würde unser SPF/DKIM/DMARC brechen.
+   * Als Objekt, damit ein Name mit Komma oder `:` keine zweite Adresse einschleust.
    */
-  replyTo?: string;
+  replyTo?: { name: string; address: string };
 };
 
 function normalize(value: string | string[] | undefined): string | undefined {

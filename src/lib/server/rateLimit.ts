@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import { headers } from "next/headers";
 import { AppError } from "@/lib/server/errors";
 import { prisma } from "@/lib/prisma";
 
@@ -34,10 +33,6 @@ function now() {
 
 function makeStoreKey(bucket: string, keyParts: Array<string | null | undefined>) {
   return `${bucket}:${hashKey(keyParts)}`;
-}
-
-export async function getRequestHeaders() {
-  return headers();
 }
 
 export async function consumeRateLimit({

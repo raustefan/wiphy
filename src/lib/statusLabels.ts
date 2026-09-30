@@ -46,17 +46,6 @@ export const STATUS_OPTIONS: { value: Status; label: string }[] = [
     { value: "KEIN_MITGLIED", label: "Kein Mitglied" },
 ];
 
-export function formatRole(role?: Role | string | null): string {
-    switch (role) {
-        case "ADMIN":
-            return "Administrator";
-        case "MEMBER":
-            return "Mitglied";
-        default:
-            return "Unbekannt";
-    }
-}
-
 export const ROLE_OPTIONS: { value: Role; label: string }[] = [
     { value: "MEMBER", label: "Mitglied" },
     { value: "ADMIN", label: "Administrator" },

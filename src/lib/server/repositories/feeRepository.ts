@@ -83,16 +83,6 @@ async function syncStudentYear(userId: string, jahr: number, isStudent: boolean)
   });
 }
 
-export function upsertMemberFee(userId: string, jahr: number, bezahlt: boolean) {
-  return prisma.memberFee.upsert({
-    where: {
-      userId_jahr: { userId, jahr },
-    },
-    update: { bezahlt },
-    create: { userId, jahr, bezahlt },
-  });
-}
-
 export async function upsertFeeStatus(userId: string, jahr: number, field: "paid" | "isStudent", value: boolean) {
   if (field === "isStudent") {
     await syncStudentYear(userId, jahr, value);

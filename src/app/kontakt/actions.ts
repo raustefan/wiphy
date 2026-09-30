@@ -156,7 +156,7 @@ export async function submitContactRequest(formData: FormData) {
                     // heraus; die Besucheradresse steht im Reply-To statt im From,
                     // sonst würde die Mail an unserem SPF/DKIM/DMARC scheitern.
                     bcc: adminEmails,
-                    replyTo: `${payload.name} <${payload.email}>`,
+                    replyTo: { name: payload.name, address: payload.email },
                     message: contactRequestMessage(payload),
                 });
                 if (requestId) {

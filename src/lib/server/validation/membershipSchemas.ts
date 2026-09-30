@@ -1,13 +1,6 @@
 import { z } from "zod";
 import { membershipApplicationSchema } from "@/lib/membershipFormSchemas";
 
-export {
-  applicationBankSchema,
-  applicationPersonSchema,
-  applicationStudySchema,
-  membershipApplicationSchema,
-} from "@/lib/membershipFormSchemas";
-
 const optionalNote = z
   .string()
   .max(5000)

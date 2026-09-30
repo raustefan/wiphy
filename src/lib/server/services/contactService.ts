@@ -1,8 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-export { MIN_FILL_TIME_MS, SPAM_SCORE_MAIL_THRESHOLD } from "@/lib/contact";
-export { hashIp, scoreSpam } from "@/lib/server/contactSpam";
-
 /**
  * Recipients for the notification mail. Unverified admin addresses are excluded
  * so a half-finished account cannot silently swallow enquiries.
