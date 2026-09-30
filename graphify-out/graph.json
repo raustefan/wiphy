@@ -17207,7 +17207,7 @@
       "file_type": "code",
       "norm_label": "datenschutz",
       "source_file": "src/app/datenschutz/datenschutztext.ts",
-      "source_location": "L10"
+      "source_location": "L14"
     },
     {
       "id": "src_app_datenschutz_page",
@@ -47364,7 +47364,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/app/datenschutz/datenschutztext.ts",
-      "source_location": "L8",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -64772,7 +64772,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/app/datenschutz/datenschutztext.ts",
-      "source_location": "L8",
+      "source_location": "L12",
       "type_only": true,
       "weight": 1.0
     },
@@ -78174,7 +78174,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/datenschutz/datenschutztext.ts",
-      "source_location": "L10",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -89396,5 +89396,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2337e3a013940e12af1322c7c36e37daffcdb18e"
+  "built_at_commit": "4ed738161521e9c6b64b6d941043b78877b44148"
 }

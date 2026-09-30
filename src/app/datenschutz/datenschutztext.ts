@@ -3,6 +3,10 @@
  *
  * Als Daten gepflegt, gerendert von `LegalPage` — siehe `src/lib/legal.ts`.
  * Änderungen an der Rechtslage sind hier ein reiner Textdiff.
+ *
+ * Jede Frist hier muss im Code durchgesetzt sein (oder ausdrücklich als
+ * manuelle Prüfung formuliert). Bei inhaltlichen Änderungen `CONSENT_VERSION`
+ * in `src/lib/membership.ts` hochzählen.
  */
 
 import type { LegalDocument } from "@/lib/legal";
@@ -10,7 +14,8 @@ import type { LegalDocument } from "@/lib/legal";
 export const DATENSCHUTZ: LegalDocument = [
   {
     blocks: [
-      "Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und Zweck der Verarbeitung von personenbezogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm verbundenen Webseiten, Funktionen und Inhalte sowie externen Onlinepräsenzen, wie z.B. unser Social Media Profile auf (nachfolgend gemeinsam bezeichnet als „Onlineangebot“). Im Hinblick auf die verwendeten Begrifflichkeiten, wie z.B. „Verarbeitung“ oder „Verantwortlicher“ verweisen wir auf die Definitionen im Art. 4 der Datenschutzgrundverordnung (DSGVO).",
+      "Diese Datenschutzerklärung informiert Sie nach Art. 13 und 14 der Datenschutz-Grundverordnung (DSGVO) darüber, welche personenbezogenen Daten wir auf dieser Website und im Mitgliederbereich verarbeiten, zu welchem Zweck, auf welcher Rechtsgrundlage und wie lange — und welche Rechte Sie haben. Begriffe wie „personenbezogene Daten“, „Verarbeitung“ oder „Verantwortlicher“ verwenden wir im Sinne von Art. 4 DSGVO.",
+      "Stand: September 2026",
     ],
   },
   {
@@ -28,127 +33,106 @@ export const DATENSCHUTZ: LegalDocument = [
       },
       {
         lines: [
-          "E-Mailadresse: [info@wirtschaftsphysik.de](mailto:info@wirtschaftsphysik.de)",
-          "Link zum Impressum: [/impressum](/impressum)",
+          "E-Mail: [info@wirtschaftsphysik.de](mailto:info@wirtschaftsphysik.de)",
+          "Vertretungsberechtigt ist der Vorstand, siehe [Impressum](/impressum).",
         ],
       },
+      "Einen Datenschutzbeauftragten haben wir nicht benannt, weil der Verein dazu nach Art. 37 DSGVO und § 38 BDSG nicht verpflichtet ist. Wenden Sie sich mit allen Fragen zum Datenschutz an die oben genannte Adresse.",
     ],
   },
   {
-    title: "Arten der verarbeiteten Daten",
+    title: "Überblick",
     blocks: [
+      "Wir verarbeiten Daten von Besuchern der Website, von Personen, die uns über das Kontaktformular schreiben, von Inhabern eines Nutzerkontos, von Antragstellern sowie von Mitgliedern und Vorstandsmitgliedern. Wir setzen keine Analyse- oder Tracking-Werkzeuge, keine Werbe-Cookies und keine eingebetteten Inhalte fremder Anbieter (etwa Karten, Videos oder Social-Media-Plugins) ein. Wir erstellen keine Profile und treffen keine automatisierten Entscheidungen im Sinne von Art. 22 DSGVO.",
+    ],
+  },
+  {
+    title: "Rechtsgrundlagen",
+    blocks: [
+      "Soweit wir bei den einzelnen Verarbeitungen nichts anderes angeben, stützen wir uns auf folgende Rechtsgrundlagen:",
       {
-        lines: [
-          "– Bestandsdaten (z.B., Namen, Adressen).",
-          "– Kontaktdaten (z.B., E-Mail, Telefonnummern).",
-          "– Inhaltsdaten (z.B., Texteingaben, Fotografien, Videos).",
-          "– Nutzungsdaten (z.B., besuchte Webseiten, Interesse an Inhalten, Zugriffszeiten).",
-          "– Meta-/Kommunikationsdaten (z.B., Geräte-Informationen, IP-Adressen).",
+        items: [
+          "Art. 6 Abs. 1 lit. a DSGVO — Ihre Einwilligung.",
+          "Art. 6 Abs. 1 lit. b DSGVO — Durchführung der Mitgliedschaft (die Satzung ist insoweit der Vertrag), der Nutzung Ihres Nutzerkontos oder vorvertraglicher Maßnahmen wie eines Aufnahmeantrags.",
+          "Art. 6 Abs. 1 lit. c DSGVO — gesetzliche Pflichten, insbesondere steuerliche Aufbewahrungspflichten.",
+          "Art. 6 Abs. 1 lit. f DSGVO — unsere berechtigten Interessen, die wir jeweils benennen.",
         ],
       },
+      "Das Speichern von Informationen auf Ihrem Endgerät (Cookies, lokaler Speicher) richtet sich zusätzlich nach § 25 des Telekommunikation-Digitale-Dienste-Datenschutz-Gesetzes (TDDDG).",
     ],
   },
   {
-    title: "Kategorien betroffener Personen",
+    title: "Hosting und Server-Logfiles",
     blocks: [
-      "Besucher und Nutzer des Onlineangebotes (Nachfolgend bezeichnen wir die betroffenen Personen zusammenfassend auch als „Nutzer“).",
+      "Die Website läuft auf einem Server der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, in einem Rechenzentrum in Deutschland. Dort liegen auch die Datenbank und ihre Sicherungskopien. Hetzner verarbeitet die Daten ausschließlich in unserem Auftrag auf Grundlage eines Auftragsverarbeitungsvertrages nach Art. 28 DSGVO.",
+      "Beim Aufruf der Website verarbeitet der Webserver technisch notwendig die IP-Adresse, Datum und Uhrzeit, die abgerufene Adresse, den Statuscode, die übertragene Datenmenge, die zuvor besuchte Seite (Referrer) sowie Browsertyp und Betriebssystem. Diese Daten speichern wir in Server-Logfiles, um die Website auszuliefern, Fehler zu analysieren und Angriffe abzuwehren (Art. 6 Abs. 1 lit. f DSGVO). Die Logfiles werden nach spätestens 7 Tagen gelöscht; Einträge, die zur Aufklärung eines konkreten Sicherheitsvorfalls benötigt werden, bis zu dessen Klärung.",
+      "Die Verbindung zur Website ist per TLS verschlüsselt.",
     ],
   },
   {
-    title: "Zweck der Verarbeitung",
+    title: "Cookies und lokaler Speicher",
     blocks: [
+      "Wir setzen ausschließlich Cookies ein, die für die Funktion der Website technisch erforderlich sind (§ 25 Abs. 2 Nr. 2 TDDDG); eine Einwilligung ist dafür nicht nötig. Cookies von Drittanbietern gibt es nicht.",
       {
-        lines: [
-          "– Zurverfügungstellung des Onlineangebotes, seiner Funktionen und Inhalte.",
-          "– Beantwortung von Kontaktanfragen und Kommunikation mit Nutzern.",
-          "– Sicherheitsmaßnahmen.",
-          "– Reichweitenmessung/Marketing",
+        items: [
+          "**Anmelde-Cookie:** Nach dem Login hält ein Cookie Ihre Sitzung aufrecht. Es enthält eine signierte Sitzungskennung und läuft nach 30 Tagen ohne Nutzung ab, bei Administratoren spätestens 12 Stunden nach der Anmeldung. Mit dem Abmelden wird es ungültig.",
+          "**Sicherheits-Cookies der Anmeldung:** Schutz gegen gefälschte Anfragen (CSRF) und Rücksprung nach dem Login; sie werden beim Schließen des Browsers gelöscht.",
+          "**Ansichts-Cookies für Administratoren:** schalten die Vorschau des Mitgliederbereichs um und werden beim Schließen des Browsers gelöscht.",
         ],
       },
+      "Im lokalen Speicher Ihres Browsers (localStorage) legen wir nur ab, ob Sie die helle oder dunkle Darstellung gewählt und ob Sie den Hinweis zur Installation als App ausgeblendet haben. Diese Angaben verlassen Ihr Gerät nicht.",
+      "Sie können Cookies und lokalen Speicher in Ihrem Browser jederzeit löschen oder sperren; ohne Anmelde-Cookie ist der Mitgliederbereich allerdings nicht nutzbar.",
     ],
   },
   {
-    title: "Verwendete Begrifflichkeiten",
+    title: "Schriftarten, Spamschutz und externe Links",
     blocks: [
-      "„Personenbezogene Daten“ sind alle Informationen, die sich auf eine identifizierte oder identifizierbare natürliche Person (im Folgenden „betroffene Person“) beziehen; als identifizierbar wird eine natürliche Person angesehen, die direkt oder indirekt, insbesondere mittels Zuordnung zu einer Kennung wie einem Namen, zu einer Kennnummer, zu Standortdaten, zu einer Online-Kennung (z.B. Cookie) oder zu einem oder mehreren besonderen Merkmalen identifiziert werden kann, die Ausdruck der physischen, physiologischen, genetischen, psychischen, wirtschaftlichen, kulturellen oder sozialen Identität dieser natürlichen Person sind.",
-      "„Verarbeitung“ ist jeder mit oder ohne Hilfe automatisierter Verfahren ausgeführte Vorgang oder jede solche Vorgangsreihe im Zusammenhang mit personenbezogenen Daten. Der Begriff reicht weit und umfasst praktisch jeden Umgang mit Daten.",
-      "„Pseudonymisierung“ die Verarbeitung personenbezogener Daten in einer Weise, dass die personenbezogenen Daten ohne Hinzuziehung zusätzlicher Informationen nicht mehr einer spezifischen betroffenen Person zugeordnet werden können, sofern diese zusätzlichen Informationen gesondert aufbewahrt werden und technischen und organisatorischen Maßnahmen unterliegen, die gewährleisten, dass die personenbezogenen Daten nicht einer identifizierten oder identifizierbaren natürlichen Person zugewiesen werden.",
-      "„Profiling“ jede Art der automatisierten Verarbeitung personenbezogener Daten, die darin besteht, dass diese personenbezogenen Daten verwendet werden, um bestimmte persönliche Aspekte, die sich auf eine natürliche Person beziehen, zu bewerten, insbesondere um Aspekte bezüglich Arbeitsleistung, wirtschaftliche Lage, Gesundheit, persönliche Vorlieben, Interessen, Zuverlässigkeit, Verhalten, Aufenthaltsort oder Ortswechsel dieser natürlichen Person zu analysieren oder vorherzusagen.",
-      "Als „Verantwortlicher“ wird die natürliche oder juristische Person, Behörde, Einrichtung oder andere Stelle, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten entscheidet, bezeichnet.",
-      "„Auftragsverarbeiter“ eine natürliche oder juristische Person, Behörde, Einrichtung oder andere Stelle, die personenbezogene Daten im Auftrag des Verantwortlichen verarbeitet.",
+      "Die verwendeten Schriftarten werden von unserem eigenen Server ausgeliefert; beim Seitenaufruf findet keine Verbindung zu Google oder anderen Schriftanbietern statt.",
+      "Formulare schützen wir mit ALTCHA. Dabei löst Ihr Browser eine kleine Rechenaufgabe, die unser eigener Server stellt und prüft. Es werden dabei keine Daten an Dritte übermittelt und keine Cookies gesetzt. Um eine Lösung nicht mehrfach verwenden zu können, speichern wir lediglich ihre Prüfsumme für 30 Minuten.",
+      "Links zu externen Angeboten (z. B. LinkedIn-Profile des Vorstands oder Kartenlinks zu OpenStreetMap bei Terminen) sind einfache Verweise. Daten gelangen an diese Anbieter erst, wenn Sie den Link anklicken; ab dann gilt deren Datenschutzerklärung.",
     ],
   },
   {
-    title: "Maßgebliche Rechtsgrundlagen",
+    title: "Kontaktformular und E-Mail",
     blocks: [
-      "Nach Maßgabe des Art. 13 DSGVO teilen wir Ihnen die Rechtsgrundlagen unserer Datenverarbeitungen mit. Sofern die Rechtsgrundlage in der Datenschutzerklärung nicht genannt wird, gilt Folgendes: Die Rechtsgrundlage für die Einholung von Einwilligungen ist Art. 6 Abs. 1 lit. a und Art. 7 DSGVO, die Rechtsgrundlage für die Verarbeitung zur Erfüllung unserer Leistungen und Durchführung vertraglicher Maßnahmen sowie Beantwortung von Anfragen ist Art. 6 Abs. 1 lit. b DSGVO, die Rechtsgrundlage für die Verarbeitung zur Erfüllung unserer rechtlichen Verpflichtungen ist Art. 6 Abs. 1 lit. c DSGVO, und die Rechtsgrundlage für die Verarbeitung zur Wahrung unserer berechtigten Interessen ist Art. 6 Abs. 1 lit. f DSGVO. Für den Fall, dass lebenswichtige Interessen der betroffenen Person oder einer anderen natürlichen Person eine Verarbeitung personenbezogener Daten erforderlich machen, dient Art. 6 Abs. 1 lit. d DSGVO als Rechtsgrundlage.",
+      "Wenn Sie uns über das Kontaktformular oder per E-Mail schreiben, verarbeiten wir Ihren Namen, Ihre E-Mail-Adresse, den Betreff und Ihre Nachricht, um Ihre Anfrage zu beantworten (Art. 6 Abs. 1 lit. b DSGVO, soweit es um eine Mitgliedschaft geht, im Übrigen lit. f). Die Anfrage wird im Verwaltungsbereich gespeichert und per E-Mail an den Vorstand weitergeleitet.",
+      "Zum Schutz vor Spam und Missbrauch speichern wir zu jeder Anfrage zusätzlich einen Prüfwert (Hash) Ihrer IP-Adresse, die Browserkennung und eine automatisch berechnete Spam-Einstufung (Art. 6 Abs. 1 lit. f DSGVO). Als Spam eingestufte Anfragen werden gespeichert, aber nicht weitergeleitet.",
+      "Wir löschen Anfragen, sobald sie erledigt sind und kein Anschluss-Schriftverkehr mehr zu erwarten ist. Die Erforderlichkeit prüfen wir mindestens alle zwei Jahre.",
     ],
   },
   {
-    title: "Sicherheitsmaßnahmen",
+    title: "Nutzerkonto und Registrierung",
     blocks: [
-      "Wir treffen nach Maßgabe des Art. 32 DSGVO unter Berücksichtigung des Stands der Technik, der Implementierungskosten und der Art, des Umfangs, der Umstände und der Zwecke der Verarbeitung sowie der unterschiedlichen Eintrittswahrscheinlichkeit und Schwere des Risikos für die Rechte und Freiheiten natürlicher Personen, geeignete technische und organisatorische Maßnahmen, um ein dem Risiko angemessenes Schutzniveau zu gewährleisten.",
-      "Zu den Maßnahmen gehören insbesondere die Sicherung der Vertraulichkeit, Integrität und Verfügbarkeit von Daten durch Kontrolle des physischen Zugangs zu den Daten, als auch des sie betreffenden Zugriffs, der Eingabe, Weitergabe, der Sicherung der Verfügbarkeit und ihrer Trennung. Des Weiteren haben wir Verfahren eingerichtet, die eine Wahrnehmung von Betroffenenrechten, Löschung von Daten und Reaktion auf Gefährdung der Daten gewährleisten. Ferner berücksichtigen wir den Schutz personenbezogener Daten bereits bei der Entwicklung, bzw. Auswahl von Hardware, Software sowie Verfahren, entsprechend dem Prinzip des Datenschutzes durch Technikgestaltung und durch datenschutzfreundliche Voreinstellungen (Art. 25 DSGVO).",
+      "Sie können ein Nutzerkonto anlegen, um einen Aufnahmeantrag zu stellen oder als Mitglied den Mitgliederbereich zu nutzen. Dafür verarbeiten wir Vorname, Name, E-Mail-Adresse, Passwort und Geburtsdatum (Art. 6 Abs. 1 lit. b DSGVO). Das Geburtsdatum brauchen wir, weil eine Mitgliedschaft über das Online-Formular erst ab 18 Jahren möglich ist; es wird in einen späteren Aufnahmeantrag übernommen. Das Passwort speichern wir nur als nicht umkehrbaren Hash. Zusätzlich speichern wir den Zeitpunkt der letzten Anmeldung.",
+      "Die E-Mail-Adresse müssen Sie über einen zugesandten Link bestätigen. Wird eine Registrierung über das öffentliche Formular nicht innerhalb von 24 Stunden bestätigt, löschen wir das Konto mit allen Angaben automatisch und vollständig. So verhindern wir Konten mit fremden oder erfundenen Adressen und Datenbestände ohne Zweck (Art. 5 Abs. 1 lit. c und e DSGVO). Der Vorstand wird über eine neue Registrierung erst nach der Bestätigung informiert. Von Administratoren angelegte Konten sind von der automatischen Löschung ausgenommen.",
+      "Links zum Bestätigen der E-Mail-Adresse und zum Zurücksetzen des Passworts sind nur befristet gültig und werden danach gelöscht.",
+      "Über Änderungen, die Ihr Nutzerkonto betreffen (z. B. geänderte Zugangsdaten), informieren wir Sie per E-Mail.",
     ],
   },
   {
-    title: "Zusammenarbeit mit Auftragsverarbeitern und Dritten",
+    title: "Sicherheitsprotokoll und Missbrauchsschutz",
     blocks: [
-      "Sofern wir im Rahmen unserer Verarbeitung Daten gegenüber anderen Personen und Unternehmen (Auftragsverarbeitern oder Dritten) offenbaren, sie an diese übermitteln oder ihnen sonst Zugriff auf die Daten gewähren, erfolgt dies nur auf Grundlage einer gesetzlichen Erlaubnis (z.B. wenn eine Übermittlung der Daten an Dritte, wie an Zahlungsdienstleister, gem. Art. 6 Abs. 1 lit. b DSGVO zur Vertragserfüllung erforderlich ist), Sie eingewilligt haben, eine rechtliche Verpflichtung dies vorsieht oder auf Grundlage unserer berechtigten Interessen (z.B. beim Einsatz von Beauftragten, Webhostern, etc.).",
-      "Sofern wir Dritte mit der Verarbeitung von Daten auf Grundlage eines sog. „Auftragsverarbeitungsvertrages“ beauftragen, geschieht dies auf Grundlage des Art. 28 DSGVO.",
+      "Um unbefugte Zugriffe auf Nutzerkonten, automatisierte Massenanfragen und Spam zu erkennen und abzuwehren, protokollieren wir sicherheitsrelevante Vorgänge: Anmeldeversuche und erfolgreiche Anmeldungen, Registrierungen über das öffentliche Formular, abgesendete Kontaktanfragen, angeforderte und durchgeführte Passwort-Zurücksetzungen, Bestätigungen und Änderungen der E-Mail-Adresse sowie die automatische Löschung nicht bestätigter Registrierungen.",
+      "Zu jedem Vorgang speichern wir Zeitpunkt, Art, Ergebnis (erfolgreich, fehlgeschlagen oder abgewehrt) und einen technischen Kurzcode für den Grund (z. B. „falsche Zugangsdaten“), bei bekannten Konten zusätzlich die Kennung des Kontos. IP-Adresse und E-Mail-Adresse speichern wir nicht im Klartext, sondern nur als Prüfwert (Hash mit geheimem Schlüssel), der lediglich den Vergleich mehrerer Vorgänge erlaubt. Passwörter, Nachrichteninhalte und Zugangs-Links werden nicht protokolliert. Einträge über automatisch gelöschte Registrierungen enthalten nur Zeitpunkt und Grund.",
+      "Zusätzlich begrenzen wir die Zahl der Anfragen je Absender. Dafür speichern wir kurzzeitig einen Prüfwert aus IP-Adresse bzw. E-Mail-Adresse und einen Zähler; der Eintrag wird gelöscht, sobald die jeweilige Sperrfrist abgelaufen ist (höchstens 24 Stunden).",
+      "Rechtsgrundlage ist unser berechtigtes Interesse an der Sicherheit der Verarbeitung (Art. 6 Abs. 1 lit. f i. V. m. Art. 32 DSGVO). Das Protokoll ist nur für Administratoren zugänglich und wird nicht zur Bewertung von Personen verwendet. Der Prüfwert der IP-Adresse und die Browserkennung werden nach 7 Tagen gelöscht, der übrige Eintrag nach 90 Tagen. Wird ein Nutzerkonto gelöscht, verlieren die zugehörigen Einträge sofort jeden Personenbezug. Einträge, die zur Aufklärung eines konkreten Vorfalls erforderlich sind, bleiben bis zu dessen Klärung erhalten.",
     ],
   },
   {
-    title: "Übermittlungen in Drittländer",
+    title: "Aufnahmeantrag",
     blocks: [
-      "Sofern wir Daten in einem Drittland (d.h. außerhalb der Europäischen Union (EU) oder des Europäischen Wirtschaftsraums (EWR)) verarbeiten oder dies im Rahmen der Inanspruchnahme von Diensten Dritter oder Offenlegung, bzw. Übermittlung von Daten an Dritte geschieht, erfolgt dies nur, wenn es zur Erfüllung unserer (vor)vertraglichen Pflichten, auf Grundlage Ihrer Einwilligung, aufgrund einer rechtlichen Verpflichtung oder auf Grundlage unserer berechtigten Interessen geschieht. Vorbehaltlich gesetzlicher oder vertraglicher Erlaubnisse, verarbeiten oder lassen wir die Daten in einem Drittland nur beim Vorliegen der besonderen Voraussetzungen der Art. 44 ff. DSGVO verarbeiten. D.h. die Verarbeitung erfolgt z.B. auf Grundlage besonderer Garantien, wie der offiziell anerkannten Feststellung eines der EU entsprechenden Datenschutzniveaus (z.B. für die USA durch das „Privacy Shield“) oder Beachtung offiziell anerkannter spezieller vertraglicher Verpflichtungen (so genannte „Standardvertragsklauseln“).",
+      "Mit einem Aufnahmeantrag verarbeiten wir Ihre Angaben zu Person und Anschrift (Titel, Vorname, Name, Geburtsdatum, Anschrift, optional Telefonnummer), zu Studium und Beruf (z. B. Studiengang, Studienzeiten, Arbeitgeber, Position) sowie gegebenenfalls die Jahre, für die Sie den ermäßigten Beitrag beantragen. Wenn Sie ein SEPA-Lastschriftmandat erteilen, kommen Kontoinhaber, IBAN, BIC, Bank und das Datum des Mandats hinzu; ohne Mandat erheben wir keine Bankdaten.",
+      "Die Angaben benötigen wir, um über die Aufnahme zu entscheiden und die Mitgliedschaft durchzuführen (Art. 6 Abs. 1 lit. b DSGVO). Wir speichern den Antrag als unveränderliche Fassung zusammen mit dem Textstand von Satzung und Datenschutzhinweisen, den Sie bestätigt haben, und den zu diesem Zeitpunkt geltenden Beitragssätzen. So bleibt nachweisbar, was beantragt und beschlossen wurde. Zum Schutz vor Missbrauch speichern wir zusätzlich einen Prüfwert (Hash) Ihrer IP-Adresse und die Browserkennung (Art. 6 Abs. 1 lit. f DSGVO).",
+      "Den Antrag sieht nur der Vorstand. Sie erhalten eine Eingangsbestätigung per E-Mail. Der Antrag bleibt gespeichert, solange Ihr Nutzerkonto besteht, und wird mit dessen Löschung entfernt.",
     ],
   },
   {
-    title: "Rechte der betroffenen Personen",
+    title: "Mitgliederverwaltung, Beiträge und Lastschrift",
     blocks: [
-      "Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob betreffende Daten verarbeitet werden und auf Auskunft über diese Daten sowie auf weitere Informationen und Kopie der Daten entsprechend Art. 15 DSGVO.",
-      "Sie haben entsprechend. Art. 16 DSGVO das Recht, die Vervollständigung der Sie betreffenden Daten oder die Berichtigung der Sie betreffenden unrichtigen Daten zu verlangen.",
-      "Sie haben nach Maßgabe des Art. 17 DSGVO das Recht zu verlangen, dass betreffende Daten unverzüglich gelöscht werden, bzw. alternativ nach Maßgabe des Art. 18 DSGVO eine Einschränkung der Verarbeitung der Daten zu verlangen.",
-      "Sie haben das Recht zu verlangen, dass die Sie betreffenden Daten, die Sie uns bereitgestellt haben nach Maßgabe des Art. 20 DSGVO zu erhalten und deren Übermittlung an andere Verantwortliche zu fordern.",
-      "Sie haben ferner gem. Art. 77 DSGVO das Recht, eine Beschwerde bei der zuständigen Aufsichtsbehörde einzureichen.",
-    ],
-  },
-  {
-    title: "Widerrufsrecht",
-    blocks: [
-      "Sie haben das Recht, erteilte Einwilligungen gem. Art. 7 Abs. 3 DSGVO mit Wirkung für die Zukunft zu widerrufen",
-    ],
-  },
-  {
-    title: "Widerspruchsrecht",
-    blocks: [
-      "Sie können der künftigen Verarbeitung der Sie betreffenden Daten nach Maßgabe des Art. 21 DSGVO jederzeit widersprechen. Der Widerspruch kann insbesondere gegen die Verarbeitung für Zwecke der Direktwerbung erfolgen.",
-    ],
-  },
-  {
-    title: "Cookies und Widerspruchsrecht bei Direktwerbung",
-    blocks: [
-      "Als „Cookies“ werden kleine Dateien bezeichnet, die auf Rechnern der Nutzer gespeichert werden. Innerhalb der Cookies können unterschiedliche Angaben gespeichert werden. Ein Cookie dient primär dazu, die Angaben zu einem Nutzer (bzw. dem Gerät auf dem das Cookie gespeichert ist) während oder auch nach seinem Besuch innerhalb eines Onlineangebotes zu speichern. Als temporäre Cookies, bzw. „Session-Cookies“ oder „transiente Cookies“, werden Cookies bezeichnet, die gelöscht werden, nachdem ein Nutzer ein Onlineangebot verlässt und seinen Browser schließt. In einem solchen Cookie kann z.B. der Inhalt eines Warenkorbs in einem Onlineshop oder ein Login-Status gespeichert werden. Als „permanent“ oder „persistent“ werden Cookies bezeichnet, die auch nach dem Schließen des Browsers gespeichert bleiben. So kann z.B. der Login-Status gespeichert werden, wenn die Nutzer diese nach mehreren Tagen aufsuchen. Ebenso können in einem solchen Cookie die Interessen der Nutzer gespeichert werden, die für Reichweitenmessung oder Marketingzwecke verwendet werden. Als „Third-Party-Cookie“ werden Cookies bezeichnet, die von anderen Anbietern als dem Verantwortlichen, der das Onlineangebot betreibt, angeboten werden (andernfalls, wenn es nur dessen Cookies sind spricht man von „First-Party Cookies“).",
-      "Wir können temporäre und permanente Cookies einsetzen und klären hierüber im Rahmen unserer Datenschutzerklärung auf.",
-      "Falls die Nutzer nicht möchten, dass Cookies auf ihrem Rechner gespeichert werden, werden sie gebeten die entsprechende Option in den Systemeinstellungen ihres Browsers zu deaktivieren. Gespeicherte Cookies können in den Systemeinstellungen des Browsers gelöscht werden. Der Ausschluss von Cookies kann zu Funktionseinschränkungen dieses Onlineangebotes führen.",
-      "Ein genereller Widerspruch gegen den Einsatz der zu Zwecken des Onlinemarketing eingesetzten Cookies kann bei einer Vielzahl der Dienste, vor allem im Fall des Trackings, über die US-amerikanische Seite [www.aboutads.info/choices](http://www.aboutads.info/choices/) oder die EU-Seite [www.youronlinechoices.com](http://www.youronlinechoices.com/) erklärt werden. Des Weiteren kann die Speicherung von Cookies mittels deren Abschaltung in den Einstellungen des Browsers erreicht werden. Bitte beachten Sie, dass dann gegebenenfalls nicht alle Funktionen dieses Onlineangebotes genutzt werden können.",
-    ],
-  },
-  {
-    title: "Löschung von Daten",
-    blocks: [
-      "Die von uns verarbeiteten Daten werden nach Maßgabe der Art. 17 und 18 DSGVO gelöscht oder in ihrer Verarbeitung eingeschränkt. Sofern nicht im Rahmen dieser Datenschutzerklärung ausdrücklich angegeben, werden die bei uns gespeicherten Daten gelöscht, sobald sie für ihre Zweckbestimmung nicht mehr erforderlich sind und der Löschung keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Sofern die Daten nicht gelöscht werden, weil sie für andere und gesetzlich zulässige Zwecke erforderlich sind, wird deren Verarbeitung eingeschränkt. D.h. die Daten werden gesperrt und nicht für andere Zwecke verarbeitet. Das gilt z.B. für Daten, die aus handels- oder steuerrechtlichen Gründen aufbewahrt werden müssen.",
-      "Nach gesetzlichen Vorgaben in Deutschland, erfolgt die Aufbewahrung insbesondere für 10 Jahre gemäß §§ 147 Abs. 1 AO, 257 Abs. 1 Nr. 1 und 4, Abs. 4 HGB (Bücher, Aufzeichnungen, Lageberichte, Buchungsbelege, Handelsbücher, für Besteuerung relevanter Unterlagen, etc.) und 6 Jahre gemäß § 257 Abs. 1 Nr. 2 und 3, Abs. 4 HGB (Handelsbriefe).",
-      "Nach gesetzlichen Vorgaben in Österreich erfolgt die Aufbewahrung insbesondere für 7 J gemäß § 132 Abs. 1 BAO (Buchhaltungsunterlagen, Belege/Rechnungen, Konten, Belege, Geschäftspapiere, Aufstellung der Einnahmen und Ausgaben, etc.), für 22 Jahre im Zusammenhang mit Grundstücken und für 10 Jahre bei Unterlagen im Zusammenhang mit elektronisch erbrachten Leistungen, Telekommunikations-, Rundfunk- und Fernsehleistungen, die an Nichtunternehmer in EU-Mitgliedstaaten erbracht werden und für die der Mini-One-Stop-Shop (MOSS) in Anspruch genommen wird.",
-    ],
-  },
-  {
-    title: "Erbringung unserer satzungs- und geschäftsgemäßen Leistungen",
-    blocks: [
-      "Wir verarbeiten die Daten unserer Mitglieder, Unterstützer, Interessenten, Kunden oder sonstiger Personen entsprechend Art. 6 Abs. 1 lit. b. DSGVO, sofern wir ihnen gegenüber vertragliche Leistungen anbieten oder im Rahmen bestehender geschäftlicher Beziehung, z.B. gegenüber Mitgliedern, tätig werden oder selbst Empfänger von Leistungen und Zuwendungen sind. Im Übrigen verarbeiten wir die Daten betroffener Personen gem. Art. 6 Abs. 1 lit. f. DSGVO auf Grundlage unserer berechtigten Interessen, z.B. wenn es sich um administrative Aufgaben oder Öffentlichkeitsarbeit handelt.",
-      "Die hierbei verarbeiteten Daten, die Art, der Umfang und der Zweck und die Erforderlichkeit ihrer Verarbeitung bestimmen sich nach dem zugrundeliegenden Vertragsverhältnis. Dazu gehören grundsätzlich Bestands- und Stammdaten der Personen (z.B., Name, Adresse, etc.), als auch die Kontaktdaten (z.B., E-Mailadresse, Telefon, etc.), die Vertragsdaten (z.B., in Anspruch genommene Leistungen, mitgeteilte Inhalte und Informationen, Namen von Kontaktpersonen) und sofern wir zahlungspflichtige Leistungen oder Produkte anbieten, Zahlungsdaten (z.B., Bankverbindung, Zahlungshistorie, etc.).",
-      "Wir löschen Daten, die zur Erbringung unserer satzungs- und geschäftsmäßigen Zwecke nicht mehr erforderlich sind. Dies bestimmt sich entsprechend der jeweiligen Aufgaben und vertraglichen Beziehungen. Im Fall geschäftlicher Verarbeitung bewahren wir die Daten so lange auf, wie sie zur Geschäftsabwicklung, als auch im Hinblick auf etwaige Gewährleistungs- oder Haftungspflichten relevant sein können. Die Erforderlichkeit der Aufbewahrung der Daten wird alle drei Jahre überprüft; im Übrigen gelten die gesetzlichen Aufbewahrungspflichten.",
+      "Für die Durchführung der Mitgliedschaft nach der Satzung verarbeiten wir die Daten aus dem Aufnahmeantrag und Ihrem Profil, außerdem die Mitgliedsnummer, das Aufnahmedatum, den Mitgliedsstatus, die Beiträge je Beitragsjahr mit Zahlungsstatus sowie interne Vermerke des Vorstands zu Zahlungs- und Mitgliedschaftsfragen (Art. 6 Abs. 1 lit. b DSGVO). Ihre Profilangaben können Sie im Mitgliederbereich einsehen und selbst ändern.",
+      "Bei erteiltem SEPA-Lastschriftmandat übermitteln wir Name, IBAN, BIC, Mandatsreferenz, Mandatsdatum und Betrag zum Einzug der Beiträge an unser kontoführendes Kreditinstitut (Art. 6 Abs. 1 lit. b DSGVO).",
+      "Auf Wunsch erstellen wir eine Mitgliedsbescheinigung und Zuwendungsbestätigungen über Ihre Beiträge.",
+      "Mitgliederdaten sehen nur der Vorstand und die von ihm bestimmten Administratoren. Eine Mitgliederliste für andere Mitglieder oder eine Weitergabe an Dritte zu Werbezwecken gibt es nicht.",
     ],
   },
   {
@@ -157,97 +141,81 @@ export const DATENSCHUTZ: LegalDocument = [
       "Mitglieder können ihren Austritt über den Mitgliederbereich erklären. Dabei speichern wir den Zeitpunkt des Eingangs, das sich daraus nach der Satzung ergebende Austrittsdatum, ob das Nutzerkonto nach dem Austritt weitergeführt werden soll, sowie Zeitpunkt und Vermerk der Bestätigung durch den Vorstand. Diese Angaben dienen dem Nachweis des fristgerechten Zugangs (Art. 6 Abs. 1 lit. b und f DSGVO) und werden drei Jahre nach dem Austritt gelöscht; eine zurückgenommene Kündigung drei Jahre nach der Rücknahme.",
       "Mit dem Austrittsdatum endet die Mitgliedschaft; der Login wird gesperrt, sofern nicht die Weiterführung als Konto ohne Mitgliedschaft gewünscht wurde. Die übrigen Mitgliedsdaten werden gelöscht, sobald offene Beiträge abgewickelt sind; für die Beitragsaufzeichnungen gilt die am Ende dieses Abschnitts genannte Aufbewahrungsfrist.",
       "Mitglieder können ihren Zugang zum Mitgliederbereich jederzeit deaktivieren. Da die Mitgliedschaft fortbesteht, bleiben die dafür erforderlichen Daten (insbesondere Name, Anschrift, Kontakt- und Zahlungsdaten) gespeichert (Art. 6 Abs. 1 lit. b DSGVO); gesperrt wird lediglich die Anmeldung. Auf Wunsch reaktiviert der Vorstand den Zugang.",
-      "Nutzerkonten ohne Mitgliedschaft können von den Nutzern selbst oder vom Vorstand jederzeit gelöscht werden. Die Löschung erfolgt sofort und vollständig, einschließlich gestellter Anträge und offener Bestätigungs- oder Passwort-Links; Einträge im Sicherheitsprotokoll verlieren dabei jeden Personenbezug.",
+      "Nutzerkonten ohne Mitgliedschaft können von den Nutzern selbst oder vom Vorstand jederzeit gelöscht werden. Die Löschung erfolgt sofort und vollständig, einschließlich gestellter Anträge und offener Bestätigungs- oder Passwort-Links; Einträge im Sicherheitsprotokoll und im Versandprotokoll verlieren dabei jeden Personenbezug.",
       "Ausgenommen sind Aufzeichnungen über Mitgliedsbeiträge (Beitragsjahr, Betrag, Zahlungsstatus). Sie bleiben mit Name und Mitgliedsnummer zur Erfüllung der steuerlichen Aufbewahrungspflicht nach § 147 AO (Art. 6 Abs. 1 lit. c, Art. 17 Abs. 3 lit. b DSGVO) zehn Jahre nach Ende des jeweiligen Beitragsjahres erhalten. Ihre Verarbeitung ist in dieser Zeit eingeschränkt (Art. 18 DSGVO): Sie sind nur für den Vorstand einsehbar, werden nicht verändert und nach Ablauf der Frist automatisch gelöscht.",
     ],
   },
   {
-    title: "Registrierfunktion",
+    title: "Vereinsmails und Versandprotokoll",
     blocks: [
-      "Nutzer können ein Nutzerkonto anlegen. Im Rahmen der Registrierung werden die erforderlichen Pflichtangaben den Nutzern mitgeteilt und auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO zu Zwecken der Bereitstellung des Nutzerkontos verarbeitet. Zu den verarbeiteten Daten gehören insbesondere die Login-Informationen (Name, Passwort sowie eine E-Mailadresse) sowie das Geburtsdatum, da eine Mitgliedschaft über das Online-Formular erst ab 18 Jahren möglich ist; es wird für einen späteren Aufnahmeantrag übernommen. Die im Rahmen der Registrierung eingegebenen Daten werden für die Zwecke der Nutzung des Nutzerkontos und dessen Zwecks verwendet.",
-      "Die Nutzer können über Informationen, die für deren Nutzerkonto relevant sind, wie z.B. technische Änderungen, per E-Mail informiert werden. Wenn Nutzer ihr Nutzerkonto gekündigt haben, werden deren Daten im Hinblick auf das Nutzerkonto, vorbehaltlich einer gesetzlichen Aufbewahrungspflicht, gelöscht. Es obliegt den Nutzern, ihre Daten bei erfolgter Kündigung vor dem Vertragsende zu sichern. Wir sind berechtigt, sämtliche während der Vertragsdauer gespeicherten Daten des Nutzers unwiederbringlich zu löschen.",
-      "Bei einer Registrierung über das öffentliche Formular speichern wir zusätzlich den Zeitpunkt der Registrierung, solange die E-Mail-Adresse noch nicht bestätigt ist. Wird die Adresse nicht innerhalb von 24 Stunden über den zugesandten Link bestätigt, löschen wir das angelegte Nutzerkonto mitsamt allen dabei angegebenen Daten automatisch und vollständig. Das dient dem Schutz vor automatisierten Registrierungen mit fremden oder erfundenen Adressen und der Vermeidung von Datenbeständen ohne Zweck (Art. 5 Abs. 1 lit. c und e DSGVO). Von der Löschung erfahren wir lediglich, dass sie stattgefunden hat — die Zählung im Sicherheitsprotokoll erfolgt ohne jeden Personenbezug. Eine Benachrichtigung der Administratoren über eine neue Registrierung erfolgt erst nach der Bestätigung der E-Mail-Adresse. Konten, die von Administratoren angelegt wurden, sind von der automatischen Löschung nicht betroffen.",
-      "Im Rahmen der Inanspruchnahme unserer Registrierungs- und Anmeldefunktionen sowie der Nutzung des Nutzerkontos, speichern wird die IP-Adresse und den Zeitpunkt der jeweiligen Nutzerhandlung. Die Speicherung erfolgt auf Grundlage unserer berechtigten Interessen, als auch der Nutzer an Schutz vor Missbrauch und sonstiger unbefugter Nutzung. Eine Weitergabe dieser Daten an Dritte erfolgt grundsätzlich nicht, außer sie ist zur Verfolgung unserer Ansprüche erforderlich oder es besteht hierzu besteht eine gesetzliche Verpflichtung gem. Art. 6 Abs. 1 lit. c DSGVO. Die IP-Adressen werden spätestens nach 7 Tagen anonymisiert oder gelöscht.",
+      "Der Vorstand informiert Mitglieder und Kontoinhaber per E-Mail über Vereinsangelegenheiten, etwa Einladungen zur Mitgliederversammlung, Termine und Beitragsfragen (Art. 6 Abs. 1 lit. b DSGVO). Werbung für Dritte versenden wir nicht; einen Newsletter mit gesonderter Anmeldung gibt es nicht.",
+      "Für diese Mails führen wir ein Versandprotokoll mit Betreff, Zeitpunkt und Empfängern: bei einer Mail an eine einzelne Person deren E-Mail-Adresse, bei Rundmails nur die Empfängergruppe (z. B. „Ehrenmitglieder“) und die Anzahl der Empfänger. Den Inhalt speichern wir nicht. Zweck ist der Nachweis, dass etwa eine Einladung verschickt wurde (Art. 6 Abs. 1 lit. f DSGVO). Das Protokoll ist nur für Administratoren zugänglich; Einträge werden nach einem Jahr automatisch gelöscht, bei Löschung eines Nutzerkontos wird dessen E-Mail-Adresse sofort entfernt.",
     ],
   },
   {
-    title: "Kommentare und Beiträge",
+    title: "E-Mail-Versand über Google Workspace",
     blocks: [
-      "Wenn Nutzer Kommentare oder sonstige Beiträge hinterlassen, können ihre IP-Adressen auf Grundlage unserer berechtigten Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO für 7 Tage gespeichert werden. Das erfolgt zu unserer Sicherheit, falls jemand in Kommentaren und Beiträgen widerrechtliche Inhalte hinterlässt (Beleidigungen, verbotene politische Propaganda, etc.). In diesem Fall können wir selbst für den Kommentar oder Beitrag belangt werden und sind daher an der Identität des Verfassers interessiert.",
-      "Des Weiteren behalten wir uns vor, auf Grundlage unserer berechtigten Interessen gem. Art. 6 Abs. 1 lit. f. DSGVO, die Angaben der Nutzer zwecks Spamerkennung zu verarbeiten.",
-      "Die im Rahmen der Kommentare und Beiträge angegebenen Daten, werden von uns bis zum Widerspruch der Nutzer dauerhaft gespeichert.",
+      "Alle E-Mails der Website (Bestätigungs- und Passwort-Links, Eingangsbestätigungen, Weiterleitung von Kontaktanfragen, Vereinsmails) versenden wir über Google Workspace der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Google verarbeitet dabei Absender, Empfänger, Betreff und Inhalt der Mails in unserem Auftrag auf Grundlage eines Auftragsverarbeitungsvertrages nach Art. 28 DSGVO. Grundlage ist unser berechtigtes Interesse an einem zuverlässigen Mailversand (Art. 6 Abs. 1 lit. f DSGVO).",
+      "Dabei ist eine Übermittlung an die Google LLC in den USA nicht auszuschließen. Google LLC ist nach dem EU-US Data Privacy Framework zertifiziert; die Übermittlung stützt sich auf den Angemessenheitsbeschluss der EU-Kommission vom 10. Juli 2023 (Art. 45 DSGVO), ergänzend auf Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO). Datenschutzhinweise von Google: [policies.google.com/privacy](https://policies.google.com/privacy).",
     ],
   },
   {
-    title: "Vorstandsdarstellung",
+    title: "Vorstand, Blog und Termine",
     blocks: [
-      "Von unseren Vorstandsmitgliedern verarbeiten und veröffentlichen wir Name, Funktion, optional einen Link zu ihrem LinkedIn-Profil sowie optional ein Profilfoto auf der Seite „Vorstand“ unseres Onlineangebotes. Zweck ist die satzungsgemäße Außendarstellung und Erreichbarkeit des Vorstands (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an Transparenz und Öffentlichkeitsarbeit eines eingetragenen Vereins).",
-      "Die Namen und Funktionen der beiden Vorsitzenden können zusätzlich zur Unterzeichnung von E-Mails verwendet werden, die im Namen des Vorstands verschickt werden.",
-      "Diese Daten werden gelöscht bzw. angepasst, sobald das jeweilige Mitglied aus dem Vorstandsamt ausscheidet.",
+      "Von unseren Vorstandsmitgliedern veröffentlichen wir auf der Seite „Vorstand“ Name und Funktion sowie, wenn gewünscht, ein Profilfoto und einen Link zum LinkedIn-Profil. Zweck ist die Außendarstellung und Erreichbarkeit des Vorstands (Art. 6 Abs. 1 lit. f DSGVO); Foto und LinkedIn-Link veröffentlichen wir nur mit Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die jederzeit widerrufen werden kann. Namen und Funktionen der Vorsitzenden erscheinen außerdem in der Signatur von Vereinsmails. Mit dem Ausscheiden aus dem Amt werden die Angaben entfernt.",
+      "In Blogbeiträgen berichten wir über Vereinsveranstaltungen, gelegentlich mit Fotos, auf denen Teilnehmende zu erkennen sind (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an der Berichterstattung über das Vereinsleben). Hochgeladene Bilder werden vor der Veröffentlichung verkleinert und von eingebetteten Metadaten (z. B. Aufnahmeort) befreit. Wenn Sie auf einem Foto nicht erscheinen möchten, genügt eine formlose Nachricht; wir entfernen das Bild dann.",
+      "Termine und die Kalenderdatei zum Abonnieren enthalten keine Daten über Teilnehmende.",
     ],
   },
   {
-    title: "Abruf von Emojis und Smilies",
+    title: "Empfänger und Übermittlung in Drittländer",
     blocks: [
-      "Innerhalb unseres WordPress-Blogs werden grafische Emojis (bzw. Smilies), d.h. kleine grafische Dateien, die Gefühle ausdrücken, eingesetzt, die von externen Servern bezogen werden. Hierbei erheben die Anbieter der Server, die IP-Adressen der Nutzer. Dies ist notwendig, damit die Emojie-Dateien an die Browser der Nutzer übermittelt werden können. Der Emojie-Service wird von der Automattic Inc., 60 29th Street #343, San Francisco, CA 94110, USA, angeboten. Datenschutzhinweise von Automattic: [automattic.com/privacy](https://automattic.com/privacy/) . Die verwendeten Server-Domains sind s.w.org und twemoji.maxcdn.com, wobei es sich unseres Wissens nach um sog. Content-Delivery-Networks handelt, also Server, die lediglich einer schnellen und sicheren Übermittlung der Dateien dienen und die personenbezogenen Daten der Nutzer nach der Übermittlung gelöscht werden.",
-      "Die Nutzung der Emojis erfolgt auf Grundlage unserer berechtigten Interessen, d.h. Interesse an einer attraktiven Gestaltung unseres Onlineangebotes gem. Art. 6 Abs. 1 lit. f. DSGVO.",
+      "Ihre Daten erhalten innerhalb des Vereins nur der Vorstand und die von ihm bestimmten Administratoren, jeweils soweit für ihre Aufgabe erforderlich. Externe Empfänger sind unser Hosting-Anbieter (Hetzner), unser E-Mail-Dienstleister (Google) sowie bei Lastschriften unser Kreditinstitut. Darüber hinaus geben wir Daten nur weiter, wenn wir gesetzlich dazu verpflichtet sind (z. B. gegenüber Finanzbehörden) oder es zur Durchsetzung unserer Ansprüche erforderlich ist.",
+      "Eine Übermittlung in Länder außerhalb der EU bzw. des EWR ist nur beim E-Mail-Versand über Google möglich; Einzelheiten stehen im Abschnitt dazu.",
     ],
   },
   {
-    title: "Kontaktaufnahme",
+    title: "Speicherdauer",
     blocks: [
-      "Bei der Kontaktaufnahme mit uns (z.B. per Kontaktformular, E-Mail, Telefon oder via sozialer Medien) werden die Angaben des Nutzers zur Bearbeitung der Kontaktanfrage und deren Abwicklung gem. Art. 6 Abs. 1 lit. b) DSGVO verarbeitet. Die Angaben der Nutzer können in einem Customer-Relationship-Management System („CRM System“) oder vergleichbarer Anfragenorganisation gespeichert werden.",
-      "Wir löschen die Anfragen, sofern diese nicht mehr erforderlich sind. Wir überprüfen die Erforderlichkeit alle zwei Jahre; Ferner gelten die gesetzlichen Archivierungspflichten.",
+      "Wir löschen personenbezogene Daten, sobald sie für ihren Zweck nicht mehr erforderlich sind und keine gesetzliche Aufbewahrungspflicht entgegensteht; die konkreten Fristen stehen bei den einzelnen Verarbeitungen. Unterliegen Daten einer Aufbewahrungspflicht, schränken wir ihre Verarbeitung bis zum Fristablauf ein. Für steuerlich relevante Unterlagen (z. B. Buchungsbelege und Beitragsaufzeichnungen) beträgt die Frist zehn Jahre (§ 147 Abs. 1 und 3 AO).",
+      "Gelöschte Daten können noch bis zu ihrem planmäßigen Überschreiben in Sicherungskopien der Datenbank enthalten sein. Aus Sicherungskopien stellen wir nur im Notfall wieder her; bereits gelöschte Daten löschen wir danach erneut.",
     ],
   },
   {
-    title: "Newsletter",
+    title: "Ihre Rechte",
     blocks: [
-      "Mit den nachfolgenden Hinweisen informieren wir Sie über die Inhalte unseres Newsletters sowie das Anmelde-, Versand- und das statistische Auswertungsverfahren sowie Ihre Widerspruchsrechte auf. Indem Sie unseren Newsletter abonnieren, erklären Sie sich mit dem Empfang und den beschriebenen Verfahren einverstanden.",
-      "**Inhalt des Newsletters:** Wir versenden Newsletter, E-Mails und weitere elektronische Benachrichtigungen mit werblichen Informationen (nachfolgend „Newsletter“) nur mit der Einwilligung der Empfänger oder einer gesetzlichen Erlaubnis. Sofern im Rahmen einer Anmeldung zum Newsletter dessen Inhalte konkret umschrieben werden, sind sie für die Einwilligung der Nutzer maßgeblich. Im Übrigen enthalten unsere Newsletter Informationen zu unseren Leistungen und uns.",
-      "**Double-Opt-In und Protokollierung:** Die Anmeldung zu unserem Newsletter erfolgt in einem sog. Double-Opt-In-Verfahren. D.h. Sie erhalten nach der Anmeldung eine E-Mail, in der Sie um die Bestätigung Ihrer Anmeldung gebeten werden. Diese Bestätigung ist notwendig, damit sich niemand mit fremden E-Mailadressen anmelden kann. Die Anmeldungen zum Newsletter werden protokolliert, um den Anmeldeprozess entsprechend den rechtlichen Anforderungen nachweisen zu können. Hierzu gehört die Speicherung des Anmelde- und des Bestätigungszeitpunkts, als auch der IP-Adresse. Ebenso werden die Änderungen Ihrer bei dem Versanddienstleister gespeicherten Daten protokolliert.",
-      "**Anmeldedaten:** Um sich für den Newsletter anzumelden, reicht es aus, wenn Sie Ihre E-Mailadresse angeben. Optional bitten wir Sie einen Namen, zwecks persönlicher Ansprache im Newsletters anzugeben.",
-      "Der Versand des Newsletters und die mit ihm verbundene Erfolgsmessung erfolgen auf Grundlage einer Einwilligung der Empfänger gem. Art. 6 Abs. 1 lit. a, Art. 7 DSGVO i.V.m § 7 Abs. 2 Nr. 3 UWG oder falls eine Einwilligung nicht erforderlich ist, auf Grundlage unserer berechtigten Interessen am Direktmarketing gem. Art. 6 Abs. 1 lt. f. DSGVO i.V.m. § 7 Abs. 3 UWG.",
-      "Die Protokollierung des Anmeldeverfahrens erfolgt auf Grundlage unserer berechtigten Interessen gem. Art. 6 Abs. 1 lit. f DSGVO. Unser Interesse richtet sich auf den Einsatz eines nutzerfreundlichen sowie sicheren Newslettersystems, das sowohl unseren geschäftlichen Interessen dient, als auch den Erwartungen der Nutzer entspricht und uns ferner den Nachweis von Einwilligungen erlaubt.",
-      "**Kündigung/Widerruf** – Sie können den Empfang unseres Newsletters jederzeit kündigen, d.h. Ihre Einwilligungen widerrufen. Einen Link zur Kündigung des Newsletters finden Sie am Ende eines jeden Newsletters. Wir können die ausgetragenen E-Mailadressen bis zu drei Jahren auf Grundlage unserer berechtigten Interessen speichern bevor wir sie löschen, um eine ehemals gegebene Einwilligung nachweisen zu können. Die Verarbeitung dieser Daten wird auf den Zweck einer möglichen Abwehr von Ansprüchen beschränkt. Ein individueller Löschungsantrag ist jederzeit möglich, sofern zugleich das ehemalige Bestehen einer Einwilligung bestätigt wird.",
+      "Sie haben gegenüber uns das Recht auf",
+      {
+        items: [
+          "Auskunft über die zu Ihrer Person gespeicherten Daten und eine Kopie davon (Art. 15 DSGVO),",
+          "Berichtigung unrichtiger oder Vervollständigung unvollständiger Daten (Art. 16 DSGVO),",
+          "Löschung (Art. 17 DSGVO) oder Einschränkung der Verarbeitung (Art. 18 DSGVO),",
+          "Erhalt der von Ihnen bereitgestellten Daten in einem gängigen, maschinenlesbaren Format (Art. 20 DSGVO),",
+          "Widerruf einer erteilten Einwilligung mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO); die Rechtmäßigkeit der bis dahin erfolgten Verarbeitung bleibt unberührt.",
+        ],
+      },
+      "Eine formlose Nachricht an [info@wirtschaftsphysik.de](mailto:info@wirtschaftsphysik.de) genügt.",
+      "**Widerspruchsrecht (Art. 21 DSGVO):** Soweit wir Daten auf Grundlage berechtigter Interessen (Art. 6 Abs. 1 lit. f DSGVO) verarbeiten, können Sie dem aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit widersprechen. Wir verarbeiten die Daten dann nicht mehr, es sei denn, wir können zwingende schutzwürdige Gründe nachweisen, die Ihre Interessen überwiegen, oder die Verarbeitung dient der Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen.",
+      "Sie haben außerdem das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO). Für uns zuständig ist:",
+      {
+        lines: [
+          "Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg",
+          "Lautenschlagerstraße 20, 70173 Stuttgart",
+          "[www.baden-wuerttemberg.datenschutz.de](https://www.baden-wuerttemberg.datenschutz.de)",
+        ],
+      },
     ],
   },
   {
-    title: "Newsletter – Versanddienstleister",
+    title: "Pflicht zur Bereitstellung",
     blocks: [
-      "Der Versand der Newsletter erfolgt mittels des Versanddienstleisters MailPoet, Wysija SARL, 6 rue Dieudé, 13006, Marseille, FRANCE. Die Datenschutzbestimmungen des Versanddienstleisters können Sie hier einsehen: [mailpoet.com/privacy-notice](https://www.mailpoet.com/privacy-notice/) . Der Versanddienstleister wird auf Grundlage unserer berechtigten Interessen gem. Art. 6 Abs. 1 lit. f DSGVO und eines Auftragsverarbeitungsvertrages gem. Art. 28 Abs. 3 S. 1 DSGVO eingesetzt.",
-      "Der Versanddienstleister kann die Daten der Empfänger in pseudonymer Form, d.h. ohne Zuordnung zu einem Nutzer, zur Optimierung oder Verbesserung der eigenen Services nutzen, z.B. zur technischen Optimierung des Versandes und der Darstellung der Newsletter oder für statistische Zwecke verwenden. Der Versanddienstleister nutzt die Daten unserer Newsletterempfänger jedoch nicht, um diese selbst anzuschreiben oder um die Daten an Dritte weiterzugeben.",
+      "Die Nutzung der öffentlichen Website ist ohne Angabe personenbezogener Daten möglich. Für ein Nutzerkonto, einen Aufnahmeantrag und die Mitgliedschaft sind die im Formular als Pflichtfeld gekennzeichneten Angaben erforderlich; ohne sie können wir das Konto nicht anlegen bzw. über die Aufnahme nicht entscheiden. Bankdaten sind nur bei Erteilung eines Lastschriftmandats erforderlich.",
     ],
   },
   {
-    title: "Hosting und E-Mail-Versand",
+    title: "Änderungen",
     blocks: [
-      "Die von uns in Anspruch genommenen Hosting-Leistungen dienen der Zurverfügungstellung der folgenden Leistungen: Infrastruktur- und Plattformdienstleistungen, Rechenkapazität, Speicherplatz und Datenbankdienste, E-Mail-Versand, Sicherheitsleistungen sowie technische Wartungsleistungen, die wir zum Zwecke des Betriebs dieses Onlineangebotes einsetzen.",
-      "Hierbei verarbeiten wir, bzw. unser Hostinganbieter Bestandsdaten, Kontaktdaten, Inhaltsdaten, Vertragsdaten, Nutzungsdaten, Meta- und Kommunikationsdaten von Kunden, Interessenten und Besuchern dieses Onlineangebotes auf Grundlage unserer berechtigten Interessen an einer effizienten und sicheren Zurverfügungstellung dieses Onlineangebotes gem. Art. 6 Abs. 1 lit. f DSGVO i.V.m. Art. 28 DSGVO (Abschluss Auftragsverarbeitungsvertrag).",
-    ],
-  },
-  {
-    title: "Versandprotokoll von Vereinsmails",
-    blocks: [
-      "Für E-Mails, die der Vorstand über den Internbereich an Mitglieder und Nutzer verschickt, führen wir ein Versandprotokoll. Gespeichert werden der Betreff, der Zeitpunkt und die Empfänger: bei einer Mail an eine einzelne Person deren E-Mail-Adresse, bei Rundmails lediglich die Empfängergruppe (z.B. „Ehrenmitglieder“) und die Anzahl der Empfänger. Der Inhalt der Nachricht wird nicht gespeichert.",
-      "Rechtsgrundlage ist unser berechtigtes Interesse an einer nachvollziehbaren Vereinskommunikation (z.B. dem Nachweis, dass eine Einladung verschickt wurde) gem. Art. 6 Abs. 1 lit. f DSGVO. Das Protokoll ist ausschließlich für Administratoren des Vereins zugänglich. Einträge werden nach einem Jahr automatisch gelöscht; wird ein Nutzerkonto gelöscht, entfernen wir dessen E-Mail-Adresse sofort aus dem Protokoll.",
-    ],
-  },
-  {
-    title: "Sicherheitsprotokoll (Anmeldung, Registrierung, Kontaktformular, Passwort- und E-Mail-Änderungen)",
-    blocks: [
-      "Um unbefugte Zugriffe auf Nutzerkonten, automatisierte Massenanfragen und Spam zu erkennen und abzuwehren, protokollieren wir sicherheitsrelevante Vorgänge unserer Anmelde- und Formularfunktionen. Erfasst werden: Anmeldeversuche und erfolgreiche Anmeldungen, Registrierungsversuche und abgeschlossene Registrierungen über das öffentliche Registrierungsformular, abgesendete Kontaktanfragen, angeforderte und tatsächlich durchgeführte Passwort-Zurücksetzungen, das Bestätigen einer E-Mail-Adresse über den zugesandten Link, angeforderte Änderungen der eigenen E-Mail-Adresse sowie die automatische Löschung nicht bestätigter Registrierungen.",
-      "Zu jedem dieser Vorgänge speichern wir den Zeitpunkt, die Art des Vorgangs, dessen Ergebnis (erfolgreich, fehlgeschlagen oder abgewehrt) und einen technischen Kurzcode für den Grund (z.B. „falsche Zugangsdaten“, „Limit überschritten“), bei angemeldeten bzw. registrierten Personen zusätzlich die Kennung des betroffenen Nutzerkontos. Einträge über automatisch gelöschte, nicht bestätigte Registrierungen enthalten ausschließlich Zeitpunkt und Grund und damit keinerlei Personenbezug. IP-Adresse und E-Mail-Adresse werden nicht im Klartext gespeichert, sondern ausschließlich als nicht rückrechenbarer Prüfwert (Hash mit geheimem Schlüssel), der nur den Vergleich mehrerer Vorgänge untereinander erlaubt. Passwörter, Inhalte von Nachrichten und Zugangs-Links werden nicht protokolliert.",
-      "Rechtsgrundlage ist unser berechtigtes Interesse an der Sicherheit der Verarbeitung gem. Art. 6 Abs. 1 lit. f DSGVO i.V.m. Art. 32 DSGVO. Das Protokoll ist ausschließlich für Administratoren des Vereins zugänglich und wird nicht für Werbung, Reichweitenmessung oder eine Bewertung von Personen verwendet.",
-      "Der Prüfwert der IP-Adresse und die Browserkennung werden nach 7 Tagen automatisch gelöscht, der übrige Protokolleintrag spätestens nach 90 Tagen. Wird ein Nutzerkonto gelöscht, verlieren die zugehörigen Einträge sofort jeden Personenbezug. Einträge, deren weitere Aufbewahrung zur Aufklärung eines konkreten Vorfalls erforderlich ist, sind bis zu dessen endgültiger Klärung von der Löschung ausgenommen.",
-    ],
-  },
-  {
-    title: "Erhebung von Zugriffsdaten und Logfiles",
-    blocks: [
-      "Wir, bzw. unser Hostinganbieter, erhebt auf Grundlage unserer berechtigten Interessen im Sinne des Art. 6 Abs. 1 lit. f. DSGVO Daten über jeden Zugriff auf den Server, auf dem sich dieser Dienst befindet (sogenannte Serverlogfiles). Zu den Zugriffsdaten gehören Name der abgerufenen Webseite, Datei, Datum und Uhrzeit des Abrufs, übertragene Datenmenge, Meldung über erfolgreichen Abruf, Browsertyp nebst Version, das Betriebssystem des Nutzers, Referrer URL (die zuvor besuchte Seite), IP-Adresse und der anfragende Provider.",
-      "Logfile-Informationen werden aus Sicherheitsgründen (z.B. zur Aufklärung von Missbrauchs- oder Betrugshandlungen) für die Dauer von maximal 7 Tagen gespeichert und danach gelöscht. Daten, deren weitere Aufbewahrung zu Beweiszwecken erforderlich ist, sind bis zur endgültigen Klärung des jeweiligen Vorfalls von der Löschung ausgenommen.",
+      "Wir passen diese Datenschutzerklärung an, wenn sich die Website, unsere Verarbeitungen oder die Rechtslage ändern. Es gilt die jeweils hier veröffentlichte Fassung; über wesentliche Änderungen, die Mitglieder betreffen, informieren wir per E-Mail.",
     ],
   },
 ];
-

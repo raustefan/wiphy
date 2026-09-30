@@ -1,7 +1,7 @@
 # Graph Report - wiphy  (2026-09-30)
 
 ## Corpus Check
-- 338 files · ~141,500 words
+- 315 files · ~139,217 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 6 file(s) not represented in the graph (top: (none) 2, .toml 1, .prisma 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2337e3a0`
+- Built from commit: `4ed73816`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -447,11 +447,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `allowBuilds (prisma, esbuild, sharp, unrs-resolver)` and `ignoredBuiltDependencies (sharp, unrs-resolver)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `next` connect `next` to `EventForm.tsx`, `AccountSection.tsx`, `ApplicationWizard.tsx`, `auth.ts`, `boardService.ts`, `serverStatus.ts`, `blogService.ts`, `security/page.tsx`, `MarketDiffusion.tsx`, `vorstand/actions.ts`, `app/layout.tsx`, `package.json`, `isFeatureEnabled`, `mail/page.tsx`, `executeAction`, `app/blog/[id]/page.tsx`, `blog/actions.ts`, `mitglied-werden/page.tsx`, `AppError`, `ref_node_assert`, `format.ts`, `termine/actions.ts`, `ics.ts`, `satzung/page.tsx`, `sepa/route.ts`, `lucide-react`, `MarkdownEditor.tsx`, `FeesTable.tsx`, `LegalPage.tsx`, `events.ts`, `sendEmail`, `sitemap.ts`, `SecurityPage`, `userService.ts`, `index.ts`, `ContactRequestList.tsx`, `forgot-password/layout.tsx`, `images/[id]/route.ts`, `mitgliedsantraege/actions.ts`, `login/layout.tsx`, `reset-password/layout.tsx`, `app/blog/page.tsx`, `verify-email/layout.tsx`, `featureFlagService.ts`, `dashboard/page.tsx`?**
-  _High betweenness centrality (0.161) - this node is a cross-community bridge._
+  _High betweenness centrality (0.159) - this node is a cross-community bridge._
 - **Why does `lucide-react` connect `lucide-react` to `EventForm.tsx`, `AccountSection.tsx`, `ApplicationWizard.tsx`, `next`, `boardService.ts`, `serverStatus.ts`, `blogService.ts`, `security/page.tsx`, `MarketDiffusion.tsx`, `package.json`, `app/blog/[id]/page.tsx`, `OutcomeTimeline.tsx`, `mitglied-werden/page.tsx`, `ServerDashboard.tsx`, `format.ts`, `satzung/page.tsx`, `FeesTable.tsx`, `events.ts`, `MailForm.tsx`, `index.ts`, `app/blog/page.tsx`, `formatNumber`, `dashboard/page.tsx`?**
-  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **Why does `AppError` connect `AppError` to `next`, `auth.ts`, `boardService.ts`, `mailService.ts`, `serverStatus.ts`, `blogService.ts`, `blogImageProcessing.ts`, `eventService.ts`, `vorstand/actions.ts`, `isFeatureEnabled`, `executeAction`, `blog/actions.ts`, `format.ts`, `termine/actions.ts`, `sendEmail`, `mail/actions.ts`, `SecurityPage`, `userService.ts`, `ContactRequestList.tsx`, `mitgliedsantraege/actions.ts`, `prisma.ts`, `featureFlagService.ts`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+  _High betweenness centrality (0.065) - this node is a cross-community bridge._
 - **What connects `deploy.sh script`, `eslintConfig`, `nextConfig` to the rest of the system?**
   _416 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `EventForm.tsx` be split into smaller, more focused modules?**

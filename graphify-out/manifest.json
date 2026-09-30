@@ -12,9 +12,9 @@
     "semantic_hash": "1255a72d2b603beb19e8612de26c53a8"
   },
   "deploy.sh": {
-    "mtime": 1790246945.6856346,
-    "seen": 1790260449.651223,
-    "ast_hash": "748a4a0dfe69babbd06c66cb0dbb30b9",
+    "mtime": 1790770622.5639036,
+    "seen": 1790771657.394725,
+    "ast_hash": "fb700ab0191f3b34187ec2b38145f0f6",
     "semantic_hash": ""
   },
   "eslint.config.mjs": {
@@ -46,120 +46,6 @@
     "seen": 1790242430.597026,
     "ast_hash": "b494e56e193b7ae9370f85a074014dd6",
     "semantic_hash": "b494e56e193b7ae9370f85a074014dd6"
-  },
-  "prisma/migrations/20260722191915_add_password_reset_token/migration.sql": {
-    "mtime": 1785919207.5515623,
-    "seen": 1790242430.597027,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260722193952_update_blog_post_fields/migration.sql": {
-    "mtime": 1785919207.5517004,
-    "seen": 1790242430.597027,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260731154626_add_email_verification/migration.sql": {
-    "mtime": 1785919207.551834,
-    "seen": 1790242430.597028,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260818120000_add_password_changed_at/migration.sql": {
-    "mtime": 1787079959.7903636,
-    "seen": 1790242430.597028,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260819065030_add_feature_flags/migration.sql": {
-    "mtime": 1787122230.299649,
-    "seen": 1790242430.5970292,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260819065704_expand_feature_flags/migration.sql": {
-    "mtime": 1787122624.1522956,
-    "seen": 1790242430.59703,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260831090000_add_solved_altcha_challenge/migration.sql": {
-    "mtime": 1788187556.4569747,
-    "seen": 1790242430.59703,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260831090100_normalize_email_lowercase/migration.sql": {
-    "mtime": 1788187556.4571235,
-    "seen": 1790242430.5970309,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260901120000_add_contact_requests/migration.sql": {
-    "mtime": 1788268296.1921904,
-    "seen": 1790242430.5970309,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260904120000_add_membership_applications/migration.sql": {
-    "mtime": 1788505416.0119867,
-    "seen": 1790242430.5970318,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260904140000_manual_fee_override/migration.sql": {
-    "mtime": 1788508619.9116328,
-    "seen": 1790242430.5970318,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260904160000_user_student_years/migration.sql": {
-    "mtime": 1788509404.5686538,
-    "seen": 1790242430.597033,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260907071757_add_security_events/migration.sql": {
-    "mtime": 1788765524.0427353,
-    "seen": 1790242430.597033,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260907072838_add_email_security_events/migration.sql": {
-    "mtime": 1788766118.4431674,
-    "seen": 1790242430.597034,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260907120000_unverified_registration_cleanup/migration.sql": {
-    "mtime": 1788769262.9727976,
-    "seen": 1790242430.597035,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260908090000_add_blog_images/migration.sql": {
-    "mtime": 1788854693.323508,
-    "seen": 1790242430.597035,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260908114033_add_events/migration.sql": {
-    "mtime": 1788867633.504361,
-    "seen": 1790242430.5970361,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260914120000_membership_application_without_sepa/migration.sql": {
-    "mtime": 1789388680.4171417,
-    "seen": 1790242430.5970361,
-    "ast_hash": "",
-    "semantic_hash": ""
-  },
-  "prisma/migrations/20260915090000_add_board_members/migration.sql": {
-    "mtime": 1789451518.002445,
-    "seen": 1790242430.597037,
-    "ast_hash": "",
-    "semantic_hash": ""
   },
   "prisma/seed.ts": {
     "mtime": 1790260428.8971593,
@@ -648,9 +534,9 @@
     "semantic_hash": "7f382bc9b15a7c7873a6cded92ada418"
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1790702847.8102973,
-    "seen": 1790702890.0640829,
-    "ast_hash": "59d758639c568613963770a0cb769bf0",
+    "mtime": 1790771649.3410113,
+    "seen": 1790771657.3963678,
+    "ast_hash": "4fd97760bcb0fa7247fc8f1b81c4edb9",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -1284,10 +1170,10 @@
     "semantic_hash": "c1a0addf7729630814ad85e0c00b2077"
   },
   "src/lib/membership.ts": {
-    "mtime": 1789488576.10158,
-    "seen": 1790242430.597138,
-    "ast_hash": "0ed9489082d0abf0108e922d7c73eada",
-    "semantic_hash": "0ed9489082d0abf0108e922d7c73eada"
+    "mtime": 1790771650.9315069,
+    "seen": 1790771657.3979719,
+    "ast_hash": "0252c0d5405cd3a6b4a81f60a4d70bb0",
+    "semantic_hash": ""
   },
   "src/lib/membershipCertificate.ts": {
     "mtime": 1789717930.997251,
