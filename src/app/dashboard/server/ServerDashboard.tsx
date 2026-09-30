@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle2, Loader2, Rocket, WifiOff, XCircle } from "
 import { Badge, Button, Callout, Card, Dialog, DialogFooter, SectionTitle } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { formatNumber } from "@/lib/format";
-import type { DeployStatus, SystemStats } from "@/lib/server/serverStatus";
+import type { AppLogs, DeployStatus, SystemStats } from "@/lib/server/serverStatus";
 import { triggerDeploy } from "./actions";
 import { UsageChart, type UsagePoint } from "./UsageChart";
 
@@ -36,13 +36,14 @@ function timeLabel(at: number) {
 export function ServerDashboard() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [deploy, setDeploy] = useState<DeployStatus | null>(null);
+  const [logs, setLogs] = useState<AppLogs | null>(null);
   const [offline, setOffline] = useState(false);
 
   const poll = useCallback(async () => {
     try {
       const response = await fetch("/api/dashboard/server", { cache: "no-store" });
       if (!response.ok) throw new Error(String(response.status));
-      const data = (await response.json()) as { stats: SystemStats; deploy: DeployStatus };
+      const data = (await response.json()) as { stats: SystemStats; deploy: DeployStatus; logs: AppLogs };
       const { stats } = data;
       setSamples((previous) =>
         [
@@ -51,6 +52,7 @@ export function ServerDashboard() {
         ].slice(-SLOTS),
       );
       setDeploy(data.deploy);
+      setLogs(data.logs);
       setOffline(false);
     } catch {
       // Beim `pm2 restart` ist der Server ein paar Sekunden weg — normal.
@@ -126,8 +128,78 @@ export function ServerDashboard() {
         </p>
       </section>
 
+      <LogsSection logs={logs} />
+
       <DeploySection deploy={deploy} onStarted={poll} />
     </div>
+  );
+}
+
+function LogsSection({ logs }: { logs: AppLogs | null }) {
+  const [stream, setStream] = useState<"out" | "err">("out");
+  const logRef = useRef<HTMLPreElement>(null);
+  const text = logs?.[stream] ?? "";
+
+  // Unten mitlaufen wie `pm2 logs` — aber nicht, wenn gerade weiter oben gelesen wird.
+  const stickRef = useRef(true);
+  useEffect(() => {
+    const el = logRef.current;
+    if (el && stickRef.current) el.scrollTop = el.scrollHeight;
+  }, [text]);
+
+  return (
+    <section className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionTitle>Logs</SectionTitle>
+        {logs?.available && (
+          <div className="flex gap-1">
+            {(
+              [
+                ["out", "Ausgabe"],
+                ["err", "Fehler"],
+              ] as const
+            ).map(([key, label]) => (
+              <Button
+                key={key}
+                type="button"
+                size="sm"
+                variant={stream === key ? "soft" : "ghost"}
+                color={key === "err" ? "danger" : "neutral"}
+                aria-pressed={stream === key}
+                onClick={() => {
+                  stickRef.current = true;
+                  setStream(key);
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Card className="grid gap-3 p-5">
+        {logs && !logs.available ? (
+          <p className="text-sm text-muted">Die Website läuft hier nicht unter PM2 — Logs gibt es nur auf dem Server.</p>
+        ) : (
+          <>
+            <p className="text-xs text-muted">
+              Die letzten Zeilen von <code>pm2 logs wiphy</code>, live.
+            </p>
+            <pre
+              ref={logRef}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+              }}
+              className="max-h-96 min-h-24 overflow-auto rounded-xl border border-line bg-raised p-4 text-xs leading-relaxed whitespace-pre-wrap"
+            >
+              {text || (logs ? "Leer." : "Wird geladen …")}
+            </pre>
+          </>
+        )}
+      </Card>
+    </section>
   );
 }
 

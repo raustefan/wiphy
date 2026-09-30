@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { readFile, stat, unlink, writeFile } from "node:fs/promises";
+import { open, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { AppError } from "@/lib/server/errors";
 
 /**
@@ -91,6 +91,55 @@ export async function getSystemStats(): Promise<SystemStats> {
 }
 
 /* ------------------------------------------------------------------ *
+ * PM2-Logs                                                            *
+ * ------------------------------------------------------------------ */
+
+/** Pro Log und Abfrage — die Seite fragt jede Sekunde, also knapp halten. */
+const APP_LOG_TAIL_BYTES = 16 * 1024;
+
+function stripAnsi(text: string) {
+  return text.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "");
+}
+
+/**
+ * Das Ende einer Datei, ohne sie ganz zu lesen: PM2-Logs wachsen ohne
+ * `pm2-logrotate` unbegrenzt. Die erste, angeschnittene Zeile fällt weg.
+ */
+export async function readTail(file: string, bytes: number): Promise<string> {
+  const handle = await open(file, "r");
+  try {
+    const { size } = await handle.stat();
+    const length = Math.min(size, bytes);
+    const buffer = Buffer.alloc(length);
+    await handle.read(buffer, 0, length, size - length);
+    const text = buffer.toString("utf8");
+    return length < size ? text.slice(text.indexOf("\n") + 1) : text;
+  } finally {
+    await handle.close();
+  }
+}
+
+export type AppLogs = {
+  /** false, wenn die Website nicht unter PM2 läuft (z. B. lokal). */
+  available: boolean;
+  out: string;
+  err: string;
+};
+
+/**
+ * Die letzten Zeilen aus `pm2 logs wiphy`. PM2 gibt jedem Prozess die Pfade
+ * seiner Logdateien als Umgebungsvariablen mit — kein Raten in `~/.pm2/logs`.
+ */
+export async function getAppLogs(): Promise<AppLogs> {
+  const outPath = process.env.pm_out_log_path;
+  const errPath = process.env.pm_err_log_path;
+  const read = async (file: string | undefined) =>
+    file ? stripAnsi(await readTail(file, APP_LOG_TAIL_BYTES).catch(() => "")).trimEnd() : "";
+  const [out, err] = await Promise.all([read(outPath), read(errPath)]);
+  return { available: Boolean(outPath || errPath), out, err };
+}
+
+/* ------------------------------------------------------------------ *
  * Deploy                                                              *
  * ------------------------------------------------------------------ */
 
@@ -153,9 +202,8 @@ export async function getDeployStatus(): Promise<DeployStatus> {
   ]);
 
   const match = new RegExp(`${EXIT_MARKER} (\\d+)`).exec(raw);
-  const log = raw
+  const log = stripAnsi(raw)
     .replace(new RegExp(`^${EXIT_MARKER} .*$`, "m"), "")
-    .replace(/\x1b\[[0-9;]*[A-Za-z]/g, "")
     .trimEnd();
 
   return {

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getOptionalUser, isDebugMode } from "@/lib/server/authz";
-import { getDeployStatus, getSystemStats } from "@/lib/server/serverStatus";
+import { getAppLogs, getDeployStatus, getSystemStats } from "@/lib/server/serverStatus";
 
 /**
- * Messwerte und Deploy-Stand für `/dashboard/server`.
+ * Messwerte, Deploy-Stand und PM2-Logs für `/dashboard/server`.
  *
  * Bewusst eine Route statt einer Serveraktion: die Seite fragt hier alle paar
  * Sekunden nach, auch über einen Deploy hinweg. Serveraktionen bekommen mit
@@ -15,6 +15,6 @@ export async function GET() {
     return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
   }
 
-  const [stats, deploy] = await Promise.all([getSystemStats(), getDeployStatus()]);
-  return NextResponse.json({ stats, deploy }, { headers: { "Cache-Control": "no-store" } });
+  const [stats, deploy, logs] = await Promise.all([getSystemStats(), getDeployStatus(), getAppLogs()]);
+  return NextResponse.json({ stats, deploy, logs }, { headers: { "Cache-Control": "no-store" } });
 }
