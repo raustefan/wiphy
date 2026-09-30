@@ -1,5 +1,7 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
+import { toBerlinDateInput } from "@/lib/berlinTime";
 import { pruneArchivedFees } from "@/lib/server/repositories/feeRepository";
 import {
   TERMINATION_RECORD_RETENTION_YEARS,
@@ -110,6 +112,63 @@ export async function confirmTermination(params: {
   if (count === 0) {
     throw new AppError("CONFLICT", "Diese Kündigung wurde bereits bearbeitet.");
   }
+}
+
+/**
+ * Ein Admin stellt ein Mitglied auf „Kein Mitglied“ um. Damit jeder Austritt
+ * als Kündigung nachweisbar bleibt (und in der Statistik zählt), wird die
+ * offene Kündigung zum heutigen Tag vollzogen — oder, wenn es keine gibt, eine
+ * vollzogene angelegt. Zusammen mit der Änderung am Konto in einer Transaktion.
+ */
+export async function removeMembershipByAdmin(params: {
+  userId: string;
+  adminId: string;
+  keepAccount: boolean;
+  userData: Prisma.UserUpdateInput;
+}) {
+  const now = new Date();
+  // Reines Datum, 00:00 UTC — wie `effectiveAt` überall.
+  const today = new Date(`${toBerlinDateInput(now)}T00:00:00Z`);
+
+  await prisma.$transaction(async (tx) => {
+    const open = await tx.membershipTermination.findUnique({
+      where: { openForUserId: params.userId },
+    });
+    if (open) {
+      await tx.membershipTermination.update({
+        where: { id: open.id },
+        data: {
+          status: "BESTAETIGT",
+          openForUserId: null,
+          completedAt: now,
+          // Früher als erklärt: dann endete die Mitgliedschaft heute.
+          effectiveAt: open.effectiveAt > today ? today : open.effectiveAt,
+          decidedAt: open.decidedAt ?? now,
+          decidedById: open.decidedById ?? params.adminId,
+        },
+      });
+    } else {
+      await tx.membershipTermination.create({
+        data: {
+          userId: params.userId,
+          status: "BESTAETIGT",
+          submittedAt: now,
+          effectiveAt: today,
+          keepAccount: params.keepAccount,
+          decidedAt: now,
+          decidedById: params.adminId,
+          decisionNote: "Vom Vorstand ausgetragen",
+          completedAt: now,
+        },
+      });
+    }
+    await tx.user.update({ where: { id: params.userId }, data: params.userData });
+  });
+}
+
+/** Vollzogene Austritte seit `since` — für die Kennzahlen der Benutzerverwaltung. */
+export function countCompletedTerminationsSince(since: Date) {
+  return prisma.membershipTermination.count({ where: { completedAt: { gte: since } } });
 }
 
 /** Höchstens alle 15 Minuten — häufiger wäre reine DB-Last. */

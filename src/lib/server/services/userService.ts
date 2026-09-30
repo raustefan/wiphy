@@ -2,7 +2,6 @@ import type { Role } from "@prisma/client";
 import {
   findUserById,
   findUserByMitgliedIdExcludingUser,
-  findUsersForDashboard,
   updateUserById,
 } from "@/lib/server/repositories/userRepository";
 import { getMaxMitgliedId } from "@/lib/server/repositories/membershipRepository";
@@ -20,10 +19,7 @@ import { newToken } from "@/lib/server/tokens";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit } from "@/lib/server/rateLimit";
 import { deleteAccountWithoutMembership } from "./accountService";
-
-export async function getDashboardUsers(userId: string, role: Role) {
-  return findUsersForDashboard(userId, role);
-}
+import { removeMembershipByAdmin } from "./terminationService";
 
 export async function getEditableUser(id: string) {
   return findUserById(id);
@@ -200,7 +196,22 @@ export async function updateUserProfile(input: UpdateUserInput, currentPassword?
     }
   }
 
-  await updateUserById(input.idToEdit, data);
+  const removesMembership =
+    input.currentUserRole === "ADMIN" &&
+    data.status === "KEIN_MITGLIED" &&
+    user.status !== "KEIN_MITGLIED";
+  if (removesMembership) {
+    const loginDisabledAfter =
+      typeof data.loginDisabled === "boolean" ? data.loginDisabled : user.loginDisabled;
+    await removeMembershipByAdmin({
+      userId: input.idToEdit,
+      adminId: input.currentUserId,
+      keepAccount: !loginDisabledAfter,
+      userData: data,
+    });
+  } else {
+    await updateUserById(input.idToEdit, data);
+  }
   return { ok: true as const, emailChanged };
 }
 

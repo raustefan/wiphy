@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Plus,
@@ -33,7 +34,7 @@ import {
   type MailRecipient,
 } from "@/components/EmailComposerDialog";
 import { formatDate, formatDateShort, formatEuro } from "@/lib/format";
-import { groupAccounts } from "@/lib/memberDirectory";
+import { groupAccounts, yearFee } from "@/lib/memberDirectory";
 import { renderBlocksEditorHtml } from "@/lib/email/blocks";
 import { feeReminderMessage } from "@/lib/email/messages";
 import {
@@ -106,11 +107,6 @@ type SortKey = "mitgliedId" | "name" | "aufnahme" | "lastLogin" | "student" | "p
 
 function displayName(user: DirectoryAccount) {
   return [user.vorname, user.name].filter(Boolean).join(" ");
-}
-
-/** Beitragszeile des Jahres — nur für Konten in der Beitragsliste. */
-function yearFee(user: DirectoryAccount, year: number) {
-  return user.inFeeYear ? user.fees.find((f) => f.jahr === year) : undefined;
 }
 
 /** Leere Werte bleiben in beide Richtungen hinten — sie haben keinen Wert, nicht den kleinsten. */
@@ -223,14 +219,24 @@ function StatusChip({
   actionLabel: string;
   title: string;
 }) {
+  // Bis die Antwort vom Server da ist, blasst der Chip ab — sonst wirkt der Klick verloren.
+  const { pending } = useFormStatus();
   const className = cn(
     "inline-flex size-8 items-center justify-center rounded-full",
     chipTones[tone],
+    pending && "animate-pulse opacity-50",
     interactive &&
       "cursor-pointer ring-1 ring-current/35 ring-inset transition-shadow hover:ring-2 hover:ring-current/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
   );
   return interactive ? (
-    <button type="submit" className={className} aria-label={actionLabel} title={title}>
+    <button
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+      className={className}
+      aria-label={actionLabel}
+      title={title}
+    >
       <span aria-hidden="true">{icon}</span>
     </button>
   ) : (
@@ -263,10 +269,10 @@ function CommentDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Kommentar – ${user.vorname} ${user.name ?? ""}`}
+      title={`Kommentar – ${displayName(user)}`}
       description="Zahlungs- oder Mitgliedschaftshinweis für dieses Mitglied."
     >
-      <form action={updateFeeComment}>
+      <form action={updateFeeComment} onSubmit={onClose}>
         <input type="hidden" name="userId" value={user.id} />
         <TextArea
           name="comment"
@@ -306,7 +312,7 @@ function AmountDialog({
     <Dialog
       open
       onClose={onClose}
-      title={`Beitrag ${fee.jahr} – ${user.vorname} ${user.name ?? ""}`}
+      title={`Beitrag ${fee.jahr} – ${displayName(user)}`}
       description="Nur für Ausnahmefälle. Ohne Abweichung gilt automatisch der Standardbeitrag."
     >
       <div className="mb-4 grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">
@@ -368,9 +374,7 @@ export function UserPaymentHistoryDialog({
   return (
     <Dialog open={open} onClose={onClose} size="lg">
       <div className="mb-1 flex items-start justify-between gap-3">
-        <h2 className="text-lg font-bold tracking-tight">
-          {user.vorname} {user.name ?? ""}
-        </h2>
+        <h2 className="text-lg font-bold tracking-tight">{displayName(user)}</h2>
         {openCount > 0 && <Badge tone="negative">{openCount} offen</Badge>}
       </div>
       <p className="text-sm text-muted">{user.email}</p>
@@ -519,8 +523,6 @@ export function DirectoryTable({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
-
   const groups = useMemo(() => {
     const visible = visibleIds ? users.filter((u) => visibleIds.has(u.id)) : users;
     const direction = sort.desc ? -1 : 1;
@@ -534,19 +536,19 @@ export function DirectoryTable({
     const grouped = groupAccounts(sorted);
     return GROUPS.map((g) => ({ ...g, users: grouped[g.key] }));
   }, [users, visibleIds, sort, selectedYear]);
-  const visibleUsers = groups.flatMap((g) => g.users);
+  const visibleUsers = useMemo(() => groups.flatMap((g) => g.users), [groups]);
 
   // Jahr ohne angelegte Beitragszeilen: erklären und das Anlegen anbieten.
   const feeRows = users.filter((u) => u.inFeeYear);
   const missing = feeRows.filter((u) => yearFee(u, selectedYear)?.angelegt === false).length;
 
+  // Nur sichtbare Zeilen zählen als ausgewählt: was ein Filter ausblendet,
+  // bekommt keine E-Mail und landet in keiner SEPA-Datei.
   const selectedUsers = useMemo(
-    () =>
-      Array.from(selectedIds)
-        .map((id) => userById.get(id))
-        .filter((u): u is DirectoryAccount => u != null),
-    [selectedIds, userById],
+    () => visibleUsers.filter((u) => selectedIds.has(u.id)),
+    [visibleUsers, selectedIds],
   );
+  const allVisibleSelected = visibleUsers.length > 0 && selectedUsers.length === visibleUsers.length;
 
   const mailRecipients: MailRecipient[] = (mailUsers ?? []).map((u) => ({
     id: u.id,
@@ -575,6 +577,8 @@ export function DirectoryTable({
   function handleYearChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("year", value);
+    // Die Auswahl galt dem alten Jahr (offene Beiträge, SEPA) — nicht mitnehmen.
+    setSelectedIds(new Set());
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -585,6 +589,10 @@ export function DirectoryTable({
       else next.add(id);
       return next;
     });
+  }
+
+  function toggleAllVisible() {
+    setSelectedIds(allVisibleSelected ? new Set() : new Set(visibleUsers.map((u) => u.id)));
   }
 
   function selectAllWithOpenFees() {
@@ -635,7 +643,13 @@ export function DirectoryTable({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <form action={initializeBillingYear}>
+            <form
+              action={async (formData) => {
+                // Nach dem Anlegen gleich zum neuen Jahr wechseln.
+                const result = await initializeBillingYear(formData);
+                if (result.ok) handleYearChange(String(formData.get("year")));
+              }}
+            >
               <fieldset
                 disabled={!editing}
                 className="flex items-center gap-2"
@@ -650,6 +664,9 @@ export function DirectoryTable({
                     id="fees-new-year"
                     type="number"
                     name="year"
+                    min={2000}
+                    max={2100}
+                    required
                     defaultValue={new Date().getFullYear() + 1}
                     className="py-1.5"
                   />
@@ -695,15 +712,15 @@ export function DirectoryTable({
 
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone={selectedIds.size > 0 ? "info" : "neutral"}>
+            <Badge tone={selectedUsers.length > 0 ? "info" : "neutral"}>
               <ListChecks size={13} aria-hidden="true" />
-              {selectedIds.size} ausgewählt
+              {selectedUsers.length} ausgewählt
             </Badge>
             <Button size="sm" variant="outline" color="neutral" type="button" onClick={selectAllWithOpenFees}>
               <CircleAlert size={15} aria-hidden="true" />
               Alle offenen
             </Button>
-            {selectedIds.size > 0 && (
+            {selectedUsers.length > 0 && (
               <Button
                 size="sm"
                 variant="ghost"
@@ -720,7 +737,7 @@ export function DirectoryTable({
               size="sm"
               variant="outline"
               type="button"
-              disabled={selectedIds.size === 0}
+              disabled={selectedUsers.length === 0}
               onClick={() => setSepaOpen(true)}
             >
               <Landmark size={15} aria-hidden="true" />
@@ -729,7 +746,7 @@ export function DirectoryTable({
             <Button
               size="sm"
               type="button"
-              disabled={selectedIds.size === 0}
+              disabled={selectedUsers.length === 0}
               onClick={() => setMailUsers(selectedUsers)}
             >
               <Mail size={15} aria-hidden="true" />
@@ -751,7 +768,12 @@ export function DirectoryTable({
               Die Beträge sind aus den Standardsätzen berechnet und gelten als offen, bis sie als
               bezahlt markiert werden.
             </p>
-            <form action={initializeBillingYear} className="shrink-0">
+            <form
+              action={async (formData) => {
+                await initializeBillingYear(formData);
+              }}
+              className="shrink-0"
+            >
               <input type="hidden" name="year" value={selectedYear} />
               <Button
                 type="submit"
@@ -777,8 +799,17 @@ export function DirectoryTable({
         <Table>
           <thead>
             <tr className="bg-raised/60">
-              <Th className="w-10 px-3">
-                <span className="sr-only">Auswahl</span>
+              <Th className="w-10 max-sm:pr-1 max-sm:pl-2">
+                <Checkbox
+                  checked={allVisibleSelected}
+                  // Teilauswahl: `indeterminate` gibt es nur als DOM-Eigenschaft.
+                  ref={(el) => {
+                    if (el) el.indeterminate = selectedUsers.length > 0 && !allVisibleSelected;
+                  }}
+                  onChange={toggleAllVisible}
+                  disabled={visibleUsers.length === 0}
+                  aria-label="Alle sichtbaren Konten auswählen"
+                />
               </Th>
               <SortableTh sortKey="mitgliedId" label="Nr." sort={sort} onSort={toggleSort} className="hidden w-14 sm:table-cell" />
               <SortableTh sortKey="name" label="Konto" sort={sort} onSort={toggleSort} />
@@ -802,8 +833,8 @@ export function DirectoryTable({
                 onSort={toggleSort}
                 className="w-12"
               />
-              <SortableTh sortKey="amount" label={String(selectedYear)} align="right" sort={sort} onSort={toggleSort} className="w-24" />
-              <Th className="w-20 px-2">
+              <SortableTh sortKey="amount" label={String(selectedYear)} align="right" sort={sort} onSort={toggleSort} className="sm:w-24" />
+              <Th className="max-sm:px-1">
                 <span className="sr-only">Aktionen</span>
               </Th>
             </tr>
@@ -848,7 +879,7 @@ export function DirectoryTable({
                         key={user.id}
                         className={cn("transition-colors hover:bg-raised/50", isSelected && "bg-info/6")}
                       >
-                        <Td className="px-3 py-1.5 pointer-coarse:py-2">
+                        <Td className="py-1.5 max-sm:pr-1 max-sm:pl-2 pointer-coarse:py-2">
                           <Checkbox
                             checked={isSelected}
                             onChange={() => toggleSelection(user.id)}
@@ -862,7 +893,7 @@ export function DirectoryTable({
                         {/* `w-full max-w-0`: die Spalte nimmt den Rest der
                             Zeile und kürzt, statt die Tabelle mit der längsten
                             Adresse zu verbreitern. */}
-                        <Td className="w-full max-w-0 px-2 py-1.5 pointer-coarse:py-2">
+                        <Td className="w-full max-w-0 py-1.5 max-sm:px-1 pointer-coarse:py-2">
                           <div className="flex items-center gap-1.5">
                             {/* Der Name öffnet den Beitragsverlauf — mit Link zum Profil. */}
                             <button
@@ -886,7 +917,9 @@ export function DirectoryTable({
                                 <span className="sr-only">Login gesperrt</span>
                               </span>
                             )}
-                            <SepaMark bankeinzug={user.bankeinzug} />
+                            {(user.inFeeYear || user.status === "ORDENTLICHES_MITGLIED") && (
+                              <SepaMark bankeinzug={user.bankeinzug} />
+                            )}
                             {leftThisYear && (
                               <Badge className="shrink-0 px-1.5 py-0 text-[11px]" title="Im Beitragsjahr ausgetreten">
                                 ausgetreten
@@ -952,14 +985,17 @@ export function DirectoryTable({
                           )}
                         </Td>
 
-                        <Td className="px-1 py-1.5 text-center">
+                        <Td className="py-1.5 text-center max-sm:px-1">
                           {fee ? (
                             <form
                               action={updateFeeStatus}
                               onSubmit={(e) => {
                                 // Rückfrage nur, wenn eine Zahlung wieder auf offen gesetzt wird.
                                 const form = e.currentTarget;
-                                if (paid && !bypassFormsRef.current.has(form)) {
+                                // Die Freigabe gilt nur für diesen einen Absendevorgang —
+                                // React behält das Formular, die nächste Rücknahme fragt wieder.
+                                if (bypassFormsRef.current.delete(form)) return;
+                                if (paid) {
                                   e.preventDefault();
                                   setRevertConfirm({ form, label: `${name} (${selectedYear})` });
                                 }
@@ -982,11 +1018,11 @@ export function DirectoryTable({
                           )}
                         </Td>
 
-                        <Td className="px-2 py-1.5 text-right whitespace-nowrap">
+                        <Td className="py-1.5 text-right whitespace-nowrap max-sm:px-1">
                           {fee ? (
                             <span className="inline-flex items-center justify-end gap-1">
                               {fee.manuell && (
-                                <span title="Betrag abweichend vom Standard festgelegt" className="text-warning">
+                                <span title="Betrag abweichend vom Standard festgelegt" className="text-warning max-sm:hidden">
                                   <PencilLine size={13} aria-hidden="true" />
                                   <span className="sr-only">Ausnahme:</span>
                                 </span>
@@ -994,7 +1030,7 @@ export function DirectoryTable({
                               {fee.angelegt === false && (
                                 <span
                                   title={`Für ${selectedYear} gibt es noch keinen Beitragseintrag. Der Betrag ist aus den Standardsätzen berechnet.`}
-                                  className="text-faint"
+                                  className="text-faint max-sm:hidden"
                                 >
                                   <CircleDashed size={13} aria-hidden="true" />
                                   <span className="sr-only">Kein Eintrag:</span>
@@ -1022,7 +1058,7 @@ export function DirectoryTable({
                           )}
                         </Td>
 
-                        <Td className="px-2 py-1.5">
+                        <Td className="py-1.5 max-sm:px-1">
                           <div className="flex justify-end gap-1">
                             <IconButton
                               type="button"
@@ -1033,6 +1069,8 @@ export function DirectoryTable({
                               aria-label={user.zahlungsKommentar ? `Notiz: ${user.zahlungsKommentar}` : "Notiz hinzufügen"}
                               title={user.zahlungsKommentar ?? "Notiz hinzufügen"}
                               className={cn(
+                                // Auf dem Telefon nur Profil — die Notiz ist dort einen Klick weiter.
+                                "max-sm:hidden",
                                 user.zahlungsKommentar
                                   ? "bg-warning/20 text-warning hover:bg-warning/30"
                                   : "text-faint",

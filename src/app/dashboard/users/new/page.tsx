@@ -22,7 +22,8 @@ export default async function NewUserPage() {
             <DashboardPageHeader
                 eyebrow="Internbereich"
                 title="Benutzer hinzufügen"
-                backHref="/dashboard"
+                backHref="/dashboard/users"
+                backLabel="Zurück zur Benutzerverwaltung"
             />
 
             <Card className="p-5 sm:p-6">

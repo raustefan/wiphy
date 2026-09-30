@@ -1,15 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma, Role } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { anonymizeSecurityEventsForUser } from "@/lib/server/securityLog";
 import { archiveFeesOfUser } from "./feeRepository";
-
-export function findUsersForDashboard(userId: string, role: Role) {
-  const where: Prisma.UserWhereInput | undefined = role === "ADMIN" ? undefined : { id: userId };
-  return prisma.user.findMany({
-    where,
-    orderBy: [{ mitgliedId: { sort: "asc", nulls: "last" } }, { name: "asc" }],
-  });
-}
 
 export function findUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });

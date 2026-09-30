@@ -142,10 +142,12 @@ async function updateUser(formData: FormData) {
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/users");
     if (result.emailChanged) {
         redirect(`${editPath}?emailChanged=1`);
     } else {
-        redirect("/dashboard");
+        // Wer ein fremdes Konto bearbeitet hat, kam aus der Benutzerverwaltung.
+        redirect(currentUser.id === parsed.id ? "/dashboard" : "/dashboard/users");
     }
 }
 
@@ -158,8 +160,8 @@ async function deleteUserAction(formData: FormData) {
     if (currentUser.id === idStr) return; // Selbstlöschung ist nicht erlaubt
     await requireFeatureEnabledOrRedirect("USER_DELETION", `/dashboard/users/${idStr}`);
     await adminDeleteUser(idStr, currentUser.role);
-    revalidatePath("/dashboard");
-    redirect("/dashboard");
+    revalidatePath("/dashboard/users");
+    redirect("/dashboard/users");
 }
 
 export default async function EditUserPage({
@@ -263,7 +265,8 @@ export default async function EditUserPage({
                 eyebrow="Mitgliederselbstverwaltung"
                 title={isAdmin ? "Benutzer bearbeiten" : "Meine Mitgliedsdaten"}
                 description={!isAdmin ? "Halte deine persönlichen Angaben aktuell." : undefined}
-                backHref="/dashboard"
+                backHref={isAdmin && currentUser.id !== resolvedParams.id ? "/dashboard/users" : "/dashboard"}
+                backLabel={isAdmin && currentUser.id !== resolvedParams.id ? "Zurück zur Benutzerverwaltung" : undefined}
                 backAsPlainAnchor
             />
 

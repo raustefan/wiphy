@@ -71,7 +71,7 @@ export async function acceptMembershipApplication(formData: FormData) {
 
     revalidatePath(MEMBERSHIP_ADMIN_PATH);
     revalidatePath("/dashboard");
-    revalidatePath("/dashboard/fees");
+    revalidatePath("/dashboard/users");
   });
 }
 

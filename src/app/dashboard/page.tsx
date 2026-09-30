@@ -5,10 +5,7 @@ import { isDebugMode, requireUser } from "@/lib/server/authz";
 import { toggleDebugMode } from "./actions";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { EmailChangeDialog } from "./EmailChangeDialog";
-import {
-    getDashboardUsers,
-    getEditableUser,
-} from "@/lib/server/services/userService";
+import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
 import {
     User,
@@ -19,7 +16,6 @@ import {
     SlidersHorizontal,
     Send,
     BookOpen,
-    Rows3,
     ToggleLeft,
     Mail,
     UserCog,
@@ -29,11 +25,12 @@ import {
     Pencil,
     ChevronRight,
     Users,
+    Contact,
     Server,
     Bug,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
-import { DashboardUsersTable } from "./DashboardUsersTable";
+import { ProfileSummary } from "./ProfileSummary";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { formatStatus } from "@/lib/statusLabels";
 import { formatDate, formatEuro } from "@/lib/format";
@@ -61,12 +58,12 @@ import {
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
+    { href: "/dashboard/users", label: "Benutzerverwaltung", Icon: Contact },
     { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
     { href: "/dashboard/vorstand", label: "Vorstand", Icon: Users },
     { href: "/dashboard/users/new", label: "Neuer User", Icon: User },
     { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
     { href: "/dashboard/termine", label: "Termine", Icon: CalendarDays },
-    { href: "/dashboard/fees", label: "Beiträge", Icon: IdCard },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
     { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", Icon: FileText },
     // Nur im Debug-Modus sichtbar und erreichbar (`requireDebugAdmin`).
@@ -112,7 +109,6 @@ export default async function DashboardPage() {
     if (!currentUser.id) redirect("/login");
     // Huckepack wie das Aufräumen der Registrierungen: gedrosselt, ohne Cron.
     await processTerminations();
-    const users = await getDashboardUsers(currentUser.id, currentUser.role);
     const profile = await getEditableUser(currentUser.id);
 
     // Fetch current user's fee data for the visualizer
@@ -414,33 +410,17 @@ export default async function DashboardPage() {
                         {/* ---------- Mitgliedschaftszertifikat ---------- */}
                         {certificate && <MembershipCertificateCard facts={certificate} />}
 
-                        {/* ---------- Konten ---------- */}
-                        <Card className="p-5 sm:p-6">
-                            <SectionHeader
-                                icon={<BookOpen size={16} />}
-                                eyebrow={
-                                    isAdmin
-                                        ? "Übersicht aller registrierten Nutzer"
-                                        : "Deine hinterlegten Daten"
-                                }
-                                title={isAdmin ? "Benutzerverwaltung" : "Mein Profil"}
-                                description={
-                                    isAdmin
-                                        ? "Alle Konten mit Rollen, Mitgliedsstatus und schnellen Aktionen. Über die Spaltenköpfe lässt sich die Tabelle sortieren."
-                                        : undefined
-                                }
-                                aside={
-                                    isAdmin ? (
-                                        <Badge className="self-start">
-                                            <Rows3 size={14} aria-hidden="true" />
-                                            {users.length}{" "}
-                                            {users.length === 1 ? "Eintrag" : "Einträge"}
-                                        </Badge>
-                                    ) : (
-                                        // Für Mitglieder ist dieser Abschnitt das
-                                        // eigene Profil — ein Zähler „1 Eintrag“
-                                        // sagte darüber nichts, der Weg zum
-                                        // Bearbeiten schon.
+                        {/* ---------- Mein Profil ----------
+                          Für Admins dasselbe wie für alle anderen: die
+                          Übersicht aller Konten steht in der
+                          Benutzerverwaltung. */}
+                        {profile && (
+                            <Card className="p-5 sm:p-6">
+                                <SectionHeader
+                                    icon={<BookOpen size={16} />}
+                                    eyebrow="Deine hinterlegten Daten"
+                                    title="Mein Profil"
+                                    aside={
                                         <ButtonLink
                                             href={`/dashboard/users/${currentUser.id}`}
                                             variant="soft"
@@ -451,27 +431,14 @@ export default async function DashboardPage() {
                                             <Pencil size={15} aria-hidden="true" />
                                             Bearbeiten
                                         </ButtonLink>
-                                    )
-                                }
-                            />
+                                    }
+                                />
 
-                            <Separator className="my-4" />
+                                <Separator className="my-4" />
 
-                            <DashboardUsersTable
-                                users={users.map((u) => ({
-                                    id: u.id,
-                                    email: u.email,
-                                    vorname: u.vorname,
-                                    name: u.name,
-                                    mitgliedId: u.mitgliedId,
-                                    role: u.role,
-                                    status: u.status,
-                                    emailVerified: u.emailVerified,
-                                    loginDisabled: u.loginDisabled,
-                                }))}
-                                isAdmin={isAdmin}
-                            />
-                        </Card>
+                                <ProfileSummary user={profile} />
+                            </Card>
+                        )}
                     </div>
                 </div>
             </div>

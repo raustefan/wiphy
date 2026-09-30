@@ -25,7 +25,7 @@ export const STUDENT_YEAR_LOOKAHEAD = 5;
  * Satzungs-/Datenschutzhinweis oder Mandatstext hochzählen — nur so lässt sich
  * später belegen, worauf sich eine alte Zustimmung bezog.
  */
-export const CONSENT_VERSION = "2026-09-v2";
+export const CONSENT_VERSION = "2026-09-v3";
 
 /**
  * Gläubiger-Identifikationsnummer des Vereins (bei der Bundesbank zu

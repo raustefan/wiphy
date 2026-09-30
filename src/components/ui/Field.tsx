@@ -182,10 +182,7 @@ export function Select({
   );
 }
 
-export function Checkbox({
-  className,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
+export function Checkbox({ className, ...props }: React.ComponentProps<"input">) {
   return (
     <input
       type="checkbox"

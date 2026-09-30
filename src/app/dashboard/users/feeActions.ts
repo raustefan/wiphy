@@ -55,48 +55,52 @@ export async function updateFeeComment(formData: FormData) {
 }
 
 export async function initializeBillingYear(formData: FormData) {
-  await executeAction(async () => {
+  return executeAction(async () => {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/users");
-    const year = parseInt(formData.get("year") as string);
-    if (!year || isNaN(year)) return;
+    // Gleiche Grenzen wie auf der Seite und in den Fee-Schemas.
+    const year = Number(formData.get("year"));
+    if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+      throw new AppError("VALIDATION_ERROR", "Ungültiges Jahr.");
+    }
 
     // Nur beitragspflichtige Mitglieder, die in dem Jahr schon dabei waren —
     // für alle anderen wäre die Zeile sinnlos.
     const users = (await getFeeLiableUsers()).filter((u) => wasMemberInYear(year, u.aufnahmedatum));
 
-    for (const user of users) {
-      // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der
-      // Status des zuletzt erfassten Jahres fortgeschrieben.
-      let isStudentDefault = user.studentYears.includes(year);
-      if (user.studentYears.length === 0) {
-        const lastFee = await prisma.memberFee.findFirst({
-          where: { userId: user.id, jahr: { lt: year } },
-          orderBy: { jahr: "desc" },
-        });
-        isStudentDefault = lastFee?.isStudent ?? false;
-      }
+    // Status des zuletzt erfassten Jahres je Mitglied, in einer Abfrage:
+    // absteigend sortiert liefert `distinct` die jüngste Zeile.
+    const lastFees = await prisma.memberFee.findMany({
+      where: { userId: { in: users.map((u) => u.id) }, jahr: { lt: year } },
+      orderBy: { jahr: "desc" },
+      distinct: ["userId"],
+      select: { userId: true, isStudent: true },
+    });
+    const lastIsStudent = new Map(lastFees.map((f) => [f.userId, f.isStudent]));
 
-      await prisma.memberFee.upsert({
-        where: { userId_jahr: { userId: user.id, jahr: year } },
-        update: {},
-        create: {
-          userId: user.id,
-          jahr: year,
-          bezahlt: false,
-          isStudent: isStudentDefault,
-          // Kein Betrag: die Zeile folgt automatisch den Standard-Beitragssätzen,
-          // bis ein Admin sie ausdrücklich als Ausnahme überschreibt.
-          beitrag: 0,
-          beitragManuell: false,
-        },
-      });
-    }
+    await prisma.memberFee.createMany({
+      data: users.map((user) => ({
+        userId: user.id,
+        jahr: year,
+        bezahlt: false,
+        // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der
+        // Status des zuletzt erfassten Jahres fortgeschrieben.
+        isStudent:
+          user.studentYears.length > 0
+            ? user.studentYears.includes(year)
+            : (lastIsStudent.get(user.id) ?? false),
+        // Kein Betrag: die Zeile folgt automatisch den Standard-Beitragssätzen,
+        // bis ein Admin sie ausdrücklich als Ausnahme überschreibt.
+        beitrag: 0,
+        beitragManuell: false,
+      })),
+      // Bestehende Zeilen bleiben unangetastet.
+      skipDuplicates: true,
+    });
 
     revalidatePath("/dashboard/users");
   });
 }
-
 
 export async function revertFeeAmount(formData: FormData) {
   await executeAction(async () => {

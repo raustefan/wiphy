@@ -11,7 +11,7 @@ function field(formData: FormData, name: string): string {
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * Nimmt das Formular von `/dashboard/fees/sepa` entgegen und liefert die
+ * Nimmt das SEPA-Formular der Benutzerverwaltung entgegen und liefert die
  * pain.008-Datei. Beträge und Bankdaten der Mitglieder kommen aus der
  * Datenbank, nicht aus dem Formular — von dort nur Auswahl, Mandatsreferenz
  * und das Mandatsdatum für Altmandate ohne erfasstes Datum.

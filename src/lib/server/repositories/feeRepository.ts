@@ -5,17 +5,14 @@ import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { feeRetentionCutoffYear } from "@/lib/membershipTermination";
 
 /**
- * Mitglieder samt Beitragszeilen.
+ * Konten samt Beitragszeilen.
  *
- * Die Admin-Sicht zeigt nur ordentliche Mitglieder: alle anderen Konten sind
- * nach § 5 gar nicht beitragspflichtig (Ehrenmitglieder, fördernde Mitglieder)
- * oder noch keine Mitglieder — sie in der Zahlungsübersicht zu führen erzeugt
- * nur Zeilen, die dauerhaft „offen“ aussehen.
- */
-/**
- * Admin-Sicht: aktuelle ordentliche Mitglieder und — ist ein Jahr angegeben —
- * zusätzlich alle, die für dieses Jahr eine Beitragszeile haben. Sonst fehlten
- * ausgetretene Mitglieder auch in den Jahren, in denen sie noch gezahlt haben.
+ * Mitglieder bekommen nur ihr eigenes Konto. Die Admin-Sicht ohne Jahr zeigt
+ * nur ordentliche Mitglieder: alle anderen Konten sind nach § 5 gar nicht
+ * beitragspflichtig (Ehrenmitglieder, fördernde Mitglieder) oder noch keine
+ * Mitglieder. Mit Jahr kommen alle Konten — welche davon in der Beitragsliste
+ * des Jahres stehen, entscheidet `isInFeeYear` im Service; die Benutzer-
+ * verwaltung braucht auch die übrigen samt Beitragsverlauf.
  */
 export function findUsersWithFees(userId: string, role: Role, year?: number) {
   return prisma.user.findMany({
@@ -24,7 +21,7 @@ export function findUsersWithFees(userId: string, role: Role, year?: number) {
         ? { id: userId }
         : year === undefined
           ? { status: "ORDENTLICHES_MITGLIED" }
-          : { OR: [{ status: "ORDENTLICHES_MITGLIED" }, { fees: { some: { jahr: year } } }] },
+          : undefined,
     orderBy: { createdAt: "asc" },
     include: { fees: true },
   });
