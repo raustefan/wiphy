@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/page.tsx": {
-    "mtime": 1790787003.970627,
-    "seen": 1790787204.768182,
-    "ast_hash": "d94755a9935dc1cb68c4ab9b967873f6",
+    "mtime": 1790791427.1888216,
+    "seen": 1790791454.2164521,
+    "ast_hash": "3b7a98023aae9df0de07ff9692d9fa56",
     "semantic_hash": ""
   },
   "src/app/dashboard/vorstand/DeleteMemberButton.tsx": {
@@ -1458,9 +1458,9 @@
     "semantic_hash": "60a80225bf86fc1f11f4c4bcd4c02e0b"
   },
   "src/lib/server/services/userService.ts": {
-    "mtime": 1790787003.9725206,
-    "seen": 1790787204.7705019,
-    "ast_hash": "4a4a138182b2fc5ca26d1d68567a729e",
+    "mtime": 1790791432.8740892,
+    "seen": 1790791454.218702,
+    "ast_hash": "501102b1ba8838130a5dca7297487f5d",
     "semantic_hash": ""
   },
   "src/lib/server/services/userUpdateData.ts": {
@@ -1488,9 +1488,9 @@
     "semantic_hash": "c04fbcc2f66a2d2e3e50717b0e570089"
   },
   "src/lib/server/validation/schemas.ts": {
-    "mtime": 1790355647.2816792,
-    "seen": 1790355902.182794,
-    "ast_hash": "ff3961f0885887ac1fd9a6bacd8e4750",
+    "mtime": 1790791379.8791652,
+    "seen": 1790791454.2187798,
+    "ast_hash": "165f3e74440581c33723b39fa94234ba",
     "semantic_hash": ""
   },
   "src/lib/siteUrl.ts": {
@@ -1794,9 +1794,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/actions.ts": {
-    "mtime": 1790355709.7232,
-    "seen": 1790355902.179054,
-    "ast_hash": "7ced5648bc25970a3f55797d499d3b0a",
+    "mtime": 1790791397.9416246,
+    "seen": 1790791454.2164512,
+    "ast_hash": "01ff194fef6112b9c7b0e54de6cf3de3",
     "semantic_hash": ""
   },
   "src/lib/email/sentMailRecord.ts": {
@@ -1923,6 +1923,24 @@
     "mtime": 1790788237.9418073,
     "seen": 1790788427.787978,
     "ast_hash": "675ecbf260b059f2c4e9ff301dc7b50c",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/users/new/BulkImport.tsx": {
+    "mtime": 1790791446.5281112,
+    "seen": 1790791454.216434,
+    "ast_hash": "6907e22d6bceb6011b6100c4b709ab1f",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/users/new/importFormat.ts": {
+    "mtime": 1790791446.5282476,
+    "seen": 1790791454.2164521,
+    "ast_hash": "60a96e7a63cc38cf08ebc35d3875f831",
+    "semantic_hash": ""
+  },
+  "tests/userImport.test.ts": {
+    "mtime": 1790791446.5315404,
+    "seen": 1790791454.2190871,
+    "ast_hash": "cf8ef0e2dd6e7eec6b46b667473c6195",
     "semantic_hash": ""
   }
 }

@@ -7,7 +7,7 @@ import {
 import { getMaxMitgliedId } from "@/lib/server/repositories/membershipRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
 import { planApplicationFees } from "@/lib/feeDefaults";
-import type { AdminCreateUserInput } from "@/lib/server/validation/schemas";
+import type { AdminCreateUserInput, UserImportExtra } from "@/lib/server/validation/schemas";
 import bcrypt from "bcryptjs";
 import { buildUserUpdateData, type UpdateUserInput } from "./userUpdateData";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
@@ -230,7 +230,12 @@ export async function adminDeleteUser(userIdToDelete: string, currentUserRole: R
  * Studienjahre, Bankdaten und Beitragszeilen — hier bis zum laufenden Jahr,
  * weil die Mitgliedschaft schon länger besteht.
  */
-export async function adminCreateUser(input: AdminCreateUserInput, currentUserRole: Role) {
+export async function adminCreateUser(
+  input: AdminCreateUserInput,
+  currentUserRole: Role,
+  /** Weitere Spalten aus dem JSON-Massenimport. */
+  extra: Partial<UserImportExtra> = {},
+) {
   if (currentUserRole !== "ADMIN") {
     throw new Error("Unauthorized: Only admins can create users");
   }
@@ -267,6 +272,7 @@ export async function adminCreateUser(input: AdminCreateUserInput, currentUserRo
 
   const user = await prisma.user.create({
     data: {
+      ...extra,
       email: input.email,
       password: await bcrypt.hash(input.password, 12),
       name: input.name,

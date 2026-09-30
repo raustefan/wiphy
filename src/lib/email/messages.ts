@@ -111,7 +111,7 @@ export function adminCreatedUserMessage(
     preheader: "Deine Zugangsdaten für den Internbereich.",
     blocks: [
       greeting(user),
-      { type: "text", content: `dein Account beim ${VEREIN.name} wurde von einem Vorstandsmitglied erstellt (vermutlich wegen des Umzugs auf unsere neue Website).` },
+      { type: "text", content: `dein neuer Account beim ${VEREIN.name} wurde von einem Vorstandsmitglied erstellt. Dies erfolgte vermutlich wegen des Umzugs auf unsere neue Website, die seit kurzem im Betrieb ist. Diese ist grundlegend neu gestaltet und bietet dir insbesondere eine verbesserte Mitgliederselbstverwaltung.` },
       { type: "text", content: "Du kannst dich ab sofort mit diesen Zugangsdaten anmelden:" },
       {
         type: "facts",
@@ -121,7 +121,7 @@ export function adminCreatedUserMessage(
         ],
       },
       { type: "button", label: "Zur Anmeldung", url: loginUrl },
-      { type: "text", content: "Wir empfehlen dringend, das Passwort nach der ersten Anmeldung im Internbereich zu ändern — diese E-Mail ist kein sicherer Aufbewahrungsort dafür." },
+      { type: "text", content: "Wir empfehlen dringend, das Passwort zu ändern — diese E-Mail ist kein sicherer Aufbewahrungsort dafür." },
     ],
   };
 }

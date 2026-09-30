@@ -200,6 +200,39 @@ export const adminCreateUserSchema = registerSchema
 
 export type AdminCreateUserInput = z.infer<typeof adminCreateUserSchema>;
 
+/**
+ * JSON-Massenimport: die übrigen `User`-Spalten, die `adminCreateUserSchema`
+ * nicht kennt. Wird neben diesem geparst und unverändert in `user.create` gereicht.
+ */
+export const userImportExtraSchema = z.object({
+  titel: optionalString(100),
+  user: optionalString(200),
+  telefon: optionalString(80),
+  website: optionalString(500),
+  studiengang: optionalString(200),
+  studienbeginn: optionalDate(),
+  studienende: optionalDate(),
+  diplomarbeit: optionalString(1000),
+  bachelorarbeit: optionalString(1000),
+  masterarbeit: optionalString(1000),
+  dissertation: optionalString(1000),
+  arbeitgeber: optionalString(200),
+  berufsstand: optionalString(200),
+  berufszweig: optionalString(200),
+  position: optionalString(200),
+  praktika: optionalString(2000),
+  berufserfahrung: optionalString(2000),
+  BLZ: optionalString(20),
+  KTO: optionalString(40),
+  zuwendungsbesch: preprocessBoolean,
+  mahnung: optionalString(1000),
+  datensperren: preprocessBoolean,
+  ausschluss: preprocessBoolean,
+  loginDisabled: preprocessBoolean,
+});
+
+export type UserImportExtra = z.infer<typeof userImportExtraSchema>;
+
 /** Rundmail: Gruppen oder einzeln ausgewählte Nutzer (IDs per FormData getAll) */
 export const mailSendSchema = z
   .object({
