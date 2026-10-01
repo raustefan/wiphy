@@ -14,6 +14,7 @@ import {
 import { EventDateCube, EventFacts } from "@/components/EventCard";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import ShareButton from "@/components/ShareButton";
+import { EventJsonLd } from "@/components/JsonLd";
 import { formatDate } from "@/lib/format";
 import {
   eventContactPath,
@@ -62,6 +63,17 @@ export default async function EventDetailPage({ params }: Props) {
 
   return (
     <Container size="3" className="py-8 sm:py-12">
+      <EventJsonLd
+        title={event.title}
+        summary={event.summary}
+        path={canonicalPath}
+        start={event.start}
+        end={event.end}
+        allDay={event.allDay}
+        location={event.location}
+        address={event.address}
+        onlineUrl={event.onlineUrl}
+      />
       <Link
         href={past ? "/termine?zeige=vergangen" : "/termine"}
         className="mb-6 inline-flex h-9 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"

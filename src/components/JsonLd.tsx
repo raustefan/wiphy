@@ -84,3 +84,60 @@ export function BlogPostingJsonLd({
     />
   );
 }
+
+/**
+ * Ein Termin — Grundlage für die Veranstaltungs-Kacheln in der Google-Suche.
+ * Ganztägige Termine bekommen nur das Datum (Berliner Kalendertag), sonst
+ * stünde dort Mitternacht UTC.
+ */
+export function EventJsonLd({
+  title,
+  summary,
+  path,
+  start,
+  end,
+  allDay,
+  location,
+  address,
+  onlineUrl,
+}: {
+  title: string;
+  summary: string;
+  path: string;
+  start: Date;
+  end: Date | null;
+  allDay: boolean;
+  location: string;
+  address: string;
+  onlineUrl: string;
+}) {
+  const date = (d: Date) =>
+    allDay ? d.toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }) : d.toISOString();
+  const place = (location || address) && {
+    "@type": "Place",
+    name: location || address,
+    address: address || undefined,
+  };
+  const online = onlineUrl && { "@type": "VirtualLocation", url: onlineUrl };
+
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "Event",
+        name: title,
+        description: summary || undefined,
+        url: absoluteUrl(path),
+        startDate: date(start),
+        endDate: end ? date(end) : undefined,
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode: `https://schema.org/${
+          place && online ? "Mixed" : online ? "Online" : "Offline"
+        }EventAttendanceMode`,
+        location: [place, online].filter(Boolean),
+        image: [absoluteUrl("/opengraph-image")],
+        organizer: { "@id": `${SITE_URL}/#organization` },
+      }}
+    />
+  );
+}
