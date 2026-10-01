@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
+import GravityTrigger from "@/components/GravityTrigger";
 
 const legalLinks = [
   { href: "/impressum", label: "Impressum" },
@@ -39,8 +40,9 @@ export default function Footer() {
       {/* Telefon: nur das Pflichtprogramm. Die Navigation steckt dort schon in
           Daumenleiste und „Mehr“-Menü — eine volle Linkliste darunter ließe
           die Seite wie eine Website statt wie eine App wirken. */}
-      <div className="flex flex-col items-center px-4 pt-4 text-xs text-faint md:hidden">
+      <div className="flex flex-col items-center gap-2 px-4 pt-4 text-xs text-faint md:hidden">
         <p>© {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.</p>
+        <GravityTrigger />
         <div className="flex gap-4">
           {legalLinks.map((link) => (
             <Link
@@ -89,10 +91,11 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 border-t border-line pt-6">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
           <p className="text-sm text-faint">
             © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
           </p>
+          <GravityTrigger />
         </div>
       </div>
     </footer>

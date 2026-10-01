@@ -20,6 +20,7 @@ const DISMISSED_KEY = "install-hint-dismissed";
  */
 export default function InstallHint() {
   const [mode, setMode] = useState<"prompt" | "ios" | "manual" | null>(null);
+  const [footerInView, setFooterInView] = useState(false);
   const installEvent = useRef<BeforeInstallPromptEvent | null>(null);
 
   // Offline-Seite für die installierte App (siehe `public/sw.js`). Nur im
@@ -64,7 +65,17 @@ export default function InstallHint() {
     };
   }, []);
 
-  if (!mode) return null;
+  // Der Hinweis schwebt genau über dem Seitenende — dort würde er Impressum,
+  // Datenschutz und den Footer-Knopf verdecken. Also Platz machen, solange der Footer zu sehen ist.
+  useEffect(() => {
+    const footer = document.querySelector("footer");
+    if (!mode || !footer) return;
+    const observer = new IntersectionObserver(([entry]) => setFooterInView(entry.isIntersecting));
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, [mode]);
+
+  if (!mode || footerInView) return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, "1");

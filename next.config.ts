@@ -7,9 +7,10 @@ const nextConfig: NextConfig = {
   /**
    * Handy-Test im WLAN: Next blockiert Dev-Anfragen von fremden Hostnamen.
    * Die Seite lädt dann zwar, React startet aber nie — Links gehen, Knöpfe
-   * nicht. Nur für `next dev` relevant.
+   * nicht. Nur für `next dev` relevant. Platzhalter statt fester IP, weil der
+   * Mac in jedem WLAN eine andere Adresse bekommt (`*` = ein Adressteil).
    */
-  allowedDevOrigins: ["192.168.178.196", "MacBook-Pro-4.local"],
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "MacBook-Pro-4.local"],
 
   /**
    * Die Registrierung und der Aufnahmeantrag sind in der öffentlichen Seite

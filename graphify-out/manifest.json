@@ -18,10 +18,10 @@
     "semantic_hash": ""
   },
   "eslint.config.mjs": {
-    "mtime": 1785919207.55,
-    "seen": 1790242430.597024,
-    "ast_hash": "dfa1f5f6a7037bf39dc510f30b180002",
-    "semantic_hash": "dfa1f5f6a7037bf39dc510f30b180002"
+    "mtime": 1790869192.6349175,
+    "seen": 1790870173.4715672,
+    "ast_hash": "150d27e09ff1560888e634b05733de5a",
+    "semantic_hash": ""
   },
   "next.config.ts": {
     "mtime": 1790245246.9710448,
@@ -582,9 +582,9 @@
     "semantic_hash": "f1db701275b6a0fac1d4dc806dbba1ba"
   },
   "src/app/layout.tsx": {
-    "mtime": 1790703474.536105,
-    "seen": 1790703516.775051,
-    "ast_hash": "1d9e45a460fc885e2c61154f653b0341",
+    "mtime": 1790869289.0950034,
+    "seen": 1790870173.47348,
+    "ast_hash": "7414c5b5671fa293d91a8015d6852152",
     "semantic_hash": ""
   },
   "src/app/loading.tsx": {
@@ -840,9 +840,9 @@
     "semantic_hash": "e1d4801f22a0be4a6c31fbd9c8c06892"
   },
   "src/components/Footer.tsx": {
-    "mtime": 1790245975.3674214,
-    "seen": 1790245989.556036,
-    "ast_hash": "3d42b1762b6c89817985db5546d75c55",
+    "mtime": 1790869268.410641,
+    "seen": 1790870173.4740832,
+    "ast_hash": "06e724fc2734fb7dbbc313177537eb05",
     "semantic_hash": ""
   },
   "src/components/Header.tsx": {
@@ -1638,9 +1638,9 @@
     "semantic_hash": ""
   },
   "src/components/InstallHint.tsx": {
-    "mtime": 1790245738.7284336,
-    "seen": 1790245833.568097,
-    "ast_hash": "c2b8c05b60c075aaeccd27d906c89aad",
+    "mtime": 1790871998.5231185,
+    "seen": 1790872028.232471,
+    "ast_hash": "e36fb2bbe3ca5899c8c72ca1ecccea28",
     "semantic_hash": ""
   },
   "public/sw.js": {
@@ -1965,6 +1965,42 @@
     "mtime": 1790849188.9838474,
     "seen": 1790849312.8064141,
     "ast_hash": "a12a4ce9b3e919d42564b8c2ef42f4dd",
+    "semantic_hash": ""
+  },
+  ".gemini/settings.json": {
+    "mtime": 1790868413.9395895,
+    "seen": 1790870173.471552,
+    "ast_hash": "ef652a87f532fb5e2d7422b7a393e978",
+    "semantic_hash": ""
+  },
+  "src/components/GravityEasterEgg.tsx": {
+    "mtime": 1790871630.1865995,
+    "seen": 1790871788.533939,
+    "ast_hash": "43b108fb744b01dddf2148c1eb0be2fc",
+    "semantic_hash": ""
+  },
+  "src/components/GravityTrigger.tsx": {
+    "mtime": 1790869248.7172024,
+    "seen": 1790870173.474085,
+    "ast_hash": "9117859dbde2f4dabf5a3b4e84c4d07a",
+    "semantic_hash": ""
+  },
+  "src/lib/gravityPhysics.ts": {
+    "mtime": 1790871687.9128966,
+    "seen": 1790871788.534673,
+    "ast_hash": "b4a857dc700478fb7768c51d5d753790",
+    "semantic_hash": ""
+  },
+  "tests/gravityEasterEgg.test.ts": {
+    "mtime": 1790871642.4580846,
+    "seen": 1790871788.535862,
+    "ast_hash": "ca970f4d99aebe9e7f4c1efc6f67a003",
+    "semantic_hash": ""
+  },
+  "GEMINI.md": {
+    "mtime": 1790868413.939377,
+    "seen": 1790870173.476083,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
     "semantic_hash": ""
   }
 }
