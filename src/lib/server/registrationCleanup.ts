@@ -59,6 +59,13 @@ export async function pruneUnverifiedRegistrations(force = false): Promise<numbe
   lastRunAt = now;
 
   try {
+    // Abgelaufene Tokens sind wertlos, verschwinden sonst aber nur beim
+    // Einlösen, bei einer neuen Anforderung oder mit dem Konto. Deshalb
+    // unabhängig von den Schaltern unten.
+    const nowDate = new Date(now);
+    await prisma.emailVerificationToken.deleteMany({ where: { expires: { lt: nowDate } } });
+    await prisma.passwordResetToken.deleteMany({ where: { expires: { lt: nowDate } } });
+
     // Wer die Bestätigung abgeschaltet hat, darf niemanden dafür löschen, dass
     // er sie nicht durchführen konnte. Der eigene Schalter erlaubt es
     // zusätzlich, das Aufräumen allein anzuhalten — etwa während der Klärung

@@ -4,8 +4,8 @@
  * zwei Zahlen auseinanderlaufen.
  */
 
-/** Ein Titelbild plus fünf weitere Bilder. */
-export const MAX_ADDITIONAL_BLOG_IMAGES = 5;
+/** Ein Titelbild plus neun weitere Bilder. */
+export const MAX_ADDITIONAL_BLOG_IMAGES = 9;
 export const MAX_BLOG_IMAGES = MAX_ADDITIONAL_BLOG_IMAGES + 1;
 
 /**

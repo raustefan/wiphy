@@ -10,6 +10,7 @@ import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { logSecurityEvent } from "@/lib/server/securityLog";
+import { pruneUnverifiedRegistrations } from "@/lib/server/registrationCleanup";
 
 export async function POST(request: Request) {
   try {
@@ -128,6 +129,8 @@ export async function POST(request: Request) {
     // existierendes Konto auf den SMTP-Server, und die Antwortzeit verrät,
     // welche Adressen registriert sind.
     after(async () => {
+      // Räumt nebenbei abgelaufene Reset-Tokens weg (gedrosselt).
+      await pruneUnverifiedRegistrations();
       try {
         await sendEmail({
           to: trimmedEmail,
