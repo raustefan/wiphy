@@ -152,6 +152,9 @@ export async function POST(request: Request) {
           email: verificationToken.email,
           emailVerified: true,
           registrationPendingSince: null,
+          // Neue Adresse = neuer Login-Name: alle Sitzungen enden, auch die,
+          // aus der die Änderung angefordert wurde.
+          ...(isEmailChange && { sessionVersion: { increment: 1 } }),
         },
       });
 

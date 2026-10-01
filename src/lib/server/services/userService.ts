@@ -56,11 +56,139 @@ export async function updateOwnBankDetails(
 }
 
 /**
- * `currentPassword` ist nur für die Änderung der eigenen Adresse nötig: wer die
- * Adresse ändert, kann danach per „Passwort vergessen“ das Passwort setzen. Eine
- * übernommene Session allein soll dafür nicht reichen.
+ * Fordert die Änderung der eigenen Adresse an (`/dashboard/konto`). Geändert
+ * wird hier noch nichts: erst der Klick auf den Link an die neue Adresse setzt
+ * sie (`/api/auth/verify-email`) und meldet dabei alle Sitzungen ab.
+ *
+ * Das aktuelle Passwort ist Pflicht: wer die Adresse ändert, kann danach per
+ * „Passwort vergessen“ das Passwort setzen. Eine übernommene Session allein
+ * soll dafür nicht reichen.
  */
-export async function updateUserProfile(input: UpdateUserInput, currentPassword?: string) {
+export async function requestEmailChange(userId: string, email: string, currentPassword: string) {
+  const { prisma } = await import("@/lib/prisma");
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, password: true },
+  });
+  if (!user) throw new Error("User not found");
+
+  const newEmail = normalizeEmail(email);
+  if (newEmail === normalizeEmail(user.email)) {
+    return { ok: false as const, reason: "unchanged" as const };
+  }
+
+  // Pro Konto: bremst das Raten des Passworts über dieses Formular und den
+  // Versand von Bestätigungsmails an frei gewählte Adressen.
+  try {
+    await consumeRateLimit({
+      bucket: "email-change",
+      keyParts: [user.id],
+      limit: 5,
+      windowMs: 60 * 60 * 1000,
+      blockMs: 60 * 60 * 1000,
+      message: "Zu viele Versuche, die E-Mail-Adresse zu ändern.",
+    });
+  } catch (error) {
+    if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
+      await logSecurityEvent({ type: "EMAIL_CHANGE", outcome: "BLOCKED", reason: "rate_limited", userId: user.id });
+      return { ok: false as const, reason: "rate_limited" as const };
+    }
+    throw error;
+  }
+
+  if (!(await bcrypt.compare(currentPassword, user.password))) {
+    await logSecurityEvent({
+      type: "EMAIL_CHANGE",
+      outcome: "FAILURE",
+      reason: "invalid_credentials",
+      userId: user.id,
+    });
+    return { ok: false as const, reason: "wrong_password" as const };
+  }
+  const existing = await prisma.user.findUnique({ where: { email: newEmail } });
+  if (existing) {
+    await logSecurityEvent({
+      type: "EMAIL_CHANGE",
+      outcome: "FAILURE",
+      reason: "email_taken",
+      userId: user.id,
+    });
+    return { ok: false as const, reason: "email_taken" as const };
+  }
+
+  const { token, hash } = newToken();
+  const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+  await prisma.emailVerificationToken.deleteMany({
+    where: { userId: user.id },
+  });
+
+  await prisma.emailVerificationToken.create({
+    data: {
+      userId: user.id,
+      email: newEmail,
+      token: hash,
+      expires,
+    },
+  });
+
+  try {
+    await sendEmail({
+      to: newEmail,
+      message: emailChangeMessage(siteUrl(`/verify-email?token=${token}`)),
+    });
+  } catch (error) {
+    await logSecurityEvent({
+      type: "EMAIL_CHANGE",
+      outcome: "FAILURE",
+      reason: "mail_failed",
+      userId: user.id,
+    });
+    throw error;
+  }
+
+  // Der Vorgang ist hier erst *angefordert*: erst der Klick auf den
+  // Bestätigungslink ändert die Adresse und erscheint als EMAIL_VERIFICATION
+  // mit dem Grund `email_change`. Ohne IP-Bezug, weil dieser Service keinen
+  // Request-Kontext hat — das Konto ist hier die relevante Zuordnung.
+  await logSecurityEvent({
+    type: "EMAIL_CHANGE",
+    outcome: "SUCCESS",
+    userId: user.id,
+  });
+
+  return { ok: true as const };
+}
+
+/** Die noch nicht bestätigte neue Adresse, falls eine Änderung läuft. */
+export async function getPendingEmailChange(userId: string) {
+  const { prisma } = await import("@/lib/prisma");
+  return prisma.emailVerificationToken.findFirst({
+    where: { userId, expires: { gte: new Date() } },
+    select: { email: true, expires: true },
+  });
+}
+
+/**
+ * Legt einen frischen Reset-Token an (ältere für die Adresse verfallen) und
+ * liefert den Link dazu. Für „Passwort vergessen“ und für die Passwortänderung
+ * im Dashboard — beide laufen über denselben Mail-Link.
+ */
+export async function createPasswordResetUrl(email: string) {
+  const { prisma } = await import("@/lib/prisma");
+  const { token, hash } = newToken();
+  await prisma.passwordResetToken.deleteMany({ where: { email } });
+  await prisma.passwordResetToken.create({
+    data: { email, token: hash, expires: new Date(Date.now() + 30 * 60 * 1000) },
+  });
+  return siteUrl(`/reset-password?token=${token}`);
+}
+
+/**
+ * Die eigene Adresse ändert sich nur über `requestEmailChange`. Ein Admin
+ * korrigiert hier dagegen eine fremde Adresse direkt.
+ */
+export async function updateUserProfile(input: UpdateUserInput) {
   const data = buildUserUpdateData(input);
 
   const user = await findUserById(input.idToEdit);
@@ -68,105 +196,10 @@ export async function updateUserProfile(input: UpdateUserInput, currentPassword?
     throw new Error("User not found");
   }
 
-  let emailChanged = false;
   const isSelf = input.idToEdit === input.currentUserId;
   const isMember = input.currentUserRole !== "ADMIN";
 
-  if ((isSelf || isMember) && input.email && normalizeEmail(input.email) !== normalizeEmail(user.email)) {
-    const newEmail = normalizeEmail(input.email);
-
-    const { prisma } = await import("@/lib/prisma");
-
-    // Pro Konto: bremst das Raten des Passworts über dieses Formular und den
-    // Versand von Bestätigungsmails an frei gewählte Adressen.
-    try {
-      await consumeRateLimit({
-        bucket: "email-change",
-        keyParts: [user.id],
-        limit: 5,
-        windowMs: 60 * 60 * 1000,
-        blockMs: 60 * 60 * 1000,
-        message: "Zu viele Versuche, die E-Mail-Adresse zu ändern.",
-      });
-    } catch (error) {
-      if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
-        await logSecurityEvent({ type: "EMAIL_CHANGE", outcome: "BLOCKED", reason: "rate_limited", userId: user.id });
-        return { ok: false as const, reason: "rate_limited" as const };
-      }
-      throw error;
-    }
-
-    const stored = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { password: true },
-    });
-    if (!currentPassword || !stored || !(await bcrypt.compare(currentPassword, stored.password))) {
-      await logSecurityEvent({
-        type: "EMAIL_CHANGE",
-        outcome: "FAILURE",
-        reason: "invalid_credentials",
-        userId: user.id,
-      });
-      return { ok: false as const, reason: "wrong_password" as const };
-    }
-    const existing = await prisma.user.findUnique({ where: { email: newEmail } });
-    if (existing) {
-      // Reported as a result, not thrown: the caller is a plain form action, so
-      // a throw would replace the page with the generic error screen and lose
-      // everything the user typed.
-      await logSecurityEvent({
-        type: "EMAIL_CHANGE",
-        outcome: "FAILURE",
-        reason: "email_taken",
-        userId: user.id,
-      });
-      return { ok: false as const, reason: "email_taken" as const };
-    }
-
-    emailChanged = true;
-
-    const { token, hash } = newToken();
-    const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-
-    await prisma.emailVerificationToken.deleteMany({
-      where: { userId: user.id },
-    });
-
-    await prisma.emailVerificationToken.create({
-      data: {
-        userId: user.id,
-        email: newEmail,
-        token: hash,
-        expires,
-      },
-    });
-
-    try {
-      await sendEmail({
-        to: newEmail,
-        message: emailChangeMessage(siteUrl(`/verify-email?token=${token}`)),
-      });
-    } catch (error) {
-      await logSecurityEvent({
-        type: "EMAIL_CHANGE",
-        outcome: "FAILURE",
-        reason: "mail_failed",
-        userId: user.id,
-      });
-      throw error;
-    }
-
-    // Der Vorgang ist hier erst *angefordert*: erst der Klick auf den
-    // Bestätigungslink ändert die Adresse und erscheint als EMAIL_VERIFICATION
-    // mit dem Grund `email_change`. Ohne IP-Bezug, weil dieser Service keinen
-    // Request-Kontext hat — das Konto ist hier die relevante Zuordnung.
-    await logSecurityEvent({
-      type: "EMAIL_CHANGE",
-      outcome: "SUCCESS",
-      userId: user.id,
-    });
-
-    // Keep the old email in updated data
+  if (isSelf || isMember) {
     data.email = user.email;
   } else if (input.email && normalizeEmail(input.email) !== normalizeEmail(user.email)) {
     // Admin korrigiert eine fremde Adresse: Links, die an die alte Adresse
@@ -212,7 +245,7 @@ export async function updateUserProfile(input: UpdateUserInput, currentPassword?
   } else {
     await updateUserById(input.idToEdit, data);
   }
-  return { ok: true as const, emailChanged };
+  return { ok: true as const };
 }
 
 export async function adminDeleteUser(userIdToDelete: string, currentUserRole: Role) {

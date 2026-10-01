@@ -95,6 +95,12 @@ export const registerSchema = z.object({
     .max(128, "Passwort ist zu lang."),
 });
 
+/** Eigene Adresse ändern (`/dashboard/konto`). */
+export const emailChangeSchema = z.object({
+  email: emailField,
+  currentPassword: z.string().min(1, "Bitte gib dein aktuelles Passwort ein.").max(128),
+});
+
 /**
  * A header-injectable value must never reach nodemailer's `Reply-To`/`Subject`.
  * Zod's email check already rejects CR/LF in the address, but the free-text

@@ -25,6 +25,7 @@ import {
     Mail,
     MapPin,
     MessageSquare,
+    Pencil,
     Phone,
     ShieldCheck,
     StickyNote,
@@ -33,6 +34,7 @@ import {
 import {
     Badge,
     Button,
+    buttonClasses,
     Callout,
     Checkbox,
     Dialog,
@@ -45,7 +47,6 @@ import {
 import { cn } from "@/lib/cn";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 import { IbanInput } from "@/components/IbanInput";
-import { PasswordInput } from "@/components/PasswordField";
 
 type UserData = {
     id: string;
@@ -252,7 +253,6 @@ export function EditUserForm({
     );
 
     const [isDirty, setIsDirty] = useState(false);
-    const [emailDirty, setEmailDirty] = useState(false);
     const [diff, setDiff] = useState<{ label: string; from: string; to: string }[]>([]);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -281,9 +281,6 @@ export function EditUserForm({
 
     function computeDirty() {
         setIsDirty(computeChanges().length > 0);
-        const form = formRef.current;
-        const emailRaw = form ? new FormData(form).get("email") : null;
-        setEmailDirty(typeof emailRaw === "string" && emailRaw !== initialValues.email);
     }
 
     useEffect(() => {
@@ -404,31 +401,35 @@ export function EditUserForm({
 
                     {/* Kontakt */}
                     <Section icon={<Mail size={16} />} title="Kontakt" description="Wie wir dich erreichen können.">
-                        <Field label="E-Mail" required>
-                            <IconInput
-                                icon={<Mail size={15} />}
-                                name="email"
-                                type="email"
-                                defaultValue={initialValues.email}
-                                required
-                            />
-                            {emailDirty && (
-                                <p className="mt-1 flex items-start gap-2 text-xs text-warning">
-                                    <Mail size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
-                                    Nach dem Speichern erhältst du eine Bestätigungs-E-Mail an die
-                                    neue Adresse. Die Änderung wird erst nach Bestätigung wirksam.
-                                </p>
-                            )}
+                        <Field
+                            label="E-Mail"
+                            required
+                            hint={isSelf ? "Deine Adresse änderst du unter „Login & Sicherheit“ — mit Bestätigung per E-Mail." : undefined}
+                        >
+                            {/* Die eigene Adresse ist Login-Name und ändert sich nur
+                                über /dashboard/konto (Bestätigungslink). `readOnly`
+                                statt `disabled`, damit der Wert mitgeschickt wird. */}
+                            <div className="flex items-center gap-2">
+                                <div className="min-w-0 flex-1">
+                                    <IconInput
+                                        icon={<Mail size={15} />}
+                                        name="email"
+                                        type="email"
+                                        defaultValue={initialValues.email}
+                                        required
+                                        readOnly={isSelf}
+                                        aria-readonly={isSelf || undefined}
+                                        className={isSelf ? "cursor-not-allowed opacity-60 focus:border-line-strong focus:ring-0" : undefined}
+                                    />
+                                </div>
+                                {isSelf && (
+                                    <a href="/dashboard/konto" className={buttonClasses({ variant: "soft", color: "neutral", size: "sm" })}>
+                                        <Pencil size={14} aria-hidden="true" />
+                                        Ändern
+                                    </a>
+                                )}
+                            </div>
                         </Field>
-                        {emailDirty && isSelf && (
-                            <Field label="Aktuelles Passwort" required>
-                                <PasswordInput
-                                    name="currentPassword"
-                                    autoComplete="current-password"
-                                    required
-                                />
-                            </Field>
-                        )}
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
                                 <IconInput icon={<Phone size={15} />} name="telefon" defaultValue={initialValues.telefon} />

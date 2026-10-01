@@ -4,7 +4,6 @@ import Link from "next/link";
 import { isDebugMode, requireUser } from "@/lib/server/authz";
 import { toggleDebugMode } from "./actions";
 import { MailSuccessDialog } from "./MailSuccessDialog";
-import { EmailChangeDialog } from "./EmailChangeDialog";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
 import {
@@ -28,6 +27,7 @@ import {
     Contact,
     Server,
     Bug,
+    KeyRound,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { ProfileSummary } from "./ProfileSummary";
@@ -164,9 +164,6 @@ export default async function DashboardPage() {
                 <MailSuccessDialog />
             </Suspense>
             <Suspense fallback={null}>
-                <EmailChangeDialog />
-            </Suspense>
-            <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
             </Suspense>
 
@@ -186,7 +183,13 @@ export default async function DashboardPage() {
                                 {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
                             </PageTitle>
                         </div>
-                        <LogoutButton />
+                        <div className="flex flex-wrap items-center gap-2">
+                            <ButtonLink href="/dashboard/konto" variant="soft" color="neutral">
+                                <KeyRound size={16} aria-hidden="true" />
+                                Login & Sicherheit
+                            </ButtonLink>
+                            <LogoutButton />
+                        </div>
                     </div>
 
                     {/* Innenabstand wie bei den Karten, damit die Angaben auf
@@ -261,6 +264,15 @@ export default async function DashboardPage() {
                             title="Verwalte deine Mitgliedsdaten"
                             description="Persönliche Daten, Kontakt, Studium und Beruf jederzeit selbst einsehen und aktualisieren."
                             action="Zu meinem Profil"
+                        />
+
+                        <CtaCard
+                            href="/dashboard/konto"
+                            icon={<KeyRound size={18} aria-hidden="true" />}
+                            eyebrow="Login & Sicherheit"
+                            title="Passwort & E-Mail-Adresse"
+                            description="Ändere dein Passwort oder deine Login-Adresse — bestätigt per Link in deinem Postfach."
+                            action="Zugang verwalten"
                         />
 
                         {/* ---------- Admin-Aktionen ---------- */}

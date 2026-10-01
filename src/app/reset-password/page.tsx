@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { CheckCircle2, KeyRound, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
@@ -24,7 +25,11 @@ function ResetPasswordForm() {
                 { token, password: formData.get("password") },
                 "Fehler beim Zurücksetzen des Passworts.",
             ),
-        { featureLabel: "Passwort zurücksetzen", onSuccess: () => setDone(true) },
+        { featureLabel: "Passwort zurücksetzen", onSuccess: () => {
+            setDone(true);
+            // Der Server hat die Sitzung schon entwertet; das räumt das Cookie weg.
+            void signOut({ redirect: false });
+        } },
     );
 
     function handleSubmit(event: React.FormEvent) {

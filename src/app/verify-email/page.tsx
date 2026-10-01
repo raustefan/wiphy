@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { CheckCircle2, MailCheck, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
@@ -29,7 +30,11 @@ function VerifyEmailContent() {
                 { token: formData.get("token") },
                 "Fehler bei der E-Mail-Bestätigung.",
             ),
-        { featureLabel: "E-Mail-Verifizierung", onSuccess: () => setVerified(true) },
+        { featureLabel: "E-Mail-Verifizierung", onSuccess: () => {
+            setVerified(true);
+            // Nach einer Adressänderung ist die Sitzung serverseitig schon entwertet.
+            void signOut({ redirect: false });
+        } },
     );
 
     // Die Bestätigung passiert beim Öffnen des Links, nicht auf Knopfdruck.

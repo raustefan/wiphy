@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { after } from "next/server";
-import { newToken } from "@/lib/server/tokens";
+import { createPasswordResetUrl } from "@/lib/server/services/userService";
 import { sendEmail } from "@/lib/server/email/mailer";
 import { passwordResetMessage } from "@/lib/email/messages";
-import { siteUrl } from "@/lib/server/siteUrl";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
@@ -108,22 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    const { token, hash } = newToken();
-
-    // Delete existing PasswordResetToken rows for that email
-    await prisma.passwordResetToken.deleteMany({
-      where: { email: trimmedEmail },
-    });
-
-    // Create a new one with expires = now + 30 minutes
-    const expires = new Date(Date.now() + 30 * 60 * 1000);
-    await prisma.passwordResetToken.create({
-      data: {
-        email: trimmedEmail,
-        token: hash,
-        expires,
-      },
-    });
+    const resetUrl = await createPasswordResetUrl(trimmedEmail);
 
     // Versand erst nach der Antwort: sonst wartet nur die Anfrage für ein
     // existierendes Konto auf den SMTP-Server, und die Antwortzeit verrät,
@@ -134,7 +118,7 @@ export async function POST(request: Request) {
       try {
         await sendEmail({
           to: trimmedEmail,
-          message: passwordResetMessage(siteUrl(`/reset-password?token=${token}`)),
+          message: passwordResetMessage(resetUrl),
         });
       } catch (error) {
         // Der Vorgang gilt erst als erfolgreich, wenn die Mail draußen ist —

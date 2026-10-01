@@ -21,7 +21,6 @@ import { DeleteMemberSection } from "./DeleteMemberSection";
 import { AccountSection } from "./AccountSection";
 import { getOpenTermination } from "@/lib/server/services/terminationService";
 import { terminationDate } from "@/lib/membershipTermination";
-import { EmailChangeDialog } from "../../EmailChangeDialog";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
 
 export const metadata: Metadata = { title: "Mitgliedsdaten" };
@@ -126,29 +125,16 @@ async function updateUser(formData: FormData) {
                 ? parsed.status
                 : undefined,
         mitgliedId: parsed.mitgliedId,
-    }, typeof formData.get("currentPassword") === "string" ? (formData.get("currentPassword") as string) : undefined);
+    });
 
     if (!result.ok) {
-        if (result.reason === "email_taken") {
-            redirect(`${editPath}?emailTakenError=1`);
-        }
-        if (result.reason === "wrong_password") {
-            redirect(`${editPath}?passwordError=1`);
-        }
-        if (result.reason === "rate_limited") {
-            redirect(`${editPath}?emailRateLimited=1`);
-        }
         redirect(`/dashboard/users/${parsed.id}?mitgliedIdError=1`);
     }
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/users");
-    if (result.emailChanged) {
-        redirect(`${editPath}?emailChanged=1`);
-    } else {
-        // Wer ein fremdes Konto bearbeitet hat, kam aus der Benutzerverwaltung.
-        redirect(currentUser.id === parsed.id ? "/dashboard" : "/dashboard/users");
-    }
+    // Wer ein fremdes Konto bearbeitet hat, kam aus der Benutzerverwaltung.
+    redirect(currentUser.id === parsed.id ? "/dashboard" : "/dashboard/users");
 }
 
 async function deleteUserAction(formData: FormData) {
@@ -172,9 +158,6 @@ export default async function EditUserPage({
     searchParams?: Promise<{
         mitgliedIdError?: string;
         validationError?: string;
-        emailTakenError?: string;
-        passwordError?: string;
-        emailRateLimited?: string;
     }>;
 }) {
     const resolvedParams = await params;
@@ -225,26 +208,6 @@ export default async function EditUserPage({
             detail: "Ein oder mehrere Felder sind ungültig oder fehlen.",
         });
     }
-    if (resolvedSearchParams?.emailTakenError === "1") {
-        formErrors.push({
-            title: "Diese E-Mail-Adresse wird bereits verwendet.",
-            detail:
-                "Bitte wähle eine andere Adresse. Deine übrigen Änderungen wurden nicht gespeichert.",
-        });
-    }
-    if (resolvedSearchParams?.passwordError === "1") {
-        formErrors.push({
-            title: "Das aktuelle Passwort stimmt nicht.",
-            detail:
-                "Zum Ändern deiner E-Mail-Adresse brauchen wir dein aktuelles Passwort. Deine übrigen Änderungen wurden nicht gespeichert.",
-        });
-    }
-    if (resolvedSearchParams?.emailRateLimited === "1") {
-        formErrors.push({
-            title: "Zu viele Versuche.",
-            detail: "Bitte versuche in einer Stunde erneut, deine E-Mail-Adresse zu ändern. Deine übrigen Änderungen wurden nicht gespeichert.",
-        });
-    }
     if (isAdmin && resolvedSearchParams?.mitgliedIdError === "1") {
         formErrors.push({
             title: "Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.",
@@ -256,9 +219,6 @@ export default async function EditUserPage({
         <Container size="2" className="py-8 sm:py-12">
             <Suspense fallback={null}>
                 <FeatureDisabledQueryDialog />
-            </Suspense>
-            <Suspense fallback={null}>
-                <EmailChangeDialog />
             </Suspense>
 
             <DashboardPageHeader
