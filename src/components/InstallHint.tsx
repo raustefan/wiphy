@@ -93,7 +93,7 @@ export default function InstallHint() {
   return (
     <aside
       aria-label="Als App installieren"
-      className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 shadow-lg md:hidden"
+      className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 shadow-lg md:hidden [[data-gravity-active]_&]:hidden"
     >
       <div className="grid flex-1 gap-1 text-sm">
         <p className="font-semibold text-foreground">Als App auf den Homescreen</p>

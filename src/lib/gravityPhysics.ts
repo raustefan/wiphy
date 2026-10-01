@@ -135,7 +135,9 @@ function substep(bodies: Body[], field: Field, bounds: Bounds, dt: number): Impa
       const dx = field.attractor.x - c.x;
       const dy = field.attractor.y - c.y;
       const dist = Math.max(60, Math.hypot(dx, dy));
-      const force = 4_000_000 / (dist * dist);
+      // Bewusst unphysikalisch flach abfallend statt 1/d²: Auch Kacheln am Ende einer langen
+      // Seite sollen binnen Sekunden ins Loch stürzen, nicht erst nach einer Minute.
+      const force = 3000 * Math.pow(60 / dist, 0.3);
       b.vx += (dx / dist) * force * dt;
       b.vy += (dy / dist) * force * dt;
     } else {
@@ -226,6 +228,14 @@ const dot = (a: Vec, b: Vec) => a.x * b.x + a.y * b.y;
 function radius(b: Body, axis: Vec): number {
   const [u, v] = axes(b);
   return Math.abs(dot(u, axis)) * (b.w / 2) + Math.abs(dot(v, axis)) * (b.h / 2);
+}
+
+/** Abstand von p zur nächsten Stelle der gedrehten Kachel; 0, wenn p in ihr liegt. */
+export function distanceToBody(b: Body, p: Vec): number {
+  const c = center(b);
+  const d = { x: p.x - c.x, y: p.y - c.y };
+  const [u, v] = axes(b);
+  return Math.hypot(Math.max(Math.abs(dot(d, u)) - b.w / 2, 0), Math.max(Math.abs(dot(d, v)) - b.h / 2, 0));
 }
 
 function inside(p: Vec, b: Body): boolean {

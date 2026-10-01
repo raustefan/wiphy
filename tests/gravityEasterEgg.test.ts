@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { massFromArea, RESTITUTION, stepBodies, wake, type Body } from "../src/lib/gravityPhysics";
+import { distanceToBody, massFromArea, RESTITUTION, stepBodies, wake, type Body } from "../src/lib/gravityPhysics";
 
 const box = (x: number, y: number, extra: Partial<Body> = {}): Body => ({
   x, y, vx: 0, vy: 0, angle: 0, vAngle: 0, w: 100, h: 50, mass: 1, dragging: false, ...extra,
@@ -84,6 +84,26 @@ test("Gezogene Kachel weckt schlafende Nachbarn", () => {
   stepBodies([sleeper, held], { gx: 0, gy: 1200 }, bounds, 1 / 60);
   assert.equal(sleeper.sleeping, false);
   wake(held);
+});
+
+test("Abstand zum Ereignishorizont misst bis zur nächsten Kante, auch gedreht", () => {
+  const b = box(0, 0); // 100 × 50, Mitte (50, 25)
+  assert.equal(distanceToBody(b, { x: 50, y: 25 }), 0, "Mitte liegt drin");
+  assert.equal(distanceToBody(b, { x: 130, y: 25 }), 30, "30 px rechts neben der Kante");
+  const turned = box(0, 0, { angle: Math.PI / 2 }); // jetzt 50 breit, 100 hoch
+  assert.ok(Math.abs(distanceToBody(turned, { x: 50, y: 105 }) - 30) < 1e-9, "Drehung zählt");
+});
+
+test("Schwarzes Loch zieht auch weit entfernte Kacheln binnen Sekunden heran", () => {
+  const far = box(0, 3000);
+  const hole = { x: 50, y: 25 };
+  const big = { top: -10000, bottom: 10000, width: 1000 };
+  let t = 0;
+  while (distanceToBody(far, hole) > 30 && t < 6) {
+    stepBodies([far], { attractor: hole }, big, 1 / 60);
+    t += 1 / 60;
+  }
+  assert.ok(t < 6, `erreicht das Loch nach ${t.toFixed(1)} s`);
 });
 
 test("Masse wächst mit der Fläche, Mindestmasse verhindert Division durch null", () => {

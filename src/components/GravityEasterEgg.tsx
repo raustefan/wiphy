@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { massFromArea, stepBodies, wake, type Body, type Field } from "@/lib/gravityPhysics";
+import { distanceToBody, massFromArea, stepBodies, wake, type Body, type Field } from "@/lib/gravityPhysics";
 
 type GravityPreset = "earth" | "moon" | "zerog" | "antigravity" | "blackhole";
 
@@ -19,7 +19,7 @@ const PRESETS: { id: GravityPreset; icon: string; label: string; status: string;
   { id: "moon", icon: "🌙", label: "Mond", status: "Mondgravitation: g = 1.62 m/s² (schwebend)", gy: 200 },
   { id: "zerog", icon: "🛸", label: "Zero-G", status: "Schwerelosigkeit: g = 0 m/s² (Zero-G)", gy: 0 },
   { id: "antigravity", icon: "🎈", label: "Invertiert", status: "Antigravitation: g = -9.81 m/s²", gy: -1200 },
-  { id: "blackhole", icon: "🕳️", label: "Singulär", status: "Singularität: Gravitationszug zu Zeiger oder Finger", gy: 0 },
+  { id: "blackhole", icon: "🕳️", label: "Singulär", status: "Singularität: Ein Schwarzes Loch entsteht", gy: 0 },
 ];
 
 interface PhysicsBody extends Body {
@@ -32,6 +32,27 @@ interface PhysicsBody extends Body {
   savedCss: string;
   /** Im Bildschirm-Modus liegen Kacheln außerhalb des Viewports versteckt still. */
   offscreen: boolean;
+  /** Hinter dem Ereignishorizont — keine Physik mehr, bis das Loch verdampft. */
+  absorbed?: boolean;
+  /** Die Verschluck-Animation. Selbst gemerkt: Chrome listet sie nach dem Ende nicht mehr in `getAnimations()`, sie wirkt aber weiter. */
+  swallowing?: Animation;
+}
+
+/** Schwarzes Loch in Bildschirmkoordinaten (das Overlay ist `fixed`). */
+type Hole = { x: number; y: number; r: number; mass: number; bornAt: number; collapsed: boolean };
+
+/** Kantenlänge der Loch-Grafik in px; skaliert wird auf den aktuellen Radius. */
+const HOLE_SIZE = 200;
+/** Spätestens dann verschluckt das Loch den ganzen Bildschirm (ms). */
+const HOLE_COLLAPSE_AFTER = 7000;
+
+/** Holt eine verschluckte Kachel sichtbar an ihre letzte Physik-Position zurück. */
+function release(b: PhysicsBody) {
+  b.swallowing?.cancel();
+  b.swallowing = undefined;
+  b.absorbed = false;
+  b.el.style.opacity = "";
+  if (!b.offscreen) b.el.style.visibility = "";
 }
 
 const place = (b: PhysicsBody, x = b.x, y = b.y, angle = b.angle) => {
@@ -243,7 +264,14 @@ export default function GravityEasterEgg() {
   const bodiesRef = useRef<PhysicsBody[]>([]);
   const restoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioFxRef = useRef<WebAudioFx>(new WebAudioFx());
-  const mousePosRef = useRef({ x: 0, y: 0 });
+  /** Zeiger bzw. Finger in Bildschirmkoordinaten — das Loch folgt ihm träge. */
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const holeRef = useRef<Hole | null>(null);
+  const holeElRef = useRef<HTMLDivElement>(null);
+  const holeSizeRef = useRef<HTMLDivElement>(null);
+  const holeFxRef = useRef<HTMLDivElement>(null);
+  /** Neue id = frische DOM-Knoten = Geburtsanimation läuft neu. */
+  const [holeId, setHoleId] = useState<number | null>(null);
   const tiltRef = useRef({ gx: 0, gy: 0 });
   const screenOnlyRef = useRef(false);
   const hudRef = useRef<HTMLDivElement>(null);
@@ -264,13 +292,49 @@ export default function GravityEasterEgg() {
     if (restoreTimerRef.current) clearTimeout(restoreTimerRef.current);
     restoreTimerRef.current = null;
     bodiesRef.current.forEach((b) => {
+      release(b);
       b.el.style.cssText = b.savedCss;
     });
     document.body.style.minHeight = "";
     document.documentElement.style.overflow = "";
+    delete document.documentElement.dataset.gravityActive;
     bodiesRef.current = [];
+    holeRef.current = null;
+    setHoleId(null);
+    setPreset("earth");
     setIsActive(false);
   }, []);
+
+  /*
+   * Das Loch verdampft (Hawking-Strahlung): Overlay blendet aus. Mit `reemit`
+   * spuckt es alles Verschluckte in zufällige Richtungen wieder aus — sonst
+   * (Esc) fliegen die Kacheln ohnehin gleich an ihren Platz zurück.
+   */
+  const dissolveHole = useCallback((reemit: boolean) => {
+    const hole = holeRef.current;
+    if (!hole) return;
+    holeRef.current = null;
+
+    bodiesRef.current.forEach((b) => {
+      if (!b.absorbed) return;
+      release(b);
+      if (!reemit) return;
+      const dir = Math.random() * Math.PI * 2;
+      const speed = 500 + Math.random() * 700;
+      b.x = hole.x + window.scrollX - b.w / 2 + Math.cos(dir) * 30;
+      b.y = hole.y + window.scrollY - b.h / 2 + Math.sin(dir) * 30;
+      b.vx = Math.cos(dir) * speed;
+      b.vy = Math.sin(dir) * speed;
+      b.vAngle = (Math.random() - 0.5) * 12;
+      wake(b);
+      place(b);
+    });
+
+    const id = holeId;
+    const fade = holeElRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 700, easing: "ease-out", fill: "forwards" });
+    if (fade) fade.onfinish = () => setHoleId((current) => (current === id ? null : current));
+    else setHoleId(null);
+  }, [holeId]);
 
   useEffect(() => {
     if (prevPathnameRef.current !== pathname) {
@@ -295,6 +359,8 @@ export default function GravityEasterEgg() {
     screenOnlyRef.current = window.matchMedia("(pointer: coarse)").matches;
     if (screenOnlyRef.current) document.documentElement.style.overflow = "hidden";
     bodiesRef.current = collectAndDetachBodies(screenOnlyRef.current);
+    // Schwebende Hinweise der Seite (z. B. InstallHint) räumen damit die Bühne
+    document.documentElement.dataset.gravityActive = "";
     setIsActive(true);
     setCollisionCount(0);
   }, [isActive, showStatus]);
@@ -305,15 +371,36 @@ export default function GravityEasterEgg() {
     audioFxRef.current.playRewind();
     showStatus("2. Hauptsatz der Thermodynamik: Entropie umgekehrt! ↺");
 
+    dissolveHole(false);
     bodiesRef.current.forEach((b) => {
       b.dragging = false;
+      release(b); // verschluckte Kacheln kommen vom Loch aus zurückgeflogen
       b.el.style.transition = "transform 0.75s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.75s ease";
       b.el.style.boxShadow = "";
       place(b, b.homeX, b.homeY, 0);
     });
     // Gesetzter Timer hält Physik und Ziehen an, damit nichts die Transition überschreibt
     restoreTimerRef.current = setTimeout(cleanupImmediate, 800);
-  }, [showStatus, cleanupImmediate]);
+  }, [showStatus, cleanupImmediate, dissolveHole]);
+
+  const selectPreset = (id: GravityPreset) => {
+    if (id === preset) return;
+    if (preset === "blackhole") {
+      dissolveHole(true);
+      audioFxRef.current.playRewind();
+    }
+    if (id === "blackhole") {
+      // Geburt in der Bildmitte, nicht unter dem Knopf in der Leiste; von dort folgt es dem Zeiger
+      const x = window.innerWidth / 2;
+      const y = window.innerHeight * 0.42;
+      holeRef.current = { x, y, r: 0, mass: 0, bornAt: performance.now(), collapsed: false };
+      pointerRef.current = { x, y };
+      setHoleId(Date.now());
+      audioFxRef.current.playCollapse();
+    }
+    setPreset(id);
+    showStatus(id !== "blackhole" && preset === "blackhole" ? "Hawking-Strahlung: Das Schwarze Loch verdampft" : PRESETS.find((p) => p.id === id)!.status);
+  };
 
   // ESC bricht ab; "gravity" / "zerog" tippen startet
   useEffect(() => {
@@ -378,11 +465,11 @@ export default function GravityEasterEgg() {
     let drag: { body: PhysicsBody; offsetX: number; offsetY: number; lastT: number; moved: boolean } | null = null;
 
     const onPointerDown = (e: PointerEvent) => {
-      // Touch kennt kein Hover: die Singularität springt dorthin, wo der Finger aufsetzt
-      mousePosRef.current = { x: e.clientX + window.scrollX, y: e.clientY + window.scrollY };
       const target = e.target as HTMLElement;
       if (restoreTimerRef.current || target.closest("[data-gravity-ignore]")) return;
-      const body = bodiesRef.current.find((b) => !b.offscreen && b.el.contains(target));
+      // Touch kennt kein Hover: das Loch zieht dorthin, wo der Finger aufsetzt
+      pointerRef.current = { x: e.clientX, y: e.clientY };
+      const body = bodiesRef.current.find((b) => !b.offscreen && !b.absorbed && b.el.contains(target));
       if (!body) return;
 
       e.preventDefault();
@@ -401,7 +488,8 @@ export default function GravityEasterEgg() {
     const onPointerMove = (e: PointerEvent) => {
       const pageX = e.clientX + window.scrollX;
       const pageY = e.clientY + window.scrollY;
-      mousePosRef.current = { x: pageX, y: pageY };
+      // Auf dem Weg zur Leiste soll das Loch nicht mitwandern
+      if (!(e.target as HTMLElement).closest?.("[data-gravity-ignore]")) pointerRef.current = { x: e.clientX, y: e.clientY };
       if (!drag) return;
 
       const { body } = drag;
@@ -451,8 +539,7 @@ export default function GravityEasterEgg() {
     if (!isActive) return;
 
     const { gy } = PRESETS.find((p) => p.id === preset)!;
-    const bodies = bodiesRef.current.filter((b) => !b.offscreen);
-    bodies.forEach(wake); // neues Schwerefeld
+    bodiesRef.current.forEach(wake); // neues Schwerefeld
     let last = performance.now();
     let frame = requestAnimationFrame(function step(time) {
       const dt = Math.min(0.04, (time - last) / 1000);
@@ -460,12 +547,18 @@ export default function GravityEasterEgg() {
       frame = requestAnimationFrame(step);
       if (restoreTimerRef.current) return;
 
-      const field: Field =
-        preset === "blackhole"
-          ? { attractor: mousePosRef.current }
-          : hasTiltSensor && preset === "earth"
-            ? tiltRef.current
-            : { gx: 0, gy };
+      const hole = preset === "blackhole" ? holeRef.current : null;
+      if (hole && !hole.collapsed) moveHole(hole, dt);
+      const attractor = hole && { x: hole.x + window.scrollX, y: hole.y + window.scrollY };
+      const field: Field = attractor
+        ? { attractor }
+        : hasTiltSensor && preset === "earth"
+          ? tiltRef.current
+          : { gx: 0, gy };
+      // Jedes Bild frisch aus dem Ref: nach dem Aufräumen ist er sofort leer, die Schleife
+      // endet aber erst mit dem nächsten Render — sonst schriebe ein letzter Frame die eben
+      // zurückgesetzten Kacheln wieder verschoben zurück.
+      const live = bodiesRef.current.filter((b) => !b.offscreen && !b.absorbed);
 
       // Breite ohne Scrollleiste. Touch: Kiste = Bildschirm über der Leiste; sonst die ganze Seite.
       const bounds = screenOnlyRef.current
@@ -475,8 +568,9 @@ export default function GravityEasterEgg() {
             width: document.documentElement.clientWidth,
           }
         : { top: 0, bottom: parseFloat(document.body.style.minHeight) - 15, width: document.documentElement.clientWidth };
-      const impacts = stepBodies(bodies, field, bounds, dt);
-      bodies.forEach((b) => b.sleeping || place(b));
+      const impacts = stepBodies(live, field, bounds, dt);
+      live.forEach((b) => b.sleeping || place(b));
+      if (hole && attractor) swallow(hole, attractor, live, time);
 
       // Gezählt wird alles, hörbar nur, was man auch sieht
       const top = window.scrollY - 100;
@@ -487,13 +581,97 @@ export default function GravityEasterEgg() {
       if (impacts.length) setCollisionCount((c) => c + impacts.length);
     });
 
+    /* Träge dem Zeiger nach; der Radius wächst mit der verschluckten Masse */
+    function moveHole(hole: Hole, dt: number) {
+      const follow = 1 - Math.exp(-dt * 3);
+      hole.x += (pointerRef.current.x - hole.x) * follow;
+      hole.y += (pointerRef.current.y - hole.y) * follow;
+      const targetR = 26 + 7 * Math.sqrt(hole.mass);
+      hole.r += (targetR - hole.r) * (1 - Math.exp(-dt * 5));
+      if (holeElRef.current) holeElRef.current.style.transform = `translate3d(${hole.x.toFixed(1)}px, ${hole.y.toFixed(1)}px, 0)`;
+      if (holeSizeRef.current) holeSizeRef.current.style.transform = `scale(${(hole.r / (HOLE_SIZE / 2)).toFixed(3)})`;
+    }
+
+    function swallow(hole: Hole, at: { x: number; y: number }, live: PhysicsBody[], time: number) {
+      if (hole.collapsed) return;
+      for (const b of live) {
+        if (b.dragging || distanceToBody(b, at) > hole.r * 0.9) continue;
+        b.absorbed = true;
+        hole.mass += b.mass;
+        audioFxRef.current.playThud(0.9, b.mass * 3);
+        // Spiralig hinein: zur Mitte, dabei drehen, schrumpfen, verglühen
+        const anim = b.el.animate(
+          [
+            { transform: b.el.style.transform, opacity: 1, filter: "none" },
+            {
+              transform: `translate3d(${(at.x - b.originX - b.w / 2).toFixed(1)}px, ${(at.y - b.originY - b.h / 2).toFixed(1)}px, 0) rotate(${(b.angle + 9).toFixed(2)}rad) scale(0.02)`,
+              opacity: 0,
+              filter: "blur(4px) brightness(0.4)",
+            },
+          ],
+          { duration: 900, easing: "cubic-bezier(0.55, 0, 0.85, 0.35)" },
+        );
+        b.swallowing = anim;
+        // Danach weg — ausdrücklich, statt auf ein stehenbleibendes Animationsende zu bauen
+        anim.onfinish = () => {
+          if (b.swallowing === anim) b.el.style.opacity = "0";
+        };
+      }
+
+      const age = time - hole.bornAt;
+      const anyLeft = live.some((b) => !b.absorbed);
+      if (age < 1500 || (anyLeft && age < HOLE_COLLAPSE_AFTER)) return;
+
+      // Alles verschluckt (oder Geduld am Ende): der Ereignishorizont wächst über den ganzen Bildschirm
+      hole.collapsed = true;
+      live.forEach((b) => (b.absorbed = true));
+      const farthest = Math.max(
+        ...[
+          [0, 0],
+          [window.innerWidth, 0],
+          [0, window.innerHeight],
+          [window.innerWidth, window.innerHeight],
+        ].map(([x, y]) => Math.hypot(x - hole.x, y - hole.y)),
+      );
+      // Scheibe und Leuchten verglühen, sonst bleiben riesige orange Schlieren statt Schwarz
+      holeFxRef.current?.querySelectorAll("[data-glow]").forEach((el) =>
+        el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1100, easing: "ease-in", fill: "forwards" }),
+      );
+      holeFxRef.current?.animate([{ transform: "scale(1)" }, { transform: `scale(${((farthest / hole.r) * 1.1).toFixed(2)})` }], {
+        duration: 1800,
+        easing: "cubic-bezier(0.7, 0, 0.2, 1)",
+        fill: "forwards",
+      });
+      audioFxRef.current.playCollapse();
+      showStatus("Ereignishorizont überschritten — hier entkommt nicht einmal Licht");
+    }
+
     return () => cancelAnimationFrame(frame);
-  }, [isActive, preset, hasTiltSensor]);
+  }, [isActive, preset, hasTiltSensor, showStatus]);
 
   if (!isActive) return null;
 
   return (
     <>
+      {holeId !== null && (
+        <div
+          key={holeId}
+          ref={holeElRef}
+          aria-hidden="true"
+          // Über Kacheln, Kopfzeile und Daumenleiste (z-40), unter der Gravity-Bedienung (z-50)
+          className="pointer-events-none fixed top-0 left-0 z-[45]"
+          style={{ transform: `translate3d(${holeRef.current?.x ?? 0}px, ${holeRef.current?.y ?? 0}px, 0)` }}
+        >
+          <div
+            ref={holeSizeRef}
+            className="absolute"
+            style={{ width: HOLE_SIZE, height: HOLE_SIZE, left: -HOLE_SIZE / 2, top: -HOLE_SIZE / 2, transform: "scale(0)" }}
+          >
+            <BlackHoleGraphic fxRef={holeFxRef} />
+          </div>
+        </div>
+      )}
+
       {/* Schwebender Schließen-Button oben rechts (auch via ESC erreichbar) */}
       <button
         type="button"
@@ -547,10 +725,7 @@ export default function GravityEasterEgg() {
                 title={p.label}
                 aria-label={p.label}
                 aria-pressed={preset === p.id}
-                onClick={() => {
-                  setPreset(p.id);
-                  showStatus(p.status);
-                }}
+                onClick={() => selectPreset(p.id)}
                 className={cn(
                   "rounded-lg px-1.5 py-1 font-medium whitespace-nowrap transition-colors sm:px-2.5",
                   preset === p.id
@@ -587,5 +762,73 @@ export default function GravityEasterEgg() {
         </div>
       </div>
     </>
+  );
+}
+
+/*
+ * Schwarzes Loch im Stil von „Interstellar“: schwarzer Kern mit Photonenring,
+ * davor und dahinter eine flachgedrückte, rotierende Akkretionsscheibe (die
+ * vordere Hälfte läuft über den Kern). Bei der Geburt springt es aus einem
+ * Lichtblitz auf und schickt eine Schockwelle los.
+ */
+function BlackHoleGraphic({ fxRef }: { fxRef: React.RefObject<HTMLDivElement | null> }) {
+  const disk = (
+    <div
+      className="absolute -inset-[55%] animate-spin rounded-full"
+      style={{
+        animationDuration: "2.4s",
+        background:
+          "conic-gradient(from 0deg, #ffb35c, #fff4d6, #ff7a3d, #7c3aed 30%, transparent 42%, #ff9a4a 55%, #fff4d6 68%, #ff5e3a 80%, #ffb35c)",
+        mask: "radial-gradient(closest-side, transparent 48%, #000 54%, #000 74%, transparent 100%)",
+        filter: "blur(2.5px)",
+      }}
+    />
+  );
+  const tilt = { transform: "rotate(-14deg) scaleY(0.32)" };
+
+  return (
+    <div
+      ref={(el) => {
+        fxRef.current = el;
+        if (!el) return;
+        el.animate(
+          [
+            { transform: "scale(0)", filter: "brightness(6)" },
+            { transform: "scale(1.35)", filter: "brightness(2)", offset: 0.55 },
+            { transform: "scale(1)", filter: "brightness(1)" },
+          ],
+          { duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+        );
+        el.querySelector("[data-shockwave]")?.animate(
+          [
+            { transform: "scale(0.3)", opacity: 0.9 },
+            { transform: "scale(6)", opacity: 0 },
+          ],
+          { duration: 1200, easing: "cubic-bezier(0.1, 0.7, 0.3, 1)", fill: "forwards" },
+        );
+      }}
+      className="relative size-full"
+    >
+      <div
+        data-glow
+        className="absolute -inset-[90%] rounded-full"
+        style={{ background: "radial-gradient(closest-side, rgba(255,160,80,0.35), rgba(124,58,237,0.18) 45%, transparent 75%)" }}
+      />
+      <div data-glow className="absolute inset-0" style={tilt}>
+        {disk}
+      </div>
+      <div
+        className="absolute inset-0 rounded-full bg-black"
+        style={{
+          boxShadow:
+            "0 0 0 1.5px rgba(255,236,205,0.95), 0 0 16px 4px rgba(255,170,90,0.8), 0 0 50px 14px rgba(255,110,60,0.35)",
+        }}
+      />
+      {/* Vordere Hälfte der Scheibe verdeckt den Kern */}
+      <div data-glow className="absolute inset-0" style={{ ...tilt, clipPath: "inset(50% -100% -100% -100%)" }}>
+        {disk}
+      </div>
+      <div data-shockwave className="absolute inset-0 rounded-full border-2 border-white/80 opacity-0" />
+    </div>
   );
 }
