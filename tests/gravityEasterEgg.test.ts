@@ -78,6 +78,22 @@ test("Ruhender Stapel schläft ein und steht dann still; Anstoßen weckt ihn", (
   assert.equal(bottom.sleeping, false, "geworfene Kachel weckt die getroffene");
 });
 
+// Seed 2 / 60 Hz: eingeklemmte Kacheln zitterten ewig. Seed 30 / 120 Hz: Korrektursprünge weckten reihum den Haufen.
+for (const [startSeed, hz] of [
+  [2, 60],
+  [30, 120],
+]) {
+  test(`Großer Haufen kommt vollständig zur Ruhe (Seed ${startSeed}, ${hz} Hz)`, () => {
+    let seed = startSeed;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5;
+    const pile = Array.from({ length: 100 }, (_, i) =>
+      box((i % 10) * 95 + 5, Math.floor(i / 10) * 120, { w: 90, h: 60, mass: 0.4, vx: rnd() * 120, vy: 50, vAngle: rnd() * 2.5 }),
+    );
+    for (let t = 0; t < 5; t += 1 / hz) stepBodies(pile, { gx: 0, gy: 1200 }, { top: 0, bottom: 1400, width: 1000 }, 1 / hz);
+    assert.equal(pile.filter((b) => !b.sleeping).length, 0);
+  });
+}
+
 test("Gezogene Kachel weckt schlafende Nachbarn", () => {
   const sleeper = box(100, 950, { sleeping: true });
   const held = box(30, 950, { dragging: true });

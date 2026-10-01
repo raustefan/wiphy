@@ -12,13 +12,10 @@ import {
 import { cn } from "@/lib/cn";
 import { distanceToBody, massFromArea, stepBodies, wake, type Body, type Field } from "@/lib/gravityPhysics";
 
-type GravityPreset = "earth" | "moon" | "zerog" | "antigravity" | "blackhole";
+type GravityPreset = "earth" | "blackhole";
 
 const PRESETS: { id: GravityPreset; icon: string; label: string; status: string; gy: number }[] = [
   { id: "earth", icon: "🌍", label: "Erde (1g)", status: "Erdschwerefeld: g = 9.81 m/s²", gy: 1200 },
-  { id: "moon", icon: "🌙", label: "Mond", status: "Mondgravitation: g = 1.62 m/s² (schwebend)", gy: 200 },
-  { id: "zerog", icon: "🛸", label: "Zero-G", status: "Schwerelosigkeit: g = 0 m/s² (Zero-G)", gy: 0 },
-  { id: "antigravity", icon: "🎈", label: "Invertiert", status: "Antigravitation: g = -9.81 m/s²", gy: -1200 },
   { id: "blackhole", icon: "🕳️", label: "Singulär", status: "Singularität: Ein Schwarzes Loch entsteht", gy: 0 },
 ];
 
@@ -257,7 +254,9 @@ export default function GravityEasterEgg() {
   const [isActive, setIsActive] = useState(false);
   const [preset, setPreset] = useState<GravityPreset>("earth");
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [collisionCount, setCollisionCount] = useState(0);
+  /** Zähler direkt ins DOM — ein React-Render pro Stoß-Bild ließ die Animation ruckeln. */
+  const collisionsRef = useRef(0);
+  const collisionElRef = useRef<HTMLSpanElement>(null);
   const [hasTiltSensor, setHasTiltSensor] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -361,8 +360,8 @@ export default function GravityEasterEgg() {
     bodiesRef.current = collectAndDetachBodies(screenOnlyRef.current);
     // Schwebende Hinweise der Seite (z. B. InstallHint) räumen damit die Bühne
     document.documentElement.dataset.gravityActive = "";
+    collisionsRef.current = 0;
     setIsActive(true);
-    setCollisionCount(0);
   }, [isActive, showStatus]);
 
   /* Umkehrung der Entropie / 2. Hauptsatz der Thermodynamik (Reset / Schließen) */
@@ -402,7 +401,7 @@ export default function GravityEasterEgg() {
     showStatus(id !== "blackhole" && preset === "blackhole" ? "Hawking-Strahlung: Das Schwarze Loch verdampft" : PRESETS.find((p) => p.id === id)!.status);
   };
 
-  // ESC bricht ab; "gravity" / "zerog" tippen startet
+  // ESC bricht ab; "gravity" tippen startet
   useEffect(() => {
     let keyBuffer = "";
     const onKeyDown = (e: KeyboardEvent) => {
@@ -417,7 +416,7 @@ export default function GravityEasterEgg() {
       if (e.key.length !== 1) return; // Shift, Tab & Co. nicht in den Puffer
 
       keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-7);
-      if (keyBuffer.endsWith("gravity") || keyBuffer.endsWith("zerog")) {
+      if (keyBuffer.endsWith("gravity")) {
         keyBuffer = "";
         triggerCollapse();
       }
@@ -575,10 +574,16 @@ export default function GravityEasterEgg() {
       // Gezählt wird alles, hörbar nur, was man auch sieht
       const top = window.scrollY - 100;
       const bottom = window.scrollY + window.innerHeight + 100;
-      impacts.forEach(({ body, speed }) => {
-        if (body.y + body.h >= top && body.y <= bottom) audioFxRef.current.playThud(speed / 1200, body.mass);
-      });
-      if (impacts.length) setCollisionCount((c) => c + impacts.length);
+      // Höchstens drei Töne pro Bild — prallt ein ganzer Haufen, klänge jeder weitere Oszillator nur nach Rauschen
+      impacts
+        .filter(({ body }) => body.y + body.h >= top && body.y <= bottom)
+        .sort((p, q) => q.speed - p.speed)
+        .slice(0, 3)
+        .forEach(({ body, speed }) => audioFxRef.current.playThud(speed / 1200, body.mass));
+      if (impacts.length && collisionElRef.current) {
+        collisionsRef.current += impacts.length;
+        collisionElRef.current.textContent = String(collisionsRef.current);
+      }
     });
 
     /* Träge dem Zeiger nach; der Radius wächst mit der verschluckten Masse */
@@ -664,7 +669,7 @@ export default function GravityEasterEgg() {
         >
           <div
             ref={holeSizeRef}
-            className="absolute"
+            className="absolute will-change-transform"
             style={{ width: HOLE_SIZE, height: HOLE_SIZE, left: -HOLE_SIZE / 2, top: -HOLE_SIZE / 2, transform: "scale(0)" }}
           >
             <BlackHoleGraphic fxRef={holeFxRef} />
@@ -712,7 +717,7 @@ export default function GravityEasterEgg() {
                 Entropie-Modus
               </span>
               <span className="font-mono text-[10px] text-muted">
-                {collisionCount} Stöße {hasTiltSensor && "· Neigungssensor aktiv"}
+                <span ref={collisionElRef}>{collisionsRef.current}</span> Stöße {hasTiltSensor && "· Neigungssensor aktiv"}
               </span>
             </div>
           </div>
@@ -766,25 +771,32 @@ export default function GravityEasterEgg() {
 }
 
 /*
- * Schwarzes Loch im Stil von „Interstellar“: schwarzer Kern mit Photonenring,
- * davor und dahinter eine flachgedrückte, rotierende Akkretionsscheibe (die
- * vordere Hälfte läuft über den Kern). Bei der Geburt springt es aus einem
- * Lichtblitz auf und schickt eine Schockwelle los.
+ * Schwarzes Loch im Stil von „Gargantua“ (Interstellar): schwarzer Schatten mit
+ * dünnem Photonenring, davor fast von der Kante gesehen die Akkretionsscheibe
+ * (die vordere Hälfte läuft über den Schatten). Die Rückseite der Scheibe wird
+ * vom Loch umgelenkt und erscheint als Lichtbogen über und unter dem Schatten.
+ * Die auf uns zu rotierende Seite ist heller (Doppler-Effekt).
+ * Nur Gradienten und eine Rotation — kein `filter`, damit der Compositor alles trägt.
  */
 function BlackHoleGraphic({ fxRef }: { fxRef: React.RefObject<HTMLDivElement | null> }) {
+  // Farbe nach Temperatur: innen weißglühend, außen rot. Schlieren zeigen die Drehung.
   const disk = (
     <div
-      className="absolute -inset-[55%] animate-spin rounded-full"
+      className="absolute inset-0 animate-spin rounded-full"
       style={{
-        animationDuration: "2.4s",
+        animationDuration: "7s",
         background:
-          "conic-gradient(from 0deg, #ffb35c, #fff4d6, #ff7a3d, #7c3aed 30%, transparent 42%, #ff9a4a 55%, #fff4d6 68%, #ff5e3a 80%, #ffb35c)",
-        mask: "radial-gradient(closest-side, transparent 48%, #000 54%, #000 74%, transparent 100%)",
-        filter: "blur(2.5px)",
+          "repeating-conic-gradient(rgba(70,15,0,0.35) 0deg 3deg, transparent 3deg 8deg, rgba(255,255,255,0.14) 8deg 10deg, transparent 10deg 15deg), radial-gradient(closest-side, #fffaf0 48%, #ffe0a0 54%, #ffa040 66%, #d9461a 80%, #5a1200 100%)",
+        mask: "radial-gradient(closest-side, transparent 46%, #000 50%, #000 70%, transparent 100%)",
       }}
     />
   );
-  const tilt = { transform: "rotate(-14deg) scaleY(0.32)" };
+  // Flach geneigt; links (auf uns zu) hell, rechts gedämpft. Der Container muss so groß wie die
+  // Scheibe sein — eine Maske schneidet alles außerhalb ihres Elements ab.
+  const tilt = {
+    transform: "rotate(-10deg) scaleY(0.2)",
+    maskImage: "linear-gradient(90deg, #000 15%, rgba(0,0,0,0.3))",
+  };
 
   return (
     <div
@@ -812,20 +824,28 @@ function BlackHoleGraphic({ fxRef }: { fxRef: React.RefObject<HTMLDivElement | n
       <div
         data-glow
         className="absolute -inset-[90%] rounded-full"
-        style={{ background: "radial-gradient(closest-side, rgba(255,160,80,0.35), rgba(124,58,237,0.18) 45%, transparent 75%)" }}
+        style={{ background: "radial-gradient(closest-side, rgba(255,150,70,0.25), rgba(255,90,40,0.08) 50%, transparent 75%)" }}
       />
-      <div data-glow className="absolute inset-0" style={tilt}>
+      <div data-glow className="absolute -inset-[75%]" style={tilt}>
         {disk}
       </div>
+      {/* Gelinste Rückseite der Scheibe: Lichtbogen knapp außerhalb des Schattens */}
       <div
-        className="absolute inset-0 rounded-full bg-black"
+        data-glow
+        className="absolute -inset-[24%] rounded-full"
         style={{
-          boxShadow:
-            "0 0 0 1.5px rgba(255,236,205,0.95), 0 0 16px 4px rgba(255,170,90,0.8), 0 0 50px 14px rgba(255,110,60,0.35)",
+          transform: "rotate(-10deg)",
+          background:
+            "radial-gradient(closest-side, transparent 79%, rgba(255,246,228,0.95) 81%, rgba(255,170,80,0.6) 85%, rgba(220,80,30,0.15) 91%, transparent 97%)",
+          maskImage: "linear-gradient(90deg, #000 10%, rgba(0,0,0,0.35))",
         }}
       />
-      {/* Vordere Hälfte der Scheibe verdeckt den Kern */}
-      <div data-glow className="absolute inset-0" style={{ ...tilt, clipPath: "inset(50% -100% -100% -100%)" }}>
+      <div
+        className="absolute inset-0 rounded-full bg-black"
+        style={{ boxShadow: "0 0 0 1px rgba(255,244,220,0.9), 0 0 8px 1px rgba(255,190,110,0.6)" }}
+      />
+      {/* Vordere Hälfte der Scheibe verdeckt den Schatten */}
+      <div data-glow className="absolute -inset-[75%]" style={{ ...tilt, clipPath: "inset(50% -100% -100% -100%)" }}>
         {disk}
       </div>
       <div data-shockwave className="absolute inset-0 rounded-full border-2 border-white/80 opacity-0" />

@@ -24,10 +24,12 @@ export type Body = {
   /** Ruhende Kacheln frieren ein, bis sie jemand anstößt — sonst zittert der Stapel ewig um ein Gleichgewicht. */
   sleeping?: boolean;
   restTime?: number;
-  /** Tatsächlich zurückgelegte px/s im letzten Bild (die Geschwindigkeit allein trägt Rauschen aus dem Löser). */
-  motion?: number;
+  /** Wo die aktuelle Ruhephase begann — eingeklemmte Kacheln zittern hin und her, kommen netto aber nicht vom Fleck. */
+  restAt?: { x: number; y: number; angle: number };
   /** Hatte im letzten Bild Kontakt — nur wer aufliegt, darf einschlafen (sonst friert er am Scheitel eines Sprungs ein). */
   touching?: boolean;
+  /** cos/sin des Winkels, zwischengespeichert bis er sich ändert — die Winkelfunktionen waren der größte Einzelposten. */
+  rot?: { angle: number; axes: [Vec, Vec] };
 };
 
 export type Field = { gx: number; gy: number } | { attractor: { x: number; y: number } };
@@ -36,20 +38,31 @@ export type Impact = { body: Body; speed: number };
 
 export type Bounds = { top: number; bottom: number; width: number };
 
-export const RESTITUTION = 0.52;
-const FRICTION = 0.45;
+export const RESTITUTION = 0.35;
+const FRICTION = 0.55;
 /** Langsamere Stöße prallen nicht ab — sonst zittern liegende Kacheln ewig. */
-const BOUNCE_THRESHOLD = 80;
+const BOUNCE_THRESHOLD = 180;
 /** Stöße darunter sind „Liegenbleiben“ — kein Ton, kein Zähler. */
-export const AUDIBLE_IMPACT = 160;
+export const AUDIBLE_IMPACT = 260;
 const ITERATIONS = 3;
-const SUBSTEPS = 8;
-/** Unter dieser echten Bewegung (px/s) gilt eine Kachel als ruhend … */
-const SLEEP_SPEED = 25;
-/** … und schläft ein, wenn das so lange anhält (s). */
-const SLEEP_AFTER = 0.25;
-/** Wer sich schneller bewegt, weckt schlafende Kacheln, die er berührt. */
-const WAKE_SPEED = 40;
+/** Längster Teilschritt (s): bei 60 Hz 5 Teilschritte pro Bild, bei 120 Hz 3 — nicht 5 pro Bild, das verdoppelte die Arbeit. */
+const SUBSTEP = 1 / 300;
+/** Nach einem langsamen Bild nicht noch mehr rechnen, sonst zieht ein Ruckler den nächsten nach sich. */
+const MAX_SUBSTEPS = 6;
+/** Geschwindigkeit, die pro Sekunde übrig bleibt (Luftwiderstand). */
+const DRAG_PER_SECOND = 0.4;
+/** Drehung klingt schneller ab, sonst kreiseln Kacheln lange nach. */
+const SPIN_DRAG_PER_SECOND = 0.15;
+/** Bleibt eine aufliegende Kachel so lange (s) … */
+const SLEEP_AFTER = 0.15;
+/** … innerhalb dieses Radius (px) um den Startpunkt, schläft sie ein. */
+const SLEEP_DRIFT = 6;
+/**
+ * Wer sich schneller bewegt, weckt schlafende Kacheln, die er berührt. Gemessen an der Geschwindigkeit,
+ * nicht an der Verschiebung: Positionskorrekturen versetzen frisch geweckte Kacheln um ein paar px —
+ * als „Bewegung“ gezählt weckten sie die Nachbarn, die wieder sprangen, und so fort durch den Haufen.
+ */
+const WAKE_SPEED = 70;
 /** So weit dürfen Kacheln ineinanderragen, ohne korrigiert zu werden (px) — etwas Spiel beruhigt Stapel. */
 const SLOP = 1;
 
@@ -82,8 +95,7 @@ const OUTLINE = [...CORNERS, [0, -1], [1, 0], [0, 1], [-1, 0]];
 
 function corners(b: Body, points = CORNERS): Vec[] {
   const c = center(b);
-  const cos = Math.cos(b.angle);
-  const sin = Math.sin(b.angle);
+  const [{ x: cos, y: sin }] = axes(b);
   return points.map(([sx, sy]) => {
     const lx = (sx * b.w) / 2;
     const ly = (sy * b.h) / 2;
@@ -94,26 +106,28 @@ function corners(b: Body, points = CORNERS): Vec[] {
 /**
  * Ein Bild in Teilschritten: Bei voller Fallgeschwindigkeit stäke eine Kachel
  * sonst 20 px tief in der darunter, und der kürzeste Weg hinaus wäre seitlich —
- * sie würde vom Stapel geschleudert statt aufzuliegen. 8 statt 4 Teilschritte,
- * weil ein ruhender Stapel sonst Restgeschwindigkeit aufbaut und leise weiterklickt.
+ * sie würde vom Stapel geschleudert statt aufzuliegen. Kräftige Dämpfung und
+ * schnelles Einschlafen halten den Stapel ruhig, daher reichen 300 Teilschritte pro Sekunde.
  */
 export function stepBodies(bodies: Body[], field: Field, bounds: Bounds, dt: number): Impact[] {
-  const before = bodies.map((b) => ({ x: b.x, y: b.y, angle: b.angle }));
   bodies.forEach((b) => (b.touching = false));
   const impacts = new Map<Body, number>();
-  for (let i = 0; i < SUBSTEPS; i++) {
-    for (const { body, speed } of substep(bodies, field, bounds, dt / SUBSTEPS)) {
+  const steps = Math.min(MAX_SUBSTEPS, Math.ceil(dt / SUBSTEP - 1e-9));
+  for (let i = 0; i < steps; i++) {
+    for (const { body, speed } of substep(bodies, field, bounds, dt / steps)) {
       impacts.set(body, Math.max(impacts.get(body) ?? 0, speed));
     }
   }
 
   // Die Singularität wandert mit dem Zeiger — da darf nichts einschlafen.
   const canSleep = !("attractor" in field);
-  bodies.forEach((b, i) => {
+  bodies.forEach((b) => {
     if (b.sleeping) return;
-    b.motion = Math.hypot(b.x - before[i].x, b.y - before[i].y) / dt;
-    const turning = Math.abs(b.angle - before[i].angle) / dt;
-    b.restTime = canSleep && b.touching && !b.dragging && b.motion < SLEEP_SPEED && turning < 0.1 ? (b.restTime ?? 0) + dt : 0;
+    const r = b.restAt;
+    const resting =
+      canSleep && b.touching && !b.dragging && !!r && Math.hypot(b.x - r.x, b.y - r.y) < SLEEP_DRIFT && Math.abs(b.angle - r.angle) < 0.05;
+    b.restTime = resting ? (b.restTime ?? 0) + dt : 0;
+    if (!resting) b.restAt = { x: b.x, y: b.y, angle: b.angle };
     if (b.restTime > SLEEP_AFTER) {
       b.sleeping = true;
       b.vx = b.vy = b.vAngle = 0;
@@ -125,7 +139,8 @@ export function stepBodies(bodies: Body[], field: Field, bounds: Bounds, dt: num
 
 function substep(bodies: Body[], field: Field, bounds: Bounds, dt: number): Impact[] {
   // Dämpfung pro Sekunde statt pro Bild, sonst fallen Körper auf 120-Hz-Displays träger.
-  const drag = Math.pow(0.985, dt * 60);
+  const drag = Math.pow(DRAG_PER_SECOND, dt);
+  const spinDrag = Math.pow(SPIN_DRAG_PER_SECOND, dt);
 
   for (const b of bodies) {
     if (frozen(b)) continue;
@@ -147,7 +162,7 @@ function substep(bodies: Body[], field: Field, bounds: Bounds, dt: number): Impa
 
     b.vx *= drag;
     b.vy *= drag;
-    b.vAngle *= drag;
+    b.vAngle *= spinDrag;
     b.x += b.vx * dt;
     b.y += b.vy * dt;
     b.angle += b.vAngle * dt;
@@ -158,9 +173,21 @@ function substep(bodies: Body[], field: Field, bounds: Bounds, dt: number): Impa
     const report = (b: Body, speed: number) => {
       if (pass === 0 && speed > AUDIBLE_IMPACT) impacts.set(b, Math.max(impacts.get(b) ?? 0, speed));
     };
-    // ponytail: O(n²)-Paarprüfung, reicht für die ~100 Kacheln einer Seite; Broadphase erst, wenn es ruckelt.
-    for (let i = 0; i < bodies.length; i++) {
-      for (let j = i + 1; j < bodies.length; j++) collideBodies(bodies[i], bodies[j], report);
+    // Sweep entlang x: nach linker Kante sortiert, Paare nur prüfen, solange sie sich in x überlappen
+    // können — und in y, sonst prüft eine hohe Säule gestapelter Kacheln wieder jedes Paar.
+    const sorted = bodies
+      .map((b) => {
+        const r = Math.hypot(b.w, b.h) / 2;
+        const cx = b.x + b.w / 2;
+        return { b, min: cx - r, max: cx + r, cy: b.y + b.h / 2, r };
+      })
+      .sort((p, q) => p.min - q.min);
+    for (let i = 0; i < sorted.length; i++) {
+      const p = sorted[i];
+      for (let j = i + 1; j < sorted.length && sorted[j].min <= p.max; j++) {
+        const q = sorted[j];
+        if (Math.abs(p.cy - q.cy) <= p.r + q.r) collideBodies(p.b, q.b, report);
+      }
     }
     for (const b of bodies) collideBounds(b, bounds, report);
   }
@@ -213,20 +240,25 @@ function collideBounds(b: Body, bounds: Bounds, report: (b: Body, speed: number)
   }
 }
 
-const axes = (b: Body): Vec[] => {
-  const cos = Math.cos(b.angle);
-  const sin = Math.sin(b.angle);
-  return [
-    { x: cos, y: sin },
-    { x: -sin, y: cos },
-  ];
-};
+function axes(b: Body): [Vec, Vec] {
+  if (b.rot?.angle !== b.angle) {
+    const cos = Math.cos(b.angle);
+    const sin = Math.sin(b.angle);
+    b.rot = {
+      angle: b.angle,
+      axes: [
+        { x: cos, y: sin },
+        { x: -sin, y: cos },
+      ],
+    };
+  }
+  return b.rot.axes;
+}
 
 const dot = (a: Vec, b: Vec) => a.x * b.x + a.y * b.y;
 
 /** Halbe Ausdehnung der gedrehten Kachel entlang `axis`. */
-function radius(b: Body, axis: Vec): number {
-  const [u, v] = axes(b);
+function radius(b: Body, axis: Vec, [u, v] = axes(b)): number {
   return Math.abs(dot(u, axis)) * (b.w / 2) + Math.abs(dot(v, axis)) * (b.h / 2);
 }
 
@@ -238,10 +270,8 @@ export function distanceToBody(b: Body, p: Vec): number {
   return Math.hypot(Math.max(Math.abs(dot(d, u)) - b.w / 2, 0), Math.max(Math.abs(dot(d, v)) - b.h / 2, 0));
 }
 
-function inside(p: Vec, b: Body): boolean {
-  const c = center(b);
+function inside(p: Vec, b: Body, c: Vec, [u, v]: [Vec, Vec]): boolean {
   const d = { x: p.x - c.x, y: p.y - c.y };
-  const [u, v] = axes(b);
   return Math.abs(dot(d, u)) < b.w / 2 && Math.abs(dot(d, v)) < b.h / 2;
 }
 
@@ -260,10 +290,12 @@ function collideBodies(a: Body, b: Body, report: (b: Body, speed: number) => voi
   if (Math.abs(ca.x - cb.x) > reach || Math.abs(ca.y - cb.y) > reach) return;
 
   const between = { x: cb.x - ca.x, y: cb.y - ca.y };
+  const axesA = axes(a);
+  const axesB = axes(b);
   let best: { n: Vec; depth: number } | null = null;
-  for (const axis of [...axes(a), ...axes(b)]) {
+  for (const axis of [...axesA, ...axesB]) {
     const dist = dot(between, axis);
-    const depth = radius(a, axis) + radius(b, axis) - Math.abs(dist);
+    const depth = radius(a, axis, axesA) + radius(b, axis, axesB) - Math.abs(dist);
     if (depth <= 0) return; // Trennachse gefunden
     if (!best || depth < best.depth) {
       const sign = dist < 0 ? -1 : 1;
@@ -277,13 +309,13 @@ function collideBodies(a: Body, b: Body, report: (b: Body, speed: number) => voi
     [a, b],
     [b, a],
   ]) {
-    if (sleeper.sleeping && !other.sleeping && (other.dragging || (other.motion ?? 0) > WAKE_SPEED)) wake(sleeper);
+    if (sleeper.sleeping && !other.sleeping && (other.dragging || Math.hypot(other.vx, other.vy) > WAKE_SPEED)) wake(sleeper);
   }
   if (invMass(a) + invMass(b) === 0) return;
 
   const points = [
-    ...corners(a, OUTLINE).filter((p) => inside(p, b)),
-    ...corners(b, OUTLINE).filter((p) => inside(p, a)),
+    ...corners(a, OUTLINE).filter((p) => inside(p, b, cb, axesB)),
+    ...corners(b, OUTLINE).filter((p) => inside(p, a, ca, axesA)),
   ];
   // Überkreuzt ohne eingeschlossene Ecke: Stoß zwischen den Mittelpunkten
   if (!points.length) points.push({ x: (ca.x + cb.x) / 2, y: (ca.y + cb.y) / 2 });

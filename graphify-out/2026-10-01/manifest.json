@@ -516,10 +516,10 @@
     "semantic_hash": "3bd2575ce49929789a3cf8bf265abc41"
   },
   "src/app/error.tsx": {
-    "mtime": 1789665976.8386548,
-    "seen": 1790242430.5970821,
-    "ast_hash": "d5b011b52f1fc4ee61fb62051530fad6",
-    "semantic_hash": "d5b011b52f1fc4ee61fb62051530fad6"
+    "mtime": 1790887966.7978692,
+    "seen": 1790888009.117713,
+    "ast_hash": "c3eb9801f5e36268b428a5d12ba8fccc",
+    "semantic_hash": ""
   },
   "src/app/forgot-password/layout.tsx": {
     "mtime": 1790834906.790866,
@@ -678,10 +678,10 @@
     "semantic_hash": ""
   },
   "src/app/not-found.tsx": {
-    "mtime": 1789665956.6594965,
-    "seen": 1790242430.597096,
-    "ast_hash": "720ee43bdce953f1e0bd9cf64439813c",
-    "semantic_hash": "720ee43bdce953f1e0bd9cf64439813c"
+    "mtime": 1790887966.7952762,
+    "seen": 1790888009.1182332,
+    "ast_hash": "df3e6b4d70558befbd4d07173b91a58a",
+    "semantic_hash": ""
   },
   "src/app/opengraph-image.tsx": {
     "mtime": 1789409713.673546,
@@ -918,10 +918,10 @@
     "semantic_hash": "9b50db61528cfeaeb021296d47fc7360"
   },
   "src/components/PhysicsHero.tsx": {
-    "mtime": 1788469298.1266649,
-    "seen": 1790242430.597118,
-    "ast_hash": "4f092b9bd144ad3d6369667543fa1917",
-    "semantic_hash": "4f092b9bd144ad3d6369667543fa1917"
+    "mtime": 1790888286.1656737,
+    "seen": 1790888299.972471,
+    "ast_hash": "9dba21229d4898fd47aac94c5a20c803",
+    "semantic_hash": ""
   },
   "src/components/PhysicsHeroLazy.tsx": {
     "mtime": 1788469298.147598,
@@ -1974,9 +1974,9 @@
     "semantic_hash": ""
   },
   "src/components/GravityEasterEgg.tsx": {
-    "mtime": 1790873190.0547802,
-    "seen": 1790873257.8640158,
-    "ast_hash": "c3acbe60983ca7e1e8725bf4c4c43cc1",
+    "mtime": 1790888862.7018888,
+    "seen": 1790888882.397834,
+    "ast_hash": "b2be10b50226b4e884443a7aa75533f9",
     "semantic_hash": ""
   },
   "src/components/GravityTrigger.tsx": {
@@ -1986,21 +1986,33 @@
     "semantic_hash": ""
   },
   "src/lib/gravityPhysics.ts": {
-    "mtime": 1790873022.2487276,
-    "seen": 1790873257.8646889,
-    "ast_hash": "c8bce23d8557822e28e2e6e1571c627f",
+    "mtime": 1790888775.4965806,
+    "seen": 1790888882.398516,
+    "ast_hash": "1584532d9853a2d460d05bb593ff73b9",
     "semantic_hash": ""
   },
   "tests/gravityEasterEgg.test.ts": {
-    "mtime": 1790873022.2488458,
-    "seen": 1790873257.865848,
-    "ast_hash": "f825c6b049eef916ff4567bc9211782c",
+    "mtime": 1790888769.1562126,
+    "seen": 1790888882.399594,
+    "ast_hash": "bdc6f37c17136893a9e04ed398fc3260",
     "semantic_hash": ""
   },
   "GEMINI.md": {
     "mtime": 1790868413.939377,
     "seen": 1790870173.476083,
     "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "src/components/LorenzAttractor.tsx": {
+    "mtime": 1790887990.5727458,
+    "seen": 1790888009.118974,
+    "ast_hash": "8cabab5f85857a39bafb9a65d87a8925",
+    "semantic_hash": ""
+  },
+  "src/components/LorenzAttractorLazy.tsx": {
+    "mtime": 1790887906.094984,
+    "seen": 1790888009.118975,
+    "ast_hash": "5d835ea0bcfaefb40b75074868eeeefa",
     "semantic_hash": ""
   }
 }

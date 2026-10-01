@@ -24,6 +24,9 @@ import { cappedDpr, createRenderLoop, isCompactViewport } from "@/lib/renderLoop
  * genau das erzeugt das charakteristische Flirren im Bild.
  *
  * Der Zeiger regt zusätzlich ein lokales Wellenpaket an, das mit 1/r² abklingt.
+ * Ein Klick ist ein Stoß: von dort läuft eine Kugelwelle mit Geschwindigkeit
+ * PULSE_SPEED nach außen, deren Amplitude geometrisch (1/√r) und zeitlich
+ * gedämpft abfällt.
  */
 
 type Mode = {
@@ -42,6 +45,10 @@ const LATTICE_SPACING_WIDE = 44;
 const LATTICE_SPACING_COMPACT = 60;
 /** √(K/m) — setzt die Zeitskala der Schwingung. */
 const OMEGA_0 = 0.9;
+/** Ausbreitungsgeschwindigkeit des Stoßes in px pro Zeiteinheit t. */
+const PULSE_SPEED = 420;
+/** Nach dieser Zeit (in t) ist ein Stoß abgeklungen und wird verworfen. */
+const PULSE_LIFETIME = 3;
 
 export default function PhysicsHero() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -123,8 +130,20 @@ export default function PhysicsHero() {
       pointer.current.strength = 0;
     };
 
+    // Stöße: Ursprung und Startzeit. Gelauscht wird am Hero-Container, weil
+    // der Text das Canvas in der Mitte überdeckt.
+    const pulses: { x: number; y: number; t0: number }[] = [];
+    const host = canvas.parentElement ?? canvas;
+    const onDown = (e: PointerEvent) => {
+      if ((e.target as Element).closest("a, button, input, textarea, select")) return;
+      const rect = canvas.getBoundingClientRect();
+      pulses.push({ x: e.clientX - rect.left, y: e.clientY - rect.top, t0: t });
+      if (pulses.length > 6) pulses.shift();
+    };
+
     canvas.addEventListener("mousemove", onMove);
     canvas.addEventListener("mouseleave", onLeave);
+    host.addEventListener("pointerdown", onDown);
 
     // Auslenkung u(r, t) eines Gitterplatzes.
     const displace = (x0: number, y0: number, out: { x: number; y: number }) => {
@@ -148,6 +167,23 @@ export default function PhysicsHero() {
         uy += (dy / r) * wave;
       }
 
+      // Stoßwellen: schmales Wellenpaket um die Front r = v·Δt.
+      for (const p of pulses) {
+        const age = t - p.t0;
+        const dx = x0 - p.x;
+        const dy = y0 - p.y;
+        const r = Math.hypot(dx, dy) + 1e-3;
+        const s = r - PULSE_SPEED * age;
+        if (Math.abs(s) > 180) continue;
+        const wave =
+          Math.sin(s * 0.06) *
+          Math.exp(-((s / 70) ** 2)) *
+          (34 / Math.sqrt(1 + r / 60)) *
+          Math.exp(-age * 0.9);
+        ux += (dx / r) * wave;
+        uy += (dy / r) * wave;
+      }
+
       out.x = ux;
       out.y = uy;
     };
@@ -157,6 +193,7 @@ export default function PhysicsHero() {
       if (!reducedMotion) {
         t += 0.011;
         pointer.current.strength *= 0.985;
+        while (pulses.length && t - pulses[0].t0 > PULSE_LIFETIME) pulses.shift();
       }
       ctx.clearRect(0, 0, w, h);
 
@@ -222,6 +259,7 @@ export default function PhysicsHero() {
       ro.disconnect();
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseleave", onLeave);
+      host.removeEventListener("pointerdown", onDown);
     };
   }, [appearance]);
 
