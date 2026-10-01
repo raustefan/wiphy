@@ -56,11 +56,12 @@ function SectionMarker({ index, label }: { index: string; label: string }) {
 }
 
 export default async function HomePage() {
-  const session = await auth();
-  const posts = await getPublishedPosts();
-  const latestPost = posts.length > 0 ? posts[0] : null;
   // Der nächste Termin — und wenn keiner ansteht, der zuletzt vergangene.
-  const featured = await getFeaturedEvent();
+  const [session, [latestPost = null], featured] = await Promise.all([
+    auth(),
+    getPublishedPosts(1),
+    getFeaturedEvent(),
+  ]);
 
   return (
     <div className="grid gap-14 py-8 sm:gap-20 sm:py-12">

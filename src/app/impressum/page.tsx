@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSections } from "@/components/LegalPage";
-import { IMPRESSUM } from "./impressumstext";
+import { impressum } from "./impressumstext";
+import { getSignatureBoardMembers } from "@/lib/server/services/boardService";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = pageMetadata({
@@ -10,10 +11,11 @@ export const metadata: Metadata = pageMetadata({
     path: "/impressum",
 });
 
-export default function ImpressumPage() {
+export default async function ImpressumPage() {
+    const board = await getSignatureBoardMembers();
     return (
         <LegalPage title="Impressum">
-            <LegalSections document={IMPRESSUM} separators />
+            <LegalSections document={impressum(board)} separators />
         </LegalPage>
     );
 }

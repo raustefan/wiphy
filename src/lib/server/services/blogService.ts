@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   applyImageOrder,
   countImagesForPost,
@@ -88,8 +89,8 @@ export async function getPostForEdit(id: string): Promise<BlogPostWithImages | n
   return post ? toPost(post) : null;
 }
 
-export async function getPublishedPosts(): Promise<BlogPostWithImages[]> {
-  return (await findPublishedPosts()).map(toPost);
+export async function getPublishedPosts(take?: number): Promise<BlogPostWithImages[]> {
+  return (await findPublishedPosts(take)).map(toPost);
 }
 
 /** Beiträge pro Seite der öffentlichen Übersicht. */
@@ -129,10 +130,11 @@ export async function getPublishedPostPage(input: {
   return { posts: posts.map(toPost), total, page: Math.min(page, pageCount), pageCount };
 }
 
-export async function getPublishedPost(id: string): Promise<BlogPostWithImages | null> {
+// `cache`: Metadaten und Seite fragen denselben Beitrag ab — so nur einmal pro Anfrage.
+export const getPublishedPost = cache(async (id: string): Promise<BlogPostWithImages | null> => {
   const post = await findPublishedPostById(id);
   return post ? toPost(post) : null;
-}
+});
 
 /**
  * Legt einen leeren, unveröffentlichten Beitrag an und liefert seine ID.

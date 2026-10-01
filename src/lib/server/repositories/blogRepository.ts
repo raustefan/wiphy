@@ -60,11 +60,12 @@ export function findAllPosts() {
   });
 }
 
-export function findPublishedPosts() {
+export function findPublishedPosts(take?: number) {
   return prisma.blogPost.findMany({
     where: { published: true, publishedAt: { lte: new Date() } },
     orderBy: { publishedAt: "desc" },
     include: withImages,
+    take,
   });
 }
 

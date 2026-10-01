@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Event } from "@prisma/client";
 import {
   createEvent,
@@ -35,9 +36,10 @@ export function getPastEvents(now: Date = new Date(), take?: number): Promise<Pu
   return findPastEvents(now, take);
 }
 
-export function getPublicEvent(id: string, now: Date = new Date()): Promise<PublicEvent | null> {
-  return findPublishedEventById(id, now);
-}
+// `cache`: Metadaten und Seite fragen denselben Termin ab — so nur einmal pro Anfrage.
+export const getPublicEvent = cache(
+  (id: string): Promise<PublicEvent | null> => findPublishedEventById(id, new Date()),
+);
 
 /**
  * Der Termin für die Startseite: der nächste kommende — und wenn keiner

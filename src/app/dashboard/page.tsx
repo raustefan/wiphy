@@ -109,10 +109,10 @@ export default async function DashboardPage() {
     if (!currentUser.id) redirect("/login");
     // Huckepack wie das Aufräumen der Registrierungen: gedrosselt, ohne Cron.
     await processTerminations();
-    const profile = await getEditableUser(currentUser.id);
-
-    // Fetch current user's fee data for the visualizer
-    const feeUsers = await getFeeDashboardData(currentUser.id, "MEMBER");
+    const [profile, feeUsers] = await Promise.all([
+        getEditableUser(currentUser.id),
+        getFeeDashboardData(currentUser.id, "MEMBER"),
+    ]);
     const myRecord = feeUsers.find((u) => u.id === currentUser.id);
     const myFees = myRecord?.fees || [];
 

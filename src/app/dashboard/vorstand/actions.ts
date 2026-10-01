@@ -30,6 +30,7 @@ function parseOrThrow<T>(schema: ZodType<T>, raw: unknown, fallback: string): T 
 function revalidateBoard() {
     revalidatePath("/dashboard/vorstand");
     revalidatePath("/vorstand");
+    revalidatePath("/impressum");
 }
 
 /**

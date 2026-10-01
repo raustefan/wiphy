@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function EventDetailPage({ params }: Props) {
   const { id: segment } = await params;
   const now = new Date();
-  const event = await getPublicEvent(idFromSegment(segment), now);
+  const event = await getPublicEvent(idFromSegment(segment));
 
   if (!event) return notFound();
 

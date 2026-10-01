@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1790850201.7277904,
-    "seen": 1790850217.0901911,
-    "ast_hash": "b87e8cf02651ab9adab667508803f923",
+    "mtime": 1790850301.6497939,
+    "seen": 1790850308.166549,
+    "ast_hash": "45a7a86bea89997f9e65aaa8de41f138",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {
@@ -468,10 +468,10 @@
     "semantic_hash": "c16b2bf8158fd0dd9910d7a828bee2f8"
   },
   "src/app/dashboard/vorstand/actions.ts": {
-    "mtime": 1789451768.0887551,
-    "seen": 1790242430.597078,
-    "ast_hash": "498eecfb0f6ad88cce53c7a916fc56df",
-    "semantic_hash": "498eecfb0f6ad88cce53c7a916fc56df"
+    "mtime": 1790852095.9993572,
+    "seen": 1790852104.9597719,
+    "ast_hash": "20ef6592048d3702b964a7fccfdaaa15",
+    "semantic_hash": ""
   },
   "src/app/dashboard/vorstand/page.tsx": {
     "mtime": 1789665882.5648792,
@@ -552,16 +552,16 @@
     "semantic_hash": "ad1860159728a5a2a6e0d6db487aa91a"
   },
   "src/app/impressum/impressumstext.ts": {
-    "mtime": 1788534675.7380836,
-    "seen": 1790242430.597085,
-    "ast_hash": "c9927fce2a34d2b4e2ae2b7ac2a25763",
-    "semantic_hash": "c9927fce2a34d2b4e2ae2b7ac2a25763"
+    "mtime": 1790852097.281145,
+    "seen": 1790852104.959977,
+    "ast_hash": "1b03e13005ca2757a8cdb62a7695d8a7",
+    "semantic_hash": ""
   },
   "src/app/impressum/page.tsx": {
-    "mtime": 1789409587.21319,
-    "seen": 1790242430.597086,
-    "ast_hash": "2ba60c08ba5e610a6416fd53bba64a28",
-    "semantic_hash": "2ba60c08ba5e610a6416fd53bba64a28"
+    "mtime": 1790852095.999042,
+    "seen": 1790852104.9599779,
+    "ast_hash": "d1149fffce1220e1d59cd749478120bb",
+    "semantic_hash": ""
   },
   "src/app/kontakt/ContactForm.tsx": {
     "mtime": 1789367068.7725267,
