@@ -1,7 +1,7 @@
 # Graph Report - wiphy  (2026-10-01)
 
 ## Corpus Check
-- 327 files · ~144,831 words
+- 327 files · ~144,920 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 6 file(s) not represented in the graph (top: (none) 2, .toml 1, .prisma 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a10f0d57`
+- Built from commit: `cb119f1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

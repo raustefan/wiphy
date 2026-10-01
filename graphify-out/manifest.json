@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1790849872.5731854,
-    "seen": 1790849893.21632,
-    "ast_hash": "3caaaf1ef1f32cbbc1d94ebefea8d379",
+    "mtime": 1790850301.6497939,
+    "seen": 1790850308.166549,
+    "ast_hash": "45a7a86bea89997f9e65aaa8de41f138",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {

@@ -58,18 +58,18 @@ import {
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
-    { href: "/dashboard/users", label: "Benutzerverwaltung", Icon: Contact },
-    { href: "/dashboard/blog", label: "Blog", Icon: BookOpen },
-    { href: "/dashboard/vorstand", label: "Vorstand", Icon: Users },
-    { href: "/dashboard/users/new", label: "Neuer User", Icon: User },
-    { href: "/dashboard/mail", label: "Rundmail", Icon: Send },
-    { href: "/dashboard/termine", label: "Termine", Icon: CalendarDays },
-    { href: "/dashboard/kontakt", label: "Kontaktanfragen", Icon: Mail },
-    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", Icon: FileText },
+    { href: "/dashboard/users", label: "Benutzerverwaltung", description: "Konten, Rollen und Mitgliedsdaten", Icon: Contact },
+    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", description: "Aufnahmen und Kündigungen bearbeiten", Icon: FileText },
+    { href: "/dashboard/users/new", label: "Neuer User", description: "Konto anlegen oder importieren", Icon: User },
+    { href: "/dashboard/mail", label: "Rundmail", description: "Nachricht an Mitglieder senden", Icon: Send },
+    { href: "/dashboard/termine", label: "Termine", description: "Veranstaltungen planen", Icon: CalendarDays },
+    { href: "/dashboard/blog", label: "Blog", description: "Beiträge schreiben und pflegen", Icon: BookOpen },
+    { href: "/dashboard/vorstand", label: "Vorstand", description: "Vorstandsseite aktualisieren", Icon: Users },
+    { href: "/dashboard/kontakt", label: "Kontaktanfragen", description: "Nachrichten über das Formular", Icon: Mail },
     // Nur im Debug-Modus sichtbar und erreichbar (`requireDebugAdmin`).
-    { href: "/dashboard/feature-flags", label: "Feature Flags", Icon: ToggleLeft, debug: true },
-    { href: "/dashboard/security", label: "Sicherheit", Icon: ShieldAlert, debug: true },
-    { href: "/dashboard/server", label: "Server", Icon: Server, debug: true },
+    { href: "/dashboard/feature-flags", label: "Feature Flags", description: "Funktionen ein- und ausschalten", Icon: ToggleLeft, debug: true },
+    { href: "/dashboard/security", label: "Sicherheit", description: "Protokoll und Rate-Limits", Icon: ShieldAlert, debug: true },
+    { href: "/dashboard/server", label: "Server", description: "Systemzustand und Logs", Icon: Server, debug: true },
 ];
 
 /**
@@ -183,13 +183,7 @@ export default async function DashboardPage() {
                                 {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
                             </PageTitle>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <ButtonLink href="/dashboard/konto" variant="soft" color="neutral">
-                                <KeyRound size={16} aria-hidden="true" />
-                                Login & Sicherheit
-                            </ButtonLink>
-                            <LogoutButton />
-                        </div>
+                        <LogoutButton />
                     </div>
 
                     {/* Innenabstand wie bei den Karten, damit die Angaben auf
@@ -212,6 +206,97 @@ export default async function DashboardPage() {
                         />
                     </dl>
                 </header>
+
+                {/* ---------- Admin-Aktionen ----------
+                  Über die ganze Breite und vor allem anderen: wer hier als
+                  Admin ist, ist meist zum Verwalten hier. In der Seitenspalte
+                  waren die Einstiege eine schmale Linkliste; als Kacheln mit
+                  Kurzbeschreibung findet man den Bereich ohne Lesen der Labels. */}
+                {isAdmin && (
+                    <Card className="p-5 sm:p-6">
+                        <SectionHeader
+                            icon={<SlidersHorizontal size={16} />}
+                            eyebrow="Admin-Aktionen"
+                            title="Verwaltung"
+                            aside={
+                                <form action={toggleDebugMode} className="self-start">
+                                    <button
+                                        type="submit"
+                                        className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                                    >
+                                        <Bug
+                                            size={15}
+                                            aria-hidden="true"
+                                            className={debugMode ? "text-warning" : "text-faint"}
+                                        />
+                                        Debug-Modus
+                                        <Badge tone={debugMode ? "warning" : "neutral"}>
+                                            {debugMode ? "An" : "Aus"}
+                                        </Badge>
+                                    </button>
+                                </form>
+                            }
+                        />
+                        <ul className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                            {ADMIN_ACTIONS.filter((a) => debugMode || !("debug" in a)).map(({ href, label, description, Icon, ...a }) => {
+                                const isDebug = "debug" in a;
+                                const count = href === MEMBERSHIP_ADMIN_PATH ? openMembershipTasks : 0;
+                                return (
+                                    <li key={href} className="min-w-0">
+                                        <Link
+                                            href={href}
+                                            className={`group relative flex h-full flex-col gap-3 rounded-2xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics ${
+                                                isDebug
+                                                    ? "border-dashed border-warning/40 bg-warning/5 hover:border-warning/60"
+                                                    : "border-line bg-surface hover:border-physics/40"
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <span
+                                                    className={`grid size-10 shrink-0 place-items-center rounded-xl transition-colors ${
+                                                        isDebug
+                                                            ? "bg-warning/15 text-warning"
+                                                            : "bg-physics/10 text-physics group-hover:bg-physics group-hover:text-white"
+                                                    }`}
+                                                    aria-hidden="true"
+                                                >
+                                                    <Icon size={19} />
+                                                </span>
+                                                {count > 0 && (
+                                                    <Badge tone="warning">
+                                                        {count} offen
+                                                    </Badge>
+                                                )}
+                                                {isDebug && (
+                                                    <Badge tone="warning">
+                                                        <Bug size={12} aria-hidden="true" />
+                                                        Debug
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="grid min-w-0 gap-0.5">
+                                                {/* Umbrechen statt abschneiden: in zwei
+                                                    Spalten auf dem Telefon passt
+                                                    „Benutzerverwaltung“ sonst nicht. */}
+                                                <span className="flex items-start gap-1 text-[15px] leading-snug font-semibold text-foreground sm:text-base">
+                                                    <span className="min-w-0 hyphens-auto break-words">{label}</span>
+                                                    <ChevronRight
+                                                        size={15}
+                                                        aria-hidden="true"
+                                                        className="mt-0.5 hidden shrink-0 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-physics sm:block"
+                                                    />
+                                                </span>
+                                                <span className="hidden text-sm text-muted text-pretty sm:block">
+                                                    {description}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </Card>
+                )}
 
                 {/*
                   Der Aufnahmeantrag steht über der ganzen Breite und über dem
@@ -274,83 +359,6 @@ export default async function DashboardPage() {
                             description="Ändere dein Passwort oder deine Login-Adresse — bestätigt per Link in deinem Postfach."
                             action="Zugang verwalten"
                         />
-
-                        {/* ---------- Admin-Aktionen ---------- */}
-                        {isAdmin && (
-                            <Card className="p-5 sm:p-6">
-                                <SectionHeader
-                                    icon={<SlidersHorizontal size={16} />}
-                                    eyebrow="Admin-Aktionen"
-                                    title="Verwaltung"
-                                />
-                                {/*
-                                  Vorher neun Knöpfe in voller Zeilenbreite —
-                                  untereinander fast ein ganzer Telefonbildschirm
-                                  für eine reine Linkliste. Als schmale Zeilen
-                                  bleibt dieselbe Auswahl auf einen Blick lesbar.
-
-                                  `-mx-3` hebt den Innenabstand der Zeilen wieder
-                                  auf: die Symbole stehen damit auf derselben
-                                  Kante wie die Überschrift darüber, und die
-                                  Hover-Fläche reicht bis an den Kartenrand.
-                                */}
-                                <ul className="mt-3 -mx-3 grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-1">
-                                    {ADMIN_ACTIONS.filter((a) => debugMode || !("debug" in a)).map(({ href, label, Icon, ...a }) => (
-                                        <li key={href}>
-                                            <Link
-                                                href={href}
-                                                className="group flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
-                                            >
-                                                <Icon
-                                                    size={16}
-                                                    aria-hidden="true"
-                                                    className="shrink-0 text-faint transition-colors group-hover:text-physics"
-                                                />
-                                                <span className="min-w-0 flex-1 truncate">
-                                                    {label}
-                                                </span>
-                                                {href === MEMBERSHIP_ADMIN_PATH &&
-                                                    openMembershipTasks > 0 && (
-                                                        <Badge tone="warning">
-                                                            {openMembershipTasks}
-                                                        </Badge>
-                                                    )}
-                                                {"debug" in a && (
-                                                    <Badge tone="warning">
-                                                        <Bug size={12} aria-hidden="true" />
-                                                        Debug
-                                                    </Badge>
-                                                )}
-                                                <ChevronRight
-                                                    size={15}
-                                                    aria-hidden="true"
-                                                    className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100 pointer-coarse:opacity-100"
-                                                />
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Separator className="my-3" />
-                                <form action={toggleDebugMode}>
-                                    <button
-                                        type="submit"
-                                        className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics"
-                                    >
-                                        <Bug
-                                            size={16}
-                                            aria-hidden="true"
-                                            className={debugMode ? "shrink-0 text-warning" : "shrink-0 text-faint"}
-                                        />
-                                        <span className="min-w-0 flex-1 truncate text-left">
-                                            Debug-Modus {debugMode ? "beenden" : "aktivieren"}
-                                        </span>
-                                        <Badge tone={debugMode ? "warning" : "neutral"}>
-                                            {debugMode ? "An" : "Aus"}
-                                        </Badge>
-                                    </button>
-                                </form>
-                            </Card>
-                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 lg:order-1">
