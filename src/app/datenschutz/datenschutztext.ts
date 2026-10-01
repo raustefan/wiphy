@@ -80,7 +80,7 @@ export const DATENSCHUTZ: LegalDocument = [
           "**Ansichts-Cookies für Administratoren:** schalten die Vorschau des Mitgliederbereichs um und werden beim Schließen des Browsers gelöscht.",
         ],
       },
-      "Im lokalen Speicher Ihres Browsers (localStorage) legen wir nur ab, ob Sie die helle oder dunkle Darstellung gewählt und ob Sie den Hinweis zur Installation als App ausgeblendet haben. Diese Angaben verlassen Ihr Gerät nicht.",
+      "Im lokalen Speicher Ihres Browsers (localStorage) legen wir nur ab, ob Sie die helle oder dunkle Darstellung bzw. den hohen Kontrast gewählt und ob Sie den Hinweis zur Installation als App ausgeblendet haben. Diese Angaben verlassen Ihr Gerät nicht.",
       "Sie können Cookies und lokalen Speicher in Ihrem Browser jederzeit löschen oder sperren; ohne Anmelde-Cookie ist der Mitgliederbereich allerdings nicht nutzbar.",
     ],
   },

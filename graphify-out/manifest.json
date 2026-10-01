@@ -504,9 +504,9 @@
     "semantic_hash": "7f382bc9b15a7c7873a6cded92ada418"
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1790852394.7716935,
-    "seen": 1790852479.269334,
-    "ast_hash": "e46ea5e706e41bffd799d14f5361cabb",
+    "mtime": 1790891072.5521078,
+    "seen": 1790891097.801461,
+    "ast_hash": "615e518090534ccc0df32485c426c6df",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -582,9 +582,9 @@
     "semantic_hash": "f1db701275b6a0fac1d4dc806dbba1ba"
   },
   "src/app/layout.tsx": {
-    "mtime": 1790869289.0950034,
-    "seen": 1790870173.47348,
-    "ast_hash": "7414c5b5671fa293d91a8015d6852152",
+    "mtime": 1790891072.551522,
+    "seen": 1790891097.801683,
+    "ast_hash": "d8cd14fcf0561f6da054407514f798ec",
     "semantic_hash": ""
   },
   "src/app/loading.tsx": {
@@ -840,9 +840,9 @@
     "semantic_hash": "e1d4801f22a0be4a6c31fbd9c8c06892"
   },
   "src/components/Footer.tsx": {
-    "mtime": 1790869268.410641,
-    "seen": 1790870173.4740832,
-    "ast_hash": "06e724fc2734fb7dbbc313177537eb05",
+    "mtime": 1790891072.551911,
+    "seen": 1790891097.802274,
+    "ast_hash": "a4c4abc8032c3ce9ba93d720d1c41c7d",
     "semantic_hash": ""
   },
   "src/components/Header.tsx": {
@@ -2013,6 +2013,24 @@
     "mtime": 1790887906.094984,
     "seen": 1790888009.118975,
     "ast_hash": "5d835ea0bcfaefb40b75074868eeeefa",
+    "semantic_hash": ""
+  },
+  "src/components/GameOfLife.tsx": {
+    "mtime": 1790891072.5524776,
+    "seen": 1790891097.8022752,
+    "ast_hash": "13f190cd45d24e8774448c5384e471f9",
+    "semantic_hash": ""
+  },
+  "src/components/GameOfLifeLazy.tsx": {
+    "mtime": 1790890216.048712,
+    "seen": 1790890254.631271,
+    "ast_hash": "e5a0e9f9dbebe2736e8f8623f3e66418",
+    "semantic_hash": ""
+  },
+  "src/components/ContrastToggle.tsx": {
+    "mtime": 1790891072.5405304,
+    "seen": 1790891097.802182,
+    "ast_hash": "cb04d71d771187fa9a718d06fcd98405",
     "semantic_hash": ""
   }
 }

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import GravityTrigger from "@/components/GravityTrigger";
+import ContrastToggle from "@/components/ContrastToggle";
 
 const legalLinks = [
   { href: "/impressum", label: "Impressum" },
@@ -42,7 +43,10 @@ export default function Footer() {
           die Seite wie eine Website statt wie eine App wirken. */}
       <div className="flex flex-col items-center gap-2 px-4 pt-4 text-xs text-faint md:hidden">
         <p>© {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.</p>
-        <GravityTrigger />
+        <div className="flex flex-wrap justify-center gap-2">
+          <GravityTrigger />
+          <ContrastToggle />
+        </div>
         <div className="flex gap-4">
           {legalLinks.map((link) => (
             <Link
@@ -95,7 +99,10 @@ export default function Footer() {
           <p className="text-sm text-faint">
             © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
           </p>
-          <GravityTrigger />
+          <div className="flex flex-wrap items-center gap-2">
+            <GravityTrigger />
+            <ContrastToggle />
+          </div>
         </div>
       </div>
     </footer>

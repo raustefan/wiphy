@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InstallHint from "@/components/InstallHint";
 import GravityEasterEgg from "@/components/GravityEasterEgg";
+import GameOfLife from "@/components/GameOfLifeLazy";
 import { DebugBar } from "@/components/DebugBar";
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
@@ -101,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // Setzt Appearance *und* theme-color vor der Hydration, damit weder
           // die Seite noch die iOS-Browserleiste kurz falsch eingefärbt sind.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem("theme-appearance");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme-appearance",t);document.documentElement.style.colorScheme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="dark"?"#0a0a0b":"#fafafa");}catch(e){}})();`,
+            __html: `(function(){try{var s=localStorage.getItem("theme-appearance");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme-appearance",t);document.documentElement.style.colorScheme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="dark"?"#0a0a0b":"#fafafa");if(localStorage.getItem("high-contrast")==="1")document.documentElement.setAttribute("data-high-contrast","");}catch(e){}})();`,
           }}
         />
       </head>
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <OrganizationJsonLd />
         <AppThemeProvider>
+          <GameOfLife />
           {/* Sprungmarke: ohne sie führt jeder Tastaturbesuch zuerst durch
               Wortmarke, sechs Navigationspunkte, Themenumschalter und
               Mitgliederknopf — auf jeder Unterseite erneut. Sichtbar wird sie
