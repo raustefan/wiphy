@@ -1,6 +1,6 @@
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { open, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { AppError } from "@/lib/server/errors";
 
@@ -157,6 +157,14 @@ const LOG_TAIL_CHARS = 20_000;
  */
 const DEPLOY_ENV_KEYS = ["PATH", "HOME", "USER", "LOGNAME", "SHELL", "LANG", "LC_ALL", "PM2_HOME", "NVM_DIR", "PNPM_HOME"];
 
+function deployEnv() {
+  const env: Record<string, string> = {};
+  for (const key of DEPLOY_ENV_KEYS) {
+    if (process.env[key] !== undefined) env[key] = process.env[key];
+  }
+  return env as NodeJS.ProcessEnv;
+}
+
 /** Ein Deploy startet `pnpm install` und `pm2 restart` — lokal hätte das nichts verloren. */
 export function deployAvailable() {
   return process.env.NODE_ENV === "production";
@@ -241,15 +249,12 @@ export async function startDeploy(): Promise<void> {
   const startedAt = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
   await writeFile(DEPLOY_LOG, `Deploy gestartet am ${startedAt}\n\n`);
 
-  const env: Record<string, string | undefined> = { DEPLOY_SCRIPT, DEPLOY_LOG, DEPLOY_LOCK };
-  for (const key of DEPLOY_ENV_KEYS) {
-    if (process.env[key] !== undefined) env[key] = process.env[key];
-  }
+  const env = { ...deployEnv(), DEPLOY_SCRIPT, DEPLOY_LOG, DEPLOY_LOCK };
 
   const inner = `echo $$ > "$DEPLOY_LOCK"; bash "$DEPLOY_SCRIPT"; code=$?; echo; echo "${EXIT_MARKER} $code"; rm -f "$DEPLOY_LOCK"`;
   const child = spawn("sh", ["-c", `nohup bash -c '${inner}' >> "$DEPLOY_LOG" 2>&1 &`], {
     cwd: ROOT,
-    env: env as NodeJS.ProcessEnv,
+    env,
     detached: true,
     stdio: "ignore",
   });
@@ -257,4 +262,54 @@ export async function startDeploy(): Promise<void> {
     void unlink(DEPLOY_LOCK).catch(() => {});
   });
   child.unref();
+}
+
+/* ------------------------------------------------------------------ *
+ * Versionen                                                           *
+ * ------------------------------------------------------------------ */
+
+export type ToolVersion = {
+  name: string;
+  /** `null`, wenn das Werkzeug nicht gefunden wurde. */
+  version: string | null;
+  /** Vom Projekt festgelegte Version, falls es eine gibt. */
+  expected?: string;
+};
+
+async function installedVersion(pkg: string): Promise<string | null> {
+  const file = path.join(ROOT, "node_modules", pkg, "package.json");
+  return readFile(file, "utf8").then((raw) => JSON.parse(raw).version as string, () => null);
+}
+
+/**
+ * pnpm so, wie `deploy.sh` es aufruft: gleiche Umgebung, gleiches
+ * Verzeichnis. Ab pnpm 9.7 ist das schon die Version aus `packageManager`.
+ */
+function pnpmVersion(): Promise<string | null> {
+  return new Promise((resolve) => {
+    execFile("pnpm", ["-v"], { cwd: ROOT, env: deployEnv(), timeout: 15_000 }, (error, stdout) =>
+      resolve(error ? null : stdout.trim().split("\n").pop() || null),
+    );
+  });
+}
+
+export async function getVersions(): Promise<ToolVersion[]> {
+  const pkg = JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8"));
+  const expectedPnpm = /^pnpm@(.+)$/.exec(pkg.packageManager ?? "")?.[1];
+  const [pnpm, next, react, prisma, client] = await Promise.all([
+    pnpmVersion(),
+    installedVersion("next"),
+    installedVersion("react"),
+    installedVersion("prisma"),
+    installedVersion("@prisma/client"),
+  ]);
+  return [
+    { name: "Node.js", version: process.versions.node },
+    { name: "pnpm", version: pnpm, expected: expectedPnpm },
+    { name: "Next.js", version: next },
+    { name: "React", version: react },
+    { name: "Prisma CLI", version: prisma },
+    // Client und CLI müssen gleich sein, sonst passt der generierte Client nicht.
+    { name: "Prisma Client", version: client, expected: prisma ?? undefined },
+  ];
 }
