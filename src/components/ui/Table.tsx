@@ -48,7 +48,7 @@ export function Th({
     <th
       scope={scope}
       className={cn(
-        "px-3 py-2.5 text-xs font-semibold tracking-wide whitespace-nowrap text-faint uppercase",
+        "px-3 py-2.5 font-serif text-sm font-normal whitespace-nowrap text-muted italic",
         className,
       )}
       {...props}

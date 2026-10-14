@@ -1,59 +1,54 @@
 import { auth } from "@/auth";
-import { Eyebrow, Lead, PageTitle, Prose } from "@/components/ui";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CalendarPlus, PenLine } from "lucide-react";
-import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { ButtonLink } from "@/components/ui/Button";
-import PhysicsHero from "@/components/PhysicsHeroLazy";
+import InterferenceField from "@/components/InterferenceFieldLazy";
 import MarketDiffusion from "@/components/MarketDiffusionLazy";
+import { Cta, Frame } from "@/components/Site";
+import { EventFeature } from "@/components/EventCard";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { getFeaturedEvent } from "@/lib/server/services/eventService";
-import { EventDateCube, EventFacts } from "@/components/EventCard";
-import { eventIcsPath, eventPath, formatCountdown } from "@/lib/events";
-import { formatDateShort } from "@/lib/format";
-import { blogImageUrl } from "@/lib/blogImages";
+import { formatCountdown } from "@/lib/events";
+import { formatDate } from "@/lib/format";
+import { blogImageSrcSet, blogImageUrl } from "@/lib/blogImages";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
+import { JOURNEY_STEPS } from "@/lib/membershipJourney";
 import { blogPostPath } from "@/lib/slug";
+import { events as milestones } from "@/app/geschichte/milestones";
 
-const pillars = [
+/** Was der Verein tut — drei Stufen, versetzt übereinander. */
+const levels = [
   {
-    index: "01",
-    title: "Netzwerk fürs Leben",
+    title: "Ein Netzwerk, das bleibt",
     body:
-      "Vom ersten Semester bis in die Forschung oder Führungsetage: Stammtische, Afterwork-Drinks und Exkursionen halten den Kontakt zwischen Studierenden, Absolvent:innen und Lehrenden lebendig.",
+      "Stammtische, Afterwork und Exkursionen halten Studierende, Absolvent:innen und Lehrende in Kontakt — vom ersten Semester bis in Forschung, Beratung oder Vorstandsetage.",
   },
   {
-    index: "02",
     title: "Physik trifft Praxis",
     body:
-      "Sondervorlesungen und Gastvorträge aus Industrie, Forschung und Finanzwesen zeigen, wie sich physikalische Methoden — von statistischer Mechanik bis Modellbildung — auf reale Probleme übertragen lassen.",
+      "Gastvorträge und Sondervorlesungen aus Industrie, Forschung und Finanzwelt zeigen, wie weit statistische Mechanik und Modellbildung tragen, wenn man sie auf echte Probleme anwendet.",
   },
   {
-    index: "03",
-    title: "Digitales Mitgliederportal",
+    title: "Ein Ort für Mitglieder",
     body:
-      "Ein geschützter Bereich mit Mitgliedersuche, Profilen und internen Neuigkeiten hält das Netzwerk auch zwischen den Veranstaltungen zusammen.",
+      "Im geschützten Mitgliederbereich findest du andere Mitglieder, pflegst dein Profil und liest interne Neuigkeiten — auch zwischen den Treffen.",
   },
 ];
 
-const heroMetrics = [
-  { value: "1967", label: "Universität Ulm" },
-  { value: "2004", label: "Verein gegründet" },
-  { value: "e. V.", label: "gemeinnützig" },
-];
+/** Studiengangsseiten der Uni Ulm. */
+const STUDY_PROGRAMS = {
+  physik: "https://www.uni-ulm.de/studium/studieren-an-der-uni-ulm/studiengaenge/studiengangsinfo/course/physik-bachelor/",
+  wirtschaftsphysik:
+    "https://www.uni-ulm.de/studium/studieren-an-der-uni-ulm/studiengaenge/studiengangsinfo/course/wirtschaftsphysik-bachelor/",
+};
 
-/** Kleiner Kapitelkopf: Mono-Nummer + Label + Haarlinie. */
-function SectionMarker({ index, label }: { index: string; label: string }) {
-  return (
-    <div className="mb-6 flex items-center gap-3 font-mono text-[0.75rem] tracking-[0.16em] text-faint uppercase">
-      <span className="font-bold text-physics">{index}</span>
-      <span>{label}</span>
-      <span className="h-px flex-1 bg-line" aria-hidden="true" />
-    </div>
-  );
-}
+/** Auszug aus der Geschichte für den Zeitstrahl. */
+const STRIP_IDS = ["uni-ulm", "physik", "start-wiphy", "alumni", "jubilaeum-2024"];
+const STRIP_FROM = 1960;
+
+/** Universität und Physik in Teal, Wirtschaftsphysik und Verein in Ruby. */
+const tone = (category: string) =>
+  category === "uni" || category === "physik"
+    ? { bg: "bg-physics", text: "text-physics" }
+    : { bg: "bg-market", text: "text-market" };
 
 export default async function HomePage() {
   // Der nächste Termin — und wenn keiner ansteht, der zuletzt vergangene.
@@ -63,366 +58,351 @@ export default async function HomePage() {
     getFeaturedEvent(),
   ]);
 
+  const stripTo = new Date().getFullYear();
+  const strip = STRIP_IDS.flatMap((id) => milestones.filter((m) => m.id === id));
+  const decades = Array.from(
+    { length: Math.floor((stripTo - STRIP_FROM) / 10) + 1 },
+    (_, i) => STRIP_FROM + i * 10,
+  );
+  const pos = (year: number) => `${((year - STRIP_FROM) / (stripTo - STRIP_FROM)) * 100}%`;
+
   return (
-    <div className="grid gap-14 py-8 sm:gap-20 sm:py-12">
-      {/* ═══════════════════ Hero ═══════════════════ */}
-      <Container size="4">
-        <section className="relative overflow-hidden rounded-3xl border border-line bg-surface">
-          <PhysicsHero />
-          {/* Weiches Zentrum, damit die Typo über dem Partikelfeld lesbar bleibt. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(62% 58% at 50% 46%, var(--background) 0%, color-mix(in srgb, var(--background) 55%, transparent) 45%, transparent 78%)",
-            }}
-          />
-
-          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5 px-4 py-14 text-center sm:gap-6 sm:py-20">
-            <Eyebrow className="justify-center">
-              Universität Ulm · Alumni &amp; Studierende
-            </Eyebrow>
-
-            <h1 className="text-4xl font-bold tracking-tight text-balance [overflow-wrap:break-word] sm:text-6xl">
-              Wirtschafts<span className="text-physics">Physik</span> Alumni
-              e.&nbsp;V.
+    <>
+      {/* ═══════════════════ Hero: Text und Abb. 1 ═══════════════════ */}
+      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden">
+        <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
+        <Frame className="grid items-end gap-10 pt-10 pb-14 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-14 lg:pt-20 lg:pb-20">
+          <div data-observer className="min-w-0">
+            <h1 id="hero-title" className="display text-[clamp(3.25rem,7.6vw,6.5rem)] hyphens-manual max-lg:text-[clamp(3.25rem,13vw,6.5rem)]">
+              <span className="block">Wirtschafts&shy;Physik</span>
+              <span className="block">Alumni</span>
             </h1>
-
-            <Lead className="max-w-xl">
-              Ein gemeinnütziger Verein für Physik- und
-              Wirtschaftsphysik-Alumni sowie Studierende. Im Zentrum steht die
-              Physik — ihre Methoden der statistischen Mechanik, Modellbildung
-              und Datenanalyse, angewendet auf wirtschaftliche Systeme.
-            </Lead>
-
-            <div className="flex w-full flex-col justify-center gap-3 min-[420px]:w-auto min-[420px]:flex-row">
-              <ButtonLink href="/blog" size="lg">
-                Neuigkeiten &amp; Blog
-              </ButtonLink>
-              <ButtonLink href={session ? "/dashboard" : "/login"} size="lg" variant="soft" color="neutral">
-                {session ? "Zum Dashboard" : "Mitgliederbereich"}
-              </ButtonLink>
+            <p className="mt-4 font-serif text-xl text-physics italic sm:text-2xl">
+              e. V. an der Universität Ulm, seit 2004
+            </p>
+            <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty">
+              Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
+              <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
+              <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a> — mit Stammtischen, Vorträgen und Exkursionen, und mit der
+              Überzeugung, dass sich Märkte mit den Werkzeugen der Physik verstehen lassen.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
+              {session ? (
+                <Cta href="/dashboard" arrow>
+                  Zum Mitgliederbereich
+                </Cta>
+              ) : (
+                <Cta href={MEMBERSHIP_APPLICATION_PATH} arrow>
+                  Mitglied werden
+                </Cta>
+              )}
+              <Cta href="/termine" variant="line">
+                Nächste Termine
+              </Cta>
             </div>
-
-            <dl className="mt-2 grid w-full max-w-md grid-cols-3">
-              {heroMetrics.map((metric, i) => (
-                /* `flex-col-reverse`: der Wert steht oben, im Markup aber die
-                   Beschreibung zuerst — eine `<dd>` vor ihrer `<dt>` ist
-                   ungültig, und Screenreader lesen das Paar dann verdreht
-                   („1967“ als Begriff, „Universität Ulm“ als Erklärung).
-                   `justify-end` packt in der umgekehrten Achse nach *oben*:
-                   so stehen die Werte auf einer Linie, auch wenn ein Label
-                   zweizeilig umbricht. */
-                <div
-                  key={metric.label}
-                  className={`flex flex-col-reverse justify-end gap-1 px-2 text-center sm:px-4 ${i > 0 ? "border-l border-line" : ""}`}
-                >
-                  <dt className="font-mono text-[0.68rem] tracking-[0.08em] text-faint uppercase sm:text-[0.72rem]">
-                    {metric.label}
-                  </dt>
-                  <dd className="font-mono text-base font-bold tracking-tight sm:text-xl">
-                    {metric.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
-      </Container>
-
-      {/* ═══════════════════ Der Verein ═══════════════════ */}
-      <Container size="4">
-        <section>
-          <SectionMarker index="01" label="Der Verein" />
-
-          <div className="mb-8 grid max-w-2xl gap-3">
-            <PageTitle as="h2">
-              Drei Säulen, ein Netzwerk
-            </PageTitle>
-            <Lead>
-              Was in Ulm im Hörsaal beginnt, hört dort nicht auf. Der Verein
-              hält die Verbindung zwischen Studium, Forschung und Berufspraxis
-              offen — in beide Richtungen.
-            </Lead>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {pillars.map((pillar) => (
-              <Card key={pillar.title} className="flex flex-col gap-3 p-6 sm:p-7">
-                <span className="font-mono text-xs font-bold tracking-[0.16em] text-physics">
-                  {pillar.index}
-                </span>
-                <h3 className="text-lg font-bold tracking-tight">{pillar.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{pillar.body}</p>
-              </Card>
-            ))}
-          </div>
-        </section>
-      </Container>
-
-      {/* ═══════════════════ Termine ═══════════════════ */}
-      {featured && (
-        <Container size="4">
-          <section>
-            <SectionMarker index="02" label="Termine" />
-
-            <div className="mb-8 grid max-w-2xl gap-3">
-              <PageTitle as="h2">
-                {featured.isPast ? "Zuletzt im Verein" : "Was als Nächstes ansteht"}
-              </PageTitle>
-              <Lead>
-                {featured.isPast
-                  ? "Aktuell ist nichts terminiert — hier steht deshalb der letzte Termin. Der nächste kommt bestimmt, und Mitglieder erfahren davon zuerst."
-                  : "Stammtische, Exkursionen und Vorträge. Ein Klick übernimmt den Termin in den eigenen Kalender."}
-              </Lead>
-            </div>
-
-            <Card className="p-5 sm:p-8">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-10">
-                <div className="grid gap-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {featured.isPast ? (
-                      <Badge>Vergangen</Badge>
-                    ) : (
-                      <>
-                        <Badge tone="physics">Nächster Termin</Badge>
-                        {formatCountdown(featured.event) && (
-                          <Badge>{formatCountdown(featured.event)}</Badge>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex gap-4 sm:gap-6">
-                    <EventDateCube
-                      date={featured.event.start}
-                      past={featured.isPast}
-                      size="lg"
-                    />
-                    <div className="grid min-w-0 flex-1 content-start gap-3">
-                      <h3 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
-                        {featured.event.title}
-                      </h3>
-                      <EventFacts event={featured.event} />
-                    </div>
-                  </div>
-
-                  {featured.event.summary && (
-                    <Prose className="max-w-2xl">{featured.event.summary}</Prose>
-                  )}
-                </div>
-
-                <div className="grid gap-3 lg:w-56">
-                  <ButtonLink href={eventPath(featured.event)} size="lg">
-                    Zum Termin <ArrowRight size={16} aria-hidden="true" />
-                  </ButtonLink>
-                  {!featured.isPast && (
-                    <ButtonLink
-                      href={eventIcsPath(featured.event.id)}
-                      size="lg"
-                      variant="soft"
-                      color="neutral"
-                      prefetch={false}
-                    >
-                      <CalendarPlus size={16} aria-hidden="true" /> In den Kalender
-                    </ButtonLink>
-                  )}
-                  <ButtonLink href="/termine" size="lg" variant="ghost" color="neutral">
-                    Alle Termine
-                  </ButtonLink>
-                </div>
+          <figure className="decor min-w-0">
+            <div className="relative grid grid-cols-[11px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_11px]">
+              <div className="ruler-y border-r border-line-strong" />
+              <div className="relative aspect-[5/4] sm:aspect-[3/2] lg:aspect-[1/1]">
+                <InterferenceField readoutId="hero-readout" />
               </div>
-            </Card>
-          </section>
-        </Container>
+              <span />
+              <div className="ruler border-t border-line-strong" />
+              <span className="math absolute -top-1 left-4 text-sm text-muted">y</span>
+              <span className="math absolute right-0 -bottom-6 text-sm text-muted">x</span>
+            </div>
+            <figcaption className="mt-8 grid gap-1 text-sm text-muted sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-4">
+              <span className="font-serif text-foreground italic">Abb. 1</span>
+              <span className="max-w-lg text-pretty">
+                Zwei Kreiswellen gleicher Frequenz. Wo Berg auf Tal trifft, löschen sie sich aus.
+                Mit dem Zeiger verschiebst du S₂ — und solange du links liest, steht die Welle
+                still.
+                <span id="hero-readout" className="math mt-1 block text-muted" aria-hidden="true" />
+              </span>
+            </figcaption>
+          </figure>
+        </Frame>
+      </section>
+
+      {/* ═══════════════════ Zeitstrahl ═══════════════════ */}
+      <section aria-labelledby="strip-title" className="border-y border-line bg-surface">
+        <Frame className="py-10 sm:py-12">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h2 id="strip-title" className="headline text-2xl sm:text-3xl">
+              Von {STRIP_FROM} bis heute
+            </h2>
+            <Link href="/geschichte" className="link text-sm font-medium">
+              Die ganze Geschichte
+            </Link>
+          </div>
+
+          {/* Telefon: senkrechte Liste. */}
+          <ol className="mt-8 grid gap-5 border-l border-line-strong pl-5 md:hidden">
+            {strip.map((m) => (
+              <li key={m.id} className="relative">
+                <span aria-hidden="true" className={`absolute top-2 -left-[24.5px] size-2 rounded-full ${tone(m.category).bg}`} />
+                <Link href={`/geschichte#${m.id}`} className="grid rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics">
+                  <span className={`font-serif text-lg italic ${tone(m.category).text}`}>{m.year}</span>
+                  <span className="text-sm text-muted">{m.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+
+          {/* Ab md: maßstäblicher Zeitstrahl, Beschriftung abwechselnd oben und unten. */}
+          <div className="relative mt-10 hidden h-48 md:block">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-1/2 h-2 -translate-y-full border-b border-line-strong"
+              style={{
+                backgroundImage: "linear-gradient(90deg, var(--line-strong) 1px, transparent 1px)",
+                backgroundSize: `calc(100% / ${stripTo - STRIP_FROM}) 100%`,
+              }}
+            />
+            {decades.map((year) => (
+              <span
+                key={year}
+                aria-hidden="true"
+                className="absolute top-1/2 -translate-x-1/2 pt-2 text-xs text-muted tabular-nums"
+                style={{ left: pos(year) }}
+              >
+                <span className="absolute -top-4 left-1/2 h-4 w-px bg-line-strong" />
+                {year}
+              </span>
+            ))}
+            <ol>
+              {strip.map((m, i) => {
+                const above = i % 2 === 0;
+                const right = m.year - STRIP_FROM > (stripTo - STRIP_FROM) * 0.82;
+                return (
+                  <li key={m.id} className="absolute top-1/2" style={{ left: pos(m.year) }}>
+                    <span aria-hidden="true" className={`absolute -top-1.5 -left-1.5 size-3 rounded-full ring-4 ring-surface ${tone(m.category).bg}`} />
+                    <span
+                      aria-hidden="true"
+                      className={`absolute left-0 w-px ${tone(m.category).bg} ${above ? "-top-14 h-12" : "top-3 h-10"}`}
+                    />
+                    <Link
+                      href={`/geschichte#${m.id}`}
+                      className={`group absolute grid w-44 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics ${
+                        above ? "bottom-14" : "top-14"
+                      } ${right ? "right-0 justify-items-end text-right" : "-left-px border-l border-transparent pl-2"}`}
+                    >
+                      <span className={`font-serif text-xl leading-tight italic ${tone(m.category).text}`}>
+                        {m.year}
+                      </span>
+                      <span className="text-sm leading-snug text-foreground group-hover:underline">{m.title}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </Frame>
+      </section>
+
+      {/* ═══════════════════ Was der Verein tut ═══════════════════ */}
+      <section aria-labelledby="levels-title">
+        <Frame className="grid gap-10 py-20 sm:py-28 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <h2 id="levels-title" className="headline text-4xl sm:text-5xl">
+              Was im Hörsaal beginnt, hört dort nicht auf.
+            </h2>
+            <p className="mt-5 max-w-sm leading-relaxed text-muted text-pretty">
+              Der Verein hält die Verbindung zwischen Studium, Forschung und Beruf offen — in
+              beide Richtungen.
+            </p>
+          </div>
+
+          <div className="relative">
+            <ul className="grid gap-14 sm:gap-16">
+              {levels.map((level, i) => (
+                <li
+                  key={level.title}
+                  className={`relative border-t-2 pt-5 ${i % 2 ? "border-market" : "border-physics"}`}
+                  style={{ marginLeft: `calc(${i} * min(12%, 6rem))` }}
+                >
+                  <h3 className="headline text-2xl sm:text-3xl">{level.title}</h3>
+                  <p className="mt-3 max-w-lg leading-relaxed text-muted text-pretty">{level.body}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Frame>
+      </section>
+
+      {/* ═══════════════════ Nächster Termin ═══════════════════ */}
+      {featured && (
+        <EventFeature
+          event={featured.event}
+          past={featured.isPast}
+          heading={
+            featured.isPast
+              ? "Zuletzt im Verein"
+              : `Nächster Termin, ${formatCountdown(featured.event) || "bald"}`
+          }
+          note={
+            <p className="mt-5 max-w-xl text-sm text-muted text-pretty">
+              {featured.isPast &&
+                "Gerade ist nichts terminiert. Der nächste Termin kommt bestimmt — Mitglieder erfahren als Erste davon. "}
+              <Link href="/termine" className="link font-medium">
+                Alle Termine
+              </Link>
+            </p>
+          }
+        />
       )}
 
-      {/* ═══════════════════ Physik dahinter ═══════════════════ */}
-      <Container size="4">
-        <section>
-          <SectionMarker index="03" label="Die Physik dahinter" />
-
-          <div className="mb-8 grid max-w-2xl gap-3">
-            <PageTitle as="h2">
-              Eine Gleichung, zwei Welten
-            </PageTitle>
-            <Lead>
-              Wirtschaftliche Systeme bestehen aus vielen wechselwirkenden
-              Akteuren — ganz ähnlich wie Teilchensysteme in der Physik. Das
-              folgende Modell läuft live im Browser: vollständig durchgerechnet,
-              nicht nachgezeichnet.
-            </Lead>
+      {/* ═══════════════════ Die Physik dahinter ═══════════════════ */}
+      <section aria-labelledby="physics-title" className="overflow-hidden">
+        <Frame className="py-20 sm:py-28">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-end lg:gap-14">
+            <h2 id="physics-title" className="headline text-4xl sm:text-5xl">
+              Vom Pollenkorn zum Kurszettel
+            </h2>
+            {/* Die Gleichung als Bildelement: groß, mit Gleichungsnummer. */}
+            <p
+              aria-label="Geometrische Brownsche Bewegung: dS gleich mu S dt plus sigma S dW"
+              className="flex items-baseline justify-between gap-4 border-b border-line pb-3 text-[clamp(1.6rem,5.5vw,3.5rem)] leading-none"
+            >
+              <span aria-hidden="true" className="math text-market">
+                <span className="up">d</span>S = μS <span className="up">d</span>t + σS{" "}
+                <span className="up">d</span>W
+              </span>
+              <span aria-hidden="true" className="font-serif text-base text-muted">
+                (1)
+              </span>
+            </p>
           </div>
 
-          {/* ─── Geometrische Brownsche Bewegung ─── */}
-          <Card className="overflow-hidden p-5 sm:p-8 lg:p-10">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-              <div className="order-2 min-w-0 lg:order-1">
-                <MarketDiffusion />
+          <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
+            <div className="min-w-0">
+              <MarketDiffusion />
+            </div>
+            <div className="grid content-start gap-5 font-serif text-lg leading-relaxed">
+              <p className="text-pretty">
+                Ein Pollenkorn im Wasser zittert, weil unzählige Moleküle dagegenstoßen. Ein
+                Aktienkurs zittert aus demselben Grund — nur heißen die Stöße hier Kauf und
+                Verkauf. Louis Bachelier schrieb die Diffusionsgleichung 1900 für die Pariser
+                Börse auf, fünf Jahre bevor Einstein sie für die Brownsche Bewegung herleitete.
+              </p>
+              <p className="text-pretty text-muted">
+                Gleichung (1) hat eine geschlossene Lösung,{" "}
+                <span className="math text-foreground">
+                  S<sub>t</sub> = S<sub>0</sub> e<sup>(μ−σ²/2)t + σW<sub>t</sub></sup>
+                </span>
+                , und ihr aufschlussreichster Term ist <span className="math text-foreground">−σ²/2</span>:
+                Volatilität kostet Rendite. Die Breite der Verteilung wächst mit{" "}
+                <span className="math text-foreground">σ√t</span>. Eine ehrliche Prognose ist
+                deshalb keine Linie, sondern ein Kegel — stell σ links auf 90 % und sieh selbst.
+              </p>
+            </div>
+          </div>
+
+        </Frame>
+      </section>
+
+      {/* ═══════════════════ Aus dem Blog ═══════════════════ */}
+      {latestPost && (
+        <section aria-labelledby="blog-title" className="border-t border-line bg-surface">
+          <Frame
+            className={`grid gap-10 py-20 sm:py-24 lg:gap-16 ${
+              latestPost.cover
+                ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center"
+                : "lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]"
+            }`}
+          >
+            {latestPost.cover ? (
+              <div className="relative">
+                {/* Versetztes Millimeterpapier hinter dem Bild. */}
+                <div aria-hidden="true" className="decor paper absolute inset-0 translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={blogImageUrl(latestPost.cover.id)}
+                  srcSet={blogImageSrcSet(latestPost.cover.id)}
+                  sizes="(min-width: 1024px) 720px, 100vw"
+                  alt={latestPost.cover.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="relative aspect-[3/2] w-full rounded-[3px] object-cover"
+                />
               </div>
+            ) : (
+              <h2 id="blog-title" className="headline text-4xl sm:text-5xl">
+                Zuletzt im Blog
+              </h2>
+            )}
 
-              <div className="order-1 flex flex-col gap-4 lg:order-2 lg:justify-center lg:gap-5">
-                <div className="grid gap-2">
-                  <p className="font-mono text-xs font-semibold tracking-[0.16em] text-market uppercase">
-                    Statistische Physik
-                  </p>
-                  <h3 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                    Vom Pollenkorn zum Kurszettel
-                  </h3>
-                </div>
-
-                <Prose>
-                  Ein Pollenkorn im Wasser zittert, weil unzählige Moleküle
-                  dagegenstoßen. Ein Kurs zittert aus demselben Grund — nur
-                  heißen die Stöße hier Kauf und Verkauf. Bachelier schrieb die
-                  Diffusionsgleichung 1900 für die Pariser Börse auf, fünf Jahre
-                  bevor Einstein sie für die Brownsche Bewegung herleitete.
-                </Prose>
-
-                <code className="formula-block is-market">
-                  dS = μS dt + σS dW
-                  <br />
-                  S<sub>t</sub> = S<sub>0</sub> · e<sup>(μ−σ²/2)t + σW<sub>t</sub></sup>
-                </code>
-
-                <Prose>
-                  Der Term <span className="formula">−σ²/2</span> ist der
-                  aufschlussreichste: Volatilität kostet Rendite. Und die Breite
-                  der Verteilung wächst mit <span className="formula">σ√t</span>,
-                  nicht linear. Deshalb ist eine ehrliche Prognose keine Linie,
-                  sondern ein Kegel — bei fester Achse sieht man sofort, was ein
-                  Sprung von σ = 10 % auf 90 % daraus macht.
-                </Prose>
+            <div className="min-w-0">
+              {latestPost.cover && (
+                <h2 id="blog-title" className="font-serif text-lg text-muted italic">
+                  Zuletzt im Blog
+                </h2>
+              )}
+              <p className={`text-sm text-muted ${latestPost.cover ? "mt-2" : ""}`}>
+                <time dateTime={latestPost.publishedAt.toISOString()}>{formatDate(latestPost.publishedAt)}</time>
+                {latestPost.author && <>, von {latestPost.author}</>}
+              </p>
+              <h3 className="headline mt-4 text-3xl sm:text-4xl">
+                <Link
+                  href={blogPostPath(latestPost)}
+                  className="rounded-sm transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
+                >
+                  {latestPost.title}
+                </Link>
+              </h3>
+              {latestPost.preview && (
+                <p className="mt-4 line-clamp-4 max-w-2xl leading-relaxed text-muted text-pretty">{latestPost.preview}</p>
+              )}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Cta href={blogPostPath(latestPost)} arrow>
+                  Weiterlesen
+                </Cta>
+                <Cta href="/blog" variant="line">
+                  Alle Beiträge
+                </Cta>
               </div>
             </div>
-          </Card>
-
-          <div className="mt-10 grid grid-cols-1 gap-8 border-t border-line pt-8 sm:grid-cols-3 sm:gap-10">
-            {[
-              {
-                k: "Ökonophysik",
-                v: "Methoden aus Thermodynamik und Vielteilchenphysik, angewendet auf Systeme mit vielen wechselwirkenden Akteuren: Märkte, Netzwerke, Verkehr.",
-              },
-              {
-                k: "Skalengesetze",
-                v: "Fette Verteilungsränder, Volatilitäts-Cluster und Potenzgesetze tauchen an der Börse genauso auf wie in der Nähe eines Phasenübergangs.",
-              },
-              {
-                k: "Modellbildung",
-                v: "Stochastische Differentialgleichungen, Monte-Carlo-Simulation und numerische Analysis bilden das gemeinsame Handwerkszeug beider Welten.",
-              },
-            ].map((row) => (
-              <div key={row.k} className="grid gap-2">
-                <span className="font-mono text-sm font-bold text-physics">{row.k}</span>
-                <p className="text-sm leading-relaxed text-muted">{row.v}</p>
-              </div>
-            ))}
-          </div>
+          </Frame>
         </section>
-      </Container>
-
-      {/* ═══════════════════ Neuigkeiten ═══════════════════ */}
-      {latestPost && (
-        <Container size="4">
-          <section>
-            <SectionMarker index="04" label="Aus dem Verein" />
-
-            <Card className="p-5 sm:p-8 lg:p-10">
-              <Link
-                href={blogPostPath(latestPost)}
-                className="grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
-              >
-                <Badge tone="market" className="w-fit">
-                  Neuigkeiten
-                </Badge>
-
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-                  <div className="grid min-w-0 flex-1 gap-3">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
-                      <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays size={13} aria-hidden="true" />
-                        {formatDateShort(latestPost.publishedAt)}
-                      </span>
-                      {latestPost.author && (
-                        <span className="inline-flex items-center gap-1.5">
-                          <PenLine size={13} aria-hidden="true" />
-                          {latestPost.author}
-                        </span>
-                      )}
-                    </div>
-
-                    <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-4xl">
-                      {latestPost.title}
-                    </h2>
-
-                    <Lead>
-                      {latestPost.preview}
-                    </Lead>
-                  </div>
-
-                  {latestPost.cover && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={blogImageUrl(latestPost.cover.id, "thumb")}
-                      alt={latestPost.cover.alt}
-                      loading="lazy"
-                      decoding="async"
-                      className="size-24 shrink-0 rounded-xl border border-line object-cover sm:size-32"
-                    />
-                  )}
-                </div>
-              </Link>
-
-              <div className="mt-6 flex justify-start sm:justify-end">
-                <ButtonLink href="/blog" variant="soft" color="neutral">
-                  Alle Beiträge <ArrowRight size={16} aria-hidden="true" />
-                </ButtonLink>
-              </div>
-            </Card>
-          </section>
-        </Container>
       )}
 
       {/* ═══════════════════ Mitglied werden ═══════════════════ */}
-      <Container size="4">
-        <section className="pb-4">
-          <SectionMarker index="05" label="Mitmachen" />
-
-          <div className="relative overflow-hidden rounded-3xl border border-line bg-surface">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(90% 120% at 12% 0%, color-mix(in srgb, var(--physics) 10%, transparent), transparent 55%), radial-gradient(90% 120% at 88% 100%, color-mix(in srgb, var(--market) 9%, transparent), transparent 55%)",
-              }}
-            />
-            <div className="relative flex flex-col items-start justify-between gap-6 p-6 sm:p-10 md:flex-row md:items-center lg:p-14">
-              <div className="grid max-w-xl gap-3">
-                <PageTitle as="h2">
-                  Mitglied werden
-                </PageTitle>
-                <Lead>
-                  Offen für Alumni und Studierende der Physik und
-                  Wirtschaftsphysik an der Universität Ulm. Vier Schritte:
-                  Konto anlegen, E-Mail bestätigen, Antrag ausfüllen — über die
-                  Aufnahme entscheidet dann der Vorstand.
-                </Lead>
-              </div>
-
-              <div className="flex w-full flex-col gap-3 md:w-auto min-[420px]:flex-row">
-                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="lg">
-                  Mitglied werden <ArrowRight size={16} aria-hidden="true" />
-                </ButtonLink>
-                <ButtonLink href="/vorstand" size="lg" variant="soft" color="neutral">
-                  Unser Vorstand
-                </ButtonLink>
-              </div>
-            </div>
+      <section aria-labelledby="join-title" className="blueprint paper">
+        <Frame className="py-20 sm:py-28">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
+            <h2 id="join-title" className="display text-[clamp(2.75rem,8vw,5.5rem)]">
+              Mitglied werden
+            </h2>
+            <p className="max-w-md text-lg leading-relaxed text-pretty">
+              Offen für Studierende und Alumni der Physik und Wirtschaftsphysik in Ulm. Der Weg
+              dorthin hat vier Stationen und dauert ein paar Minuten — über die Aufnahme
+              entscheidet dann der Vorstand.
+            </p>
           </div>
-        </section>
-      </Container>
-    </div>
+
+          <ol className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
+            {JOURNEY_STEPS.map((step, i) => (
+              <li key={step.id} className="relative border-t border-on-physics pt-5 lg:pr-8">
+                <span aria-hidden="true" className="absolute -top-[5px] left-0 size-[9px] rounded-full border border-on-physics bg-physics" />
+                <span className="font-serif text-4xl tabular-nums italic">{i + 1}</span>
+                <h3 className="mt-2 font-semibold">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-pretty opacity-90">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-14 flex flex-col gap-3 min-[420px]:flex-row">
+            <Cta href={MEMBERSHIP_APPLICATION_PATH} variant="invert" arrow className="focus-visible:outline-on-physics">
+              Jetzt beginnen
+            </Cta>
+            <Cta href="/satzung" variant="invert-line" className="focus-visible:outline-on-physics">
+              Satzung und Beiträge
+            </Cta>
+          </div>
+        </Frame>
+      </section>
+    </>
   );
 }

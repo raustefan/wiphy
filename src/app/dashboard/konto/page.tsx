@@ -17,11 +17,11 @@ export const dynamic = "force-dynamic";
 function Fact({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
     return (
         <div className="flex min-w-0 items-start gap-3 px-5 py-4 sm:px-6">
-            <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-physics/10 text-physics" aria-hidden="true">
+            <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-[3px] bg-physics/10 text-physics" aria-hidden="true">
                 {icon}
             </span>
             <div className="grid min-w-0 gap-0.5">
-                <dt className="text-xs font-medium tracking-wide text-muted uppercase">{label}</dt>
+                <dt className="font-serif text-sm text-muted italic">{label}</dt>
                 <dd className="min-w-0 text-sm font-semibold text-foreground">{children}</dd>
             </div>
         </div>
@@ -34,7 +34,7 @@ function Steps({ steps }: { steps: string[] }) {
         <ol className="grid gap-3">
             {steps.map((step, i) => (
                 <li key={step} className="flex items-start gap-3 text-sm text-muted">
-                    <span className="grid size-6 shrink-0 place-items-center rounded-full border border-line bg-raised font-mono text-xs font-bold text-foreground tabular-nums">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-[3px] border border-line bg-raised font-mono text-xs font-bold text-foreground tabular-nums">
                         {i + 1}
                     </span>
                     <span className="pt-0.5 text-pretty">{step}</span>

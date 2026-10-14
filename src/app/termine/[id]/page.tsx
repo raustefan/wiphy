@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CalendarPlus, MessageCircleQuestion, Newspaper } from "lucide-react";
-import {
-  Badge,
-  ButtonLink,
-  Card,
-  Container,
-  Eyebrow,
-  Lead,
-  SectionTitle,
-} from "@/components/ui";
-import { EventDateCube, EventFacts } from "@/components/EventCard";
+import { ArrowLeft, CalendarPlus, MessageCircleQuestion } from "lucide-react";
+import { Cta, Frame } from "@/components/Site";
+import { EventFacts } from "@/components/EventCard";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import ShareButton from "@/components/ShareButton";
 import { EventJsonLd } from "@/components/JsonLd";
 import { formatDate } from "@/lib/format";
 import {
   eventContactPath,
+  eventDateBadge,
   eventIcsPath,
   eventPath,
   formatCountdown,
@@ -61,8 +54,10 @@ export default async function EventDetailPage({ params }: Props) {
   const past = isPastEvent(event, now);
   const countdown = past ? "" : formatCountdown(event, now);
 
+  const date = eventDateBadge(event.start);
+
   return (
-    <Container size="3" className="py-8 sm:py-12">
+    <article>
       <EventJsonLd
         title={event.title}
         summary={event.summary}
@@ -74,103 +69,98 @@ export default async function EventDetailPage({ params }: Props) {
         address={event.address}
         onlineUrl={event.onlineUrl}
       />
-      <Link
-        href={past ? "/termine?zeige=vergangen" : "/termine"}
-        className="mb-6 inline-flex h-9 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"
-      >
-        ← Zurück zu den Terminen
-      </Link>
 
-      <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Eyebrow>
-              <CalendarDays size={14} aria-hidden="true" />
-              Termin
-            </Eyebrow>
-            {past ? <Badge>Vergangen</Badge> : countdown && <Badge tone="physics">{countdown}</Badge>}
-          </div>
+      <header className="relative isolate">
+        <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
+        <Frame className="pt-8 pb-12 sm:pt-12 sm:pb-16">
+          <Link
+            href={past ? "/termine?zeige=vergangen" : "/termine"}
+            className="inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            {past ? "Vergangene Termine" : "Alle Termine"}
+          </Link>
 
-          <div className="flex gap-4 sm:gap-6">
-            <div className="hidden sm:block">
-              <EventDateCube date={event.start} past={past} size="lg" />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
+            <div className="min-w-0">
+              <p className="flex items-end gap-4">
+                <span className="font-serif text-[clamp(4.5rem,12vw,7.5rem)] leading-[0.8] tabular-nums">
+                  {date.day}
+                </span>
+                <span className="grid pb-1 text-sm leading-snug text-muted">
+                  <span>{date.weekday}</span>
+                  <span className="font-semibold text-foreground">{date.month}</span>
+                  <span>{date.year}</span>
+                </span>
+              </p>
+              <p className="mt-8 font-serif text-lg text-muted italic">
+                {past ? "Dieser Termin liegt hinter uns" : countdown ? `Termin, ${countdown}` : "Termin"}
+              </p>
+              <h1 className="display mt-2 text-[clamp(2.5rem,7vw,4.75rem)]">{event.title}</h1>
+              {event.summary && (
+                <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted text-pretty sm:text-xl">
+                  {event.summary}
+                </p>
+              )}
             </div>
-            <h1 className="min-w-0 text-3xl font-bold tracking-tight text-balance sm:text-5xl">
-              {event.title}
-            </h1>
+
+            <aside className="h-fit border-t border-foreground pt-6 lg:sticky lg:top-28">
+              <EventFacts event={event} />
+              <div className="mt-6 grid gap-3">
+                {/* Der Download ist auch für vergangene Termine erreichbar: wer sie
+                    im eigenen Kalender nachhalten will, soll das können. */}
+                <Cta href={eventIcsPath(event.id)} prefetch={false} className="w-full">
+                  <CalendarPlus size={17} aria-hidden="true" /> In meinen Kalender
+                </Cta>
+                <Cta href={eventContactPath(event.title)} variant="line" className="w-full">
+                  <MessageCircleQuestion size={17} aria-hidden="true" /> Frage zum Termin
+                </Cta>
+                <ShareButton title={event.title} className="w-full" />
+              </div>
+              <p className="marginal mt-4">
+                Die Kalenderdatei (.ics) öffnet sich in Apple Kalender, Google Kalender, Outlook
+                und Thunderbird.
+              </p>
+            </aside>
           </div>
-
-          {event.summary && (
-            <Lead className="mt-4 max-w-2xl">{event.summary}</Lead>
-          )}
-        </div>
-
-        <Card className="h-fit p-5 lg:sticky lg:top-24">
-          <EventFacts event={event} />
-
-          <div className="mt-5 grid gap-2 border-t border-line pt-5">
-            {/* Der Download ist auch für vergangene Termine erreichbar: wer sie
-                im eigenen Kalender nachhalten will, soll das können. */}
-            <ButtonLink href={eventIcsPath(event.id)} prefetch={false} className="w-full">
-              <CalendarPlus size={16} aria-hidden="true" /> In meinen Kalender
-            </ButtonLink>
-            <ButtonLink
-              href={eventContactPath(event.title)}
-              variant="soft"
-              color="neutral"
-              className="w-full"
-            >
-              <MessageCircleQuestion size={16} aria-hidden="true" /> Frage zum Termin
-            </ButtonLink>
-            <ShareButton title={event.title} className="w-full" />
-            <p className="mt-1 text-xs leading-relaxed text-faint">
-              Die Kalenderdatei (.ics) öffnet sich in Apple Kalender, Google Kalender, Outlook
-              und Thunderbird.
-            </p>
-          </div>
-        </Card>
+        </Frame>
       </header>
 
-      {event.description.trim() && (
-        <>
-          <div className="my-8 h-px bg-line sm:my-10" aria-hidden="true" />
-          <article className="max-w-[70ch] text-[1.05rem]">
+      <Frame className="pb-20 sm:pb-28">
+        {event.description.trim() && (
+          <div className="reading border-t border-line pt-6">
             <MarkdownViewer content={event.description} />
-          </article>
-        </>
-      )}
+          </div>
+        )}
 
-      {event.posts.length > 0 && (
-        <section className="mt-10 grid gap-4 sm:mt-12">
-          <div className="flex items-center gap-3">
-            <SectionTitle className="flex items-center gap-2">
-              <Newspaper size={18} aria-hidden="true" className="text-market" />
+        {event.posts.length > 0 && (
+          <section aria-labelledby="posts-title" className="mt-16 grid gap-2 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-14">
+            <h2 id="posts-title" className="headline text-3xl">
               {past ? "Rückblick" : "Aus dem Blog"}
-            </SectionTitle>
-            <span className="h-px flex-1 bg-line" aria-hidden="true" />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {event.posts.map((post) => (
-              <Card key={post.id} className="group transition-shadow hover:shadow-lg">
-                <Link
-                  href={blogPostPath(post)}
-                  className="grid h-full gap-2 p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                >
-                  <span className="font-mono text-xs text-faint">
-                    {formatDate(post.publishedAt)}
-                  </span>
-                  <h3 className="text-lg font-bold tracking-tight text-balance">{post.title}</h3>
-                  <p className="line-clamp-3 text-sm leading-relaxed text-muted">{post.preview}</p>
-                  <span className="mt-auto flex items-center gap-1.5 pt-2 text-sm font-bold text-physics">
-                    Weiterlesen <ArrowRight size={15} aria-hidden="true" />
-                  </span>
-                </Link>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
-    </Container>
+            </h2>
+            <ul className="border-t border-line">
+              {event.posts.map((post) => (
+                <li key={post.id}>
+                  <Link
+                    href={blogPostPath(post)}
+                    className="group grid gap-1.5 border-b border-line py-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                  >
+                    <span className="text-sm text-muted">{formatDate(post.publishedAt)}</span>
+                    <span className="headline text-2xl transition-colors group-hover:text-physics">
+                      {post.title}
+                    </span>
+                    {post.preview && (
+                      <span className="line-clamp-2 max-w-2xl text-sm leading-relaxed text-muted">
+                        {post.preview}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </Frame>
+    </article>
   );
 }

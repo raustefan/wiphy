@@ -32,12 +32,12 @@ export function EmptyState({
             {icon && (
                 <span
                     aria-hidden="true"
-                    className="mb-1 grid size-11 place-items-center rounded-2xl bg-raised text-faint"
+                    className="mb-1 grid size-11 place-items-center rounded-[3px] border border-line text-muted"
                 >
                     {icon}
                 </span>
             )}
-            <p className="text-sm font-semibold text-foreground">{title}</p>
+            <p className="headline text-xl">{title}</p>
             {description && (
                 <p className="max-w-sm text-sm text-muted text-pretty">{description}</p>
             )}

@@ -441,7 +441,7 @@ export default function MarketDiffusion() {
         ref={canvasRef}
         role="img"
         aria-label="Simulation einer geometrischen Brownschen Bewegung: links vom Jetzt-Strich der realisierte Kursverlauf, rechts davon der Quantilfächer der Log-Normalverteilung."
-        className="block aspect-[5/4] w-full touch-pan-y rounded-2xl border border-line bg-surface sm:aspect-[2/1] lg:aspect-[3/2]"
+        className="block aspect-[5/4] w-full touch-pan-y rounded-[3px] border border-line-strong bg-surface sm:aspect-[2/1] lg:aspect-[3/2]"
       />
 
       <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-4">
@@ -462,11 +462,14 @@ export default function MarketDiffusion() {
         />
       </div>
 
-      <figcaption className="text-xs leading-relaxed text-muted">
-        Die y-Achse ist fest: „heute“ liegt in der Mitte, die Ränder bei 0,5×
+      <figcaption className="grid gap-1 text-sm leading-relaxed text-muted sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-4">
+        <span className="font-serif text-foreground italic">Abb. 2</span>
+        <span className="text-pretty">
+        Geometrische Brownsche Bewegung nach Gleichung (1). Die y-Achse ist fest: „heute“ liegt in der Mitte, die Ränder bei 0,5×
         und 2×. Rechts vom Jetzt-Strich der Quantilfächer bis ±2σ, gestrichelt
         der Median, gepunktet der Erwartungswert. In den Prognosebereich tippen
         zeigt die Dichte an einem Horizont.
+        </span>
       </figcaption>
     </figure>
   );
@@ -486,13 +489,11 @@ function Segmented({
 }) {
   return (
     <div className="grid gap-1.5">
-      <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
-        {label}
-      </span>
+      <span className="font-serif text-sm text-muted italic">{label}</span>
       <div
         role="group"
         aria-label={label}
-        className="flex gap-1 rounded-xl border border-line bg-raised/40 p-1"
+        className="flex border-b border-line-strong"
       >
         {options.map((option) => {
           const active = option.value === value;
@@ -503,11 +504,12 @@ function Segmented({
               aria-pressed={active}
               onClick={() => onChange(option.value)}
               className={[
-                "flex-1 cursor-pointer rounded-lg px-2 py-2.5 text-[13px] font-semibold transition-colors sm:py-2 sm:text-xs",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+                // Der gewählte Wert sitzt auf der Grundlinie wie ein Zeiger auf der Skala.
+                "-mb-px flex-1 cursor-pointer border-b-2 px-2 py-2.5 text-sm font-semibold tabular-nums transition-colors sm:py-2",
+                "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-physics",
                 active
-                  ? "bg-market text-on-market"
-                  : "text-muted hover:bg-raised hover:text-foreground",
+                  ? "border-market text-market"
+                  : "border-transparent text-muted hover:text-foreground",
               ].join(" ")}
             >
               {option.label}

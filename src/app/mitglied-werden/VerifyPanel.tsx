@@ -65,7 +65,7 @@ export function VerifyPanel({ email }: { email?: string | null }) {
 
             {/* Eingeklappt, weil es die Ausnahme ist: aufgeklappt stünde ein
                 zweites Formular über dem, worauf es hier ankommt. */}
-            <details className="group rounded-xl border border-line bg-raised/50 px-4 py-3">
+            <details className="group rounded-[3px] border border-line bg-raised/50 px-4 py-3">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
                     Keine E-Mail bekommen?
                 </summary>

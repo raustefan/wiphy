@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
-import { Container } from "@/components/ui/Container";
-import { Eyebrow } from "@/components/ui";
-import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+import Link from "next/link";
+import { Frame, LinkedInGlyph, PageHead } from "@/components/Site";
 import { pageMetadata } from "@/lib/metadata";
 import { getPublicMembers } from "@/lib/server/services/boardService";
 import { boardPhotoUrl } from "@/lib/boardImages";
@@ -31,92 +28,70 @@ export default async function VorstandPage() {
   const vorstand = await getPublicMembers();
 
   return (
-    <Container size="3" className="py-10 sm:py-14">
-      <div className="mb-8 flex flex-col items-center gap-2 text-center sm:mb-10">
-        <Eyebrow className="justify-center">
-          <Users size={14} aria-hidden="true" />
-          Der Verein
-        </Eyebrow>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Vorstand</h1>
-        <p className="max-w-md text-base text-muted">
-          Aktuelle Besetzung des Vorstands
-        </p>
-      </div>
+    <>
+      <PageHead
+        title="Vorstand"
+        note={
+          <>
+            Gewählt von der Mitgliederversammlung. Fragen an den Vorstand gehen am schnellsten
+            über das{" "}
+            <Link href="/kontakt" className="link">
+              Kontaktformular
+            </Link>
+            .
+          </>
+        }
+      >
+        Diese Menschen halten den Verein am Laufen: Sie planen Termine, betreuen Mitglieder und
+        Finanzen und entscheiden über Aufnahmeanträge.
+      </PageHead>
 
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
-        {vorstand.map((entry) => (
-          <li key={entry.id}>
-            <Card className="flex h-full flex-col items-center gap-3 p-4 text-center transition-shadow hover:shadow-lg sm:gap-4 sm:p-7">
-              {/* Der Farbring greift die beiden Akzente des Logos auf und hebt
-                  das Foto von der ruhigen Kartenfläche ab. */}
-              <div className="rounded-full bg-gradient-to-br from-physics/35 to-market/25 p-[3px]">
-                {entry.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={boardPhotoUrl(entry.photo.id)}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className="size-20 rounded-full border-2 border-surface object-cover sm:size-28"
-                  />
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="grid size-20 place-items-center rounded-full border-2 border-surface bg-gradient-to-br from-physics/15 to-market/10 text-xl font-bold tracking-wide sm:size-28 sm:text-3xl"
+      <Frame className="pb-24 sm:pb-36">
+        {/* Zwei versetzte Spalten: die rechte sitzt eine halbe Zeile tiefer. */}
+        <ul className="grid gap-x-16 gap-y-12 border-t border-line pt-12 md:grid-cols-2 md:pb-28">
+          {vorstand.map((entry) => (
+            <li
+              key={entry.id}
+              className="grid grid-cols-[6rem_minmax(0,1fr)] items-end gap-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-7 md:even:translate-y-28"
+            >
+              {entry.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={boardPhotoUrl(entry.photo.id)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[4/5] w-full rounded-[3px] object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="paper grid aspect-[4/5] w-full place-items-center rounded-[3px] border border-line font-serif text-4xl text-muted italic sm:text-5xl"
+                >
+                  {getInitials(entry.name)}
+                </div>
+              )}
+
+              <div className="min-w-0 border-b border-foreground pb-4">
+                <p className="font-serif text-lg text-physics italic">{entry.role}</p>
+                <h2 className="headline mt-1 text-2xl sm:text-3xl">{entry.name}</h2>
+                {entry.linkedin && (
+                  <a
+                    href={entry.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                   >
-                    {getInitials(entry.name)}
-                  </div>
+                    <LinkedInGlyph size={16} />
+                    LinkedIn
+                    <span className="sr-only"> von {entry.name}</span>
+                  </a>
                 )}
               </div>
-
-              <div className="flex flex-col items-center gap-1.5">
-                <p className="text-sm font-bold tracking-tight text-balance sm:text-lg">
-                  {entry.name}
-                </p>
-                <Badge tone="physics" className="whitespace-normal">
-                  {entry.role}
-                </Badge>
-              </div>
-
-              {/* Ohne LinkedIn hält ein gleich hoher Platzhalter die Karten
-                  im Raster gleich aufgebaut — sonst stand der Name in dieser
-                  einen Karte höher als in allen anderen der Reihe. */}
-              {entry.linkedin ? (
-                <a
-                  href={entry.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${entry.name} auf LinkedIn`}
-                  className="mt-auto grid size-10 cursor-pointer place-items-center rounded-full border border-line-strong text-muted transition-colors hover:border-physics/40 hover:bg-physics/10 hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                >
-                  <LinkedInGlyph />
-                </a>
-              ) : (
-                <span aria-hidden="true" className="mt-auto size-10" />
-              )}
-            </Card>
-          </li>
-        ))}
-      </ul>
-
-    </Container>
-  );
-}
-
-/**
- * lucide-react führt seit v1 keine Marken-Icons mehr — das LinkedIn-Zeichen
- * liegt deshalb als schlankes Inline-SVG hier.
- */
-function LinkedInGlyph() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M6.94 5a1.94 1.94 0 1 1-3.88 0 1.94 1.94 0 0 1 3.88 0ZM3.25 8.4h3.5V21h-3.5V8.4Zm6.06 0h3.35v1.72h.05c.47-.85 1.6-1.75 3.3-1.75 3.53 0 4.19 2.2 4.19 5.07V21h-3.5v-6.16c0-1.47-.03-3.36-2.09-3.36-2.09 0-2.41 1.6-2.41 3.25V21h-3.5V8.4Z" />
-    </svg>
+            </li>
+          ))}
+        </ul>
+      </Frame>
+    </>
   );
 }

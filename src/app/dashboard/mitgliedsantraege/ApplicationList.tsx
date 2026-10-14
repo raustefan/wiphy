@@ -394,7 +394,7 @@ export function ApplicationList({
                         />
                     </Field>
                     {accepting && (
-                        <div className="grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                        <div className="grid gap-1 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                             <p className="font-semibold">Es werden folgende Beiträge angelegt:</p>
                             {accepting.feePlan.map((fee) => (
                                 <p key={fee.jahr} className="text-muted">

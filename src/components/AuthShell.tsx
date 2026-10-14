@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
 
 /**
@@ -28,34 +27,31 @@ export function AuthShell({
     footer?: React.ReactNode;
 }) {
     return (
-        <div
-            className={cn(
-                "relative mx-auto flex w-full flex-col justify-center px-4 py-12 sm:px-6 sm:py-20",
-                size === "lg" ? "max-w-lg" : "max-w-md",
-            )}
-        >
-            {/* Farbschleier hinter der Karte: die beiden Vereinsfarben, stark
-                weichgezeichnet. Rein dekorativ und deshalb `aria-hidden`. */}
+        <div className="relative isolate">
+            {/* Millimeterpapier hinter dem Formular — rein dekorativ. */}
+            <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
             <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 opacity-70 blur-3xl [background:radial-gradient(60%_100%_at_30%_0%,color-mix(in_oklab,var(--physics)_18%,transparent),transparent),radial-gradient(50%_100%_at_80%_10%,color-mix(in_oklab,var(--market)_14%,transparent),transparent)]"
-            />
-
-            <Card className="p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-12px_rgba(0,0,0,0.12)] sm:p-8">
-                <div className="grid justify-items-center gap-1.5 text-center">
-                    {icon && (
-                        <span className="mb-2 grid size-12 place-items-center rounded-2xl bg-physics/10 text-physics ring-1 ring-physics/15">
-                            {icon}
-                        </span>
-                    )}
-                    <h1 className="text-2xl font-bold tracking-tight text-balance">{title}</h1>
-                    {description && (
-                        <p className="text-sm leading-relaxed text-muted text-pretty">{description}</p>
-                    )}
+                className={cn(
+                    "mx-auto flex w-full flex-col justify-center px-4 py-12 sm:px-6 sm:py-20",
+                    size === "lg" ? "max-w-lg" : "max-w-md",
+                )}
+            >
+                <div className="rounded-[3px] border border-line-strong bg-surface p-6 sm:p-8">
+                    <div className="grid gap-2">
+                        {icon && (
+                            <span className="mb-2 grid size-11 place-items-center rounded-[3px] border border-physics/30 text-physics">
+                                {icon}
+                            </span>
+                        )}
+                        <h1 className="headline text-3xl">{title}</h1>
+                        {description && (
+                            <p className="text-sm leading-relaxed text-muted text-pretty">{description}</p>
+                        )}
+                    </div>
+                    <div className="mt-6 grid gap-4">{children}</div>
                 </div>
-                <div className="mt-6 grid gap-4">{children}</div>
-            </Card>
-            {footer && <div className="mt-5 text-center text-sm text-muted">{footer}</div>}
+                {footer && <div className="mt-5 text-center text-sm text-muted">{footer}</div>}
+            </div>
         </div>
     );
 }
@@ -65,7 +61,7 @@ export function AuthLink({ href, children }: { href: string; children: React.Rea
     return (
         <Link
             href={href}
-            className="font-semibold text-physics underline-offset-4 hover:underline"
+            className="link font-semibold"
         >
             {children}
         </Link>

@@ -2,22 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { MAX_MESSAGE_LENGTH } from "@/lib/contact";
+import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { submitContactRequest } from "./actions";
 import { AltchaField } from "@/components/AltchaField";
-import {
-    Button,
-    ButtonLink,
-    Callout,
-    Card,
-    Container,
-    Field,
-    Input,
-    Prose,
-    TextArea,
-} from "@/components/ui";
+import { Callout, Field, Input, Spinner, TextArea } from "@/components/ui";
+import { Cta, Frame, PageHead } from "@/components/Site";
 
 export function ContactForm({
     challengeJson,
@@ -51,38 +43,57 @@ export function ContactForm({
 
     if (submitted) {
         return (
-            <Container size="1" className="py-8 sm:py-14">
-                <Card className="grid justify-items-center gap-4 p-6 text-center sm:p-8">
-                    <CheckCircle2 size={40} className="text-positive" aria-hidden="true" />
-                    <h1 className="text-2xl font-bold tracking-tight text-balance">
-                        Nachricht verschickt
-                    </h1>
-                    <Prose>
-                        Vielen Dank für deine Anfrage. Der Vorstand meldet sich so bald wie
-                        möglich bei dir — in der Regel innerhalb weniger Tage.
-                    </Prose>
-                    <ButtonLink href="/" variant="soft" color="neutral" className="mt-1">
-                        Zurück zur Startseite
-                    </ButtonLink>
-                </Card>
-            </Container>
+            <PageHead title="Nachricht verschickt">
+                <p>
+                    Danke für deine Nachricht. Der Vorstand meldet sich so bald wie möglich bei dir
+                    — in der Regel innerhalb weniger Tage.
+                </p>
+                <div className="mt-8">
+                    <Cta href="/" variant="line">
+                        Zur Startseite
+                    </Cta>
+                </div>
+            </PageHead>
         );
     }
 
     return (
-        <Container size="1" className="py-8 sm:py-14">
-            <Card className="p-6 sm:p-8">
-                <div className="grid gap-2 text-center">
-                    <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
-                        Kontakt
-                    </h1>
-                    <Prose>
-                        Fragen zur Mitgliedschaft, zum Verein oder zu Veranstaltungen? Schreib
-                        uns — deine Nachricht geht direkt an den Vorstand.
-                    </Prose>
-                </div>
+        <>
+            <PageHead title="Kontakt">
+                Fragen zur Mitgliedschaft, zum Verein oder zu einem Termin? Deine Nachricht geht
+                direkt an den Vorstand.
+            </PageHead>
 
-                <form action={handleAction} className="mt-6 grid gap-4">
+            <Frame className="grid gap-10 pb-20 sm:pb-28 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
+                <dl className="grid content-start gap-6 border-t border-foreground pt-6 text-sm lg:sticky lg:top-28 lg:self-start">
+                    <div className="grid gap-1">
+                        <dt className="font-serif text-lg italic">Antwortzeit</dt>
+                        <dd className="leading-relaxed text-muted">In der Regel wenige Tage, per E-Mail.</dd>
+                    </div>
+                    <div className="grid gap-1">
+                        <dt className="font-serif text-lg italic">Mitglied werden</dt>
+                        <dd className="leading-relaxed text-muted">
+                            Dafür brauchst du keine Nachricht —{" "}
+                            <Link href={MEMBERSHIP_APPLICATION_PATH} className="link">
+                                der Antrag geht online
+                            </Link>
+                            .
+                        </dd>
+                    </div>
+                    <div className="grid gap-1">
+                        <dt className="font-serif text-lg italic">Postanschrift</dt>
+                        <dd className="leading-relaxed text-muted">
+                            Steht im{" "}
+                            <Link href="/impressum" className="link">
+                                Impressum
+                            </Link>
+                            .
+                        </dd>
+                    </div>
+                </dl>
+
+                <div className="max-w-2xl border-t border-line pt-6">
+                <form action={handleAction} className="grid gap-5">
                     {!enabled && (
                         <Callout tone="warning" icon={<Info size={16} />}>
                             Das Kontaktformular ist derzeit deaktiviert. Bitte wende dich
@@ -172,11 +183,19 @@ export function ContactForm({
 
                     <AltchaField challengeJson={challengeJson} />
 
-                    <Button type="submit" size="lg" loading={form.pending} disabled={!enabled}>
+                    <button
+                        type="submit"
+                        disabled={!enabled || form.pending}
+                        // Der Spinner ist `aria-hidden` — `aria-busy` meldet den
+                        // laufenden Versand an Screenreader.
+                        aria-busy={form.pending || undefined}
+                        className="cta cta-solid w-full disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:justify-self-start"
+                    >
+                        {form.pending && <Spinner />}
                         {form.pending ? "Wird gesendet …" : "Nachricht senden"}
-                    </Button>
+                    </button>
 
-                    <p className="text-center text-xs text-faint">
+                    <p className="text-xs text-muted">
                         Mit dem Absenden stimmst du der Verarbeitung deiner Angaben gemäß unserer{" "}
                         <Link
                             href="/datenschutz"
@@ -187,7 +206,8 @@ export function ContactForm({
                         zu.
                     </p>
                 </form>
-            </Card>
-        </Container>
+                </div>
+            </Frame>
+        </>
     );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ButtonLink, Container, Eyebrow, PageTitle } from "@/components/ui";
+import { Cta, Frame } from "@/components/Site";
 import LorenzAttractor from "@/components/LorenzAttractorLazy";
 
 export const metadata: Metadata = { title: "Seite nicht gefunden" };
@@ -17,20 +17,27 @@ export default function NotFound() {
                         "radial-gradient(34% 30% at 50% 50%, color-mix(in srgb, var(--background) 85%, transparent) 0%, transparent 100%)",
                 }}
             />
-            <Container size="1" className="relative grid place-items-center py-24 sm:py-32">
-                <div className="grid justify-items-center gap-4 text-center">
-                    <Eyebrow className="justify-center">Fehler 404</Eyebrow>
-                    <PageTitle>
-                        Seite nicht gefunden
-                    </PageTitle>
-                    <p className="max-w-prose text-muted text-pretty">
-                        Die aufgerufene Seite existiert nicht oder wurde verschoben.
+            <Frame className="relative grid place-items-center py-24 sm:py-32">
+                <div className="grid max-w-xl justify-items-center gap-5 text-center">
+                    <p aria-hidden="true" className="display text-[clamp(6rem,20vw,11rem)] text-physics italic">
+                        404
                     </p>
-                    <ButtonLink href="/" size="lg" className="mt-2">
-                        Zurück zur Startseite
-                    </ButtonLink>
+                    <h1 className="headline text-3xl sm:text-4xl">Seite nicht gefunden</h1>
+                    <p className="text-lg leading-relaxed text-muted text-pretty">
+                        Diese Adresse führt ins Leere — die Seite wurde verschoben oder es hat sich ein
+                        Tippfehler eingeschlichen. Wie die Bahnen dahinter: nie zweimal dieselbe, aber
+                        immer in der Nähe des Ziels.
+                    </p>
+                    <div className="mt-3 flex flex-col gap-3 min-[420px]:flex-row">
+                        <Cta href="/" arrow>
+                            Zur Startseite
+                        </Cta>
+                        <Cta href="/kontakt" variant="line">
+                            Fehler melden
+                        </Cta>
+                    </div>
                 </div>
-            </Container>
+            </Frame>
         </div>
     );
 }

@@ -729,7 +729,7 @@ export function EditUserForm({
             >
                 <div className="grid max-h-80 gap-2 overflow-y-auto">
                     {diff.map((d, i) => (
-                        <div key={i} className="rounded-xl border border-line bg-raised/60 p-3">
+                        <div key={i} className="rounded-[3px] border border-line bg-raised/60 p-3">
                             <p className="text-sm font-bold">{d.label}</p>
                             <p className="flex flex-wrap items-center gap-2 text-sm">
                                 <span className="text-muted line-through">{d.from}</span>
@@ -837,7 +837,7 @@ function GroupLabel({
     return (
         <div className="flex flex-wrap items-center gap-2.5">
             <span
-                className="grid size-7 shrink-0 place-items-center rounded-lg bg-raised text-faint"
+                className="grid size-7 shrink-0 place-items-center rounded-[3px] bg-raised text-faint"
                 aria-hidden="true"
             >
                 {icon}

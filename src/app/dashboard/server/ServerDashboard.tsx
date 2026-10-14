@@ -192,7 +192,7 @@ function LogsSection({ logs }: { logs: AppLogs | null }) {
                 const el = e.currentTarget;
                 stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
               }}
-              className="max-h-96 min-h-24 overflow-auto rounded-xl border border-line bg-raised p-4 text-xs leading-relaxed whitespace-pre-wrap"
+              className="max-h-96 min-h-24 overflow-auto rounded-[3px] border border-line bg-raised p-4 text-xs leading-relaxed whitespace-pre-wrap"
             >
               {text || (logs ? "Leer." : "Wird geladen …")}
             </pre>
@@ -253,7 +253,7 @@ function DeploySection({ deploy, onStarted }: { deploy: DeployStatus | null; onS
         {deploy?.log && (
           <pre
             ref={logRef}
-            className="max-h-96 overflow-auto rounded-xl border border-line bg-raised p-4 text-xs leading-relaxed whitespace-pre-wrap"
+            className="max-h-96 overflow-auto rounded-[3px] border border-line bg-raised p-4 text-xs leading-relaxed whitespace-pre-wrap"
           >
             {deploy.log}
           </pre>

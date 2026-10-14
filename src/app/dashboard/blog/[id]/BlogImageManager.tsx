@@ -169,7 +169,7 @@ export function BlogImageManager({
             <div
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
-                className="grid gap-3 rounded-xl border border-dashed border-line-strong bg-raised/40 px-4 py-5 text-center"
+                className="grid gap-3 rounded-[3px] border border-dashed border-line-strong bg-raised/40 px-4 py-5 text-center"
             >
                 <input
                     ref={fileInputRef}
@@ -218,7 +218,7 @@ export function BlogImageManager({
                     {images.map((image, index) => (
                         <li
                             key={image.id}
-                            className="grid gap-3 rounded-xl border border-line bg-raised/30 p-3"
+                            className="grid gap-3 rounded-[3px] border border-line bg-raised/30 p-3"
                         >
                             <div className="relative">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -227,7 +227,7 @@ export function BlogImageManager({
                                     alt={image.alt}
                                     loading="lazy"
                                     decoding="async"
-                                    className="aspect-[4/3] w-full rounded-lg border border-line bg-surface object-cover"
+                                    className="aspect-[4/3] w-full rounded-[3px] border border-line bg-surface object-cover"
                                 />
                                 {image.isCover && (
                                     <Badge tone="physics" className="absolute top-2 left-2 shadow">

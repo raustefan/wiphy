@@ -22,7 +22,6 @@ import {
     CreditCard,
     ShieldAlert,
     Pencil,
-    ChevronRight,
     Users,
     Contact,
     Server,
@@ -40,7 +39,6 @@ import {
     Card,
     Container,
     Eyebrow,
-    PageTitle,
     Separator,
 } from "@/components/ui";
 import { SectionHeader } from "./SectionHeader";
@@ -90,15 +88,12 @@ function HeaderMeta({
     value: string;
 }) {
     return (
-        <div className="flex min-w-0 items-center gap-2">
-            <span className="text-faint" aria-hidden="true">
-                {icon}
-            </span>
-            <dt className="sr-only">{label}</dt>
-            <dd className="min-w-0 truncate">
-                <span className="text-muted">{label}: </span>
-                <span className="font-semibold text-foreground">{value}</span>
-            </dd>
+        <div className="grid min-w-0 gap-0.5">
+            <dt className="flex items-center gap-1.5 font-serif text-sm text-muted italic">
+                <span aria-hidden="true">{icon}</span>
+                {label}
+            </dt>
+            <dd className="min-w-0 truncate font-semibold text-foreground">{value}</dd>
         </div>
     );
 }
@@ -171,24 +166,20 @@ export default async function DashboardPage() {
                 Raster liegt derselbe Wert wie zwischen zwei Karten darin. */}
             <div className="grid grid-cols-1 gap-6">
                 {/* ---------- Kopf: Begrüßung, Stammdaten, Abmelden ---------- */}
-                <header className="grid gap-4">
+                <header className="relative isolate grid gap-6 pt-4 pb-2">
+                    <div aria-hidden="true" className="decor paper paper-fade absolute -inset-x-5 -top-12 bottom-0 -z-10 sm:-inset-x-8" />
                     <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="grid min-w-0 gap-1">
-                            <Eyebrow>
-                                <User size={14} aria-hidden="true" />
-                                Mitgliederbereich
-                            </Eyebrow>
-                            <PageTitle>
+                        <div className="grid min-w-0 gap-2">
+                            <Eyebrow>Mitgliederbereich</Eyebrow>
+                            <h1 className="display text-[clamp(2.75rem,8vw,5rem)] [overflow-wrap:anywhere]">
                                 Hallo,{" "}
-                                {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}!
-                            </PageTitle>
+                                {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}
+                            </h1>
                         </div>
                         <LogoutButton />
                     </div>
 
-                    {/* Innenabstand wie bei den Karten, damit die Angaben auf
-                        derselben Kante beginnen wie alle Überschriften darunter. */}
-                    <dl className="flex flex-col gap-2 rounded-2xl border border-line bg-surface px-5 py-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:px-6">
+                    <dl className="flex flex-col gap-4 border-t border-foreground pt-4 text-sm sm:flex-row sm:flex-wrap sm:gap-x-12">
                         <HeaderMeta
                             icon={<IdCard size={15} aria-hidden="true" />}
                             label="Mitgliedschaft"
@@ -222,7 +213,7 @@ export default async function DashboardPage() {
                                 <form action={toggleDebugMode} className="self-start">
                                     <button
                                         type="submit"
-                                        className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                                        className="inline-flex items-center gap-2 rounded-[3px] border border-line px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                                     >
                                         <Bug
                                             size={15}
@@ -245,48 +236,32 @@ export default async function DashboardPage() {
                                     <li key={href} className="min-w-0">
                                         <Link
                                             href={href}
-                                            className={`group relative flex h-full flex-col gap-3 rounded-2xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics ${
+                                            className={`group relative flex h-full items-center gap-3 rounded-[3px] border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics ${
                                                 isDebug
-                                                    ? "border-dashed border-warning/40 bg-warning/5 hover:border-warning/60"
-                                                    : "border-line bg-surface hover:border-physics/40"
+                                                    ? "border-dashed border-warning/50 bg-warning/5 hover:border-warning"
+                                                    : "border-line-strong bg-surface hover:border-physics"
                                             }`}
                                         >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <span
-                                                    className={`grid size-10 shrink-0 place-items-center rounded-xl transition-colors ${
-                                                        isDebug
-                                                            ? "bg-warning/15 text-warning"
-                                                            : "bg-physics/10 text-physics group-hover:bg-physics group-hover:text-white"
-                                                    }`}
-                                                    aria-hidden="true"
-                                                >
-                                                    <Icon size={19} />
-                                                </span>
-                                                {count > 0 && (
-                                                    <Badge tone="warning">
-                                                        {count} offen
-                                                    </Badge>
-                                                )}
-                                                {isDebug && (
-                                                    <Badge tone="warning">
-                                                        <Bug size={12} aria-hidden="true" />
-                                                        Debug
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <div className="grid min-w-0 gap-0.5">
+                                            <span
+                                                className={`grid size-9 shrink-0 place-items-center rounded-[3px] transition-colors ${
+                                                    isDebug
+                                                        ? "bg-warning/15 text-warning"
+                                                        : "border border-physics/40 text-physics group-hover:bg-physics group-hover:text-on-physics"
+                                                }`}
+                                                aria-hidden="true"
+                                            >
+                                                <Icon size={17} />
+                                            </span>
+                                            <div className="grid min-w-0 flex-1 gap-0.5">
                                                 {/* Umbrechen statt abschneiden: in zwei
                                                     Spalten auf dem Telefon passt
                                                     „Benutzerverwaltung“ sonst nicht. */}
-                                                <span className="flex items-start gap-1 text-[15px] leading-snug font-semibold text-foreground sm:text-base">
+                                                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-serif text-base leading-snug font-medium text-foreground">
                                                     <span className="min-w-0 hyphens-auto break-words">{label}</span>
-                                                    <ChevronRight
-                                                        size={15}
-                                                        aria-hidden="true"
-                                                        className="mt-0.5 hidden shrink-0 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-physics sm:block"
-                                                    />
+                                                    {count > 0 && <Badge tone="warning">{count} offen</Badge>}
+                                                    {isDebug && <Badge tone="warning">Debug</Badge>}
                                                 </span>
-                                                <span className="hidden text-sm text-muted text-pretty sm:block">
+                                                <span className="hidden text-xs text-muted text-pretty sm:block">
                                                     {description}
                                                 </span>
                                             </div>
@@ -397,7 +372,7 @@ export default async function DashboardPage() {
                                   brauchten für drei Zahlen mehr Platz als die
                                   Tabelle darunter für dreizehn Konten.
                                 */}
-                                <ul className="mt-4 grid grid-cols-1 divide-y divide-line rounded-xl border border-line">
+                                <ul className="mt-4 grid grid-cols-1 divide-y divide-line rounded-[3px] border border-line">
                                     {last3Years.map((year) => {
                                         const fee = myFees.find((f) => f.jahr === year);
                                         const isPaid = fee?.bezahlt ?? false;

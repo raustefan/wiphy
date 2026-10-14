@@ -49,7 +49,7 @@ export function MembershipCertificateCard({ facts }: { facts: CertificateFacts }
         Damit brauchen die Zellen keine Ränder, die sich an den Ecken der
         umgebenden Rundung doppeln würden.
       */}
-      <dl className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+      <dl className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-[3px] border border-line bg-line sm:grid-cols-3">
         <Entry label="Mitglied seit" value={formatDate(memberSince)} />
         <Entry
           label="Dauer"

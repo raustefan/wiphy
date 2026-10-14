@@ -115,7 +115,7 @@ export function EmailComposerDialog({
     >
       <form onSubmit={handleSubmit} className="grid gap-4">
         {recipients.length > 0 && (
-          <div className="grid max-h-32 gap-1 overflow-y-auto rounded-xl bg-raised p-3">
+          <div className="grid max-h-32 gap-1 overflow-y-auto rounded-[3px] bg-raised p-3">
             {recipients.map((r) => (
               <div key={r.id}>
                 <p className="text-sm font-medium">{r.name || "—"}</p>

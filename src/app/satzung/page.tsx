@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Scale } from "lucide-react";
-import { ButtonLink, Card, Prose, SectionTitle, Separator } from "@/components/ui";
+import { Cta } from "@/components/Site";
 import { LegalPage, LegalSections } from "@/components/LegalPage";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { resolveFeeDefault } from "@/lib/feeDefaults";
@@ -53,62 +52,73 @@ export default async function SatzungPage() {
     return (
         <LegalPage
             title="Satzung & Ziele"
-            eyebrow={
+            description="Die Satzung des Wirtschaftsphysik Alumni e. V. im Wortlaut: wozu es den Verein gibt, wer Mitglied werden kann, was es kostet und wer entscheidet."
+            note={
                 <>
-                    <Scale size={16} aria-hidden="true" />
-                    Verein
+                    Schnell zum{" "}
+                    <a href="#paragraph-2" className="link">
+                        Vereinszweck
+                    </a>{" "}
+                    oder zur{" "}
+                    <a href="#paragraph-4" className="link">
+                        Mitgliedschaft
+                    </a>
+                    .
                 </>
             }
         >
-            <Prose className="mb-8 max-w-prose">
-                Die Satzung des Wirtschaftsphysik Alumni e.V. im Wortlaut. Sie regelt Zweck,
-                Mitgliedschaft, Beiträge und Organe des Vereins.
-            </Prose>
-
             {/* ---------- Beitragsordnung ---------- */}
-            <Card className="mb-10 grid gap-4 p-5 sm:p-6">
+            <section
+                aria-labelledby="fees-title"
+                className="mb-20 grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-14"
+            >
                 <div>
-                    <SectionTitle>Mitgliedsbeiträge für ordentliche Mitglieder</SectionTitle>
-                    <p className="mt-1 text-sm text-muted">
+                    <h2 id="fees-title" className="headline text-3xl">
+                        Beiträge
+                    </h2>
+                    <p className="mt-3 text-sm text-muted text-pretty">
                         Beschlossen von der Mitgliederversammlung, Stand {currentYear}.
                     </p>
                 </div>
 
-                <dl className="grid gap-3">
-                    {rows.map((row) => (
-                        <div
-                            key={row.label}
-                            className="flex flex-col justify-between gap-1 border-t border-line pt-3 sm:flex-row sm:items-baseline sm:gap-6"
-                        >
-                            <dt className="min-w-0 text-sm text-pretty">
-                                {row.label}
-                                {row.hint && (
-                                    <span className="block text-sm text-faint">{row.hint}</span>
-                                )}
-                            </dt>
-                            <dd className="shrink-0 text-sm font-bold tabular-nums sm:text-right">
-                                {formatEuro(row.monthly)} pro Monat
-                                <span className="block font-medium text-muted">
-                                    {formatEuro(row.annual)} im Jahr
-                                </span>
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
+                <div className="min-w-0">
+                    <dl className="border-t border-foreground">
+                        {rows.map((row) => (
+                            <div
+                                key={row.label}
+                                className="grid gap-2 border-b border-line py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline sm:gap-10"
+                            >
+                                <dt className="min-w-0 text-pretty">
+                                    {row.label}
+                                    {row.hint && (
+                                        <span className="mt-1 block text-sm text-muted">{row.hint}</span>
+                                    )}
+                                </dt>
+                                <dd className="grid shrink-0 tabular-nums sm:text-right">
+                                    <span className="font-serif text-2xl">
+                                        {formatEuro(row.annual)}
+                                        <span className="text-base text-muted"> im Jahr</span>
+                                    </span>
+                                    <span className="text-sm text-muted">{formatEuro(row.monthly)} pro Monat</span>
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
 
-                <Separator />
+                    <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted text-pretty">
+                        Wer im laufenden Jahr eintritt, zahlt nur die verbleibenden Monate — jeder
+                        bereits vergangene Monat wird mit einem Zwölftel des Jahresbeitrags
+                        abgezogen (§ 5 Abs. 3). Die Beiträge sind in vollem Umfang steuerlich
+                        anrechenbar.
+                    </p>
 
-                <p className="text-sm text-muted text-pretty">
-                    Bei Eintritt im laufenden Jahr wird der Beitrag um die bereits vergangenen
-                    Monate gekürzt, die jeweils mit einem Zwölftel des Jahresbeitrages bewertet
-                    werden (§ 5 Abs. 3). Die Beiträge sind in vollem Umfang steuerlich
-                    anrechenbar.
-                </p>
-
-                <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} className="justify-self-start">
-                    Mitglied werden
-                </ButtonLink>
-            </Card>
+                    <div className="mt-8">
+                        <Cta href={MEMBERSHIP_APPLICATION_PATH} arrow>
+                            Mitglied werden
+                        </Cta>
+                    </div>
+                </div>
+            </section>
 
             {/* ---------- Satzungstext ---------- */}
             <LegalSections document={SATZUNG} />

@@ -29,7 +29,7 @@ export function Callout({
     <div
       role={tone === "danger" ? "alert" : undefined}
       className={cn(
-        "flex items-start gap-3 rounded-xl border px-4 py-3 text-sm",
+        "flex items-start gap-3 rounded-[3px] border px-4 py-3 text-sm",
         toneClasses[tone],
         className,
       )}

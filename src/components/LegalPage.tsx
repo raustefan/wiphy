@@ -1,14 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
-import {
-  ButtonLink,
-  Container,
-  Eyebrow,
-  PageTitle,
-  Prose,
-  SectionTitle,
-  Separator,
-} from "@/components/ui";
+import { Frame, PageHead } from "@/components/Site";
 import type { LegalBlock, LegalDocument, LegalSection } from "@/lib/legal";
 
 const INLINE = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g;
@@ -55,12 +47,12 @@ function renderInline(text: string): ReactNode {
 
 function Block({ block }: { block: LegalBlock }) {
   if (typeof block === "string") {
-    return <Prose>{renderInline(block)}</Prose>;
+    return <p className="text-pretty">{renderInline(block)}</p>;
   }
 
   if ("items" in block) {
     return (
-      <ul className="ml-5 grid list-disc gap-1.5 text-sm leading-relaxed text-muted marker:text-faint sm:text-base">
+      <ul className="grid list-disc gap-1.5 pl-5 marker:text-physics">
         {block.items.map((item) => (
           <li key={item} className="text-pretty">
             {renderInline(item)}
@@ -71,44 +63,69 @@ function Block({ block }: { block: LegalBlock }) {
   }
 
   return (
-    <Prose>
+    <p>
       {block.lines.map((line, index) => (
         <Fragment key={line}>
           {index > 0 && <br />}
           {renderInline(line)}
         </Fragment>
       ))}
-    </Prose>
+    </p>
   );
 }
 
-export function LegalSections({
-  document,
-  separators = false,
-}: {
-  document: LegalDocument;
-  /** Haarlinie zwischen den Abschnitten — so wie Impressum und Datenschutz es zeigen. */
-  separators?: boolean;
-}) {
+/** Ankerziel eines Abschnitts: das gepflegte `id`, sonst die laufende Nummer. */
+const anchorOf = (section: LegalSection, index: number) =>
+  section.id ? `paragraph-${section.id}` : `abschnitt-${index + 1}`;
+
+/**
+ * Der Text in der Lesespalte, links daneben ein klebendes Inhaltsverzeichnis
+ * — bei Satzung und Datenschutzerklärung mit ihren zwanzig Abschnitten ist
+ * das der schnellste Weg zum gesuchten Paragrafen.
+ */
+export function LegalSections({ document }: { document: LegalDocument }) {
+  const titled = document
+    .map((section, index) => ({ section, anchor: anchorOf(section, index) }))
+    .filter(({ section }) => section.title);
+
   return (
-    <div className={separators ? "grid gap-4" : "grid gap-8"}>
-      {document.map((section, index) => (
-        <Fragment key={section.id ?? section.title ?? index}>
-          {separators && index > 0 && <Separator className="my-2" />}
-          <Section section={section} />
-        </Fragment>
-      ))}
+    <div className="grid gap-10 border-t border-line pt-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-14">
+      {titled.length > 3 ? (
+        <nav aria-label="Inhalt" className="lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:self-start lg:overflow-y-auto">
+          <p className="font-serif text-lg italic">Inhalt</p>
+          <ol className="mt-3 grid gap-1 border-l border-line text-sm">
+            {titled.map(({ section, anchor }) => (
+              <li key={anchor}>
+                <a
+                  href={`#${anchor}`}
+                  className="-ml-px block border-l border-transparent py-1 pl-3 text-muted transition-colors hover:border-physics hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
+                >
+                  {section.title}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : (
+        <span aria-hidden="true" className="hidden lg:block" />
+      )}
+
+      <div className="reading grid gap-12">
+        {document.map((section, index) => (
+          <Section key={anchorOf(section, index)} section={section} anchor={anchorOf(section, index)} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function Section({ section }: { section: LegalSection }) {
+function Section({ section, anchor }: { section: LegalSection; anchor: string }) {
   return (
-    <section className="grid gap-3">
+    <section className="grid gap-4">
       {section.title && (
-        <SectionTitle id={section.id && `paragraph-${section.id}`} className="scroll-mt-24">
+        <h2 id={anchor} className="headline scroll-mt-28 text-2xl sm:text-3xl">
           {section.title}
-        </SectionTitle>
+        </h2>
       )}
       {section.blocks.map((block, index) => (
         <Block key={index} block={block} />
@@ -118,35 +135,26 @@ function Section({ section }: { section: LegalSection }) {
 }
 
 /**
- * Seitengerüst für Satzung, Impressum und Datenschutz: Titel, Zurück-Link und
- * der Inhaltsbereich. Vorher stand das in jeder der drei Seiten einzeln.
+ * Seitengerüst für Satzung, Impressum und Datenschutz: Kopf mit Titel und
+ * Einleitung, darunter der Inhaltsbereich.
  */
 export function LegalPage({
   title,
-  eyebrow,
   description,
+  note,
   children,
 }: {
   title: string;
-  eyebrow?: ReactNode;
-  description?: string;
+  description?: React.ReactNode;
+  note?: React.ReactNode;
   children: ReactNode;
 }) {
   return (
-    <Container size="2" className="pt-6 pb-16 sm:pt-10">
-      <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-center">
-        <div>
-          {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-          <PageTitle>{title}</PageTitle>
-        </div>
-        <ButtonLink href="/" variant="soft" color="neutral" size="sm">
-          ← Zurück zur Startseite
-        </ButtonLink>
-      </div>
-
-      {description && <Prose className="mb-8 max-w-prose">{description}</Prose>}
-
-      {children}
-    </Container>
+    <>
+      <PageHead title={title} note={note}>
+        {description}
+      </PageHead>
+      <Frame className="pb-20 sm:pb-28">{children}</Frame>
+    </>
   );
 }

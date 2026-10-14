@@ -22,7 +22,7 @@ export function Switch({
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        "relative inline-flex h-6.5 w-11.5 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-150",
+        "relative inline-flex h-6.5 w-11.5 shrink-0 cursor-pointer items-center rounded-[3px] transition-colors duration-150",
         // Unsichtbar auf 48 px Trefferfläche erweitert, ohne die Form zu ändern.
         "pointer-coarse:after:absolute pointer-coarse:after:-inset-x-0.5 pointer-coarse:after:-inset-y-2.75 pointer-coarse:after:content-['']",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
@@ -33,7 +33,7 @@ export function Switch({
       <span
         aria-hidden="true"
         className={cn(
-          "absolute left-0.5 size-5 rounded-full bg-white shadow-sm transition-transform duration-150",
+          "absolute left-0.5 size-5 rounded-[2px] bg-white shadow-sm transition-transform duration-150",
           checked && "translate-x-5",
         )}
       />

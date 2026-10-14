@@ -72,11 +72,11 @@ export default async function AdminBlogPage() {
                                                 alt=""
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="size-12 rounded-lg border border-line object-cover"
+                                                className="size-12 rounded-[3px] border border-line object-cover"
                                             />
                                         ) : (
                                             <span
-                                                className="grid size-12 place-items-center rounded-lg border border-dashed border-line text-faint"
+                                                className="grid size-12 place-items-center rounded-[3px] border border-dashed border-line text-faint"
                                                 title="Kein Titelbild"
                                             >
                                                 <Images size={16} aria-hidden="true" />

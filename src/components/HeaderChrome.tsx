@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -16,7 +16,6 @@ import {
 import { cn } from "@/lib/cn";
 import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 import ThemeToggle from "@/components/ThemeToggle";
-import { ButtonLink } from "@/components/ui/Button";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const links = [
@@ -30,15 +29,7 @@ const links = [
 
 export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   /* Neuen Pfad anzeigen → Drawer schließen (z. B. nach Browser-Back).
      Anpassung während des Renderns statt im Effekt: so wird das offene Drawer
@@ -117,6 +108,36 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
      gefüllte Schaltfläche daneben, die Anmeldung als ruhiger Link. */
   const signedInAction = { href: "/dashboard", label: "Dashboard" };
 
+  /* Nadel auf der Skala: steht unter dem aktiven Punkt und läuft beim
+     Überfahren oder Fokussieren federnd zum jeweiligen Link. Die erste
+     Platzierung springt — sonst flöge sie bei jedem Seitenaufruf von links
+     herein. */
+  const headerRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const [needle, setNeedle] = useState({ x: 0, on: false, animate: false });
+
+  const placeNeedle = useCallback((target: HTMLElement | null) => {
+    const header = headerRef.current;
+    const link = target ?? navRef.current?.querySelector<HTMLElement>("a[data-active]");
+    if (!header || !link) {
+      setNeedle((n) => ({ ...n, on: false }));
+      return;
+    }
+    const h = header.getBoundingClientRect();
+    const l = link.getBoundingClientRect();
+    setNeedle((n) => ({ x: l.left - h.left + l.width / 2, on: true, animate: n.on }));
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- misst das Layout nach dem Seitenwechsel
+    placeNeedle(null);
+    const header = headerRef.current;
+    if (!header) return;
+    const ro = new ResizeObserver(() => placeNeedle(null));
+    ro.observe(header);
+    return () => ro.disconnect();
+  }, [pathname, placeNeedle]);
+
   /* Daumenleiste (Telefon): die häufigsten Ziele direkt, alles Weitere im
      Bottom Sheet hinter „Mehr“. */
   const tabs = [
@@ -135,23 +156,23 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   return (
     <>
       <header
+        ref={headerRef}
         className={cn(
           // Deckende Fläche statt `backdrop-blur`: Der Filter wäre nicht nur
           // teuer, er erzeugt auch einen Containing Block — das Drawer mit
           // `position: fixed` würde dann auf Kopfzeilenhöhe zusammenschrumpfen.
-          "sticky top-0 z-40 border-b bg-background transition-shadow",
+          "sticky top-0 z-40 bg-background",
           // Als installierte App übernimmt auf dem Telefon die Daumenleiste die
           // Navigation; die Kopfzeile wäre nur doppelter Fensterrahmen.
           "standalone:max-md:hidden",
-          scrolled ? "border-line shadow-sm" : "border-transparent",
         )}
       >
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-[80rem] items-center justify-between gap-4 px-5 sm:px-8">
           {/* Wortmarke */}
           <Link
             href="/"
             aria-label="Zur Startseite"
-            className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
+            className="flex min-w-0 items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
           >
             <Image
               src="/logo-plain.png"
@@ -165,59 +186,64 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
               className="h-[25px] w-12 shrink-0"
               priority
             />
-            <span className="hidden min-w-0 flex-col border-l border-line pl-3 leading-tight sm:flex">
-              <span className="truncate text-[15px] font-bold tracking-tight">
-                WirtschaftsPhysik Alumni
-              </span>
-              <span className="font-mono text-[0.7rem] tracking-[0.14em] text-faint uppercase">
-                Universität Ulm · e.V.
-              </span>
+            <span className="font-serif text-[1.0625rem] leading-none font-medium tracking-tight whitespace-nowrap">
+              WirtschaftsPhysik <span className="hidden min-[380px]:inline">Alumni</span>
             </span>
           </Link>
 
           {/* Navigation (Desktop) */}
           <nav
-            className="hidden items-center gap-1 md:flex"
+            ref={navRef}
+            className="hidden items-center gap-6 md:flex lg:gap-8"
             aria-label="Hauptnavigation"
+            onPointerLeave={() => placeNeedle(null)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node)) placeNeedle(null);
+            }}
           >
-            {links.map((link) => {
-              const active = pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
-                    active
-                      ? "bg-raised text-foreground"
-                      : "text-muted hover:bg-raised hover:text-foreground",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            <div className="ml-2 flex items-center gap-2">
+            <ul className="flex items-center gap-4 lg:gap-6">
+              {links.map((link) => {
+                const active = pathname.startsWith(link.href);
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      data-active={active || undefined}
+                      aria-current={active ? "page" : undefined}
+                      onPointerEnter={(event) => placeNeedle(event.currentTarget)}
+                      onFocus={(event) => placeNeedle(event.currentTarget)}
+                      className={cn(
+                        "inline-flex h-16 items-center text-sm font-medium transition-colors",
+                        "focus-visible:outline-2 focus-visible:-outline-offset-8 focus-visible:outline-physics",
+                        active ? "text-foreground" : "text-muted hover:text-foreground",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex items-center gap-2 border-l border-line pl-4 lg:pl-6">
               <ThemeToggle />
               {signedIn ? (
-                <ButtonLink href={signedInAction.href} size="sm">
+                <Link href={signedInAction.href} className="cta cta-solid min-h-10 px-4 text-sm">
                   {signedInAction.label}
-                </ButtonLink>
+                </Link>
               ) : (
                 <>
-                  <ButtonLink
+                  <Link
                     href="/login"
-                    size="sm"
-                    variant="ghost"
-                    color="neutral"
+                    className="inline-flex h-10 items-center px-2 text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
                   >
                     Anmelden
-                  </ButtonLink>
-                  <ButtonLink href={MEMBERSHIP_APPLICATION_PATH} size="sm">
+                  </Link>
+                  <Link
+                    href={MEMBERSHIP_APPLICATION_PATH}
+                    className="cta cta-solid min-h-10 px-4 text-sm"
+                  >
                     Mitglied werden
-                  </ButtonLink>
+                  </Link>
                 </>
               )}
             </div>
@@ -226,12 +252,28 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           {/* Mobil: Navigation sitzt unten in der Daumenleiste */}
           <ThemeToggle className="md:hidden" />
         </div>
+
+        {/* Skala als Unterkante: Feinstriche, eine Grundlinie, die sich mit dem
+            Scrollen füllt, und eine Nadel, die federnd dem Zeiger folgt. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0">
+          <div className="ruler" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-line-strong" />
+          <div className="scroll-fill absolute inset-x-0 bottom-0 h-px bg-physics" />
+          <span
+            className="needle absolute bottom-0 left-0 hidden h-[15px] w-0.5 bg-physics md:block"
+            style={{
+              transform: `translateX(${needle.x - 1}px)`,
+              opacity: needle.on ? 1 : 0,
+              transition: needle.animate ? undefined : "none",
+            }}
+          />
+        </div>
       </header>
 
       {/* Daumenleiste (Mobil) */}
       <nav
         aria-label="Schnellnavigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line-strong bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden"
       >
         <div className="grid h-16 grid-cols-5">
           {tabs.map(({ href, label, icon: Icon }) => {
@@ -243,9 +285,13 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors",
+                  // Die aktive Station trägt oben einen Strich — dieselbe
+                  // Nadel wie auf der Skala der Desktop-Kopfzeile.
+                  "relative flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors",
                   "focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-physics",
-                  active ? "text-physics" : "text-muted",
+                  active
+                    ? "text-physics before:absolute before:inset-x-5 before:top-0 before:h-0.5 before:bg-physics"
+                    : "text-muted",
                 )}
               >
                 <Icon size={22} aria-hidden="true" />
@@ -298,7 +344,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           ref={drawerRef}
           onKeyDown={trapTab}
           className={cn(
-            "absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-2xl bg-surface pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-250 ease-out motion-reduce:transition-none",
+            "absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-lg bg-surface pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-250 ease-out motion-reduce:transition-none",
             menuOpen ? "translate-y-0" : "translate-y-full",
           )}
         >
@@ -306,9 +352,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
             {...swipe}
             className="flex h-16 shrink-0 touch-none items-center justify-between border-b border-line px-4"
           >
-            <span className="font-mono text-xs tracking-[0.16em] text-faint uppercase">
-              Menü
-            </span>
+            <span className="font-serif text-lg font-medium">Menü</span>
             <div className="flex items-center gap-1">
               {/* Hier statt nur in der Kopfzeile: die fehlt in der installierten App. */}
               <ThemeToggle />
@@ -336,11 +380,11 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-12 items-center rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors",
+                    "flex min-h-12 items-center border-l-2 px-4 py-2 font-serif text-2xl transition-colors",
                     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
                     active
-                      ? "bg-physics/12 text-physics"
-                      : "text-foreground hover:bg-raised",
+                      ? "border-physics text-physics"
+                      : "border-transparent text-foreground hover:border-line-strong",
                   )}
                 >
                   {link.label}
@@ -351,31 +395,29 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
 
           <div className="grid gap-2 border-t border-line p-4">
             {signedIn ? (
-              <ButtonLink
+              <Link
                 href={signedInAction.href}
-                className="w-full"
+                className="cta cta-solid w-full"
                 onClick={() => setMenuOpen(false)}
               >
                 {signedInAction.label}
-              </ButtonLink>
+              </Link>
             ) : (
               <>
-                <ButtonLink
+                <Link
                   href={MEMBERSHIP_APPLICATION_PATH}
-                  className="w-full"
+                  className="cta cta-solid w-full"
                   onClick={() => setMenuOpen(false)}
                 >
                   Mitglied werden
-                </ButtonLink>
-                <ButtonLink
+                </Link>
+                <Link
                   href="/login"
-                  variant="soft"
-                  color="neutral"
-                  className="w-full"
+                  className="cta cta-line w-full"
                   onClick={() => setMenuOpen(false)}
                 >
                   Anmelden
-                </ButtonLink>
+                </Link>
               </>
             )}
           </div>

@@ -98,7 +98,7 @@ function AnnouncePicker({ events }: { events: MailEventOption[] }) {
                     <Link
                         key={event.id}
                         href={`/dashboard/mail?termin=${event.id}`}
-                        className="grid gap-0.5 rounded-xl border border-line bg-raised/40 px-3.5 py-2.5 text-left transition-colors hover:border-market/40 hover:bg-market/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                        className="grid gap-0.5 rounded-[3px] border border-line bg-raised/40 px-3.5 py-2.5 text-left transition-colors hover:border-market/40 hover:bg-market/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                     >
                         <span className="text-sm font-semibold">{event.title}</span>
                         <span className="font-mono text-xs text-faint">{event.when}</span>
@@ -119,22 +119,22 @@ function MailFormSkeleton() {
                     {[112, 96, 128, 88].map((w, i) => (
                         <div
                             key={i}
-                            className="h-9 animate-pulse rounded-full bg-raised"
+                            className="h-9 animate-pulse rounded-[3px] bg-raised"
                             style={{ width: w }}
                         />
                     ))}
                 </div>
             </div>
-            <div className="h-28 animate-pulse rounded-xl bg-raised" />
+            <div className="h-28 animate-pulse rounded-[3px] bg-raised" />
             <div className="grid gap-2">
                 <div className="h-4 w-20 animate-pulse rounded bg-raised" />
-                <div className="h-11 animate-pulse rounded-xl bg-raised" />
+                <div className="h-11 animate-pulse rounded-[3px] bg-raised" />
             </div>
             <div className="grid gap-2">
                 <div className="h-4 w-24 animate-pulse rounded bg-raised" />
-                <div className="h-56 animate-pulse rounded-xl bg-raised" />
+                <div className="h-56 animate-pulse rounded-[3px] bg-raised" />
             </div>
-            <div className="h-11 w-full animate-pulse rounded-full bg-raised sm:w-48" />
+            <div className="h-11 w-full animate-pulse rounded-[3px] bg-raised sm:w-48" />
         </div>
     );
 }

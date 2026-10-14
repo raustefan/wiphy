@@ -28,15 +28,15 @@ export function SectionHeader({
             )}
         >
             <div className="grid min-w-0 gap-1">
-                <p className="flex items-center gap-2 text-sm text-muted">
+                <p className="flex items-center gap-2 font-serif text-base text-physics italic">
                     {icon && (
-                        <span className="text-faint" aria-hidden="true">
+                        <span aria-hidden="true">
                             {icon}
                         </span>
                     )}
                     {eyebrow}
                 </p>
-                <h2 className="text-lg font-bold tracking-tight text-balance sm:text-xl">
+                <h2 className="headline text-2xl">
                     {title}
                 </h2>
                 {description && (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, Clock, Info, LayoutDashboard, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock, Info, LayoutDashboard } from "lucide-react";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 import { getOptionalUser } from "@/lib/server/authz";
 import { getEditableUser } from "@/lib/server/services/userService";
@@ -15,7 +15,8 @@ import {
 } from "@/lib/membershipJourney";
 import { pageMetadata } from "@/lib/metadata";
 import { formatDate } from "@/lib/format";
-import { Badge, ButtonLink, Callout, Card, Container, Eyebrow, PageTitle } from "@/components/ui";
+import { Badge, ButtonLink, Callout } from "@/components/ui";
+import { Frame, PageHead } from "@/components/Site";
 import { JourneyRail } from "./JourneyRail";
 import { AccountPanel } from "./AccountPanel";
 import { VerifyPanel } from "./VerifyPanel";
@@ -68,55 +69,56 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
     const challenge = stage === "konto" ? await createAltchaChallenge() : null;
 
     return (
-        <Container size="3" className="py-8 sm:py-12">
-            <header className="grid gap-2">
-                <Eyebrow>
-                    <Sparkles size={14} aria-hidden="true" />
-                    Mitgliedschaft
-                </Eyebrow>
-                <PageTitle>Mitglied werden</PageTitle>
-                <p className="max-w-prose text-sm leading-relaxed text-muted text-pretty sm:text-base">
-                    Vier Schritte, ein paar Minuten. Du kannst jederzeit unterbrechen und
-                    später weitermachen — wir zeigen dir hier immer, was als Nächstes dran
-                    ist.
-                </p>
-            </header>
+        <>
+            <PageHead
+                title="Mitglied werden"
+                note={
+                    <>
+                        Was die Mitgliedschaft kostet, steht in der{" "}
+                        <Link href="/satzung" className="link">
+                            Beitragsordnung
+                        </Link>
+                        .
+                    </>
+                }
+            >
+                Vier Stationen, ein paar Minuten. Du kannst jederzeit unterbrechen und später
+                weitermachen — hier steht immer, was als Nächstes dran ist.
+            </PageHead>
 
-            <div className="mt-6 sm:mt-8">
-                <JourneyRail stage={stage} />
-            </div>
+            <Frame className="pb-20 sm:pb-28">
+            <div className="mx-auto max-w-4xl">
+            <JourneyRail stage={stage} />
 
-            <div className="mt-6 grid gap-4 sm:mt-8">
+            <div className="mt-10 grid gap-5 sm:mt-12">
                 {/* Der Antrag bringt eigene Schrittüberschriften mit — eine
                     Überschrift darüber, die dasselbe noch einmal sagt, kostet
                     auf dem Telefon nur Höhe. */}
                 {step && stage !== "antrag" && (
                     <div className="grid gap-1">
-                        <h2 className="text-xl font-bold tracking-tight text-balance">
-                            {step.title}
-                        </h2>
-                        <p className="max-w-prose text-sm text-muted text-pretty">
+                        <h2 className="headline text-3xl">{step.title}</h2>
+                        <p className="mt-1 max-w-prose leading-relaxed text-muted text-pretty">
                             {step.description}
                         </p>
                     </div>
                 )}
 
                 {stage === "konto" && challenge && (
-                    <Card className="p-5 sm:p-6">
+                    <Panel>
                         <AccountPanel challengeJson={JSON.stringify(challenge)} />
-                    </Card>
+                    </Panel>
                 )}
 
                 {stage === "bestaetigung" && (
-                    <Card className="p-5 sm:p-6">
+                    <Panel>
                         <VerifyPanel email={profile?.email ?? currentUser?.email ?? null} />
-                    </Card>
+                    </Panel>
                 )}
 
                 {stage === "antrag" && currentUser && <ApplicationStage profile={profile} />}
 
                 {stage === "pruefung" && openApplication && (
-                    <Card className="grid gap-4 p-5 sm:p-6">
+                    <Panel className="grid gap-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <Badge tone="warning">
                                 <Clock size={14} aria-hidden="true" />
@@ -139,11 +141,11 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                             </ButtonLink>
                             <WithdrawApplicationButton applicationId={openApplication.id} />
                         </div>
-                    </Card>
+                    </Panel>
                 )}
 
                 {stage === "mitglied" && (
-                    <Card className="grid gap-3 p-5 sm:p-6">
+                    <Panel className="grid gap-3">
                         <Badge tone="positive" className="justify-self-start">
                             <CheckCircle2 size={14} aria-hidden="true" />
                             Mitgliedschaft aktiv
@@ -156,20 +158,27 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                             <LayoutDashboard size={15} aria-hidden="true" />
                             Zum Mitgliederbereich
                         </ButtonLink>
-                    </Card>
+                    </Panel>
                 )}
 
                 {currentUser && (
                     <p className="text-xs text-faint">
                         Angemeldet als {currentUser.email ?? profile?.email}.{" "}
-                        <Link href="/dashboard" className="underline underline-offset-2">
+                        <Link href="/dashboard" className="link">
                             Mitgliederbereich
                         </Link>
                     </p>
                 )}
             </div>
-        </Container>
+            </div>
+            </Frame>
+        </>
     );
+}
+
+/** Rahmen einer Station: eine kräftige Linie oben statt einer Karte. */
+function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
+    return <div className={`border-t border-foreground pt-6 ${className ?? ""}`}>{children}</div>;
 }
 
 /**

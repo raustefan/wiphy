@@ -264,7 +264,7 @@ export function ApplicationWizard({
                                 return (
                                     <label
                                         key={year}
-                                        className="flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-raised/60 px-3.5 py-2.5 text-sm font-medium"
+                                        className="flex cursor-pointer items-center gap-2 rounded-[3px] border border-line bg-raised/60 px-3.5 py-2.5 text-sm font-medium"
                                     >
                                         <Checkbox
                                             checked={checked}
@@ -388,7 +388,7 @@ export function ApplicationWizard({
 
                             <MandateText />
 
-                            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                            <label className="flex cursor-pointer items-start gap-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                                 <Checkbox name="bankeinzug" className="mt-0.5" />
                                 <span className="text-pretty">
                                     Ich ermächtige den WirtschaftsPhysik Alumni e.V., den
@@ -441,7 +441,7 @@ export function ApplicationWizard({
                         description="Bitte prüfe deine Angaben, bevor du den Antrag absendest."
                     />
 
-                    <div className="grid gap-3 rounded-xl border border-line bg-raised/60 p-4">
+                    <div className="grid gap-3 rounded-[3px] border border-line bg-raised/60 p-4">
                         <p className="text-sm font-semibold">Mitgliedsbeitrag {feeYear}</p>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div>
@@ -639,7 +639,7 @@ function StepIndicator({ step, onSelect }: { step: number; onSelect: (index: num
                             onClick={() => index < step && onSelect(index)}
                             disabled={index >= step}
                             aria-current={isCurrent ? "step" : undefined}
-                            className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
+                            className={`flex w-full items-center gap-2 rounded-[3px] border px-3 py-2.5 text-left text-sm transition-colors ${
                                 isCurrent
                                     ? "border-physics bg-physics/10 font-semibold text-physics"
                                     : isDone
@@ -728,7 +728,7 @@ function IntroStep() {
 
 function MandateText() {
     return (
-        <div className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+        <div className="grid gap-2 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
             <p className="font-semibold">SEPA-Lastschriftmandat</p>
             <p className="text-muted text-pretty">
                 Zahlungsempfänger: WirtschaftsPhysik Alumni e.V.
@@ -786,7 +786,7 @@ function SummaryBlock({
     return (
         <div className="grid gap-2">
             <p className="text-sm font-semibold">Zusammenfassung</p>
-            <dl className="grid gap-x-6 gap-y-2 rounded-xl border border-line p-4 text-sm sm:grid-cols-2">
+            <dl className="grid gap-x-6 gap-y-2 rounded-[3px] border border-line p-4 text-sm sm:grid-cols-2">
                 {rows.map(([key, label]) => (
                     <div key={key} className="flex justify-between gap-4">
                         <dt className="text-muted">{label}</dt>

@@ -41,7 +41,7 @@ export function EmailBodyField({ editor }: { editor: Editor | null }) {
       <p className="text-sm text-faint">
         Verfügbare Platzhalter: $Anrede („Guten Tag Anna Müller“), $Vorname, $Nachname, $Name
       </p>
-      <div className="overflow-hidden rounded-xl border border-line-strong bg-surface">
+      <div className="overflow-hidden rounded-[3px] border border-line-strong bg-surface">
         <EmailEditorToolbar editor={editor} />
         <EditorContent editor={editor} />
       </div>

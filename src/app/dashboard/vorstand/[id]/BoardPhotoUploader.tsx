@@ -121,10 +121,10 @@ export function BoardPhotoUploader({
                     <img
                         src={boardPhotoUrl(photo.id)}
                         alt=""
-                        className="size-24 shrink-0 rounded-full border border-line object-cover"
+                        className="size-24 shrink-0 rounded-[3px] border border-line object-cover"
                     />
                 ) : (
-                    <span className="grid size-24 shrink-0 place-items-center rounded-full border border-dashed border-line text-faint">
+                    <span className="grid size-24 shrink-0 place-items-center rounded-[3px] border border-dashed border-line text-faint">
                         <Users size={28} aria-hidden="true" />
                     </span>
                 )}
@@ -132,7 +132,7 @@ export function BoardPhotoUploader({
                 <div
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={handleDrop}
-                    className="grid flex-1 gap-3 rounded-xl border border-dashed border-line-strong bg-raised/40 px-4 py-5 text-center"
+                    className="grid flex-1 gap-3 rounded-[3px] border border-dashed border-line-strong bg-raised/40 px-4 py-5 text-center"
                 >
                     <input
                         ref={fileInputRef}

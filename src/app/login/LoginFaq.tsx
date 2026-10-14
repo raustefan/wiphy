@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { Card } from "@/components/ui";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 type FaqItem = {
@@ -117,9 +116,9 @@ const SECTIONS: { title: string; items: FaqItem[] }[] = [
 
 export function LoginFaq() {
     return (
-        <Card className="p-6 sm:p-8">
+        <div className="border-t border-foreground pt-6">
             <div className="grid gap-1">
-                <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Häufige Fragen</h2>
+                <h2 className="headline text-3xl">Häufige Fragen</h2>
                 <p className="text-sm text-muted">
                     Rund um Account, Anmeldung und Mitgliedschaft
                 </p>
@@ -128,12 +127,12 @@ export function LoginFaq() {
             <div className="mt-6 grid gap-6">
                 {SECTIONS.map((section) => (
                     <section key={section.title} className="grid gap-1">
-                        <h3 className="text-xs font-bold tracking-wider text-faint uppercase">
+                        <h3 className="font-serif text-lg text-muted italic">
                             {section.title}
                         </h3>
                         <div className="divide-y divide-line">
                             {section.items.map((item) => (
-                                <details key={item.question} className="group">
+                                <details key={item.question} name="login-faq" className="group">
                                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3.5 text-sm font-medium transition-colors hover:text-physics [&::-webkit-details-marker]:hidden">
                                         <span>{item.question}</span>
                                         <ChevronDown
@@ -151,6 +150,6 @@ export function LoginFaq() {
                     </section>
                 ))}
             </div>
-        </Card>
+        </div>
     );
 }

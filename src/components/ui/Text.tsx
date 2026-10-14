@@ -21,7 +21,7 @@ export function PageTitle({
   return (
     <Tag
       className={cn(
-        "text-3xl font-bold tracking-tight text-balance sm:text-4xl",
+        "headline text-3xl sm:text-4xl",
         className,
       )}
       {...props}
@@ -36,7 +36,7 @@ export function SectionTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-xl font-bold tracking-tight text-balance", className)}
+      className={cn("headline text-2xl", className)}
       {...props}
     />
   );
@@ -79,7 +79,7 @@ export function Lead({
  *
  * Stand vorher in vier Varianten im Markup — Mono-Versalien mit und ohne
  * Symbol, normale Schrift mit Symbol, schlichtes Grau im Dashboard. Jetzt
- * überall dieselbe: Mono-Versalien in der Akzentfarbe, Symbol optional
+ * überall dieselbe: kursive Serife in der Akzentfarbe, Symbol optional
  * (`size={14}`). Zentriert wird über `justify-center`.
  */
 export function Eyebrow({
@@ -89,7 +89,7 @@ export function Eyebrow({
   return (
     <p
       className={cn(
-        "flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.16em] text-physics uppercase",
+        "flex items-center gap-2 font-serif text-base text-physics italic",
         className,
       )}
       {...props}

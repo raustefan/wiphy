@@ -61,7 +61,7 @@ export function RateLimitTable({ summary, entries }: RateLimitTableProps) {
                     <div
                         onMouseEnter={() => showInfo(activeInfo.bucket)}
                         onMouseLeave={hideInfo}
-                        className="pointer-events-auto mt-3 w-full max-w-md rounded-xl border border-line bg-raised p-4 text-sm shadow-lg"
+                        className="pointer-events-auto mt-3 w-full max-w-md rounded-[3px] border border-line bg-raised p-4 text-sm shadow-lg"
                     >
                         <div className="mb-1 flex items-center justify-between gap-3">
                             <span className="font-mono text-xs font-semibold">{activeInfo.bucket}</span>

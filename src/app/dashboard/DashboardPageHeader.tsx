@@ -33,8 +33,8 @@ export function DashboardPageHeader({
     children,
 }: DashboardPageHeaderProps) {
     const backClass = cn(
-        "-ml-3 inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors",
-        "hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
+        "inline-flex min-h-10 w-fit items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors",
+        "hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
     );
     const backContent = (
         <>
@@ -44,7 +44,7 @@ export function DashboardPageHeader({
     );
 
     return (
-        <div className="mb-6 grid gap-4 sm:mb-8">
+        <div className="mb-8 grid gap-5 border-b border-line pb-8 sm:mb-10">
             {backAsPlainAnchor ? (
                 <a href={backHref} className={backClass}>
                     {backContent}
@@ -58,11 +58,11 @@ export function DashboardPageHeader({
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
                 <div className="min-w-0">
                     <Eyebrow className="mb-1">{eyebrow}</Eyebrow>
-                    <h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+                    <h1 className="display text-[clamp(2.25rem,6vw,3.5rem)]">
                         {title}
                     </h1>
                     {description && (
-                        <p className="mt-1 max-w-prose text-sm text-muted text-pretty">
+                        <p className="mt-3 max-w-prose leading-relaxed text-muted text-pretty">
                             {description}
                         </p>
                     )}

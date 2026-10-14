@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { ArrowRight, Calendar, CalendarDays, Clock, Newspaper, User } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { ButtonLink, Eyebrow } from "@/components/ui";
+import { Cta, Frame } from "@/components/Site";
 import { eventPath, formatEventShort } from "@/lib/events";
 import MarkdownViewer from "@/components/MarkdownViewer";
 import { BlogGallery } from "@/components/BlogGallery";
@@ -74,7 +72,7 @@ export default async function PublicBlogPost({ params }: Props) {
     const published = formatDate(post.publishedAt);
 
     return (
-        <Container size="3" className="py-8 sm:py-12">
+        <article>
             <BlogPostingJsonLd
                 id={post.id}
                 title={post.title}
@@ -84,120 +82,76 @@ export default async function PublicBlogPost({ params }: Props) {
                 updatedAt={post.updatedAt}
                 imageUrl={post.cover ? absoluteUrl(blogImageUrl(post.cover.id)) : undefined}
             />
-            <Link
-                href="/blog"
-                className="mb-6 inline-flex h-9 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line"
-            >
-                ← Zurück zur Übersicht
-            </Link>
 
-            <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-                <div className="min-w-0">
-                    <Eyebrow className="mb-3">
-                        <Newspaper size={14} aria-hidden="true" />
-                        Vereins-Blog
-                    </Eyebrow>
-                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">
-                        {post.title}
-                    </h1>
-                    {post.preview && (
-                        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-                            {post.preview}
-                        </p>
-                    )}
-                    {/* Unterhalb von `lg` eine Zeile statt der Karte: die Karte
-                        füllte auf dem Telefon den ersten Bildschirm, bevor der
-                        Artikel überhaupt anfing. */}
-                    <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted lg:hidden">
-                        <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
-                            <User size={15} aria-hidden="true" className="text-faint" />
-                            {post.author || "Redaktion"}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                            <Calendar size={15} aria-hidden="true" className="text-faint" />
-                            {published}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                            <Clock size={15} aria-hidden="true" className="text-faint" />
-                            ca. {minutes} Min.
-                        </span>
-                    </p>
-                </div>
-
-                <Card className="hidden h-fit p-5 lg:sticky lg:top-24 lg:block">
-                    <dl className="grid gap-4">
-                        <div className="grid gap-1">
-                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
-                                Autor
-                            </dt>
-                            <dd className="flex items-center gap-2 text-sm font-semibold">
-                                <User size={15} aria-hidden="true" className="text-faint" />
-                                {post.author || "Redaktion"}
-                            </dd>
-                        </div>
-                        <div className="grid gap-1 border-t border-line pt-4">
-                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
-                                Veröffentlicht
-                            </dt>
-                            <dd className="flex items-center gap-2 text-sm">
-                                <Calendar size={15} aria-hidden="true" className="text-faint" />
-                                {published}
-                            </dd>
-                        </div>
-                        <div className="grid gap-1 border-t border-line pt-4">
-                            <dt className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
-                                Lesedauer
-                            </dt>
-                            <dd className="flex items-center gap-2 text-sm">
-                                <Clock size={15} aria-hidden="true" className="text-faint" />
-                                ca. {minutes} Min.
-                            </dd>
-                        </div>
-                    </dl>
-                </Card>
+            <header className="relative isolate">
+                <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
+                <Frame className="pt-8 pb-10 sm:pt-12 sm:pb-14">
+                    <Link
+                        href="/blog"
+                        className="inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
+                    >
+                        <ArrowLeft size={16} aria-hidden="true" />
+                        Alle Beiträge
+                    </Link>
+                    <div className="mt-8 max-w-4xl">
+                        <h1 className="display text-[clamp(2.5rem,7vw,5rem)]">{post.title}</h1>
+                        {post.preview && (
+                            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted text-pretty sm:text-xl">
+                                {post.preview}
+                            </p>
+                        )}
+                    </div>
+                </Frame>
             </header>
 
-            {post.images.length > 0 && (
-                <div className="mt-8 sm:mt-10">
-                    <BlogGallery images={post.images} />
-                </div>
-            )}
-
-            <div className="my-8 h-px bg-line sm:my-10" aria-hidden="true" />
-
-            <article className="max-w-[70ch] text-[1.05rem]">
-                <MarkdownViewer content={post.content} />
-            </article>
-
-            {post.event?.published && (
-                <Card className="mt-8 grid gap-3 p-5 sm:mt-10 sm:p-6">
-                    {/* Nur veröffentlichte Termine: ein Entwurf hätte keine
-                        Seite, auf die der Link führen könnte. Der Termin steht
-                        bewusst nur hier und nicht zusätzlich in der Infokarte. */}
-                    <p className="flex items-center gap-2 font-mono text-[0.75rem] font-semibold tracking-[0.16em] text-faint uppercase">
-                        <CalendarDays size={14} aria-hidden="true" />
-                        Zugehöriger Termin
-                    </p>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                            <p className="text-lg font-bold tracking-tight text-balance">
-                                {post.event.title}
-                            </p>
-                            <p className="font-mono text-xs text-faint">
-                                {formatEventShort(post.event)}
-                            </p>
-                        </div>
-                        <ButtonLink
-                            href={eventPath(post.event)}
-                            variant="soft"
-                            color="neutral"
-                            className="shrink-0"
-                        >
-                            Zum Termin <ArrowRight size={16} aria-hidden="true" />
-                        </ButtonLink>
+            <Frame className="pb-20 sm:pb-28">
+                {post.images.length > 0 && (
+                    <div className="mb-12">
+                        <BlogGallery images={post.images} />
                     </div>
-                </Card>
-            )}
-        </Container>
+                )}
+
+                <div className="grid gap-8 border-t border-line pt-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-14">
+                    {/* Randspalte: wer, wann, wie lange. Auf dem Telefon eine Zeile. */}
+                    <dl className="flex flex-wrap gap-x-6 gap-y-3 text-sm lg:sticky lg:top-28 lg:grid lg:self-start">
+                        <div className="grid gap-0.5">
+                            <dt className="font-serif text-muted italic">Autor</dt>
+                            <dd className="font-medium">{post.author || "Redaktion"}</dd>
+                        </div>
+                        <div className="grid gap-0.5">
+                            <dt className="font-serif text-muted italic">Veröffentlicht</dt>
+                            <dd>
+                                <time dateTime={post.publishedAt.toISOString()}>{published}</time>
+                            </dd>
+                        </div>
+                        <div className="grid gap-0.5">
+                            <dt className="font-serif text-muted italic">Lesedauer</dt>
+                            <dd>ca. {minutes} Min.</dd>
+                        </div>
+                    </dl>
+
+                    <div className="min-w-0">
+                        <div className="reading">
+                            <MarkdownViewer content={post.content} />
+                        </div>
+
+                        {post.event?.published && (
+                            /* Nur veröffentlichte Termine: ein Entwurf hätte keine
+                               Seite, auf die der Link führen könnte. */
+                            <aside className="mt-12 grid max-w-[38rem] gap-4 border-t border-foreground pt-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                                <div className="min-w-0">
+                                    <p className="font-serif text-muted italic">Zugehöriger Termin</p>
+                                    <p className="headline mt-1 text-2xl">{post.event.title}</p>
+                                    <p className="mt-1 text-sm text-muted">{formatEventShort(post.event)}</p>
+                                </div>
+                                <Cta href={eventPath(post.event)} variant="line" arrow>
+                                    Zum Termin
+                                </Cta>
+                            </aside>
+                        )}
+                    </div>
+                </div>
+            </Frame>
+        </article>
     );
 }

@@ -11,7 +11,7 @@ export function Card({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("min-w-0 rounded-2xl border border-line bg-surface", className)}
+      className={cn("min-w-0 rounded-[3px] border border-line bg-surface", className)}
       {...props}
     />
   );

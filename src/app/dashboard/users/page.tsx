@@ -180,7 +180,7 @@ export default async function UserManagementPage({
                 {archiveGroups.map((group) => {
                   const open = group.fees.filter((fee) => !fee.bezahlt).length;
                   return (
-                    <details key={group.key} className="rounded-xl border border-line">
+                    <details key={group.key} className="rounded-[3px] border border-line">
                       <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm">
                         <span className="min-w-0 flex-1 truncate font-medium">{group.name ?? "—"}</span>
                         <span className="font-mono text-muted tabular-nums">
@@ -251,11 +251,11 @@ export default async function UserManagementPage({
         >
           von {formatEuro(stats.feeDue)} · offen {formatEuro(stats.feeDue - stats.feePaid)}
           <div
-            className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-raised"
+            className="mt-1.5 h-1.5 overflow-hidden rounded-[3px] bg-raised"
             role="img"
             aria-label={`${paidShare} % bezahlt`}
           >
-            <div className="h-full rounded-full bg-positive" style={{ width: `${paidShare}%` }} />
+            <div className="h-full rounded-[3px] bg-positive" style={{ width: `${paidShare}%` }} />
           </div>
         </StatTile>
       </section>

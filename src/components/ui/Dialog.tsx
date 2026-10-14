@@ -60,7 +60,7 @@ export function Dialog({
         if (event.target === ref.current) onClose();
       }}
       className={cn(
-        "dialog-panel m-auto w-[calc(100vw-2rem)] rounded-2xl border border-line bg-surface p-0 text-foreground shadow-2xl",
+        "dialog-panel m-auto w-[calc(100vw-2rem)] rounded-[4px] border border-line bg-surface p-0 text-foreground shadow-2xl",
         "max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain",
         "backdrop:bg-black/45",
         sizeClasses[size],
@@ -90,7 +90,7 @@ export function Dialog({
           type="button"
           onClick={onClose}
           aria-label="Dialog schließen"
-          className="-mt-1 -mr-1 grid size-9 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
+          className="-mt-1 -mr-1 grid size-9 shrink-0 cursor-pointer place-items-center rounded-[3px] text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
         >
           <X size={18} />
         </button>

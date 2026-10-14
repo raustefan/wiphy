@@ -38,28 +38,28 @@ export function CtaCard({
         <Link
             href={href}
             className={cn(
-                "group grid gap-2 rounded-2xl p-5 transition-shadow hover:shadow-lg sm:p-6",
+                "group grid gap-2 rounded-[3px] p-5 transition-colors sm:p-6",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
                 accent
                     ? "bg-physics text-on-physics"
-                    : "border border-line bg-raised/60 text-foreground",
+                    : "border border-line-strong bg-surface text-foreground hover:border-physics",
                 className,
             )}
         >
             <span
                 className={cn(
-                    "flex items-center gap-2 text-sm font-medium",
-                    accent ? "opacity-85" : "text-physics",
+                    "flex items-center gap-2 font-serif text-base italic",
+                    accent ? "opacity-90" : "text-physics",
                 )}
             >
                 {icon}
                 {eyebrow}
             </span>
-            <span className="text-lg font-bold tracking-tight sm:text-xl">{title}</span>
+            <span className="headline text-2xl">{title}</span>
             <span
                 className={cn(
                     "max-w-prose text-sm text-pretty",
-                    accent ? "opacity-85" : "text-muted",
+                    accent ? "opacity-90" : "text-muted",
                 )}
             >
                 {description}
@@ -74,7 +74,8 @@ export function CtaCard({
                 <ArrowRight
                     size={16}
                     aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                    // Dieselbe Feder wie die Pfeile der öffentlichen Seiten.
+                    className="cta-arrow group-hover:translate-x-[5px]"
                 />
             </span>
         </Link>

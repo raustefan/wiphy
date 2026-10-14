@@ -68,11 +68,11 @@ export default async function AdminBoardPage() {
                                                 alt=""
                                                 loading="lazy"
                                                 decoding="async"
-                                                className="size-12 rounded-full border border-line object-cover"
+                                                className="size-12 rounded-[3px] border border-line object-cover"
                                             />
                                         ) : (
                                             <span
-                                                className="grid size-12 place-items-center rounded-full border border-dashed border-line text-faint"
+                                                className="grid size-12 place-items-center rounded-[3px] border border-dashed border-line text-faint"
                                                 title="Kein Foto"
                                             >
                                                 <Users size={16} aria-hidden="true" />

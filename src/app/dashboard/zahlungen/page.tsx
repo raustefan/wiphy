@@ -86,7 +86,7 @@ export default async function ZahlungenPage() {
                         laufende Jahr: Wer die Lastschrift widerruft, soll den
                         Aufschlag nicht erst beim nächsten Beitragsbescheid
                         erfahren, sondern schon hier, wo er die Wahl trifft. */}
-                    <div className="mb-4 grid gap-1.5 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                    <div className="mb-4 grid gap-1.5 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                         <p className="font-semibold">Mitgliedsbeitrag {currentYear}</p>
                         <p className="text-muted text-pretty">
                             Regulär {formatEuro(annualFee(rates.regular))} im Jahr, mit

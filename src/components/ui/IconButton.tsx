@@ -44,7 +44,7 @@ export function iconButtonClasses({
   className?: string;
 } = {}) {
   return cn(
-    "inline-grid shrink-0 cursor-pointer place-items-center rounded-full transition-colors duration-150",
+    "inline-grid shrink-0 cursor-pointer place-items-center rounded-[3px] transition-colors duration-150",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics",
     "disabled:pointer-events-none disabled:opacity-50",
     sizeClasses[size],

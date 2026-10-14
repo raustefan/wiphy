@@ -14,8 +14,8 @@ export const metadata: Metadata = pageMetadata({
 export default async function ImpressumPage() {
     const board = await getSignatureBoardMembers();
     return (
-        <LegalPage title="Impressum">
-            <LegalSections document={impressum(board)} separators />
+        <LegalPage title="Impressum" description="Wer hinter dieser Website steht und wie du uns erreichst.">
+            <LegalSections document={impressum(board)} />
         </LegalPage>
     );
 }

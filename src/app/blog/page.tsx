@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Calendar, CalendarDays, Clock, Newspaper, Search, User } from "lucide-react";
-import { Eyebrow, Lead } from "@/components/ui";
+import { Search } from "lucide-react";
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Cta, Frame, PageHead } from "@/components/Site";
 import { getPublishedPostPage } from "@/lib/server/services/blogService";
 import type { BlogPostWithImages } from "@/lib/server/services/blogService";
 import { readingTimeMinutes } from "@/lib/readingTime";
@@ -14,7 +11,7 @@ import { SITE_NAME } from "@/lib/siteUrl";
 import { pageMetadata } from "@/lib/metadata";
 import { blogPostPath } from "@/lib/slug";
 
-const TITLE = "Vereins-Blog";
+const TITLE = "Blog";
 const DESCRIPTION =
     "Berichte, Ankündigungen und Notizen aus der Wirtschaftsphysik — Rückblicke auf Vereinstermine und Themen aus Physik und Wirtschaft.";
 
@@ -53,6 +50,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     };
 }
 
+/** Datum, Autor, Lesezeit — und ob der Beitrag zu einem Termin gehört. */
 function MetaLine({
     author,
     date,
@@ -62,74 +60,58 @@ function MetaLine({
     author: string | null;
     date: Date;
     minutes: number;
-    /* Kein Link, sondern nur ein Hinweis: die ganze Karte ist bereits einer. */
+    /* Kein Link, sondern nur ein Hinweis: der Titel ist bereits einer. */
     eventTitle?: string;
 }) {
     return (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-faint">
-            <span className="inline-flex items-center gap-1.5">
-                <Calendar size={13} aria-hidden="true" />
-                {formatDate(date)}
-            </span>
-            {author && (
-                <span className="inline-flex items-center gap-1.5">
-                    <User size={13} aria-hidden="true" />
-                    {author}
-                </span>
-            )}
-            <span className="inline-flex items-center gap-1.5">
-                <Clock size={13} aria-hidden="true" />
-                {minutes} Min. Lesezeit
-            </span>
-            {eventTitle && (
-                <span className="inline-flex min-w-0 items-center gap-1.5 text-market">
-                    <CalendarDays size={13} aria-hidden="true" className="shrink-0" />
-                    <span className="truncate">Rückblick: {eventTitle}</span>
-                </span>
-            )}
-        </div>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+            <time dateTime={date.toISOString()}>{formatDate(date)}</time>
+            {author && <span>von {author}</span>}
+            <span>{minutes} Min. Lesezeit</span>
+            {eventTitle && <span className="text-market">Rückblick auf „{eventTitle}“</span>}
+        </p>
     );
 }
 
-/** Eine Karte im Raster — der Aufmacher hat sein eigenes, größeres Markup. */
-function PostCard({ post }: { post: BlogPostWithImages }) {
+/**
+ * Eine Zeile im Inhaltsverzeichnis. Der Titel ist der Link; das Vorschaubild
+ * ist reine Zierde und deshalb nicht noch einmal verlinkt.
+ */
+function PostRow({ post }: { post: BlogPostWithImages }) {
     return (
-        <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
-            <Link
-                href={blogPostPath(post)}
-                className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-            >
-                {post.cover && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={blogImageUrl(post.cover.id, "thumb")}
-                        srcSet={blogImageSrcSet(post.cover.id)}
-                        sizes="(min-width: 768px) 460px, 100vw"
-                        alt={post.cover.alt}
-                        loading="lazy"
-                        decoding="async"
-                        className="aspect-[16/9] w-full border-b border-line object-cover"
-                    />
-                )}
-                <div className="flex flex-1 flex-col gap-2 p-5 sm:p-6">
-                    <MetaLine
-                        author={post.author}
-                        date={post.publishedAt}
-                        minutes={readingTimeMinutes(post.content)}
-                        eventTitle={post.event?.published ? post.event.title : undefined}
-                    />
-                    <h3 className="text-lg font-bold tracking-tight text-balance sm:text-xl">
+        <li className="grid gap-4 border-b border-line py-8 sm:grid-cols-[minmax(0,1fr)_10rem] sm:gap-10">
+            <div className="grid min-w-0 content-start gap-2">
+                <MetaLine
+                    author={post.author}
+                    date={post.publishedAt}
+                    minutes={readingTimeMinutes(post.content)}
+                    eventTitle={post.event?.published ? post.event.title : undefined}
+                />
+                <h3 className="headline text-2xl sm:text-3xl">
+                    <Link
+                        href={blogPostPath(post)}
+                        className="rounded-sm transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
+                    >
                         {post.title}
-                    </h3>
-                    <p className="line-clamp-3 text-sm leading-relaxed text-muted">
+                    </Link>
+                </h3>
+                {post.preview && (
+                    <p className="line-clamp-3 max-w-2xl leading-relaxed text-muted text-pretty">
                         {post.preview}
                     </p>
-                    <span className="mt-auto pt-2 text-sm font-bold text-physics">
-                        Weiterlesen →
-                    </span>
-                </div>
-            </Link>
-        </Card>
+                )}
+            </div>
+            {post.cover && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={blogImageUrl(post.cover.id, "thumb")}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="hidden aspect-[4/3] w-full rounded-[3px] object-cover sm:block"
+                />
+            )}
+        </li>
     );
 }
 
@@ -148,25 +130,22 @@ function Pagination({ page, pageCount, query }: { page: number; pageCount: numbe
         return search ? `/blog?${search}` : "/blog";
     };
 
-    const step =
-        "inline-flex h-10 items-center rounded-full bg-raised px-4 text-sm font-semibold text-foreground transition-colors hover:bg-line";
-
     return (
-        <nav aria-label="Seiten des Blogs" className="mt-8 flex items-center justify-between gap-4">
+        <nav aria-label="Seiten des Blogs" className="mt-10 flex items-center justify-between gap-4">
             {page > 1 ? (
-                <Link href={href(page - 1)} rel="prev" className={step}>
-                    ← Neuere
-                </Link>
+                <Cta href={href(page - 1)} rel="prev" variant="line">
+                    Neuere Beiträge
+                </Cta>
             ) : (
                 <span />
             )}
-            <span className="font-mono text-xs text-faint">
+            <span className="font-serif text-muted italic">
                 Seite {page} von {pageCount}
             </span>
             {page < pageCount ? (
-                <Link href={href(page + 1)} rel="next" className={step}>
-                    Ältere →
-                </Link>
+                <Cta href={href(page + 1)} rel="next" variant="line">
+                    Ältere Beiträge
+                </Cta>
             ) : (
                 <span />
             )}
@@ -183,140 +162,144 @@ export default async function BlogIndexPage({ searchParams }: Props) {
     });
 
     /* Der große Aufmacher gilt dem neuesten Beitrag. In einer Trefferliste oder
-       auf Seite 2 wäre er eine Behauptung, die nicht stimmt — dort alles im
-       gleichen Raster. */
+       auf Seite 2 wäre er eine Behauptung, die nicht stimmt — dort alles in
+       derselben Liste. */
     const showLead = !query && page === 1 && posts.length > 0;
     const [lead, ...rest] = posts;
-    const gridPosts = showLead ? rest : posts;
+    const listPosts = showLead ? rest : posts;
 
     return (
-        <Container size="4" className="py-8 sm:py-12">
-            {/* Kein eigener „Zurück zur Startseite“-Knopf: Logo und Navigation
-                führen ohnehin dorthin. */}
-            <div className="mb-8 sm:mb-10">
-                <Eyebrow className="mb-2">
-                    <Newspaper size={14} aria-hidden="true" />
-                    Aus dem Verein
-                </Eyebrow>
-                <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-                    {TITLE}
-                </h1>
-                <p className="mt-3 text-base text-muted sm:text-lg">
-                    Berichte, Ankündigungen und Notizen aus der Wirtschaftsphysik.
-                </p>
-            </div>
+        <>
+            <PageHead
+                title="Blog"
+                note={
+                    <>
+                        Neue Beiträge automatisch bekommen?{" "}
+                        <a href="/blog/feed.xml" className="link">
+                            RSS-Feed abonnieren
+                        </a>
+                    </>
+                }
+            >
+                Berichte von Stammtischen und Exkursionen, Ankündigungen aus dem Vorstand und
+                Notizen aus der Wirtschaftsphysik.
+            </PageHead>
 
-            {/* Ein gewöhnliches GET-Formular: die Suche funktioniert damit auch
-                ohne JavaScript und hinterlässt eine teilbare URL. */}
-            <form method="get" action="/blog" className="mb-6 flex flex-wrap gap-2 sm:mb-8">
-                <div className="relative min-w-0 flex-1">
-                    <Search
-                        size={16}
-                        aria-hidden="true"
-                        className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-faint"
-                    />
-                    <input
-                        type="search"
-                        name="q"
-                        defaultValue={query}
-                        placeholder="Beiträge durchsuchen …"
-                        aria-label="Beiträge durchsuchen"
-                        className="h-11 w-full rounded-full border border-line bg-surface pr-4 pl-11 text-sm text-foreground placeholder:text-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="inline-flex h-11 shrink-0 items-center rounded-full bg-physics px-5 text-sm font-semibold text-on-physics transition-opacity hover:opacity-90"
+            <Frame className="pb-20 sm:pb-28">
+                {/* Ein gewöhnliches GET-Formular: die Suche funktioniert damit auch
+                    ohne JavaScript und hinterlässt eine teilbare URL. */}
+                <form
+                    method="get"
+                    action="/blog"
+                    role="search"
+                    className="flex flex-wrap items-end gap-x-4 gap-y-3 border-b border-line-strong pb-2 focus-within:border-physics focus-within:shadow-[0_1px_0_var(--physics)]"
                 >
-                    Suchen
-                </button>
+                    <label className="flex min-w-0 flex-1 items-center gap-3">
+                        <Search size={20} aria-hidden="true" className="shrink-0 text-muted" />
+                        <span className="sr-only">Beiträge durchsuchen</span>
+                        <input
+                            type="search"
+                            name="q"
+                            defaultValue={query}
+                            placeholder="Beiträge durchsuchen"
+                            className="h-12 min-w-0 flex-1 bg-transparent font-serif text-xl text-foreground placeholder:text-muted focus:outline-none"
+                        />
+                    </label>
+                    {query && (
+                        <Link href="/blog" className="link mb-3 text-sm font-medium">
+                            Suche zurücksetzen
+                        </Link>
+                    )}
+                    <button type="submit" className="cta cta-solid mb-1 min-h-10">
+                        Suchen
+                    </button>
+                </form>
+
                 {query && (
-                    <Link
-                        href="/blog"
-                        className="inline-flex h-11 shrink-0 items-center rounded-full bg-raised px-5 text-sm font-semibold text-foreground transition-colors hover:bg-line"
-                    >
-                        Zurücksetzen
-                    </Link>
+                    <p className="mt-6 font-serif text-lg text-muted italic" aria-live="polite">
+                        {total === 1 ? "1 Treffer" : `${total} Treffer`} für „{query}“
+                    </p>
                 )}
-            </form>
 
-            {query && (
-                <p className="mb-5 text-sm text-muted" aria-live="polite">
-                    {total === 1 ? "1 Treffer" : `${total} Treffer`} für „{query}“
-                </p>
-            )}
+                {posts.length === 0 ? (
+                    <p className="mt-10 max-w-xl leading-relaxed text-muted">
+                        {query
+                            ? "Zu dieser Suche gibt es keine Beiträge. Versuch es mit einem kürzeren oder allgemeineren Begriff."
+                            : "Es gibt noch keine veröffentlichten Beiträge."}
+                    </p>
+                ) : (
+                    <>
+                        {showLead && <LeadPost post={lead} />}
 
-            {posts.length === 0 ? (
-                <Card className="p-6 text-muted sm:p-8">
-                    {query
-                        ? "Zu dieser Suche gibt es keine Beiträge."
-                        : "Es gibt noch keine veröffentlichten Beiträge."}
-                </Card>
-            ) : (
-                <div className="grid gap-5">
-                    {showLead && (
-                        <Card className="group overflow-hidden transition-shadow hover:shadow-lg">
-                            <Link
-                                href={blogPostPath(lead)}
-                                className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                            >
-                                {lead.cover && (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={blogImageUrl(lead.cover.id)}
-                                        srcSet={blogImageSrcSet(lead.cover.id)}
-                                        sizes="(min-width: 1024px) 900px, 100vw"
-                                        alt={lead.cover.alt}
-                                        loading="eager"
-                                        decoding="async"
-                                        className="aspect-[16/7] w-full border-b border-line object-cover"
-                                    />
-                                )}
-                                <div className="grid gap-3 p-5 sm:gap-4 sm:p-8">
-                                    <Badge tone="physics" className="w-fit">
-                                        Neuester Beitrag
-                                    </Badge>
-                                    <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-4xl">
-                                        {lead.title}
-                                    </h2>
-                                    <MetaLine
-                                        author={lead.author}
-                                        date={lead.publishedAt}
-                                        minutes={readingTimeMinutes(lead.content)}
-                                        eventTitle={
-                                            lead.event?.published ? lead.event.title : undefined
-                                        }
-                                    />
-                                    <Lead className="max-w-2xl">{lead.preview}</Lead>
-                                    <span className="text-sm font-bold text-physics">
-                                        Weiterlesen →
-                                    </span>
-                                </div>
-                            </Link>
-                        </Card>
-                    )}
+                        {listPosts.length > 0 && (
+                            <section aria-labelledby="list-title" className="mt-16 grid gap-2 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-14">
+                                <h2 id="list-title" className="headline text-3xl lg:sticky lg:top-28 lg:self-start">
+                                    {showLead ? "Ältere Beiträge" : query ? "Treffer" : `Seite ${page}`}
+                                </h2>
+                                <ul className="border-t border-line">
+                                    {listPosts.map((post) => (
+                                        <PostRow key={post.id} post={post} />
+                                    ))}
+                                </ul>
+                            </section>
+                        )}
+                    </>
+                )}
 
-                    {gridPosts.length > 0 && (
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {gridPosts.map((post) => (
-                                <PostCard key={post.id} post={post} />
-                            ))}
-                        </div>
-                    )}
+                <Pagination page={page} pageCount={pageCount} query={query} />
+            </Frame>
+        </>
+    );
+}
+
+/** Der neueste Beitrag als Text-Bild-Komposition. */
+function LeadPost({ post }: { post: BlogPostWithImages }) {
+    return (
+        <article
+            className={`mt-12 grid gap-10 lg:gap-16 ${
+                post.cover ? "lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center" : ""
+            }`}
+        >
+            {post.cover && (
+                <div className="relative">
+                    <div aria-hidden="true" className="decor paper absolute inset-0 translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={blogImageUrl(post.cover.id)}
+                        srcSet={blogImageSrcSet(post.cover.id)}
+                        sizes="(min-width: 1024px) 720px, 100vw"
+                        alt={post.cover.alt}
+                        loading="eager"
+                        decoding="async"
+                        className="relative aspect-[3/2] w-full rounded-[3px] object-cover"
+                    />
                 </div>
             )}
-
-            <Pagination page={page} pageCount={pageCount} query={query} />
-
-            <p className="mt-8 text-sm text-muted">
-                Neue Beiträge automatisch bekommen?{" "}
-                <a
-                    href="/blog/feed.xml"
-                    className="font-semibold text-physics underline-offset-4 hover:underline"
-                >
-                    RSS-Feed abonnieren
-                </a>
-            </p>
-        </Container>
+            <div className="grid min-w-0 content-start gap-4">
+                <p className="font-serif text-lg text-muted italic">Neuester Beitrag</p>
+                <h2 className="display text-[clamp(2.25rem,5vw,3.75rem)]">
+                    <Link
+                        href={blogPostPath(post)}
+                        className="rounded-sm transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics"
+                    >
+                        {post.title}
+                    </Link>
+                </h2>
+                <MetaLine
+                    author={post.author}
+                    date={post.publishedAt}
+                    minutes={readingTimeMinutes(post.content)}
+                    eventTitle={post.event?.published ? post.event.title : undefined}
+                />
+                {post.preview && (
+                    <p className="max-w-2xl text-lg leading-relaxed text-muted text-pretty">{post.preview}</p>
+                )}
+                <div className="mt-2">
+                    <Cta href={blogPostPath(post)} arrow>
+                        Weiterlesen
+                    </Cta>
+                </div>
+            </div>
+        </article>
     );
 }

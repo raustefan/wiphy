@@ -171,7 +171,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                 </Field>
 
                 {target === "SELECTED" && (
-                    <div className="grid gap-4 rounded-2xl border border-line bg-raised/40 p-4">
+                    <div className="grid gap-4 rounded-[3px] border border-line bg-raised/40 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="text-sm font-semibold">Empfänger auswählen</p>
                             <Badge>{selectedIds.size} ausgewählt</Badge>
@@ -189,7 +189,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                     {selectedUsers.map((u) => (
                                         <div
                                             key={u.id}
-                                            className="flex items-center justify-between gap-3 rounded-xl bg-surface p-2"
+                                            className="flex items-center justify-between gap-3 rounded-[3px] bg-surface p-2"
                                         >
                                             <div className="min-w-0 flex-1">
                                                 <p className="truncate text-sm font-medium">
@@ -286,7 +286,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                                 return (
                                                     <label
                                                         key={u.id}
-                                                        className={`flex cursor-pointer items-center gap-3 rounded-xl p-2 transition-colors ${
+                                                        className={`flex cursor-pointer items-center gap-3 rounded-[3px] p-2 transition-colors ${
                                                             isSelected
                                                                 ? "bg-physics/12"
                                                                 : "hover:bg-surface"
@@ -343,7 +343,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                 {announcement && (
                     <>
                         <input type="hidden" name="eventId" value={announcement.id} />
-                        <div className="grid gap-2 rounded-2xl border border-dashed border-line-strong bg-raised/40 p-4">
+                        <div className="grid gap-2 rounded-[3px] border border-dashed border-line-strong bg-raised/40 p-4">
                             <p className="flex items-center gap-2 text-sm font-semibold">
                                 <CalendarDays size={16} aria-hidden="true" className="text-market" />
                                 Wird unter die Nachricht gesetzt

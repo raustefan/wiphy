@@ -4,13 +4,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InstallHint from "@/components/InstallHint";
 import GravityEasterEgg from "@/components/GravityEasterEgg";
-import GameOfLife from "@/components/GameOfLifeLazy";
 import { DebugBar } from "@/components/DebugBar";
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Instrument_Sans } from "next/font/google";
-import { Spline_Sans_Mono } from "next/font/google";
+import { Spline_Sans_Mono, STIX_Two_Text } from "next/font/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/siteUrl";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 
@@ -84,6 +83,13 @@ const body = Instrument_Sans({
   display: "swap",
 });
 
+const serif = STIX_Two_Text({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-stix",
+  display: "swap",
+});
+
 const mono = Spline_Sans_Mono({
   subsets: ["latin"],
   variable: "--font-code",
@@ -94,7 +100,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="de"
-      className={`${body.variable} ${mono.variable}`}
+      // Next 16 schaltet das weiche Scrollen sonst nicht mehr für Seitenwechsel ab:
+      // der Sprung nach oben läuft dann animiert, Next hält die Seite für
+      // unsichtbar und scrollt zusätzlich zum ersten Seitenelement — die neue
+      // Seite stand ein Stück zu weit unten.
+      data-scroll-behavior="smooth"
+      className={`${body.variable} ${mono.variable} ${serif.variable}`}
       suppressHydrationWarning
     >
       <head>
@@ -114,7 +125,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <OrganizationJsonLd />
         <AppThemeProvider>
-          <GameOfLife />
           {/* Sprungmarke: ohne sie führt jeder Tastaturbesuch zuerst durch
               Wortmarke, sechs Navigationspunkte, Themenumschalter und
               Mitgliederknopf — auf jeder Unterseite erneut. Sichtbar wird sie

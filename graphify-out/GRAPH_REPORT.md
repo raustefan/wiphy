@@ -1,46 +1,46 @@
-# Graph Report - wiphy  (2026-10-01)
+# Graph Report - wiphy  (2026-10-14)
 
 ## Corpus Check
-- 338 files · ~155,047 words
+- 339 files · ~154,715 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 6 file(s) not represented in the graph (top: (none) 2, .toml 1, .prisma 1)
 
 ## Summary
-- 1915 nodes · 6295 edges · 87 communities (74 shown, 13 thin omitted)
+- 1921 nodes · 6234 edges · 100 communities (86 shown, 14 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 42 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f624dfbd`
+- Built from commit: `876da0f8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - next
-- formatDateTime
+- index.ts
 - ApplicationWizard.tsx
-- HeaderChrome.tsx
+- authz.ts
 - mitgliedsantraege/actions.ts
 - boardService.ts
 - app/blog/[id]/page.tsx
 - serverStatus.ts
-- isFeatureEnabled
+- ContactForm.tsx
 - blogService.ts
-- security/page.tsx
+- securityLabels.ts
 - events.ts
 - ics.ts
-- app/layout.tsx
-- MailForm.tsx
+- MarketDiffusion.tsx
+- LegalPage.tsx
 - userService.ts
 - package.json
 - dependencies
-- iban.ts
-- requireUser
+- mailService.ts
+- errors.ts
 - schemas.ts
 - seed.ts
 - DeleteMemberSection
-- lib/siteUrl.ts
-- DirectoryTable
+- app/layout.tsx
+- memberDirectory.ts
 - OutcomeTimeline.tsx
 - mitglied-werden/page.tsx
 - gravityPhysics.ts
@@ -50,69 +50,81 @@
 - normalizeIban
 - feeService.ts
 - EmailBodyField.tsx
-- mailService.ts
-- feeCalculation.ts
-- authz.ts
+- format.ts
+- satzung/page.tsx
+- PhysicsTimeline.tsx
 - compilerOptions
 - devDependencies
-- index.ts
-- errors.ts
-- lucide-react
+- cn
+- blog/actions.ts
 - EditUserForm.tsx
+- sepa/route.ts
 - BulkImport.tsx
-- feeDefaultService.ts
-- feeDefaults.ts
-- env.ts
-- DebugBar.tsx
-- Button.tsx
+- useActionForm
+- movePostImage
+- messages.ts
+- auth.ts
+- lucide-react
 - berlinTime.ts
-- eslint.config.mjs
+- mitglied-werden/actions.ts
 - ActivityHeatmap.tsx
 - securityEventService.ts
-- ApplicationList
-- passwordStrength.ts
-- ApplicationList.tsx
+- blogImages.ts
+- PasswordField.tsx
+- MailForm.tsx
 - forgot-password/layout.tsx
 - EditUserForm
-- mitgliedsantraege/page.tsx
+- users/[id]/page.tsx
 - verify-email/layout.tsx
-- TypeSparklines.tsx
+- AccountPanel.tsx
 - userUpdateData.ts
 - ServerDashboard.tsx
-- cn
+- Site.tsx
 - scripts
 - WirtschaftsPhysik Alumni e. V. — Vereinswebsite
-- ShareButton
+- Footer.tsx
+- getOptionalUser
 - mail/page.tsx
+- boardImages.ts
 - CLAUDE.md
+- login/page.tsx
 - ref_node_assert
 - deploy.sh
 - allowBuilds (prisma, esbuild, sharp, unrs-resolver)
 - GEMINI.md
 - eventService.ts
 - accountActions.ts
-- ref_node_fs
-- security/actions.ts
+- MarkdownViewer.tsx
+- rateLimitService.ts
 - altcha.d.ts
-- app/kontakt/actions.ts
-- formatNumber
+- paymentHistoryPdf.tsx
+- RegistrationFunnel.tsx
 - postcss.config.mjs
+- app/page.tsx
+- ApplicationList
+- LoginForm.tsx
 - { GET, POST }
+- IconButton.tsx
+- useActionForm.tsx
+- AccountPanel
 - AppError
+- ref_node_fs
+- BoardPhotoUploader
+- DebugConsole.tsx
 - login/layout.tsx
 - reset-password/layout.tsx
 
 ## God Nodes (most connected - your core abstractions)
-1. `next` - 120 edges
-2. `AppError` - 88 edges
-3. `lucide-react` - 84 edges
-4. `cn()` - 82 edges
+1. `next` - 119 edges
+2. `cn()` - 88 edges
+3. `AppError` - 88 edges
+4. `lucide-react` - 80 edges
 5. `react` - 71 edges
 6. `executeAction()` - 62 edges
 7. `requireAdmin()` - 56 edges
-8. `Card()` - 49 edges
-9. `Button()` - 47 edges
-10. `isFeatureEnabled()` - 42 edges
+8. `Button()` - 44 edges
+9. `isFeatureEnabled()` - 42 edges
+10. `formatDate()` - 39 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Datenbankmodell` --references--> `BoardMember`  [INFERRED]
@@ -129,151 +141,151 @@
 ## Import Cycles
 - None detected.
 
-## Communities (87 total, 13 thin omitted)
+## Communities (100 total, 14 thin omitted)
 
 ### Community 0 - "next"
-Cohesion: 0.10
-Nodes (26): nextConfig, next, DeletePostButton(), metadata, metadata, DashboardPageHeader(), DashboardPageHeaderProps, metadata (+18 more)
+Cohesion: 0.09
+Nodes (27): nextConfig, next, metadata, DashboardPageHeader(), DashboardPageHeaderProps, metadata, dynamic, metadata (+19 more)
 
-### Community 1 - "formatDateTime"
-Cohesion: 0.16
-Nodes (12): statusMeta(), TerminationList(), confirm(), SecurityPage(), formatDateTime(), getPendingRegistrationStats(), bucketFromKey(), getRateLimitEntries() (+4 more)
+### Community 1 - "index.ts"
+Cohesion: 0.15
+Nodes (20): DeletePostButton(), metadata, InfoTooltip(), RateLimitTableProps, DeleteEventButton(), dynamic, metadata, FeeDefaultRow (+12 more)
 
 ### Community 2 - "ApplicationWizard.tsx"
-Cohesion: 0.08
-Nodes (29): InitialValues, STEP_ICONS, STEP_SCHEMAS, StepIndicator(), SUMMARY_FIELDS, ageAt(), CONSENT_VERSION, DATENSCHUTZ_URL (+21 more)
+Cohesion: 0.07
+Nodes (33): InitialValues, STEP_ICONS, STEP_SCHEMAS, StepIndicator(), SUMMARY_FIELDS, FeeDefaultEntry, FeeRates, planApplicationFees() (+25 more)
 
-### Community 3 - "HeaderChrome.tsx"
+### Community 3 - "authz.ts"
 Cohesion: 0.15
-Nodes (12): toggleAllDay(), toDateTimeValue(), toDayValue(), FaqItem, LoginFaq(), SECTIONS, links, ThemeToggle() (+4 more)
+Nodes (22): ref_node_child_process, ref_node_util, COOKIE_OPTIONS, toggleDebugMode(), toggleMemberView(), FeatureFlagsPage(), auth, commit (+14 more)
 
 ### Community 4 - "mitgliedsantraege/actions.ts"
 Cohesion: 0.13
-Nodes (28): zod, acceptMembershipApplication(), declineMembershipApplication(), notifyApplicant(), submitMembershipApplication(), withdrawMembershipApplication(), membershipApplicationNoticeMessage(), MEMBERSHIP_ADMIN_PATH (+20 more)
+Nodes (24): confirmMembershipTermination(), MembershipApplicationsPage(), membershipApprovedMessage(), membershipRejectedMessage(), terminationConfirmedMessage(), deleteApplication(), findApplicationById(), findApplications() (+16 more)
 
 ### Community 5 - "boardService.ts"
-Cohesion: 0.05
-Nodes (58): POST(), GET(), BoardPhotoUploader(), handleDelete(), handleDrop(), uploadFile(), EditBoardMemberPage(), DATENSCHUTZ (+50 more)
+Cohesion: 0.13
+Nodes (28): POST(), EditBoardMemberPage(), AdminBoardPage(), moveMemberOrder(), processBoardPhoto(), applyMemberOrder(), BoardMemberRow, BoardMemberWriteData (+20 more)
 
 ### Community 6 - "app/blog/[id]/page.tsx"
-Cohesion: 0.11
-Nodes (27): react-markdown, remark-gfm, generateMetadata(), Props, PublicBlogPost(), BlogIndexPage(), generateMetadata(), MetaLine() (+19 more)
+Cohesion: 0.15
+Nodes (20): generateMetadata(), Props, PublicBlogPost(), BlogIndexPage(), generateMetadata(), LeadPost(), MetaLine(), PostRow() (+12 more)
 
 ### Community 7 - "serverStatus.ts"
-Cohesion: 0.16
-Nodes (19): ref_node_os, GET(), cpuPercent(), cpuTimes, DEPLOY_ENV_KEYS, DEPLOY_LOCK, DEPLOY_LOG, DEPLOY_SCRIPT (+11 more)
+Cohesion: 0.14
+Nodes (22): ref_node_os, GET(), GET(), cpuPercent(), cpuTimes, DEPLOY_ENV_KEYS, DEPLOY_LOCK, DEPLOY_LOG (+14 more)
 
-### Community 8 - "isFeatureEnabled"
-Cohesion: 0.09
-Nodes (30): @prisma/client, ContactRequestsPage(), KontoPage(), dynamic, KontaktPage(), metadata, createLoginChallenge(), LoginForm() (+22 more)
+### Community 8 - "ContactForm.tsx"
+Cohesion: 0.17
+Nodes (10): ContactForm(), dynamic, KontaktPage(), metadata, MAX_MESSAGE_LENGTH, MIN_FILL_TIME_MS, SPAM_SCORE_MAIL_THRESHOLD, ALTCHA_COMPLEXITY (+2 more)
 
 ### Community 9 - "blogService.ts"
-Cohesion: 0.06
-Nodes (69): sharp, GET(), POST(), beginImageAction(), deleteBlogImage(), moveBlogImage(), parseOrThrow(), revalidateBlogImages() (+61 more)
+Cohesion: 0.11
+Nodes (31): POST(), EditBlogPage(), AdminBlogPage(), processBlogImage(), BlogImageRow, BlogPostWriteData, countImagesForPost(), createPost() (+23 more)
 
-### Community 10 - "security/page.tsx"
-Cohesion: 0.23
-Nodes (11): dynamic, metadata, ReasonBars(), OUTCOME_LABELS, OUTCOME_TONES, REASON_LABELS, reasonLabel(), TYPE_LABELS (+3 more)
+### Community 10 - "securityLabels.ts"
+Cohesion: 0.20
+Nodes (10): ReasonBars(), OUTCOME_LABELS, OUTCOME_TONES, REASON_LABELS, reasonLabel(), TYPE_LABELS, TYPE_ORDER, SecurityEventOutcome (+2 more)
 
 ### Community 11 - "events.ts"
 Cohesion: 0.11
-Nodes (40): DashboardEvent, UpcomingEventAlert(), HomePage(), dynamic, EventDetailPage(), generateMetadata(), Props, dynamic (+32 more)
+Nodes (38): DashboardEvent, UpcomingEventAlert(), dynamic, EventDetailPage(), Props, dynamic, metadata, SearchParams (+30 more)
 
 ### Community 12 - "ics.ts"
+Cohesion: 0.13
+Nodes (25): RFC-5545, GET(), generateMetadata(), GET(), icsEnd(), addDays(), berlinDateStamp(), buildCalendarIcs() (+17 more)
+
+### Community 13 - "MarketDiffusion.tsx"
+Cohesion: 0.10
+Nodes (32): Appearance, applyAppearance(), AppThemeProvider(), BAR_COLOR, ThemeContext, useAppearance(), InterferenceField(), InterferenceField (+24 more)
+
+### Community 14 - "LegalPage.tsx"
 Cohesion: 0.15
-Nodes (20): RFC-5545, GET(), GET(), icsEnd(), addDays(), berlinDateStamp(), buildCalendarIcs(), buildEventIcs() (+12 more)
-
-### Community 13 - "app/layout.tsx"
-Cohesion: 0.06
-Nodes (48): src_app_globals, body, metadata, mono, Appearance, applyAppearance(), AppThemeProvider(), BAR_COLOR (+40 more)
-
-### Community 14 - "MailForm.tsx"
-Cohesion: 0.18
-Nodes (8): MailAnnouncement, MailFormProps, MailUserOption, STATUS_ORDER, STATUS_RANK, TARGET_OPTIONS, EmailBodyField(), useEmailEditor()
+Nodes (15): DATENSCHUTZ, metadata, impressum(), ImpressumPage(), metadata, SATZUNG, anchorOf(), Block() (+7 more)
 
 ### Community 15 - "userService.ts"
-Cohesion: 0.10
-Nodes (56): bcryptjs, ref_crypto, ref_node_net, POST(), POST(), notifyAdminsAboutRegistration(), POST(), EMAIL_CHANGE_ERRORS (+48 more)
+Cohesion: 0.17
+Nodes (26): POST(), EMAIL_CHANGE_ERRORS, requestPasswordChange(), passwordResetMessage(), globalForPrisma, prisma, getSecurityLogPepper(), normalizeEmail() (+18 more)
 
 ### Community 16 - "package.json"
-Cohesion: 0.10
-Nodes (20): name, private, version, altcha, altcha-lib, babel-plugin-react-compiler, nodemailer, react-dom (+12 more)
+Cohesion: 0.09
+Nodes (21): eslintConfig, name, private, version, altcha, altcha-lib, babel-plugin-react-compiler, eslint (+13 more)
 
 ### Community 17 - "dependencies"
 Cohesion: 0.08
 Nodes (25): dependencies, altcha, altcha-lib, bcryptjs, dotenv, lucide-react, next, next-auth (+17 more)
 
-### Community 18 - "iban.ts"
-Cohesion: 0.31
-Nodes (8): SummaryBlock(), ibanError(), IbanInput(), check(), handleChange(), formatIban(), IBAN_LENGTHS, maskIban()
+### Community 18 - "mailService.ts"
+Cohesion: 0.06
+Nodes (54): sanitize-html, parseMailForm(), sendEmailAction(), EmailComposerDialog(), closeDialog(), handleClose(), blockHtml(), blockText() (+46 more)
 
-### Community 19 - "requireUser"
-Cohesion: 0.33
-Nodes (8): deleteUserAction(), bulkCreateUsersAction(), createUserAction(), importRowsSchema, NewUserPage(), requireUser(), adminCreateUser(), adminDeleteUser()
+### Community 19 - "errors.ts"
+Cohesion: 0.17
+Nodes (12): zod, createUserAction(), importRowsSchema, NewUserForm(), handleSubmit(), updateBankDetails(), adminCreatedUserMessage(), AppErrorCode (+4 more)
 
 ### Community 20 - "schemas.ts"
-Cohesion: 0.06
-Nodes (27): AdminCreateUserInput, BankUpdateParsed, blogDeleteSchema, blogImageAltSchema, blogImageMoveSchema, blogImageSchema, blogSaveSchema, boardDeleteSchema (+19 more)
+Cohesion: 0.07
+Nodes (22): AdminCreateUserInput, BankUpdateParsed, berlinDateTime(), boardDeleteSchema, boardMoveSchema, boardSaveSchema, contactSchema, emailChangeSchema (+14 more)
 
 ### Community 21 - "seed.ts"
 Cohesion: 0.22
 Nodes (6): adapter, prisma, dotenv, ref_node_path, prisma, @prisma/adapter-pg
 
-### Community 23 - "lib/siteUrl.ts"
-Cohesion: 0.13
-Nodes (14): escapeXml(), GET(), metadata, alt, contentType, size, BlogPostingJsonLd(), EventJsonLd() (+6 more)
+### Community 23 - "app/layout.tsx"
+Cohesion: 0.10
+Nodes (20): escapeXml(), GET(), DashboardLayout(), metadata, src_app_globals, body, metadata, mono (+12 more)
 
-### Community 24 - "DirectoryTable"
-Cohesion: 0.09
-Nodes (28): CommentDialog(), compareBy(), compareNullable(), DirectoryTable(), selectAllWithOpenFees(), displayName(), MemberDirectory(), setFilter() (+20 more)
+### Community 24 - "memberDirectory.ts"
+Cohesion: 0.13
+Nodes (22): selectAllWithOpenFees(), MemberDirectory(), setFilter(), setFilters(), DirectoryAccountBase, DirectoryFilters, directoryStats(), EMPTY_FILTERS (+14 more)
 
 ### Community 25 - "OutcomeTimeline.tsx"
-Cohesion: 0.21
-Nodes (12): columnPath(), labelStride(), MONTHS, niceScale(), Scale, shortDayLabel(), OutcomeTimeline(), PAD (+4 more)
+Cohesion: 0.15
+Nodes (19): columnPath(), labelStride(), longDayLabel(), MONTHS, niceScale(), Scale, shortDayLabel(), sparkGeometry (+11 more)
 
 ### Community 26 - "mitglied-werden/page.tsx"
-Cohesion: 0.15
-Nodes (19): JourneyRail(), ApplicationStage(), dynamic, metadata, Props, toDateInput(), VerifyPanel(), WithdrawApplicationButton() (+11 more)
+Cohesion: 0.16
+Nodes (18): JourneyRail(), ApplicationStage(), dynamic, metadata, MitgliedWerdenPage(), Props, toDateInput(), VerifyPanel() (+10 more)
 
 ### Community 27 - "gravityPhysics.ts"
 Cohesion: 0.09
 Nodes (40): collectAndDetachBodies(), GravityEasterEgg(), swallow(), GravityPreset, Hole, PhysicsBody, place(), PRESETS (+32 more)
 
 ### Community 28 - "requireDebugAdmin"
-Cohesion: 0.24
-Nodes (9): setFeatureFlag(), FeatureFlagToggle(), FeatureFlagToggleProps, FeatureFlagsPage(), ServerPage(), isFeatureFlagKey(), requireDebugAdmin(), getAllFeatureFlags() (+1 more)
+Cohesion: 0.22
+Nodes (10): setFeatureFlag(), FeatureFlagToggle(), FeatureFlagToggleProps, triggerDeploy(), ServerPage(), DeploySection(), isFeatureFlagKey(), requireDebugAdmin() (+2 more)
 
 ### Community 29 - "dashboard/page.tsx"
 Cohesion: 0.06
-Nodes (51): @react-pdf/renderer, GET(), GET(), GET(), byStatusThenName(), MailForm(), MailSuccessDialog(), ADMIN_ACTIONS (+43 more)
+Nodes (44): @react-pdf/renderer, GET(), byStatusThenName(), MailForm(), MailSuccessDialog(), MembershipCertificateCard(), statusMeta(), TerminationList() (+36 more)
 
 ### Community 30 - "DirectoryTable.tsx"
-Cohesion: 0.07
-Nodes (33): AdminBlogPage(), dynamic, metadata, MembershipCertificateCard(), SectionHeader(), AmountDialog(), chipTones, DirectoryAccount (+25 more)
+Cohesion: 0.10
+Nodes (21): DialogButton(), AmountDialog(), chipTones, CommentDialog(), compareBy(), compareNullable(), DirectoryAccount, DirectoryTable() (+13 more)
 
 ### Community 31 - "normalizeIban"
-Cohesion: 0.19
-Nodes (23): field(), POST(), TIME_ZONE, isValidBic(), isValidIban(), normalizeIban(), membershipApplicationSchema, agent() (+15 more)
+Cohesion: 0.27
+Nodes (16): SummaryBlock(), ibanError(), IbanInput(), check(), handleChange(), formatIban(), IBAN_LENGTHS, isValidBic() (+8 more)
 
 ### Community 32 - "feeService.ts"
-Cohesion: 0.14
-Nodes (24): feeRetentionCutoffYear(), clearFeeAmountOverride(), findArchivedFees(), findExistingFeeYears(), findFeeLiableUsers(), findUsersWithFees(), pruneArchivedFees(), resolveIsStudentDefault() (+16 more)
+Cohesion: 0.16
+Nodes (22): feeRetentionCutoffYear(), clearFeeAmountOverride(), findArchivedFees(), findExistingFeeYears(), findFeeLiableUsers(), findUsersWithFees(), pruneArchivedFees(), resolveIsStudentDefault() (+14 more)
 
 ### Community 33 - "EmailBodyField.tsx"
 Cohesion: 0.28
 Nodes (6): @tiptap/extension-link, @tiptap/react, @tiptap/starter-kit, EmailEditorToolbar(), EmailEditorToolbarProps, ToolbarButton()
 
-### Community 34 - "mailService.ts"
-Cohesion: 0.07
-Nodes (49): sanitize-html, EmailComposerDialog(), closeDialog(), handleClose(), blockHtml(), blockText(), derivePreheader(), EmailBlock (+41 more)
+### Community 34 - "format.ts"
+Cohesion: 0.11
+Nodes (15): ApplicationItem, dateFormat, dateTimeFormat, STATUS_META, BankValues, PaymentOption(), Badge(), DATE_TIME (+7 more)
 
-### Community 35 - "feeCalculation.ts"
-Cohesion: 0.16
-Nodes (20): FeeDefaultsCard(), run(), save(), ZahlungenPage(), ApplicationWizard(), currentFormValues(), goToStep(), handleEnter() (+12 more)
+### Community 35 - "satzung/page.tsx"
+Cohesion: 0.10
+Nodes (34): FeeDefaultsCard(), run(), save(), BankDetailsForm(), submit(), ZahlungenPage(), ApplicationWizard(), currentFormValues() (+26 more)
 
-### Community 36 - "authz.ts"
-Cohesion: 0.22
-Nodes (16): GET(), COOKIE_OPTIONS, toggleDebugMode(), toggleMemberView(), auth, DebugBar(), AS_MEMBER_COOKIE, assertCanEditUser() (+8 more)
+### Community 36 - "PhysicsTimeline.tsx"
+Cohesion: 0.27
+Nodes (6): categories, events, TimelineCategory, TimelineEvent, categoryLabel, PhysicsTimeline()
 
 ### Community 37 - "compilerOptions"
 Cohesion: 0.11
@@ -283,97 +295,97 @@ Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModu
 Cohesion: 0.15
 Nodes (13): devDependencies, babel-plugin-react-compiler, eslint, eslint-config-next, tailwindcss, @tailwindcss/postcss, tsx, @types/node (+5 more)
 
-### Community 39 - "index.ts"
-Cohesion: 0.13
-Nodes (22): InfoTooltip(), RateLimitTableProps, FeeDefaultRow, DeleteMemberButton(), metadata, CalloutTone, toneClasses, EmptyState() (+14 more)
+### Community 39 - "cn"
+Cohesion: 0.08
+Nodes (29): CtaCard(), dynamic, metadata, Delta(), StatTile(), StatTileProps, Tone, TONE_DOT (+21 more)
 
-### Community 40 - "errors.ts"
-Cohesion: 0.18
-Nodes (10): EditUserPage(), getRedirectTarget(), isRedirectError(), RedirectTarget, AppErrorCode, mapErrorToActionResult(), getOpenTermination(), getTermination() (+2 more)
+### Community 40 - "blog/actions.ts"
+Cohesion: 0.19
+Nodes (18): beginImageAction(), deleteBlogImage(), moveBlogImage(), parseOrThrow(), revalidateBlogImages(), saveBlogImageAlt(), setBlogCoverImage(), BlogImageManager() (+10 more)
 
-### Community 41 - "lucide-react"
+### Community 41 - "EditUserForm.tsx"
 Cohesion: 0.09
-Nodes (43): lucide-react, next-auth, react, EmailChangeForm(), PasswordChangeButton(), TerminationItem, EventFormData, DeleteMemberSectionProps (+35 more)
+Nodes (23): @uiw/react-md-editor, toggleAllDay(), EventFormData, toDateTimeValue(), toDayValue(), ADMIN_ONLY_KEYS, FIELD_LABELS, IconInput() (+15 more)
 
-### Community 42 - "EditUserForm.tsx"
-Cohesion: 0.09
-Nodes (14): AccountSection(), ActionResult, Mode, OwnTermination, ADMIN_ONLY_KEYS, FIELD_LABELS, IconInput(), ROLE_LABEL_MAP (+6 more)
+### Community 42 - "sepa/route.ts"
+Cohesion: 0.26
+Nodes (14): field(), POST(), SepaDialog(), agent(), buildPain008(), CREDITOR_ID_PATTERN, defaultMandateId(), isoDate() (+6 more)
 
 ### Community 43 - "BulkImport.tsx"
 Cohesion: 0.22
-Nodes (9): ImportRowResult, BulkImport(), loadFile(), run(), EXAMPLE, FIELDS, Row, toRow() (+1 more)
+Nodes (10): bulkCreateUsersAction(), ImportRowResult, BulkImport(), loadFile(), run(), EXAMPLE, FIELDS, Row (+2 more)
 
-### Community 44 - "feeDefaultService.ts"
-Cohesion: 0.46
-Nodes (6): deleteFeeDefault(), findFeeDefaults(), upsertFeeDefault(), getFeeRatesForYear(), removeFeeDefault(), setFeeDefault()
+### Community 44 - "useActionForm"
+Cohesion: 0.31
+Nodes (8): next-auth, ForgotPasswordPage(), VerifyEmailContent(), AuthLink(), AuthShell(), Spinner(), postJson(), useActionForm()
 
-### Community 45 - "feeDefaults.ts"
-Cohesion: 0.36
-Nodes (8): calculateFee(), FeeDefaultEntry, FeeRates, planApplicationFees(), resolveFeeDefault(), FALLBACK_FEE_DEFAULT, withResolvedFees(), toDashboardFee()
+### Community 45 - "movePostImage"
+Cohesion: 0.25
+Nodes (10): moveInOrder(), applyImageOrder(), deleteImage(), findImageForPost(), findImagesForPost(), movePostImage(), orderedIds(), removePostImage() (+2 more)
 
-### Community 46 - "env.ts"
-Cohesion: 0.38
-Nodes (6): createPrismaClient(), getMailTransporter(), getDatabaseUrl(), getSmtpConfig(), readRequiredEnv(), readRequiredMailEnv()
+### Community 46 - "messages.ts"
+Cohesion: 0.16
+Nodes (27): bcryptjs, POST(), notifyAdminsAboutRegistration(), POST(), resendVerificationEmail(), registerUser(), EmailMessage, adminRegistrationNoticeMessage() (+19 more)
 
-### Community 47 - "DebugBar.tsx"
-Cohesion: 0.19
-Nodes (9): ref_node_child_process, ref_node_util, commit, LINKS, TIME, DebugConsole(), AppLogs, ADMIN_SESSION_MAX_MS (+1 more)
-
-### Community 48 - "Button.tsx"
+### Community 47 - "auth.ts"
 Cohesion: 0.13
-Nodes (9): BeforeInstallPromptEvent, ButtonColor, ButtonLinkProps, ButtonProps, ButtonSize, ButtonVariant, colorClasses, sizeClasses (+1 more)
+Nodes (18): AccountDisabledError, CaptchaFailedError, dummyPasswordHash, EmailNotVerifiedError, handlers, LoginFeatureDisabledError, LoginRateLimitedError, signIn (+10 more)
+
+### Community 48 - "lucide-react"
+Cohesion: 0.13
+Nodes (20): lucide-react, react, ContactRequestItem, dateFormat, TerminationItem, DeleteMemberSectionProps, PhotoMeta, FeatureDisabledDialog() (+12 more)
 
 ### Community 49 - "berlinTime.ts"
 Cohesion: 0.29
 Nodes (14): EventForm(), berlinOffsetMs(), berlinParts(), berlinWallTimeToDate(), endOfBerlinDay(), isSameBerlinDay(), pad(), parseBerlinLocalInput() (+6 more)
 
-### Community 50 - "eslint.config.mjs"
-Cohesion: 0.50
-Nodes (3): eslintConfig, eslint, eslint-config-next
+### Community 50 - "mitglied-werden/actions.ts"
+Cohesion: 0.14
+Nodes (24): ref_crypto, submitContactRequest(), submitMembershipApplication(), withdrawMembershipApplication(), WithdrawApplicationButton(), withdraw(), contactRequestMessage(), membershipApplicationNoticeMessage() (+16 more)
 
 ### Community 51 - "ActivityHeatmap.tsx"
 Cohesion: 0.36
 Nodes (7): ActivityHeatmap(), hourLabel(), stepBounds(), stepOf(), WEEKDAYS, WEEKDAYS_LONG, ActivityHeatmap
 
 ### Community 52 - "securityEventService.ts"
+Cohesion: 0.18
+Nodes (17): SecurityPage(), EVENT_RETENTION_DAYS, PSEUDONYM_RETENTION_DAYS, addOutcome(), emptyCounts(), getActivityHeatmap(), getRegistrationFunnel(), getSecurityOverview() (+9 more)
+
+### Community 53 - "blogImages.ts"
 Cohesion: 0.17
-Nodes (16): EVENT_RETENTION_DAYS, PSEUDONYM_RETENTION_DAYS, SecurityEventOutcome, SecurityEventType, addOutcome(), emptyCounts(), getActivityHeatmap(), getRegistrationFunnel() (+8 more)
+Nodes (10): ACCEPTED_BLOG_IMAGE_TYPES, BLOG_IMAGE_ACCEPT_ATTRIBUTE, BlogImageMeta, BlogImageVariant, MAX_ADDITIONAL_BLOG_IMAGES, MAX_BLOG_IMAGE_UPLOAD_BYTES, MAX_BLOG_IMAGES, ImageBytes (+2 more)
 
-### Community 53 - "ApplicationList"
-Cohesion: 0.39
-Nodes (8): ApplicationList(), confirmAccept(), confirmDecline(), confirmDelete(), openAccept(), run(), formatRange(), todayInputValue()
+### Community 54 - "PasswordField.tsx"
+Cohesion: 0.23
+Nodes (11): FILL_PERCENT, NewPasswordFields(), PasswordStrengthMeter(), evaluatePassword(), generatePassword(), PASSWORD_MIN_LENGTH, PasswordCriterion, PasswordScore (+3 more)
 
-### Community 54 - "passwordStrength.ts"
-Cohesion: 0.19
-Nodes (10): NewUserForm(), handleSubmit(), PasswordStrengthMeter(), evaluatePassword(), generatePassword(), PasswordCriterion, PasswordScore, PasswordStrength (+2 more)
-
-### Community 55 - "ApplicationList.tsx"
-Cohesion: 0.29
-Nodes (4): ApplicationItem, dateFormat, dateTimeFormat, STATUS_META
+### Community 55 - "MailForm.tsx"
+Cohesion: 0.14
+Nodes (13): ContactRequestList(), confirmDelete(), run(), MailAnnouncement, MailFormProps, MailUserOption, STATUS_ORDER, STATUS_RANK (+5 more)
 
 ### Community 57 - "EditUserForm"
 Cohesion: 0.25
 Nodes (9): EditUserForm(), computeChanges(), computeDirty(), guardNavigate(), handleClick(), handleFormSubmit(), formatDiffValue(), isCheckboxKey() (+1 more)
 
-### Community 58 - "mitgliedsantraege/page.tsx"
-Cohesion: 0.16
-Nodes (15): dynamic, MembershipApplicationsPage(), metadata, UserManagementPage(), berlinDateParts(), FEE_RECORD_RETENTION_YEARS, isTerminationDue(), TERMINATION_RECORD_RETENTION_YEARS (+7 more)
+### Community 58 - "users/[id]/page.tsx"
+Cohesion: 0.12
+Nodes (24): @prisma/client, ContactRequestsPage(), deleteUserAction(), EditUserPage(), metadata, updateUser(), FEATURE_FLAG_DESCRIPTIONS, FEATURE_FLAG_LABELS (+16 more)
 
-### Community 60 - "TypeSparklines.tsx"
-Cohesion: 0.33
-Nodes (8): longDayLabel(), sparkGeometry, typeHint(), typeLabel, SPARK, TypeCard(), TypeSparklines(), TypeStat
+### Community 60 - "AccountPanel.tsx"
+Cohesion: 0.22
+Nodes (7): FIRST_HALF_FIELDS, FirstHalfField, ALTCHA_STRINGS_DE, ALTCHA_STYLE, AltchaField(), MEMBERSHIP_LOGIN_PATH, birthDateField
 
 ### Community 61 - "userUpdateData.ts"
 Cohesion: 0.31
 Nodes (9): applyBool(), applyDate(), buildUserUpdateData(), MaybeBool, MaybeDate, parseBoolInput(), parseDateInput(), UpdateUserInput (+1 more)
 
 ### Community 62 - "ServerDashboard.tsx"
-Cohesion: 0.13
-Nodes (16): triggerDeploy(), DeploySection(), formatBytes(), formatUptime(), Sample, ServerDashboard(), timeLabel(), PAD (+8 more)
+Cohesion: 0.20
+Nodes (12): formatBytes(), formatUptime(), Sample, ServerDashboard(), timeLabel(), PAD, PLOT, TICKS (+4 more)
 
-### Community 63 - "cn"
-Cohesion: 0.06
-Nodes (39): CtaCard(), Delta(), StatTileProps, Tone, TONE_DOT, StatTile(), AdminBoardPage(), metadata (+31 more)
+### Community 63 - "Site.tsx"
+Cohesion: 0.13
+Nodes (14): facts, metadata, metadata, getInitials(), metadata, VorstandPage(), LorenzAttractor, Cta() (+6 more)
 
 ### Community 64 - "scripts"
 Cohesion: 0.25
@@ -383,49 +395,97 @@ Nodes (8): scripts, build, dev, icons, lint, start, test, typecheck
 Cohesion: 0.08
 Nodes (24): Admin-Dashboard, Authentifizierung & Konten, Automatische Updates bei jedem Git Push (GitHub Actions), Datenbankmodell, Deployment (Hetzner Cloud / Ubuntu), Deployment & Updates via SSH (`deploy.sh`), Einmalige Einrichtung auf dem Server, Feature Flags (+16 more)
 
+### Community 66 - "Footer.tsx"
+Cohesion: 0.27
+Nodes (6): ContrastToggle(), columns, Footer(), legalLinks, GravityTrigger(), PluckedString()
+
+### Community 67 - "getOptionalUser"
+Cohesion: 0.36
+Nodes (6): GET(), GET(), GET(), getOptionalUser(), findImageBytes(), findPhotoBytes()
+
 ### Community 68 - "mail/page.tsx"
 Cohesion: 0.19
-Nodes (12): MailDashboard(), MailEventOption, MailHistoryEntry, announcementHtml(), dynamic, MailDashboardPage(), metadata, sitemap() (+4 more)
+Nodes (11): MailDashboard(), MailEventOption, MailHistoryEntry, announcementHtml(), dynamic, MailDashboardPage(), metadata, EditEventPage() (+3 more)
 
-### Community 71 - "ref_node_assert"
-Cohesion: 0.15
-Nodes (11): ref_node_assert, ref_node_test, dynamic, LoginPage(), metadata, NOTICES, Props, internalPath() (+3 more)
+### Community 69 - "boardImages.ts"
+Cohesion: 0.25
+Nodes (6): ACCEPTED_BOARD_PHOTO_TYPES, BOARD_PHOTO_ACCEPT_ATTRIBUTE, MAX_BOARD_PHOTO_UPLOAD_BYTES, ImageBytes, ProcessedBoardPhoto, QUALITY_LADDER
+
+### Community 71 - "login/page.tsx"
+Cohesion: 0.31
+Nodes (6): dynamic, LoginPage(), metadata, NOTICES, Props, internalPath()
+
+### Community 72 - "ref_node_assert"
+Cohesion: 0.12
+Nodes (11): ref_node_assert, ref_node_net, ref_node_test, isTerminationDue(), addressKey(), HeaderBag, ADMIN_SESSION_MAX_MS, adminSessionExpired() (+3 more)
 
 ### Community 74 - "allowBuilds (prisma, esbuild, sharp, unrs-resolver)"
 Cohesion: 1.00
 Nodes (3): allowBuilds (prisma, esbuild, sharp, unrs-resolver), pnpm Workspace Config, ignoredBuiltDependencies (sharp, unrs-resolver)
 
 ### Community 76 - "eventService.ts"
-Cohesion: 0.11
-Nodes (32): EditBlogPage(), EditEventPage(), AdminEventsPage(), UPCOMING_ALERT_MONTHS, createEvent(), deleteEventById(), EventWriteData, findAllEvents() (+24 more)
+Cohesion: 0.10
+Nodes (34): createEventDraft(), revalidateEvent(), saveEventAction(), AdminEventsPage(), UPCOMING_ALERT_MONTHS, createEvent(), deleteEventById(), EventWriteData (+26 more)
 
 ### Community 77 - "accountActions.ts"
+Cohesion: 0.14
+Nodes (25): KontoPage(), deleteOwnAccount(), disableOwnAccount(), mailLater(), passwordSchema, terminateMembership(), terminateSchema, withdrawMembershipTermination() (+17 more)
+
+### Community 78 - "MarkdownViewer.tsx"
+Cohesion: 0.33
+Nodes (4): react-markdown, remark-gfm, MarkdownViewer(), shiftedHeadings
+
+### Community 79 - "rateLimitService.ts"
 Cohesion: 0.17
-Nodes (23): deleteOwnAccount(), disableOwnAccount(), mailLater(), passwordSchema, terminateMembership(), terminateSchema, signOut, accountDeletedMessage() (+15 more)
-
-### Community 78 - "ref_node_fs"
-Cohesion: 0.50
-Nodes (4): ref_node_fs, BACKGROUND, icon(), main()
-
-### Community 79 - "security/actions.ts"
-Cohesion: 0.27
-Nodes (7): removeRateLimitEntry(), getRateLimitDescription(), RATE_LIMIT_DESCRIPTIONS, RateLimitTable(), confirmDelete(), showInfo(), deleteRateLimitEntry()
+Nodes (12): removeRateLimitEntry(), getRateLimitDescription(), RATE_LIMIT_DESCRIPTIONS, RateLimitTable(), confirmDelete(), showInfo(), bucketFromKey(), deleteRateLimitEntry() (+4 more)
 
 ### Community 80 - "altcha.d.ts"
 Cohesion: 0.50
 Nodes (3): IntrinsicElements, JSX, react
 
-### Community 81 - "app/kontakt/actions.ts"
-Cohesion: 0.14
-Nodes (16): ContactRequestItem, ContactRequestList(), confirmDelete(), run(), dateFormat, submitContactRequest(), ContactForm(), MAX_MESSAGE_LENGTH (+8 more)
+### Community 81 - "paymentHistoryPdf.tsx"
+Cohesion: 0.36
+Nodes (6): GET(), PaymentHistoryPdf(), PdfUser, statusLabel(), styles, DashboardFee
 
-### Community 82 - "formatNumber"
+### Community 82 - "RegistrationFunnel.tsx"
+Cohesion: 0.40
+Nodes (5): RegistrationFunnel(), share(), Stage, STAGES, RegistrationFunnel
+
+### Community 85 - "app/page.tsx"
+Cohesion: 0.21
+Nodes (14): HomePage(), levels, STRIP_IDS, STUDY_PROGRAMS, tone(), sitemap(), findPublishedPosts(), getPublishedPosts() (+6 more)
+
+### Community 86 - "ApplicationList"
+Cohesion: 0.39
+Nodes (8): ApplicationList(), confirmAccept(), confirmDecline(), confirmDelete(), openAccept(), run(), formatRange(), todayInputValue()
+
+### Community 87 - "LoginForm.tsx"
+Cohesion: 0.36
+Nodes (6): createLoginChallenge(), FaqItem, LoginFaq(), SECTIONS, LoginForm(), MEMBERSHIP_APPLICATION_PATH
+
+### Community 89 - "IconButton.tsx"
+Cohesion: 0.29
+Nodes (7): colorClasses, iconButtonClasses(), IconButtonColor, IconButtonLink(), IconButtonSize, IconButtonVariant, sizeClasses
+
+### Community 91 - "useActionForm.tsx"
 Cohesion: 0.32
-Nodes (7): RegistrationFunnel(), share(), Stage, STAGES, StatTile(), formatNumber(), RegistrationFunnel
+Nodes (6): ActionForm, ActionFormOptions, getRedirectTarget(), isRedirectError(), RedirectTarget, ActionResult
+
+### Community 92 - "AccountPanel"
+Cohesion: 0.38
+Nodes (5): AccountPanel(), handleSubmit(), ResetPasswordForm(), handleSubmit(), validateNewPassword()
 
 ### Community 93 - "AppError"
-Cohesion: 0.11
-Nodes (49): createDraft(), deletePost(), savePost(), markContactRequestHandled(), removeContactRequest(), requestEmailChangeAction(), parseMailForm(), sendEmailAction() (+41 more)
+Cohesion: 0.14
+Nodes (40): createDraft(), deletePost(), savePost(), markContactRequestHandled(), removeContactRequest(), requestEmailChangeAction(), acceptMembershipApplication(), declineMembershipApplication() (+32 more)
+
+### Community 94 - "ref_node_fs"
+Cohesion: 0.40
+Nodes (5): ref_node_fs, sharp, BACKGROUND, icon(), main()
+
+### Community 95 - "BoardPhotoUploader"
+Cohesion: 0.60
+Nodes (5): BoardPhotoUploader(), handleDelete(), handleDrop(), uploadFile(), formatBytes()
 
 ## Ambiguous Edges - Review These
 - `allowBuilds (prisma, esbuild, sharp, unrs-resolver)` → `ignoredBuiltDependencies (sharp, unrs-resolver)`  [AMBIGUOUS]
@@ -433,23 +493,23 @@ Nodes (49): createDraft(), deletePost(), savePost(), markContactRequestHandled()
 
 ## Knowledge Gaps
 - **438 isolated node(s):** `deploy.sh script`, `eslintConfig`, `nextConfig`, `name`, `version` (+433 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 561 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 560 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `allowBuilds (prisma, esbuild, sharp, unrs-resolver)` and `ignoredBuiltDependencies (sharp, unrs-resolver)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `next` connect `next` to `ApplicationWizard.tsx`, `HeaderChrome.tsx`, `mitgliedsantraege/actions.ts`, `boardService.ts`, `app/blog/[id]/page.tsx`, `serverStatus.ts`, `isFeatureEnabled`, `blogService.ts`, `security/page.tsx`, `events.ts`, `ics.ts`, `app/layout.tsx`, `MailForm.tsx`, `userService.ts`, `package.json`, `requireUser`, `lib/siteUrl.ts`, `mitglied-werden/page.tsx`, `gravityPhysics.ts`, `requireDebugAdmin`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `normalizeIban`, `authz.ts`, `index.ts`, `lucide-react`, `EditUserForm.tsx`, `DebugBar.tsx`, `Button.tsx`, `forgot-password/layout.tsx`, `mitgliedsantraege/page.tsx`, `verify-email/layout.tsx`, `cn`, `mail/page.tsx`, `ref_node_assert`, `accountActions.ts`, `security/actions.ts`, `app/kontakt/actions.ts`, `AppError`, `login/layout.tsx`, `reset-password/layout.tsx`?**
-  _High betweenness centrality (0.190) - this node is a cross-community bridge._
-- **Why does `react` connect `lucide-react` to `next`, `ApplicationWizard.tsx`, `HeaderChrome.tsx`, `boardService.ts`, `app/blog/[id]/page.tsx`, `blogService.ts`, `app/layout.tsx`, `MailForm.tsx`, `package.json`, `iban.ts`, `gravityPhysics.ts`, `requireDebugAdmin`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `index.ts`, `EditUserForm.tsx`, `BulkImport.tsx`, `DebugBar.tsx`, `Button.tsx`, `ApplicationList.tsx`, `ServerDashboard.tsx`, `cn`, `eventService.ts`, `altcha.d.ts`, `app/kontakt/actions.ts`?**
-  _High betweenness centrality (0.075) - this node is a cross-community bridge._
-- **Why does `lucide-react` connect `lucide-react` to `next`, `ApplicationWizard.tsx`, `HeaderChrome.tsx`, `app/blog/[id]/page.tsx`, `security/page.tsx`, `events.ts`, `app/layout.tsx`, `MailForm.tsx`, `package.json`, `OutcomeTimeline.tsx`, `mitglied-werden/page.tsx`, `gravityPhysics.ts`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `index.ts`, `EditUserForm.tsx`, `DebugBar.tsx`, `Button.tsx`, `ApplicationList.tsx`, `mitgliedsantraege/page.tsx`, `ServerDashboard.tsx`, `cn`, `formatNumber`?**
-  _High betweenness centrality (0.072) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `index.ts`, `ApplicationWizard.tsx`, `authz.ts`, `mitgliedsantraege/actions.ts`, `app/blog/[id]/page.tsx`, `serverStatus.ts`, `ContactForm.tsx`, `blogService.ts`, `events.ts`, `ics.ts`, `MarketDiffusion.tsx`, `LegalPage.tsx`, `userService.ts`, `package.json`, `mailService.ts`, `errors.ts`, `app/layout.tsx`, `mitglied-werden/page.tsx`, `gravityPhysics.ts`, `requireDebugAdmin`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `format.ts`, `satzung/page.tsx`, `cn`, `blog/actions.ts`, `EditUserForm.tsx`, `sepa/route.ts`, `useActionForm`, `messages.ts`, `lucide-react`, `mitglied-werden/actions.ts`, `MailForm.tsx`, `forgot-password/layout.tsx`, `users/[id]/page.tsx`, `verify-email/layout.tsx`, `AccountPanel.tsx`, `Site.tsx`, `Footer.tsx`, `getOptionalUser`, `mail/page.tsx`, `login/page.tsx`, `eventService.ts`, `accountActions.ts`, `rateLimitService.ts`, `paymentHistoryPdf.tsx`, `app/page.tsx`, `LoginForm.tsx`, `IconButton.tsx`, `useActionForm.tsx`, `AppError`, `login/layout.tsx`, `reset-password/layout.tsx`?**
+  _High betweenness centrality (0.207) - this node is a cross-community bridge._
+- **Why does `react` connect `lucide-react` to `next`, `index.ts`, `ApplicationWizard.tsx`, `app/blog/[id]/page.tsx`, `ContactForm.tsx`, `blogService.ts`, `MarketDiffusion.tsx`, `LegalPage.tsx`, `package.json`, `app/layout.tsx`, `gravityPhysics.ts`, `requireDebugAdmin`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `normalizeIban`, `format.ts`, `PhysicsTimeline.tsx`, `EditUserForm.tsx`, `BulkImport.tsx`, `useActionForm`, `PasswordField.tsx`, `MailForm.tsx`, `users/[id]/page.tsx`, `AccountPanel.tsx`, `ServerDashboard.tsx`, `Site.tsx`, `Footer.tsx`, `eventService.ts`, `accountActions.ts`, `altcha.d.ts`, `LoginForm.tsx`, `useActionForm.tsx`, `DebugConsole.tsx`?**
+  _High betweenness centrality (0.083) - this node is a cross-community bridge._
+- **Why does `lucide-react` connect `lucide-react` to `next`, `index.ts`, `ApplicationWizard.tsx`, `authz.ts`, `app/blog/[id]/page.tsx`, `ContactForm.tsx`, `events.ts`, `package.json`, `OutcomeTimeline.tsx`, `mitglied-werden/page.tsx`, `gravityPhysics.ts`, `dashboard/page.tsx`, `DirectoryTable.tsx`, `format.ts`, `cn`, `EditUserForm.tsx`, `useActionForm`, `PasswordField.tsx`, `MailForm.tsx`, `users/[id]/page.tsx`, `AccountPanel.tsx`, `ServerDashboard.tsx`, `Site.tsx`, `Footer.tsx`, `accountActions.ts`, `RegistrationFunnel.tsx`, `LoginForm.tsx`, `DebugConsole.tsx`?**
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **What connects `deploy.sh script`, `eslintConfig`, `nextConfig` to the rest of the system?**
   _438 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `next` be split into smaller, more focused modules?**
-  _Cohesion score 0.0971322849213691 - nodes in this community are weakly interconnected._
-- **Should `ApplicationWizard.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.07681365576102418 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09178743961352658 - nodes in this community are weakly interconnected._
+- **Should `index.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.14789915966386555 - nodes in this community are weakly interconnected._

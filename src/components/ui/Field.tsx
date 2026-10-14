@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
    mehr ohne das andere gesetzt werden. Gilt für alle drei Steuerelemente, nicht
    nur fürs Eingabefeld. */
 export const controlClasses =
-  "block w-full rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-foreground placeholder:text-faint transition-shadow focus:border-physics focus:ring-2 focus:ring-physics/25 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-negative aria-[invalid=true]:focus:ring-negative/25";
+  "block w-full rounded-[3px] border border-line-strong bg-surface px-3.5 py-2.5 text-foreground placeholder:text-faint transition-shadow focus:border-physics focus:ring-2 focus:ring-physics/25 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-negative aria-[invalid=true]:focus:ring-negative/25";
 
 /**
  * Reicht `aria-describedby` und `aria-invalid` an das Steuerelement weiter,
@@ -188,7 +188,7 @@ export function Checkbox({ className, ...props }: React.ComponentProps<"input">)
       type="checkbox"
       // 24px Kantenlänge: die Mindestgröße für Tippflächen (WCAG 2.2, 2.5.8).
       // Vorher waren es 18px — auf dem Telefon traf man daneben.
-      className={cn("size-6 shrink-0 cursor-pointer rounded accent-physics", className)}
+      className={cn("size-6 shrink-0 cursor-pointer rounded-[2px] accent-physics", className)}
       {...props}
     />
   );

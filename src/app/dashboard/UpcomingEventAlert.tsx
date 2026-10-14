@@ -85,7 +85,7 @@ export function UpcomingEventAlert({ event }: { event: DashboardEvent }) {
                     sonst hieße die einzige Aktion der Karte bloß „Zum Termin“. */}
                 <Link
                     href={eventPath(event)}
-                    className="group inline-flex w-fit items-center gap-2 rounded-lg text-sm font-semibold text-market transition-colors hover:text-market/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-market"
+                    className="group inline-flex w-fit items-center gap-2 rounded-[3px] text-sm font-semibold text-market transition-colors hover:text-market/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-market"
                 >
                     Zum Termin
                     <span className="sr-only">

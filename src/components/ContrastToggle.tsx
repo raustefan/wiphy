@@ -27,8 +27,8 @@ export default function ContrastToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={on}
-      title="Animierten Hintergrund aus- oder einblenden"
-      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line/60 bg-raised/50 px-2.5 py-0.5 font-mono text-[11px] text-faint transition-colors hover:border-physics/40 hover:text-physics focus-visible:outline-2 focus-visible:outline-physics aria-pressed:border-physics/40 aria-pressed:text-physics"
+      title="Animationen und Hintergrundmuster aus- oder einblenden"
+      className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-sm px-2 text-[13px] text-muted transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-physics aria-pressed:text-physics"
     >
       <Contrast size={11} aria-hidden="true" />
       <span>Hoher Kontrast</span>

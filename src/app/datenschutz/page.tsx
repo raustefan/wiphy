@@ -12,8 +12,11 @@ export const metadata: Metadata = pageMetadata({
 
 export default function DatenschutzPage() {
     return (
-        <LegalPage title="Datenschutzerklärung">
-            <LegalSections document={DATENSCHUTZ} separators />
+        <LegalPage
+            title="Datenschutz"
+            description="Welche Daten wir verarbeiten, wofür, wie lange — und welche Rechte du dabei hast."
+        >
+            <LegalSections document={DATENSCHUTZ} />
         </LegalPage>
     );
 }

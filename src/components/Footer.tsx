@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import GravityTrigger from "@/components/GravityTrigger";
 import ContrastToggle from "@/components/ContrastToggle";
+import PluckedString from "@/components/PluckedString";
 
 const legalLinks = [
   { href: "/impressum", label: "Impressum" },
@@ -36,13 +37,17 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
 ];
 
 export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="mt-auto border-t border-line bg-surface">
+    <footer className="mt-auto">
+      <PluckedString />
+
       {/* Telefon: nur das Pflichtprogramm. Die Navigation steckt dort schon in
           Daumenleiste und „Mehr“-Menü — eine volle Linkliste darunter ließe
           die Seite wie eine Website statt wie eine App wirken. */}
-      <div className="flex flex-col items-center gap-2 px-4 pt-4 text-xs text-faint md:hidden">
-        <p>© {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.</p>
+      <div className="flex flex-col items-center gap-2 px-4 pt-2 pb-4 text-xs text-muted md:hidden">
+        <p>© {year} WirtschaftsPhysik Alumni e. V.</p>
         <div className="flex flex-wrap justify-center gap-2">
           <GravityTrigger />
           <ContrastToggle />
@@ -60,45 +65,41 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto hidden w-full max-w-6xl px-6 py-14 md:block">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-10">
-          <div className="flex flex-col gap-3">
+      <div className="mx-auto hidden w-full max-w-[80rem] px-8 pt-10 pb-12 md:block">
+        <div className="grid grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] gap-10">
+          <div className="grid content-start gap-5">
             <Image
               src="/logo-plain.png"
-              alt="WirtschaftsPhysik Alumni e.V."
+              alt="WirtschaftsPhysik Alumni e. V."
               width={56}
               height={30}
               style={{ objectFit: "contain" }}
               className="h-[30px] w-14"
             />
-            <p className="max-w-xs text-sm leading-relaxed text-muted">
-              Gemeinnütziger Verein für Physik- und Wirtschaftsphysik-Alumni
-              sowie Studierende der Universität Ulm.
+            <p className="max-w-sm font-serif text-xl leading-snug text-pretty">
+              Physik und Wirtschaftsphysik an der Universität Ulm — seit 2004 als
+              gemeinnütziger Verein organisiert.
             </p>
           </div>
 
           {columns.map((column) => (
-            <div key={column.heading} className="flex flex-col gap-1.5">
-              <p className="mb-1 font-mono text-[0.75rem] font-semibold tracking-[0.16em] text-faint uppercase">
-                {column.heading}
-              </p>
+            <nav key={column.heading} aria-label={column.heading} className="grid content-start gap-1">
+              <p className="mb-2 font-serif text-sm text-muted italic">{column.heading}</p>
               {column.links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="inline-flex min-h-9 items-center text-sm text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics rounded-sm"
+                  className="inline-flex min-h-8 w-fit items-center rounded-sm text-sm text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                 >
                   {link.label}
                 </Link>
               ))}
-            </div>
+            </nav>
           ))}
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
-          <p className="text-sm text-faint">
-            © {new Date().getFullYear()} WirtschaftsPhysik Alumni e.V.
-          </p>
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+          <p className="text-sm text-muted">© {year} WirtschaftsPhysik Alumni e. V., Ulm</p>
           <div className="flex flex-wrap items-center gap-2">
             <GravityTrigger />
             <ContrastToggle />

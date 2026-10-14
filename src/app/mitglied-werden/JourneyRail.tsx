@@ -20,8 +20,15 @@ export function JourneyRail({ stage }: { stage: JourneyStage }) {
     const current = JOURNEY_STEPS[currentIndex];
 
     return (
-        <div className="grid gap-2.5">
-            <ol className="grid grid-cols-4 gap-1.5 sm:gap-3">
+        <div className="grid gap-3">
+            {/* Eine Achse mit vier Stationen: gefüllt = erledigt, Ring = aktuell. */}
+            <ol className="relative grid grid-cols-4">
+                <span aria-hidden="true" className="absolute top-[5px] right-1/4 left-0 h-px bg-line-strong" />
+                <span
+                    aria-hidden="true"
+                    className="absolute top-[5px] left-0 h-px bg-physics"
+                    style={{ width: `${(Math.min(currentIndex, JOURNEY_STEPS.length - 1) / JOURNEY_STEPS.length) * 100}%` }}
+                />
                 {JOURNEY_STEPS.map((step, index) => {
                     const isDone = index < currentIndex;
                     const isCurrent = index === currentIndex;
@@ -29,36 +36,33 @@ export function JourneyRail({ stage }: { stage: JourneyStage }) {
                         <li
                             key={step.id}
                             aria-current={isCurrent ? "step" : undefined}
-                            className="grid gap-2"
+                            className="relative grid justify-items-start gap-2 pr-2"
                         >
                             <span
                                 aria-hidden="true"
                                 className={cn(
-                                    "h-1.5 rounded-full transition-colors",
+                                    "grid size-[11px] place-items-center rounded-full border",
                                     isDone
-                                        ? "bg-physics"
+                                        ? "border-physics bg-physics"
                                         : isCurrent
-                                          ? "bg-physics/45"
-                                          : "bg-line",
+                                          ? "border-physics bg-background ring-4 ring-physics/20"
+                                          : "border-line-strong bg-background",
                                 )}
                             />
                             <span
                                 className={cn(
-                                    "hidden items-center gap-1.5 text-xs font-semibold sm:flex",
+                                    "hidden items-center gap-1.5 text-sm sm:flex",
                                     isCurrent
-                                        ? "text-physics"
+                                        ? "font-semibold text-foreground"
                                         : isDone
-                                          ? "text-foreground"
+                                          ? "text-muted"
                                           : "text-faint",
                                 )}
                             >
                                 {isDone ? (
-                                    <Check size={13} aria-hidden="true" className="shrink-0" />
+                                    <Check size={14} aria-hidden="true" className="shrink-0 text-physics" />
                                 ) : (
-                                    <span
-                                        aria-hidden="true"
-                                        className="font-mono tabular-nums"
-                                    >
+                                    <span aria-hidden="true" className="font-serif text-base italic tabular-nums">
                                         {index + 1}
                                     </span>
                                 )}
@@ -73,12 +77,12 @@ export function JourneyRail({ stage }: { stage: JourneyStage }) {
                 })}
             </ol>
 
-            {/* Ab `sm` stehen dieselben Angaben schon an den Balken. */}
+            {/* Ab `sm` stehen dieselben Angaben schon an der Achse. */}
             <p className="text-sm text-muted sm:hidden">
                 {current ? (
                     <>
-                        <span className="font-mono text-xs tracking-wide text-faint">
-                            Schritt {currentIndex + 1}/{JOURNEY_STEPS.length}
+                        <span className="font-serif text-faint italic">
+                            Schritt {currentIndex + 1} von {JOURNEY_STEPS.length}:
                         </span>{" "}
                         <span className="font-semibold text-foreground">{current.title}</span>
                     </>

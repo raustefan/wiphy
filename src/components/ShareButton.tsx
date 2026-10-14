@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
 
 /**
  * Öffnet auf dem Telefon den nativen Teilen-Dialog (WhatsApp, Mail, …). Wo es
@@ -24,9 +24,9 @@ export default function ShareButton({ title, className }: { title: string; class
   }
 
   return (
-    <Button variant="soft" color="neutral" onClick={share} className={className}>
+    <button type="button" onClick={share} className={cn("cta cta-line", className)}>
       {copied ? <Check size={16} aria-hidden="true" /> : <Share2 size={16} aria-hidden="true" />}
       <span aria-live="polite">{copied ? "Link kopiert" : "Teilen"}</span>
-    </Button>
+    </button>
   );
 }

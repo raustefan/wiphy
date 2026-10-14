@@ -62,7 +62,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                 aria-label={`Titelbild in voller Größe ansehen${
                     images.length > 1 ? ` (Galerie mit ${images.length} Bildern)` : ""
                 }`}
-                className="group relative block w-full cursor-zoom-in overflow-hidden rounded-2xl border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                className="group relative block w-full cursor-zoom-in overflow-hidden rounded-[3px] border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
             >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -90,7 +90,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                                 type="button"
                                 onClick={() => setOpenIndex(index + 1)}
                                 aria-label={`Bild ${index + 2} von ${images.length} ansehen`}
-                                className="block w-24 cursor-zoom-in overflow-hidden rounded-xl border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics sm:w-full"
+                                className="block w-24 cursor-zoom-in overflow-hidden rounded-[3px] border border-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics sm:w-full"
                             >
                                 {/* Ohne `width`/`height`: die Kachel ist per CSS
                                     quadratisch zugeschnitten, die Maße des
@@ -160,7 +160,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                                 width={active.width}
                                 height={active.height}
                                 decoding="async"
-                                className="pointer-events-auto max-h-full max-w-full rounded-lg object-contain"
+                                className="pointer-events-auto max-h-full max-w-full rounded-[3px] object-contain"
                             />
                         </div>
 

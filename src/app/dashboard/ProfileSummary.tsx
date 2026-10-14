@@ -94,7 +94,7 @@ function ProfileRow({
     value: React.ReactNode;
 }) {
     return (
-        <div className="grid gap-1 rounded-xl border border-line bg-raised/50 px-4 py-3">
+        <div className="grid gap-1 rounded-[3px] border border-line bg-raised/50 px-4 py-3">
             <dt className="flex items-center gap-2 text-sm text-muted">
                 <span className="text-faint">{icon}</span>
                 {label}

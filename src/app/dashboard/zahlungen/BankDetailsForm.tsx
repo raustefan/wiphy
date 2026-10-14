@@ -61,7 +61,7 @@ export function BankDetailsForm({
         return (
             <div className="grid gap-4">
                 {hasIban ? (
-                    <dl className="grid gap-x-6 gap-y-3 rounded-xl border border-line bg-raised/60 p-4 text-sm sm:grid-cols-2">
+                    <dl className="grid gap-x-6 gap-y-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm sm:grid-cols-2">
                         <div>
                             <dt className="text-muted">IBAN</dt>
                             <dd className="font-mono font-medium">{maskIban(initial.IBAN)}</dd>
@@ -179,7 +179,7 @@ export function BankDetailsForm({
                         </Field>
                     </div>
 
-                    <div className="grid gap-2 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                    <div className="grid gap-2 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                         <p className="font-semibold">SEPA-Lastschriftmandat</p>
                         <p className="text-muted text-pretty">
                             Zahlungsempfänger: WirtschaftsPhysik Alumni e.V.
@@ -195,7 +195,7 @@ export function BankDetailsForm({
                         </p>
                     </div>
 
-                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                         <Checkbox name="bankeinzug" defaultChecked={initial.bankeinzug} className="mt-0.5" />
                         <span className="text-pretty">
                             Ich ermächtige den WirtschaftsPhysik Alumni e.V., den Mitgliedsbeitrag von

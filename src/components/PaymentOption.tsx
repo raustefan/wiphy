@@ -38,7 +38,7 @@ export function PaymentOption({
 }) {
     return (
         <label
-            className={`grid cursor-pointer content-start gap-3 rounded-xl border p-4 transition-colors ${
+            className={`grid cursor-pointer content-start gap-3 rounded-[3px] border p-4 transition-colors ${
                 checked
                     ? "border-physics bg-physics/8"
                     : "border-line bg-raised/40 hover:bg-raised/70"

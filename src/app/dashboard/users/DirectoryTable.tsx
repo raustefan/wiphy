@@ -222,7 +222,7 @@ function StatusChip({
   // Bis die Antwort vom Server da ist, blasst der Chip ab — sonst wirkt der Klick verloren.
   const { pending } = useFormStatus();
   const className = cn(
-    "inline-flex size-8 items-center justify-center rounded-full",
+    "inline-flex size-8 items-center justify-center rounded-[3px]",
     chipTones[tone],
     pending && "animate-pulse opacity-50",
     interactive &&
@@ -315,7 +315,7 @@ function AmountDialog({
       title={`Beitrag ${fee.jahr} – ${displayName(user)}`}
       description="Nur für Ausnahmefälle. Ohne Abweichung gilt automatisch der Standardbeitrag."
     >
-      <div className="mb-4 grid gap-1 rounded-xl border border-line bg-raised/60 p-4 text-sm">
+      <div className="mb-4 grid gap-1 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
         <p>
           Standardbeitrag:{" "}
           <span className="font-semibold tabular-nums">{formatEuro(fee.standard)}</span>
@@ -618,7 +618,7 @@ export function DirectoryTable({
 
   return (
     <>
-      <div className="mb-3 grid gap-3 rounded-2xl border border-line bg-raised/40 p-3 sm:p-4">
+      <div className="mb-3 grid gap-3 rounded-[3px] border border-line bg-raised/40 p-3 sm:p-4">
         {/* Schalter und „Neues Jahr“ stehen in beiden Zuständen an derselben
             Stelle und in derselben Breite — nichts rutscht unter den
             Mauszeiger, der den Schalter gerade bedient hat. */}
@@ -685,7 +685,7 @@ export function DirectoryTable({
 
             <div
               className={cn(
-                "flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 transition-colors",
+                "flex items-center gap-2 rounded-[3px] border py-1 pr-3 pl-1 transition-colors",
                 editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
               )}
             >
@@ -792,7 +792,7 @@ export function DirectoryTable({
 
       <TableWrap
         className={cn(
-          "rounded-xl border transition-colors",
+          "rounded-[3px] border transition-colors",
           editing ? "border-physics/50" : "border-line",
         )}
       >
@@ -860,7 +860,7 @@ export function DirectoryTable({
                     <th
                       scope="rowgroup"
                       colSpan={COLUMNS}
-                      className="border-t-2 border-line-strong bg-raised/70 px-3 py-1.5 text-left text-xs font-semibold tracking-wide text-muted uppercase"
+                      className="border-t-2 border-line-strong bg-raised/70 px-3 py-1.5 text-left font-serif text-sm text-muted italic"
                     >
                       {group.label}{" "}
                       <span className="font-normal text-faint tabular-nums">· {group.users.length}</span>

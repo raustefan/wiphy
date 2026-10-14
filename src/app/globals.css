@@ -174,6 +174,10 @@ html[data-theme-appearance="dark"] {
     Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono:
     var(--font-code), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* STIX Two — die Satzschrift der physikalischen Fachzeitschriften. Trägt
+     Überschriften, Lesetext und Formeln der öffentlichen Seiten. */
+  --font-serif:
+    var(--font-stix), "STIX Two Text", Cambria, Georgia, "Times New Roman", serif;
 }
 
 @layer base {
@@ -530,4 +534,231 @@ html[data-theme-appearance="dark"] {
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+/* ==========================================================================
+   Öffentliche Seiten — „Lehrbuch und Labor“
+   --------------------------------------------------------------------------
+   Serife (STIX Two) für Inhalt und Formeln, Grotesk für Bedienung.
+   Muster statt Flächen: Millimeterpapier, Skalenstriche, Achsen — und nur
+   dort, wo etwas gemessen oder eingeordnet wird. Keine neuen Farben: alles
+   leitet sich aus --physics, --market und den Grautönen ab.
+   ========================================================================== */
+
+:root {
+  /* Gedämpfte Feder (ζ = 0,5) als Easing-Kurve — überschwingt leicht und
+     pendelt sich ein. Für alles, was auf den Zeiger reagiert. */
+  --spring: linear(
+    0, 0.044, 0.157, 0.31, 0.48, 0.647, 0.799, 0.927, 1.027, 1.097, 1.141,
+    1.16, 1.161, 1.149, 1.127, 1.1, 1.072, 1.046, 1.023, 1.004, 0.99, 0.98,
+    0.975, 0.973, 0.974, 0.977, 0.981, 0.986, 0.99, 0.994, 1
+  );
+  --grid-minor: color-mix(in oklab, var(--physics) 5%, transparent);
+  --grid-major: color-mix(in oklab, var(--physics) 12%, transparent);
+}
+
+html[data-theme-appearance="dark"] {
+  --grid-minor: color-mix(in oklab, var(--physics) 4%, transparent);
+  --grid-major: color-mix(in oklab, var(--physics) 9%, transparent);
+}
+
+@layer components {
+/* Millimeterpapier: 2-mm-Feinraster, 1-cm-Hauptraster (8 px / 40 px). */
+.paper {
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size:
+    40px 40px,
+    40px 40px,
+    8px 8px,
+    8px 8px;
+  background-position: -1px -1px;
+}
+
+/* Papier, das zum Rand hin ausläuft — kein harter Kasten. Am dichtesten
+   oben rechts, wo kein Text steht; hinter Titel und Einleitung (links) ist
+   es fast verschwunden, damit die Schrift nicht gegen Linien ankämpft. */
+.paper-fade {
+  mask-image: radial-gradient(90% 140% at 100% 0%, #000 10%, transparent 62%);
+}
+
+/* Blaupause: Millimeterpapier in Weiß auf gefüllter Vereinsfarbe. */
+.blueprint {
+  --grid-minor: color-mix(in oklab, var(--on-physics) 5%, transparent);
+  --grid-major: color-mix(in oklab, var(--on-physics) 13%, transparent);
+  background-color: var(--physics);
+  color: var(--on-physics);
+}
+
+/* Handlungsaufforderung auf gefüllter Fläche: Farben vertauscht. */
+.cta-invert {
+  background: var(--on-physics);
+  color: var(--physics);
+}
+.cta-invert:hover {
+  background: color-mix(in oklab, var(--on-physics) 88%, var(--physics));
+}
+.cta-invert-line {
+  border: 1px solid color-mix(in oklab, var(--on-physics) 60%, transparent);
+  color: var(--on-physics);
+}
+.cta-invert-line:hover {
+  border-color: var(--on-physics);
+}
+
+/* Skalenstriche: fein alle 8 px, lang alle 40 px. */
+.ruler {
+  height: 11px;
+  background:
+    repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px 40px) left bottom / 100% 11px no-repeat,
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 8px) left bottom / 100% 5px no-repeat;
+}
+
+/* Dieselbe Skala senkrecht — für die y-Achse einer Abbildung. */
+.ruler-y {
+  width: 11px;
+  background:
+    repeating-linear-gradient(0deg, var(--line-strong) 0 1px, transparent 1px 40px) left bottom / 11px 100% no-repeat,
+    repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 8px) left bottom / 5px 100% no-repeat;
+}
+
+/* Hoher Kontrast: alle Muster weg, nur Text und Linien bleiben. */
+html[data-high-contrast] :is(.paper, .ruler, .ruler-y) {
+  background: none;
+}
+html[data-high-contrast] .decor {
+  display: none;
+}
+html[data-high-contrast] .blueprint {
+  background-image: none;
+}
+
+/* --------------------------------------------------------------------------
+   Typografie
+   -------------------------------------------------------------------------- */
+.display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+/* Formelsatz wie in LaTeX: Variablen kursiv, Operatoren und d aufrecht. */
+.math {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-variant-numeric: lining-nums;
+  white-space: nowrap;
+}
+.math :is(.up, sub, sup) {
+  font-style: normal;
+}
+
+/* Lesetext der langen Seiten (Blog, Satzung, Termine): Serife, etwas mehr
+   Zeilenabstand und höchstens ~68 Zeichen pro Zeile. */
+.reading {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.7;
+  max-width: 38rem;
+}
+.reading .markdown-content :where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.reading .markdown-content a {
+  text-decoration-thickness: 1px;
+}
+
+/* Randnotiz: in der Randspalte ab lg, darüber/darunter auf dem Telefon. */
+.marginal {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------------------
+   Handlungsaufforderungen
+   --------------------------------------------------------------------------
+   Eckig statt Pille, damit sie zur Lehrbuchseite passen. Der Pfeil sitzt an
+   einer Feder: beim Überfahren schnellt er vor und pendelt sich ein.
+   -------------------------------------------------------------------------- */
+.cta {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 3px;
+  padding: 0 1.25rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.cta:focus-visible {
+  outline: 2px solid var(--physics);
+  outline-offset: 3px;
+}
+.cta-solid {
+  background: var(--physics);
+  color: var(--on-physics);
+}
+.cta-solid:hover {
+  background: color-mix(in oklab, var(--physics) 86%, var(--foreground));
+}
+.cta-line {
+  border: 1px solid var(--line-strong);
+  color: var(--foreground);
+}
+.cta-line:hover {
+  border-color: var(--foreground);
+}
+.cta-arrow {
+  /* `translate` für Tailwinds `translate-x-*` (z. B. in Dashboard-Kacheln). */
+  transition:
+    transform 0.7s var(--spring),
+    translate 0.7s var(--spring);
+}
+.cta:hover .cta-arrow,
+.cta:focus-visible .cta-arrow {
+  transform: translateX(5px);
+}
+
+/* Unterstrichener Textlink, dessen Linie beim Überfahren dicker wird. */
+.link {
+  color: var(--physics);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-thickness 0.15s;
+}
+.link:hover {
+  text-decoration-thickness: 2px;
+}
+.link:focus-visible {
+  outline: 2px solid var(--physics);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-arrow,
+  .needle {
+    transition: none;
+  }
+}
 }

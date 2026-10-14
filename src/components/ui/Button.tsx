@@ -60,7 +60,7 @@ export function buttonClasses({
     // Klasse zeigte jeder Knopf den Pfeil, während `IconButton` und
     // `ButtonLink` (ein `<a>`) die Hand zeigten — im selben Dialog
     // nebeneinander.
-    "inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition-colors duration-150",
+    "inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-[3px] font-semibold transition-colors duration-150",
     // Symbole dürfen nicht schrumpfen: die Beschriftung bricht wegen
     // `whitespace-nowrap` nicht um, also ist das Icon das einzige Kind, das
     // Flexbox zusammendrücken kann, sobald der Knopf neben einem breiten

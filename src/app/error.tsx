@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button, ButtonLink, Container, Eyebrow, PageTitle } from "@/components/ui";
+import { Cta, Frame } from "@/components/Site";
 import LorenzAttractor from "@/components/LorenzAttractorLazy";
 
 /**
@@ -41,27 +41,26 @@ export default function Error({
                         "radial-gradient(34% 30% at 50% 50%, color-mix(in srgb, var(--background) 85%, transparent) 0%, transparent 100%)",
                 }}
             />
-            <Container size="1" className="relative grid place-items-center py-24 sm:py-32">
-                <div className="grid justify-items-center gap-4 text-center">
-                    <Eyebrow className="justify-center">Fehler</Eyebrow>
-                    <PageTitle>Da ist etwas schiefgelaufen</PageTitle>
-                    <p className="max-w-prose text-muted text-pretty">
-                        Die Seite konnte nicht geladen werden. Bitte versuche es noch einmal — bleibt
-                        es dabei, hilft eine kurze Nachricht über das Kontaktformular.
+            <Frame className="relative grid place-items-center py-24 sm:py-32">
+                <div className="grid max-w-xl justify-items-center gap-5 text-center">
+                    <h1 className="display text-[clamp(2.75rem,8vw,4.5rem)]">Da ist etwas schiefgelaufen</h1>
+                    <p className="text-lg leading-relaxed text-muted text-pretty">
+                        Die Seite konnte nicht geladen werden. Versuch es noch einmal — bleibt es
+                        dabei, hilft uns eine kurze Nachricht über das Kontaktformular.
                     </p>
                     {error.digest && (
-                        <p className="font-mono text-xs text-faint">Kennung: {error.digest}</p>
+                        <p className="font-serif text-sm text-faint italic">Kennung: {error.digest}</p>
                     )}
-                    <div className="mt-2 flex flex-wrap justify-center gap-3">
-                        <Button size="lg" onClick={reset}>
+                    <div className="mt-3 flex flex-col gap-3 min-[420px]:flex-row">
+                        <button type="button" onClick={reset} className="cta cta-solid">
                             Erneut versuchen
-                        </Button>
-                        <ButtonLink href="/" size="lg" variant="soft" color="neutral">
+                        </button>
+                        <Cta href="/" variant="line">
                             Zur Startseite
-                        </ButtonLink>
+                        </Cta>
                     </div>
                 </div>
-            </Container>
+            </Frame>
         </div>
     );
 }
