@@ -313,3 +313,64 @@ export async function getVersions(): Promise<ToolVersion[]> {
     { name: "Prisma Client", version: client, expected: prisma ?? undefined },
   ];
 }
+
+/* ------------------------------------------------------------------ *
+ * Datenbank-Backup                                                    *
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Verbindung aus `DATABASE_URL` als libpq-Variablen. So steht das
+ * Passwort nicht in der Befehlszeile (sichtbar in `ps`), und Prismas
+ * `?schema=public` fällt weg — `pg_dump` lehnt unbekannte URL-Parameter ab.
+ */
+export function pgEnv(databaseUrl: string): Record<string, string> {
+  const url = new URL(databaseUrl);
+  const env: Record<string, string> = {
+    PGHOST: url.hostname,
+    PGPORT: url.port || "5432",
+    PGUSER: decodeURIComponent(url.username),
+    PGPASSWORD: decodeURIComponent(url.password),
+    PGDATABASE: decodeURIComponent(url.pathname.slice(1)),
+  };
+  const sslmode = url.searchParams.get("sslmode");
+  if (sslmode) env.PGSSLMODE = sslmode;
+  return env;
+}
+
+/**
+ * Die ganze Datenbank als `pg_dump`-Archiv (Custom-Format), inklusive
+ * Passwort-Hashes und `_prisma_migrations`. Ohne Eigentümer und Rechte, damit
+ * es sich auch unter einem anderen Datenbanknutzer wiederherstellen lässt —
+ * Anleitung im README unter „Backup & Wiederherstellung“.
+ *
+ * ponytail: ganz im Speicher, damit ein Fehler als Meldung statt als halbe
+ * Datei ankommt. Bei einer Datenbank jenseits einiger hundert MB streamen.
+ */
+export function dumpDatabase(databaseUrl: string): Promise<Buffer> {
+  const env: Record<string, string> = { PATH: process.env.PATH ?? "", ...pgEnv(databaseUrl) };
+  return new Promise((resolve, reject) => {
+    execFile(
+      "pg_dump",
+      ["--format=custom", "--no-owner", "--no-privileges"],
+      {
+        env: env as NodeJS.ProcessEnv,
+        encoding: "buffer",
+        maxBuffer: 1024 ** 3,
+        timeout: 5 * 60_000,
+      },
+      (error, stdout, stderr) => {
+        if (!error) return resolve(stdout);
+        const notInstalled = (error as NodeJS.ErrnoException).code === "ENOENT";
+        console.error("pg_dump failed:", notInstalled ? "not installed" : stderr.toString().trim());
+        reject(
+          new AppError(
+            "INTERNAL_ERROR",
+            notInstalled
+              ? "pg_dump ist auf dem Server nicht installiert (Paket postgresql-client)."
+              : "Das Backup konnte nicht erstellt werden. Details stehen im Fehler-Log.",
+          ),
+        );
+      },
+    );
+  });
+}

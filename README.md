@@ -20,6 +20,7 @@ Sicherheitsprotokoll, Feature Flags).
 7. [Feature Flags](#feature-flags)
 8. [Tests, Lint & Typprüfung](#tests-lint--typprüfung)
 9. [Deployment (Hetzner Cloud / Ubuntu)](#deployment-hetzner-cloud--ubuntu)
+10. [Backup & Wiederherstellung](#backup--wiederherstellung)
 
 ---
 
@@ -333,6 +334,9 @@ Nur für Konten mit Rolle `ADMIN`:
   Registrierungen zu bestätigten Konten führen) und aktive Rate-Limit-Sperren.
 - **Feature Flags** (`/dashboard/feature-flags`) — zentrale Ein-/Ausschalter
   für einzelne Funktionen, siehe unten.
+- **Server** (`/dashboard/server`, nur im Debug-Modus) — Auslastung, PM2-Logs,
+  Deploy per Knopfdruck und komplettes Datenbank-Backup per Einmal-Link (siehe
+  [Backup & Wiederherstellung](#backup--wiederherstellung)).
 
 ---
 
@@ -602,3 +606,38 @@ jobs:
 ```
 
 Füge einfach `SERVER_HOST` und `SSH_PRIVATE_KEY` als Repository-Secrets in den Einstellungen deines GitHub-Repositorys hinzu!
+
+---
+
+## Backup & Wiederherstellung
+
+`/dashboard/server` → **Backup anfordern** fragt das Passwort erneut ab und
+schickt einen Einmal-Link an die eigene Adresse des Admins. Erst der Link lädt
+die komplette Datenbank als `pg_dump`-Archiv herunter
+(`wiphy-backup-<datum>.dump`): alle Tabellen samt Passwort-Hashes, Bildern und
+`_prisma_migrations`. Der Link gilt 15 Minuten, nur einmal, nur der zuletzt
+angeforderte und nur, wenn genau dieser Admin im Browser angemeldet ist
+(`BackupToken`). Auf dem Server muss `pg_dump` installiert sein
+(`postgresql-client`, bei lokaler Datenbank schon dabei). Weder Anforderung
+noch Download werden protokolliert; die Mail landet allerdings im
+Gesendet-Ordner des Absenderkontos.
+
+> **DSGVO:** Die Datei enthält alle personenbezogenen Daten. Nur verschlüsselt
+> aufbewahren, nicht weitergeben und spätestens nach 14 Tagen löschen.
+
+Wiederherstellen auf der Konsole — **überschreibt** alle Tabellen der
+Zieldatenbank. `?schema=public` aus der `DATABASE_URL` weglassen, `pg_restore`
+kennt den Parameter nicht:
+
+```bash
+pm2 stop wiphy
+pg_restore --clean --if-exists --no-owner --no-privileges \
+  -d "postgresql://wiphy_admin:PASSWORT@localhost:5432/wiphy" \
+  wiphy-backup-2026-10-18-12-00.dump
+pnpm exec prisma migrate deploy   # nur nötig, wenn der Code neuer als das Backup ist
+pm2 start wiphy
+```
+
+`pg_restore` muss mindestens die Version von `pg_dump` haben, mit der das
+Backup erstellt wurde. Inhalt prüfen ohne Wiederherstellen:
+`pg_restore --list wiphy-backup-….dump`.

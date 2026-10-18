@@ -94,6 +94,7 @@ model User {
   /// für sie braucht) endet. Admins heben die Sperre im Adminbereich auf.
   loginDisabled     Boolean     @default(false)
   terminations      MembershipTermination[]
+  backupToken       BackupToken?
 
   @@index([registrationPendingSince])
 }
@@ -364,6 +365,16 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+/// Einmal-Link für das Datenbank-Backup (`/dashboard/server`). Eine Zeile je
+/// Admin: ein neuer Link überschreibt den alten, eingelöst wird die Zeile
+/// gelöscht. Bewusst kein Protokoll — nach Einlösen oder Ablauf bleibt nichts.
+model BackupToken {
+  userId  String   @id
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token   String   @unique
+  expires DateTime
 }
 
 model EmailVerificationToken {

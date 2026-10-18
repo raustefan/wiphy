@@ -3,7 +3,7 @@ import test from "node:test";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { cpuPercent, parseMemAvailable, readTail } from "../src/lib/server/serverStatus";
+import { cpuPercent, parseMemAvailable, pgEnv, readTail } from "../src/lib/server/serverStatus";
 
 test("cpuPercent measures busy share between two samples", () => {
   assert.equal(cpuPercent({ idle: 100, total: 200 }, { idle: 150, total: 400 }), 75);
@@ -21,4 +21,16 @@ test("readTail returns the end of a file without the cut-off first line", async 
   await writeFile(file, "first line\nsecond\nthird\n");
   assert.equal(await readTail(file, 10), "third\n");
   assert.equal(await readTail(file, 1000), "first line\nsecond\nthird\n");
+});
+
+test("pgEnv turns Prisma's DATABASE_URL into libpq variables without ?schema", () => {
+  assert.deepEqual(pgEnv("postgresql://wiphy%40admin:p%40ss%2Fword@db.local:6543/wiphy?schema=public&sslmode=require"), {
+    PGHOST: "db.local",
+    PGPORT: "6543",
+    PGUSER: "wiphy@admin",
+    PGPASSWORD: "p@ss/word",
+    PGDATABASE: "wiphy",
+    PGSSLMODE: "require",
+  });
+  assert.equal(pgEnv("postgresql://u:p@localhost/wiphy?schema=public").PGPORT, "5432");
 });

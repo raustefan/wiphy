@@ -17,7 +17,7 @@ export default async function ServerPage() {
             <DashboardPageHeader
                 eyebrow="Admin"
                 title="Server"
-                description="Aktuelle Auslastung des Servers und Deploy der Website per Knopfdruck."
+                description="Aktuelle Auslastung des Servers, Deploy der Website per Knopfdruck und Datenbank-Backup."
                 backHref="/dashboard"
             />
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, Rocket, WifiOff, XCircle } from "lucide-react";
-import { Badge, Button, Callout, Card, Dialog, DialogFooter, SectionTitle } from "@/components/ui";
+import { AlertTriangle, CheckCircle2, Download, Loader2, Mail, Rocket, WifiOff, XCircle } from "lucide-react";
+import { PasswordInput } from "@/components/PasswordField";
+import { Badge, Button, Callout, Card, Dialog, DialogFooter, Field, SectionTitle } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { formatNumber } from "@/lib/format";
 import type { AppLogs, DeployStatus, SystemStats } from "@/lib/server/serverStatus";
-import { triggerDeploy } from "./actions";
+import { requestBackupLink, triggerDeploy } from "./actions";
 import { UsageChart, type UsagePoint } from "./UsageChart";
 
 const INTERVAL_SECONDS = 1;
@@ -132,6 +133,8 @@ export function ServerDashboard() {
       <LogsSection logs={logs} />
 
       <DeploySection deploy={deploy} onStarted={poll} />
+
+      <BackupSection />
     </div>
   );
 }
@@ -293,6 +296,85 @@ function DeploySection({ deploy, onStarted }: { deploy: DeployStatus | null; onS
             Jetzt deployen
           </Button>
         </DialogFooter>
+      </Dialog>
+    </section>
+  );
+}
+
+function BackupSection() {
+  const [confirming, setConfirming] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const form = useActionForm(requestBackupLink, {
+    onSuccess: (data) => {
+      setConfirming(false);
+      setSentTo(data?.sentTo ?? null);
+    },
+  });
+
+  return (
+    <section className="grid gap-4">
+      <SectionTitle>Backup</SectionTitle>
+
+      <Card className="grid gap-4 p-5">
+        <p className="text-sm text-muted text-pretty">
+          Die komplette Datenbank als <code>pg_dump</code>-Archiv — alle Mitglieder, Bankdaten,
+          Passwort-Hashes, Bilder und Nachrichten. Nach der Passwortabfrage kommt ein kurz gültiger
+          Einmal-Link per E-Mail. Wiederherstellen lässt sich das Archiv auf der Konsole mit{" "}
+          <code>pg_restore</code> (siehe README).
+        </p>
+
+        {sentTo && (
+          <Callout tone="success" icon={<Mail size={16} />} title="Link verschickt">
+            Der Download-Link ist unterwegs an {sentTo}. Öffne ihn in diesem Browser, solange du
+            angemeldet bist.
+          </Callout>
+        )}
+
+        <Button
+          type="button"
+          color="danger"
+          className="justify-self-start"
+          onClick={() => setConfirming(true)}
+        >
+          <Download size={16} aria-hidden="true" />
+          Backup anfordern
+        </Button>
+      </Card>
+
+      <Dialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="Komplettes Backup anfordern?"
+        description="Bitte bestätige mit deinem Passwort. Der Link kommt per E-Mail."
+      >
+        <form action={form.submit}>
+          <div className="grid gap-3 text-sm">
+            <Callout tone="warning" icon={<AlertTriangle size={16} />} title="Datenschutz (DSGVO)">
+              Die Datei enthält alle personenbezogenen Daten des Vereins. Speichere sie nur
+              verschlüsselt, gib sie nicht weiter und lösche sie, sobald du sie nicht mehr brauchst
+              — spätestens nach 14 Tagen. Wer im Verein gelöscht wird, steckt sonst weiter in deiner
+              Kopie (Art. 5 Abs. 1 lit. e und Art. 17 DSGVO).
+            </Callout>
+            <Field label="Passwort" htmlFor="backup-password" required>
+              <PasswordInput id="backup-password" name="password" autoComplete="current-password" required />
+            </Field>
+            {form.feedback}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="soft"
+              color="neutral"
+              onClick={() => setConfirming(false)}
+              disabled={form.pending}
+            >
+              Abbrechen
+            </Button>
+            <Button type="submit" color="danger" loading={form.pending}>
+              Link senden
+            </Button>
+          </DialogFooter>
+        </form>
       </Dialog>
     </section>
   );

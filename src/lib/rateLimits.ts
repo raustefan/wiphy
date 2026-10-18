@@ -141,7 +141,7 @@ export const RATE_LIMITS = {
     blockMs: 15 * MINUTE,
     message: "Zu viele Versuche. Bitte versuche es in 15 Minuten erneut.",
     description:
-      "Passwortbestätigungen für Kündigung, Zugangssperre und Kontolöschung pro Konto (inklusive falscher Eingaben).",
+      "Passwortbestätigungen für Kündigung, Zugangssperre, Kontolöschung und Datenbank-Backup pro Konto (inklusive falscher Eingaben).",
   },
   "admin-mail": {
     limit: 250,

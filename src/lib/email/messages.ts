@@ -49,6 +49,31 @@ export function emailChangeMessage(verificationUrl: string): EmailMessage {
   };
 }
 
+export function backupLinkMessage(url: string, minutes: number): EmailMessage {
+  return {
+    subject: "Dein Datenbank-Backup",
+    preheader: "Einmal-Link zum Herunterladen des kompletten Backups.",
+    blocks: [
+      { type: "text", content: "Hallo," },
+      {
+        type: "text",
+        content:
+          "du hast im Server-Dashboard ein komplettes Datenbank-Backup angefordert. Der Link funktioniert nur einmal und nur, solange du mit deinem Konto angemeldet bist:",
+      },
+      { type: "button", label: "Backup herunterladen", url },
+      {
+        type: "text",
+        content:
+          "Die Datei enthält alle personenbezogenen Daten des Vereins. Bewahre sie nur verschlüsselt auf, gib sie nicht weiter und lösche sie spätestens nach 14 Tagen (DSGVO).",
+      },
+      {
+        type: "text",
+        content: `Der Link ist ${minutes} Minuten gültig. Warst du das nicht? Dann kennt jemand dein Passwort — ändere es sofort.`,
+      },
+    ],
+  };
+}
+
 /**
  * Hinweis nach jeder Passwortänderung. Der einfachste Weg, eine Kontoübernahme
  * zu bemerken: wer das nicht selbst war, erfährt es sofort.

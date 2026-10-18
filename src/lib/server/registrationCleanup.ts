@@ -65,6 +65,7 @@ export async function pruneUnverifiedRegistrations(force = false): Promise<numbe
     const nowDate = new Date(now);
     await prisma.emailVerificationToken.deleteMany({ where: { expires: { lt: nowDate } } });
     await prisma.passwordResetToken.deleteMany({ where: { expires: { lt: nowDate } } });
+    await prisma.backupToken.deleteMany({ where: { expires: { lt: nowDate } } });
 
     // Wer die Bestätigung abgeschaltet hat, darf niemanden dafür löschen, dass
     // er sie nicht durchführen konnte. Der eigene Schalter erlaubt es
