@@ -7,7 +7,7 @@ import { CheckCircle2, MailCheck, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
-import { postJson } from "@/lib/client/postJson";
+import { verifyEmail } from "./actions";
 import {
     MEMBERSHIP_APPLICATION_PATH,
     MEMBERSHIP_JOURNEY_MARKER,
@@ -25,11 +25,7 @@ function VerifyEmailContent() {
 
     const form = useActionForm(
         (formData) =>
-            postJson(
-                "/api/auth/verify-email",
-                { token: formData.get("token") },
-                "Fehler bei der E-Mail-Bestätigung.",
-            ),
+            verifyEmail(String(formData.get("token") ?? "")),
         { featureLabel: "E-Mail-Verifizierung", onSuccess: () => {
             setVerified(true);
             // Nach einer Adressänderung ist die Sitzung serverseitig schon entwertet.

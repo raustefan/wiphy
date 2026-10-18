@@ -72,18 +72,22 @@ export default async function HomePage() {
       <section aria-labelledby="hero-title" className="relative isolate overflow-hidden">
         <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
         <Frame className="grid items-end gap-10 pt-10 pb-14 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-14 lg:pt-20 lg:pb-20">
-          <div data-observer className="min-w-0">
-            <h1 id="hero-title" className="display text-[clamp(3.25rem,7.6vw,6.5rem)] hyphens-manual max-lg:text-[clamp(3.25rem,13vw,6.5rem)]">
+          <div data-observer className="@container min-w-0">
+            {/* Unter lg passt die Größe „WirtschaftsPhysik“ genau in eine Zeile
+                (Wortbreite ≈ 7,65 × Schriftgröße, plus Luft) — die Wortmarke
+                bricht dort nicht mehr als „Wirtschafts-/Physik“. Das &shy;
+                bleibt als Netz für breitere Ersatzschriften. */}
+            <h1 id="hero-title" className="display text-[clamp(3.25rem,7.6vw,6.5rem)] hyphens-manual max-lg:text-[min(12.6cqi,6.5rem)]">
               <span className="block">Wirtschafts&shy;Physik</span>
               <span className="block">Alumni</span>
             </h1>
             <p className="mt-4 font-serif text-xl text-physics italic sm:text-2xl">
-              e. V. an der Universität Ulm, seit 2004
+              e. V. an der Universität Ulm, seit&nbsp;2004
             </p>
             <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty">
               Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
               <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
-              <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a> — mit Stammtischen, Vorträgen und Exkursionen, und mit der
+              <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen, und mit der
               Überzeugung, dass sich Märkte mit den Werkzeugen der Physik verstehen lassen.
             </p>
             <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">

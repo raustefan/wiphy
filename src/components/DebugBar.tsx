@@ -64,7 +64,7 @@ export async function DebugBar() {
             <div
                 role="region"
                 aria-label="Debug-Leiste"
-                className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 h-10 border-t border-amber-400/40 bg-zinc-950/95 font-mono text-xs text-zinc-300 shadow-[0_-8px_24px_-12px_rgba(251,191,36,0.35)] backdrop-blur md:bottom-0"
+                className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 h-10 border-t border-amber-400/40 bg-zinc-950/95 font-mono text-xs text-zinc-300 shadow-[0_-8px_24px_-12px_rgba(251,191,36,0.35)] backdrop-blur lg:bottom-0"
             >
                 {/* Nur die Mitte scrollt; Kennung und Knöpfe bleiben bei jeder
                     Fensterbreite sichtbar. */}

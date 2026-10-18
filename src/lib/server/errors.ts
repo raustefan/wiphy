@@ -33,6 +33,9 @@ export function mapErrorToActionResult(error: unknown): ActionResult {
     return { ok: false, code: "VALIDATION_ERROR", message: msg };
   }
 
+  // Alles andere ist ein echter Fehler — beim Client kommt nur die
+  // allgemeine Meldung an, also muss er wenigstens im Server-Log stehen.
+  console.error(error);
   return {
     ok: false,
     code: "INTERNAL_ERROR",

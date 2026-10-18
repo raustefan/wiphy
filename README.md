@@ -33,7 +33,7 @@ Voraussetzungen: **Node.js** (aktuelle LTS), **pnpm**, eine erreichbare
 pnpm install
 
 # 2. .env anlegen (siehe "Umgebungsvariablen" unten für alle Werte)
-cp .env.example .env   # falls vorhanden, sonst .env von Hand anlegen
+cp .env.example .env
 
 # 3. Datenbankschema anlegen
 npx prisma db push
@@ -178,7 +178,6 @@ Alle Variablen gehören in eine `.env`-Datei im Projektwurzelverzeichnis.
 | `EMAIL_FROM`                | ✅       | Absenderadresse ausgehender Mails                                        |
 | `MAIL_SERVICE`              | optional | `GmailWorkspace` für den Gmail-Versandweg, sonst generisches SMTP        |
 | `SMTP_HOST` / `SMTP_PORT`   | wenn nicht `GmailWorkspace` | Generische SMTP-Zugangsdaten                          |
-| `SEPA_CREDITOR_ID/NAME/IBAN/BIC` | optional | Gläubigerdaten für SEPA-Lastschriftmandate im Aufnahmeantrag    |
 | `SECURITY_LOG_PEPPER`       | optional | Pseudonymisiert IP/E-Mail im Sicherheitsprotokoll; fällt sonst auf `NEXTAUTH_SECRET` zurück |
 | `NEXT_PUBLIC_SITE_URL`      | optional | Öffentliche Adresse für Sitemap, `robots.txt`, RSS, Link-Vorschauen; fällt sonst auf `NEXTAUTH_URL` zurück |
 

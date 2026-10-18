@@ -5,7 +5,7 @@ import { KeyRound, MailCheck } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { Button, Callout, Field, Input } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
-import { postJson } from "@/lib/client/postJson";
+import { requestPasswordReset } from "./actions";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -13,11 +13,7 @@ export default function ForgotPasswordPage() {
 
     const form = useActionForm(
         (formData) =>
-            postJson(
-                "/api/auth/forgot-password",
-                { email: formData.get("email") },
-                "Es gab ein Problem beim Senden der E-Mail.",
-            ),
+            requestPasswordReset(String(formData.get("email") ?? "")),
         { featureLabel: "Passwort zurücksetzen", onSuccess: () => setSent(true) },
     );
 

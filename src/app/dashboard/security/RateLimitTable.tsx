@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { X } from "lucide-react";
 import { removeRateLimitEntry } from "./actions";
-import { getRateLimitDescription } from "./rateLimitDescriptions";
+import { describeRateLimit } from "@/lib/rateLimits";
 import { InfoTooltip } from "./InfoTooltip";
 import { formatDate } from "@/lib/format";
 import {
@@ -34,7 +34,7 @@ export function RateLimitTable({ summary, entries }: RateLimitTableProps) {
     const now = new Date();
 
     function showInfo(bucket: string) {
-        setActiveInfo({ bucket, text: getRateLimitDescription(bucket) });
+        setActiveInfo({ bucket, text: describeRateLimit(bucket) });
     }
 
     function hideInfo() {

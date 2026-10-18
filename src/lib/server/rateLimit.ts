@@ -1,20 +1,14 @@
 import { createHash } from "crypto";
 import { AppError } from "@/lib/server/errors";
 import { prisma } from "@/lib/prisma";
+import { RATE_LIMITS, type RateLimitBucket } from "@/lib/rateLimits";
 
 // Weiterhin von hier aus zu importieren: die Aufrufer holen sich Adresse und
 // Limit in einem Zug. Die Funktion selbst liegt in einer eigenen Datei, damit
 // sie ohne `next/headers` und Datenbank testbar bleibt.
 export { extractClientIp } from "@/lib/server/clientIp";
 
-type RateLimitOptions = {
-  bucket: string;
-  keyParts: Array<string | null | undefined>;
-  limit: number;
-  windowMs: number;
-  blockMs?: number;
-  message: string;
-};
+type KeyParts = Array<string | null | undefined>;
 
 function normalizeKeyPart(value: string | null | undefined) {
   return (value ?? "")
@@ -22,7 +16,7 @@ function normalizeKeyPart(value: string | null | undefined) {
     .toLowerCase();
 }
 
-function hashKey(parts: Array<string | null | undefined>) {
+function hashKey(parts: KeyParts) {
   const normalized = parts.map(normalizeKeyPart).join("|");
   return createHash("sha256").update(normalized).digest("hex");
 }
@@ -31,18 +25,13 @@ function now() {
   return Date.now();
 }
 
-function makeStoreKey(bucket: string, keyParts: Array<string | null | undefined>) {
+function makeStoreKey(bucket: string, keyParts: KeyParts) {
   return `${bucket}:${hashKey(keyParts)}`;
 }
 
-export async function consumeRateLimit({
-  bucket,
-  keyParts,
-  limit,
-  windowMs,
-  blockMs = windowMs,
-  message,
-}: RateLimitOptions) {
+/** Grenze, Fenster, Sperrdauer und Meldung stehen je Bucket in `RATE_LIMITS`. */
+export async function consumeRateLimit(bucket: RateLimitBucket, keyParts: KeyParts) {
+  const { limit, windowMs, blockMs, message } = RATE_LIMITS[bucket];
   const currentTime = new Date(now());
   const resetAt = new Date(currentTime.getTime() + windowMs);
 
@@ -79,7 +68,7 @@ export async function consumeRateLimit({
   }
 }
 
-export async function resetRateLimit(bucket: string, keyParts: Array<string | null | undefined>) {
+export async function resetRateLimit(bucket: RateLimitBucket, keyParts: KeyParts) {
   await prisma.rateLimitEntry.delete({ where: { key: makeStoreKey(bucket, keyParts) } }).catch(() => {
     // Missing records are harmless: a successful login may be the first attempt in the window.
   });

@@ -58,7 +58,7 @@ export async function updateOwnBankDetails(
 /**
  * Fordert die Änderung der eigenen Adresse an (`/dashboard/konto`). Geändert
  * wird hier noch nichts: erst der Klick auf den Link an die neue Adresse setzt
- * sie (`/api/auth/verify-email`) und meldet dabei alle Sitzungen ab.
+ * sie (`verify-email/actions.ts`) und meldet dabei alle Sitzungen ab.
  *
  * Das aktuelle Passwort ist Pflicht: wer die Adresse ändert, kann danach per
  * „Passwort vergessen“ das Passwort setzen. Eine übernommene Session allein
@@ -80,14 +80,7 @@ export async function requestEmailChange(userId: string, email: string, currentP
   // Pro Konto: bremst das Raten des Passworts über dieses Formular und den
   // Versand von Bestätigungsmails an frei gewählte Adressen.
   try {
-    await consumeRateLimit({
-      bucket: "email-change",
-      keyParts: [user.id],
-      limit: 5,
-      windowMs: 60 * 60 * 1000,
-      blockMs: 60 * 60 * 1000,
-      message: "Zu viele Versuche, die E-Mail-Adresse zu ändern.",
-    });
+    await consumeRateLimit("email-change", [user.id]);
   } catch (error) {
     if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
       await logSecurityEvent({ type: "EMAIL_CHANGE", outcome: "BLOCKED", reason: "rate_limited", userId: user.id });

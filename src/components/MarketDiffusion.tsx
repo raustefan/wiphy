@@ -104,9 +104,11 @@ export default function MarketDiffusion() {
   // Ein Vola-Wechsel wirkt so live auf die Zukunft, während die Vergangenheit
   // stehen bleibt: genau das macht den Unterschied sichtbar.
   const sigmaRef = useRef(sigma);
-  sigmaRef.current = sigma;
   const pathCountRef = useRef(pathCount);
-  pathCountRef.current = pathCount;
+  useEffect(() => {
+    sigmaRef.current = sigma;
+    pathCountRef.current = pathCount;
+  }, [sigma, pathCount]);
   const pointer = useRef({ x: -1, inside: false });
 
   useEffect(() => {

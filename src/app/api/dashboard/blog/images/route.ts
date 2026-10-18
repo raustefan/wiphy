@@ -12,9 +12,8 @@ import { MAX_BLOG_IMAGE_UPLOAD_BYTES } from "@/lib/blogImages";
  *
  * Bewusst eine Route und keine Serveraktion: Serveraktionen haben in Next eine
  * Größengrenze für den Request-Body (Standard 1 MB), an der ein Foto scheitern
- * würde, bevor die Verkleinerung überhaupt zum Zug kommt. Die Antwort folgt
- * demselben Schema wie `/api/auth/*`, damit `postJson`-artige Aufrufer den
- * abgeschalteten Feature-Flag als `FEATURE_DISABLED` wiedererkennen.
+ * würde, bevor die Verkleinerung überhaupt zum Zug kommt. Ein abgeschalteter
+ * Feature-Flag kommt als `code: "FEATURE_DISABLED"` zurück.
  */
 export async function POST(request: Request) {
   const user = await getOptionalUser();

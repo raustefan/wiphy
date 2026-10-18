@@ -46,7 +46,7 @@ export default function Footer() {
       {/* Telefon: nur das Pflichtprogramm. Die Navigation steckt dort schon in
           Daumenleiste und „Mehr“-Menü — eine volle Linkliste darunter ließe
           die Seite wie eine Website statt wie eine App wirken. */}
-      <div className="flex flex-col items-center gap-2 px-4 pt-2 pb-4 text-xs text-muted md:hidden">
+      <div className="flex flex-col items-center gap-2 px-4 pt-2 pb-4 text-xs text-muted lg:hidden">
         <p>© {year} WirtschaftsPhysik Alumni e. V.</p>
         <div className="flex flex-wrap justify-center gap-2">
           <GravityTrigger />
@@ -65,7 +65,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto hidden w-full max-w-[80rem] px-8 pt-10 pb-12 md:block">
+      <div className="mx-auto hidden w-full max-w-[80rem] px-8 pt-10 pb-12 lg:block">
         <div className="grid grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] gap-10">
           <div className="grid content-start gap-5">
             <Image

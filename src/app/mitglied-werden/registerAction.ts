@@ -75,14 +75,7 @@ export async function registerUser(formData: FormData) {
         try {
             // Per-IP cap first: stops spraying many different emails from one IP,
             // which the per-(IP, email) bucket below can't catch on its own.
-            await consumeRateLimit({
-                bucket: "register-ip",
-                keyParts: [clientIp],
-                limit: 10,
-                windowMs: 60 * 60 * 1000,
-                blockMs: 60 * 60 * 1000,
-                message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
-            });
+            await consumeRateLimit("register-ip", [clientIp]);
         } catch (error) {
             await logAttempt("BLOCKED", "rate_limited");
             throw error;
@@ -105,14 +98,7 @@ export async function registerUser(formData: FormData) {
         }
 
         try {
-            await consumeRateLimit({
-                bucket: "register",
-                keyParts: [clientIp, email],
-                limit: 3,
-                windowMs: 60 * 60 * 1000,
-                blockMs: 60 * 60 * 1000,
-                message: "Zu viele Registrierungsversuche. Bitte versuche es in einer Stunde erneut.",
-            });
+            await consumeRateLimit("register", [clientIp, email]);
         } catch (error) {
             await logAttempt("BLOCKED", "rate_limited");
             throw error;
@@ -178,7 +164,7 @@ export async function registerUser(formData: FormData) {
 
         // Hier geht *nur* die Bestätigungsmail an den Anmelder raus. Die
         // Benachrichtigung der Admins verschickt erst der Klick auf den
-        // Bestätigungslink (siehe `api/auth/verify-email`): eine erfundene
+        // Bestätigungslink (siehe `verify-email/actions.ts`): eine erfundene
         // Adresse erzeugt sonst eine Mail an den ganzen Vorstand, und genau das
         // macht das Formular als Spam-Verstärker interessant.
         // Nach der Antwort — der Weg für eine schon registrierte Adresse

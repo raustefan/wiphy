@@ -81,34 +81,13 @@ export async function submitContactRequest(formData: FormData) {
         }
 
         try {
-            await consumeRateLimit({
-                bucket: "contact-ip",
-                keyParts: [clientIp],
-                limit: 3,
-                windowMs: 60 * 60 * 1000,
-                blockMs: 6 * 60 * 60 * 1000,
-                message: "Zu viele Anfragen von dieser Verbindung. Bitte versuche es später erneut.",
-            });
+            await consumeRateLimit("contact-ip", [clientIp]);
 
-            await consumeRateLimit({
-                bucket: "contact-email",
-                keyParts: [input.email],
-                limit: 3,
-                windowMs: 24 * 60 * 60 * 1000,
-                blockMs: 24 * 60 * 60 * 1000,
-                message: "Für diese E-Mail-Adresse liegen bereits mehrere Anfragen vor. Bitte warte unsere Antwort ab.",
-            });
+            await consumeRateLimit("contact-email", [input.email]);
 
             // Global cap: a distributed botnet defeats the per-IP bucket entirely,
             // but this still protects the SMTP quota.
-            await consumeRateLimit({
-                bucket: "contact-global",
-                keyParts: ["all"],
-                limit: 5,
-                windowMs: 60 * 60 * 1000,
-                blockMs: 60 * 60 * 1000,
-                message: "Das Kontaktformular ist momentan überlastet. Bitte versuche es später erneut.",
-            });
+            await consumeRateLimit("contact-global", ["all"]);
         } catch (error) {
             await logAttempt("BLOCKED", "rate_limited");
             throw error;

@@ -36,14 +36,7 @@ export async function submitMembershipApplication(formData: FormData) {
     const currentUser = await requireUser();
     await requireFeatureEnabled("MEMBERSHIP_APPLICATION");
 
-    await consumeRateLimit({
-      bucket: "membership-application",
-      keyParts: [currentUser.id],
-      limit: 5,
-      windowMs: 24 * 60 * 60 * 1000,
-      blockMs: 24 * 60 * 60 * 1000,
-      message: "Zu viele Versuche. Bitte versuche es morgen erneut oder wende dich an den Vorstand.",
-    });
+    await consumeRateLimit("membership-application", [currentUser.id]);
 
     // `studentYears` kommt als Mehrfachwert und passt deshalb nicht durch
     // `parseFormData`, das pro Schlüssel nur einen String übernimmt.

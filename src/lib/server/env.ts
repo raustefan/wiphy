@@ -1,3 +1,4 @@
+import "server-only";
 import { AppError } from "./errors";
 
 function readRequiredEnv(name: string) {

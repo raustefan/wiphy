@@ -212,7 +212,7 @@ html[data-theme-appearance="dark"] {
     scroll-padding-top: 5rem;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     html {
       scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
     }

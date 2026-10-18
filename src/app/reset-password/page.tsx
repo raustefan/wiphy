@@ -8,7 +8,7 @@ import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
 import { Button, ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
-import { postJson } from "@/lib/client/postJson";
+import { resetPassword } from "./actions";
 
 function ResetPasswordForm() {
     const searchParams = useSearchParams();
@@ -20,11 +20,7 @@ function ResetPasswordForm() {
 
     const form = useActionForm(
         (formData) =>
-            postJson(
-                "/api/auth/reset-password",
-                { token, password: formData.get("password") },
-                "Fehler beim Zurücksetzen des Passworts.",
-            ),
+            resetPassword(token, String(formData.get("password") ?? "")),
         { featureLabel: "Passwort zurücksetzen", onSuccess: () => {
             setDone(true);
             // Der Server hat die Sitzung schon entwertet; das räumt das Cookie weg.

@@ -129,7 +129,6 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- misst das Layout nach dem Seitenwechsel
     placeNeedle(null);
     const header = headerRef.current;
     if (!header) return;
@@ -164,7 +163,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           "sticky top-0 z-40 bg-background",
           // Als installierte App übernimmt auf dem Telefon die Daumenleiste die
           // Navigation; die Kopfzeile wäre nur doppelter Fensterrahmen.
-          "standalone:max-md:hidden",
+          "standalone:max-lg:hidden",
         )}
       >
         <div className="mx-auto flex h-16 w-full max-w-[80rem] items-center justify-between gap-4 px-5 sm:px-8">
@@ -186,7 +185,8 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
               className="h-[25px] w-12 shrink-0"
               priority
             />
-            <span className="font-serif text-[1.0625rem] leading-none font-medium tracking-tight whitespace-nowrap">
+            {/* Bis xl ist neben dem vollen Menü nur Platz fürs Logo (Menü ≈ 780 px). */}
+            <span className="font-serif text-[1.0625rem] leading-none font-medium tracking-tight whitespace-nowrap lg:max-xl:hidden">
               WirtschaftsPhysik <span className="hidden min-[380px]:inline">Alumni</span>
             </span>
           </Link>
@@ -194,14 +194,14 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           {/* Navigation (Desktop) */}
           <nav
             ref={navRef}
-            className="hidden items-center gap-6 md:flex lg:gap-8"
+            className="hidden items-center gap-8 lg:flex"
             aria-label="Hauptnavigation"
             onPointerLeave={() => placeNeedle(null)}
             onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget as Node)) placeNeedle(null);
             }}
           >
-            <ul className="flex items-center gap-4 lg:gap-6">
+            <ul className="flex items-center gap-6">
               {links.map((link) => {
                 const active = pathname.startsWith(link.href);
                 return (
@@ -224,7 +224,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                 );
               })}
             </ul>
-            <div className="flex items-center gap-2 border-l border-line pl-4 lg:pl-6">
+            <div className="flex items-center gap-2 border-l border-line pl-6">
               <ThemeToggle />
               {signedIn ? (
                 <Link href={signedInAction.href} className="cta cta-solid min-h-10 px-4 text-sm">
@@ -250,7 +250,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           </nav>
 
           {/* Mobil: Navigation sitzt unten in der Daumenleiste */}
-          <ThemeToggle className="md:hidden" />
+          <ThemeToggle className="lg:hidden" />
         </div>
 
         {/* Skala als Unterkante: Feinstriche, eine Grundlinie, die sich mit dem
@@ -260,7 +260,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           <div className="absolute inset-x-0 bottom-0 h-px bg-line-strong" />
           <div className="scroll-fill absolute inset-x-0 bottom-0 h-px bg-physics" />
           <span
-            className="needle absolute bottom-0 left-0 hidden h-[15px] w-0.5 bg-physics md:block"
+            className="needle absolute bottom-0 left-0 hidden h-[15px] w-0.5 bg-physics lg:block"
             style={{
               transform: `translateX(${needle.x - 1}px)`,
               opacity: needle.on ? 1 : 0,
@@ -273,7 +273,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
       {/* Daumenleiste (Mobil) */}
       <nav
         aria-label="Schnellnavigation"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line-strong bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-line-strong bg-background pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] lg:hidden"
       >
         <div className="grid h-16 grid-cols-5">
           {tabs.map(({ href, label, icon: Icon }) => {
@@ -328,7 +328,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           // meldet das Dokument im geschlossenen Zustand die Breite des
           // off-canvas geschobenen Drawers. `clip` statt `hidden`, damit der
           // Container auch per Fokus nicht seitwärts gescrollt werden kann.
-          "fixed inset-0 z-50 overflow-clip md:hidden",
+          "fixed inset-0 z-50 overflow-clip lg:hidden",
           menuOpen ? "visible" : "pointer-events-none invisible",
         )}
       >

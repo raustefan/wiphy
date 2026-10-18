@@ -38,25 +38,11 @@ export async function resendVerificationEmail(email: string) {
         const requestHeaders = await headers();
         const clientIp = extractClientIp(requestHeaders);
 
-        await consumeRateLimit({
-            bucket: "resend-verification-ip",
-            keyParts: [clientIp],
-            limit: 10,
-            windowMs: 60 * 60 * 1000,
-            blockMs: 60 * 60 * 1000,
-            message: "Zu viele Anfragen. Bitte versuche es in einer Stunde erneut.",
-        });
+        await consumeRateLimit("resend-verification-ip", [clientIp]);
 
         if (!trimmedEmail) return;
 
-        await consumeRateLimit({
-            bucket: "resend-verification",
-            keyParts: [clientIp, trimmedEmail],
-            limit: 3,
-            windowMs: 60 * 60 * 1000,
-            blockMs: 60 * 60 * 1000,
-            message: "Zu viele Anfragen. Bitte versuche es in einer Stunde erneut.",
-        });
+        await consumeRateLimit("resend-verification", [clientIp, trimmedEmail]);
 
         const user = await prisma.user.findUnique({ where: { email: trimmedEmail } });
         if (!user || user.emailVerified) return;

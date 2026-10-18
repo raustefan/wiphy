@@ -6,7 +6,7 @@ import type { BadgeTone } from "@/components/ui";
  *
  * Frei von Server-Imports (nur Typen, die beim Kompilieren verschwinden), damit
  * auch Client-Komponenten sie nutzen können — nach demselben Muster wie
- * `rateLimitDescriptions`.
+ * `@/lib/rateLimits`.
  */
 
 type TypeLabel = {

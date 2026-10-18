@@ -10,14 +10,7 @@ import { deleteUserById } from "@/lib/server/repositories/userRepository";
  * jeden Versuch, damit sich darüber kein Passwort raten lässt.
  */
 export async function verifyPasswordForAccountAction(userId: string, password: string) {
-  await consumeRateLimit({
-    bucket: "account-action",
-    keyParts: [userId],
-    limit: 5,
-    windowMs: 15 * 60 * 1000,
-    blockMs: 15 * 60 * 1000,
-    message: "Zu viele Versuche. Bitte versuche es in 15 Minuten erneut.",
-  });
+  await consumeRateLimit("account-action", [userId]);
 
   const user = await prisma.user.findUnique({
     where: { id: userId },

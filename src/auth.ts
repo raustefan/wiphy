@@ -96,23 +96,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 try {
                     // Per-IP cap first: stops credential spraying across many different
                     // emails from one IP, which the per-(IP, email) bucket below can't catch.
-                    await consumeRateLimit({
-                        bucket: "login-ip",
-                        keyParts: ipRateLimitKey,
-                        limit: 20,
-                        windowMs: 10 * 60 * 1000,
-                        blockMs: 10 * 60 * 1000,
-                        message: "Zu viele Login-Versuche von dieser Adresse. Bitte versuche es in 10 Minuten erneut.",
-                    });
+                    await consumeRateLimit("login-ip", ipRateLimitKey);
 
-                    await consumeRateLimit({
-                        bucket: "login",
-                        keyParts: rateLimitKey,
-                        limit: 5,
-                        windowMs: 10 * 60 * 1000,
-                        blockMs: 10 * 60 * 1000,
-                        message: "Zu viele Login-Versuche. Bitte versuche es in 10 Minuten erneut.",
-                    });
+                    await consumeRateLimit("login", rateLimitKey);
                 } catch (error) {
                     if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
                         await logAttempt("BLOCKED", "rate_limited");
@@ -137,14 +123,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // erfolgreichen Login, aus demselben Grund.
                 if (email) {
                     try {
-                        await consumeRateLimit({
-                            bucket: "login-account",
-                            keyParts: [email],
-                            limit: 50,
-                            windowMs: 60 * 60 * 1000,
-                            blockMs: 15 * 60 * 1000,
-                            message: "Zu viele Login-Versuche für dieses Konto. Bitte versuche es in 15 Minuten erneut.",
-                        });
+                        await consumeRateLimit("login-account", [email]);
                     } catch (error) {
                         if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
                             await logAttempt("BLOCKED", "rate_limited");

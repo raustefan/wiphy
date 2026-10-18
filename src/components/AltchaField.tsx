@@ -13,7 +13,9 @@ const ALTCHA_STYLE = {
     display: "block",
     width: "100%",
     "--altcha-max-width": "100%",
-    "--altcha-border-radius": "0.75rem",
+    // Wie Eingabefeld (rounded-[3px]) und Checkbox (rounded-[2px]) in ui/Field.tsx.
+    "--altcha-border-radius": "3px",
+    "--altcha-checkbox-border-radius": "2px",
     "--altcha-border-color": "var(--line-strong)",
     "--altcha-color-base": "var(--surface)",
     "--altcha-color-base-content": "var(--foreground)",

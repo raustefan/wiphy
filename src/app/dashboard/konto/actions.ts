@@ -29,14 +29,7 @@ export async function requestPasswordChange() {
         if (!user) throw new AppError("NOT_FOUND", "Konto nicht gefunden.");
 
         try {
-            await consumeRateLimit({
-                bucket: "password-change",
-                keyParts: [user.id],
-                limit: 3,
-                windowMs: 15 * 60 * 1000,
-                blockMs: 15 * 60 * 1000,
-                message: "Zu viele Anfragen. Bitte versuche es in 15 Minuten erneut.",
-            });
+            await consumeRateLimit("password-change", [user.id]);
         } catch (error) {
             if (error instanceof AppError && error.code === "TOO_MANY_REQUESTS") {
                 await logSecurityEvent({ type: "PASSWORD_RESET_REQUEST", outcome: "BLOCKED", reason: "rate_limited", userId: user.id });

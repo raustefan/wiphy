@@ -12,17 +12,6 @@ const nextConfig: NextConfig = {
    */
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "MacBook-Pro-4.local"],
 
-  /**
-   * Die Registrierung und der Aufnahmeantrag sind in der öffentlichen Seite
-   * „Mitglied werden“ aufgegangen. Beide alten Pfade stehen in Lesezeichen,
-   * alten E-Mails und Suchergebnissen und leiten deshalb dauerhaft dorthin
-   * weiter — hier in der Konfiguration statt als Seite mit `redirect()`, weil
-   * nur so ein echter 308 herauskommt und nicht eine gerenderte Seite mit
-   * Meta-Refresh.
-   *
-   * Der Pfad steht bewusst wörtlich da: `next.config` wird außerhalb des
-   * Anwendungs-Bundles ausgewertet und kennt den `@/`-Alias nicht.
-   */
   async headers() {
     return [
       {
@@ -45,6 +34,17 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  /**
+   * Die Registrierung und der Aufnahmeantrag sind in der öffentlichen Seite
+   * „Mitglied werden“ aufgegangen. Beide alten Pfade stehen in Lesezeichen,
+   * alten E-Mails und Suchergebnissen und leiten deshalb dauerhaft dorthin
+   * weiter — hier in der Konfiguration statt als Seite mit `redirect()`, weil
+   * nur so ein echter 308 herauskommt und nicht eine gerenderte Seite mit
+   * Meta-Refresh.
+   *
+   * Der Pfad steht bewusst wörtlich da: `next.config` wird außerhalb des
+   * Anwendungs-Bundles ausgewertet und kennt den `@/`-Alias nicht.
+   */
   async redirects() {
     return [
       { source: "/register", destination: "/mitglied-werden", permanent: true },

@@ -120,7 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         // Platz für die fixe Daumenleiste (nur Telefon), damit sie den Footer
         // nicht verdeckt.
-        className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0"
+        className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
         suppressHydrationWarning
       >
         <OrganizationJsonLd />

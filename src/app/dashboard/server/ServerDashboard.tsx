@@ -62,6 +62,7 @@ export function ServerDashboard() {
 
   const running = deploy?.running ?? false;
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- poll() setzt den State erst nach dem await
     void poll();
     const id = setInterval(() => void poll(), (running ? DEPLOY_INTERVAL_SECONDS : INTERVAL_SECONDS) * 1000);
     return () => clearInterval(id);
