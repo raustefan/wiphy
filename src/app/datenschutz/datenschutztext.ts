@@ -15,7 +15,7 @@ export const DATENSCHUTZ: LegalDocument = [
   {
     blocks: [
       "Diese Datenschutzerklärung informiert Sie nach Art. 13 und 14 der Datenschutz-Grundverordnung (DSGVO) darüber, welche personenbezogenen Daten wir auf dieser Website und im Mitgliederbereich verarbeiten, zu welchem Zweck, auf welcher Rechtsgrundlage und wie lange — und welche Rechte Sie haben. Begriffe wie „personenbezogene Daten“, „Verarbeitung“ oder „Verantwortlicher“ verwenden wir im Sinne von Art. 4 DSGVO.",
-      "Stand: September 2026",
+      "Stand: Oktober 2026",
     ],
   },
   {
@@ -132,7 +132,15 @@ export const DATENSCHUTZ: LegalDocument = [
       "Für die Durchführung der Mitgliedschaft nach der Satzung verarbeiten wir die Daten aus dem Aufnahmeantrag und Ihrem Profil, außerdem die Mitgliedsnummer, das Aufnahmedatum, den Mitgliedsstatus, die Beiträge je Beitragsjahr mit Zahlungsstatus sowie interne Vermerke des Vorstands zu Zahlungs- und Mitgliedschaftsfragen (Art. 6 Abs. 1 lit. b DSGVO). Ihre Profilangaben können Sie im Mitgliederbereich einsehen und selbst ändern.",
       "Bei erteiltem SEPA-Lastschriftmandat übermitteln wir Name, IBAN, BIC, Mandatsreferenz, Mandatsdatum und Betrag zum Einzug der Beiträge an unser kontoführendes Kreditinstitut (Art. 6 Abs. 1 lit. b DSGVO).",
       "Auf Wunsch erstellen wir eine Mitgliedsbescheinigung und Zuwendungsbestätigungen über Ihre Beiträge.",
-      "Mitgliederdaten sehen nur der Vorstand und die von ihm bestimmten Administratoren. Eine Mitgliederliste für andere Mitglieder oder eine Weitergabe an Dritte zu Werbezwecken gibt es nicht.",
+      "Mitgliederdaten sehen nur der Vorstand und die von ihm bestimmten Administratoren. Eine Mitgliederliste für andere Mitglieder oder eine Weitergabe an Dritte zu Werbezwecken gibt es nicht; einzige Ausnahme ist der freiwillige Alumni-Kosmos (siehe dort).",
+    ],
+  },
+  {
+    id: "alumni-kosmos",
+    title: "Alumni-Kosmos",
+    blocks: [
+      "Im Mitgliederbereich können Mitglieder auf der Seite „Alumni-Kosmos“ sehen, wer wann an der Universität war, und so ehemalige Kommilitoninnen und Kommilitonen wiederfinden. Die Teilnahme ist freiwillig und standardmäßig ausgeschaltet. Erst wenn Sie sie einschalten, sehen andere Mitglieder, die ebenfalls teilnehmen, Ihren Vor- und Nachnamen, Ihren Studiengang sowie Beginn und Ende Ihres Studiums aus Ihrem Profil; Ihre E-Mail-Adresse wird erst angezeigt, wenn jemand Sie gezielt anklickt. Hineinsehen kann nur, wer selbst sichtbar ist.",
+      "Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können sie auf derselben Seite jederzeit mit einem Schalter widerrufen; Sie verschwinden dann sofort aus der Ansicht. Wir speichern dafür nur, ob Sie teilnehmen. Bei gesperrtem Zugang, Ende der Mitgliedschaft oder Löschung des Kontos erscheinen Sie nicht mehr. Wer Ihre Adresse abgerufen hat, protokollieren wir nicht; gegen das massenhafte Abrufen begrenzen wir die Zahl der Abrufe je Konto (siehe „Sicherheitsprotokoll und Missbrauchsschutz“).",
     ],
   },
   {

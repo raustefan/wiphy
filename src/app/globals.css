@@ -769,3 +769,190 @@ html[data-high-contrast] .blueprint {
   }
 }
 }
+
+/* ==========================================================================
+   Alumni-Kosmos (/dashboard/kosmos)
+   Tag und Nacht sind zwei Himmel, nicht zwei Farbsätze: tagsüber Wolken,
+   Mond und Kondensstreifen, nachts Milchstraße und Sternschnuppen. Welche
+   Ebene des SVG gilt, schalten `.k-day`/`.k-night`.
+   ========================================================================== */
+.kosmos {
+  --k-ink: #13294b;
+  --k-trail: #ffffff;
+  --k-trail-self: #ffb3c6;
+  --k-head: #ffffff;
+  --k-trail-filter: url(#k-soft);
+  --k-card: rgb(255 255 255 / 0.8);
+  --k-card-line: rgb(255 255 255 / 0.95);
+  --k-cta: #0b6560;
+  --k-cta-ink: #ffffff;
+  background:
+    radial-gradient(ellipse 45% 40% at 92% 100%, #fff4d6, transparent),
+    linear-gradient(180deg, #7fb7f0 0%, #cfe5fa 55%, #ffe2c4 100%);
+  color: var(--k-ink);
+}
+html[data-theme-appearance="dark"] .kosmos {
+  --k-ink: #e9f6ff;
+  --k-trail: #2dd4bf;
+  --k-trail-self: #ec5c86;
+  --k-head: #ffffff;
+  --k-trail-filter: none;
+  --k-card: rgb(8 10 28 / 0.78);
+  --k-card-line: rgb(45 212 191 / 0.4);
+  --k-cta: #2dd4bf;
+  --k-cta-ink: #052e2b;
+  background:
+    radial-gradient(circle at 100% 105%, rgb(11 101 96 / 0.45), transparent 30%),
+    linear-gradient(180deg, #03040b 0%, #0d1233 100%);
+}
+.kosmos .k-night {
+  display: none;
+}
+/* Parallaxe: je tiefer die Ebene, desto langsamer zieht sie vorbei. */
+.kosmos .k-par {
+  transform: translate3d(calc(var(--k-x, 0px) * var(--k-depth) * -1), 0, 0);
+  will-change: transform;
+}
+html[data-theme-appearance="dark"] .kosmos .k-night {
+  display: inline;
+}
+html[data-theme-appearance="dark"] .kosmos .k-day {
+  display: none;
+}
+.kosmos .k-trail {
+  filter: var(--k-trail-filter);
+}
+/* Weiche Ränder zeigen: hier geht die Zeit weiter. */
+.kosmos .k-scroll {
+  mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+}
+.kosmos .k-member {
+  transition: opacity 0.3s ease;
+}
+.kosmos .k-member:focus-visible .k-hit,
+.kosmos .k-cursor:focus-visible .k-pill {
+  stroke: var(--k-ink);
+  stroke-width: 2;
+}
+.kosmos .k-card {
+  background: var(--k-card);
+  border-color: var(--k-card-line);
+  color: var(--k-ink);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+.kosmos .k-cta {
+  background: var(--k-cta);
+  color: var(--k-cta-ink);
+}
+.kosmos .k-card {
+  animation: k-card-in 0.3s ease-out;
+}
+/* Leicht animiert: Sterne funkeln, der Himmel driftet, Spuren fliegen ein,
+   der Cursor federt. Alles bleibt langsam und leise — und entfällt ganz,
+   wenn das System weniger Bewegung wünscht. */
+.kosmos .k-twinkle {
+  animation: k-twinkle 4s ease-in-out infinite;
+}
+.kosmos .k-drift {
+  animation: k-drift 90s ease-in-out infinite alternate;
+}
+.kosmos .k-clouds {
+  animation: k-clouds 120s ease-in-out infinite alternate;
+}
+.kosmos .k-shoot {
+  opacity: 0;
+  animation: k-shoot 13s linear 3s infinite;
+}
+.kosmos .k-move {
+  transition: transform 0.6s var(--spring);
+}
+.kosmos .k-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: k-spin 8s linear infinite;
+}
+.kosmos.k-ready .k-trail {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: k-draw 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s) backwards;
+}
+.kosmos.k-ready .k-head {
+  animation: k-fade 0.6s ease calc(var(--d, 0s) + 0.8s) backwards;
+}
+.kosmos:not(.k-ready) svg[role="group"] {
+  visibility: hidden;
+}
+@keyframes k-twinkle {
+  50% {
+    opacity: 0.15;
+  }
+}
+@keyframes k-drift {
+  to {
+    transform: translate(-40px, 14px);
+  }
+}
+@keyframes k-clouds {
+  to {
+    transform: translateX(-180px);
+  }
+}
+@keyframes k-shoot {
+  0% {
+    opacity: 0;
+    transform: translate(260px, 60px) rotate(20deg);
+  }
+  1.5% {
+    opacity: 1;
+  }
+  7% {
+    opacity: 0;
+    transform: translate(820px, 264px) rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(820px, 264px) rotate(20deg);
+  }
+}
+@keyframes k-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes k-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes k-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes k-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kosmos .k-twinkle,
+  .kosmos .k-drift,
+  .kosmos .k-clouds,
+  .kosmos .k-spin,
+  .kosmos .k-card,
+  .kosmos.k-ready .k-trail,
+  .kosmos.k-ready .k-head {
+    animation: none;
+  }
+  .kosmos .k-shoot {
+    display: none;
+  }
+  .kosmos .k-par {
+    transform: none;
+  }
+  .kosmos .k-member,
+  .kosmos .k-move {
+    transition: none;
+  }
+}

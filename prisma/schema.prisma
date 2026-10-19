@@ -65,6 +65,10 @@ model User {
 
   datensperren Boolean?
   ausschluss   Boolean?
+  /// Einwilligung, im Alumni-Kosmos (/dashboard/kosmos) mit Name,
+  /// Studiengang, Studienzeit und auf Klick E-Mail-Adresse für andere
+  /// Mitglieder sichtbar zu sein, die ebenfalls eingewilligt haben.
+  kosmosSichtbar Boolean @default(false)
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt

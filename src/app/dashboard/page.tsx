@@ -27,6 +27,7 @@ import {
     Server,
     Bug,
     KeyRound,
+    Sparkles,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { ProfileSummary } from "./ProfileSummary";
@@ -334,6 +335,17 @@ export default async function DashboardPage() {
                             description="Ändere dein Passwort oder deine Login-Adresse — bestätigt per Link in deinem Postfach."
                             action="Zugang verwalten"
                         />
+
+                        {!isNonMember && (
+                            <CtaCard
+                                href="/dashboard/kosmos"
+                                icon={<Sparkles size={18} aria-hidden="true" />}
+                                eyebrow="Alumni-Kosmos"
+                                title="Wer war wann an der Uni?"
+                                description="Finde ehemalige Kommilitoninnen und Kommilitonen auf dem Zeitstrahl und schreib ihnen."
+                                action="Kosmos öffnen"
+                            />
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 lg:order-1">

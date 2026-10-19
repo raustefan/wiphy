@@ -294,9 +294,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1791957997.6244445,
-    "seen": 1791958058.34955,
-    "ast_hash": "3396a86461819156c889b14d8439b8a3",
+    "mtime": 1792419631.7149756,
+    "seen": 1792419749.20868,
+    "ast_hash": "c46a0aacd83ab6e15f4088fdad5e0a91",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1790891072.5521078,
-    "seen": 1790891097.801461,
-    "ast_hash": "615e518090534ccc0df32485c426c6df",
+    "mtime": 1792419618.5141914,
+    "seen": 1792419749.209346,
+    "ast_hash": "b07bbdf7a47038ef65c26665691ca5b7",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -666,9 +666,9 @@
     "semantic_hash": "3e667da023325c98c835de412488b71f"
   },
   "src/app/page.tsx": {
-    "mtime": 1792337735.4210565,
-    "seen": 1792337844.937855,
-    "ast_hash": "7152b696556cbf729f72ccb564996247",
+    "mtime": 1792417829.565542,
+    "seen": 1792419749.209743,
+    "ast_hash": "35ea5343d2694030db1e07f4c9ab178c",
     "semantic_hash": ""
   },
   "src/app/reset-password/layout.tsx": {
@@ -2010,9 +2010,9 @@
     "semantic_hash": ""
   },
   "src/lib/rateLimits.ts": {
-    "mtime": 1792339923.800074,
-    "seen": 1792340095.189709,
-    "ast_hash": "841d376a683de14d9adf60034fc56de6",
+    "mtime": 1792419297.1202261,
+    "seen": 1792419749.210915,
+    "ast_hash": "38297bf195206e379cd9fdf6aa067c5e",
     "semantic_hash": ""
   },
   "tests/rateLimits.test.ts": {
@@ -2049,6 +2049,42 @@
     "mtime": 1792340748.8544226,
     "seen": 1792340795.297096,
     "ast_hash": "8f78f159e5fa14966319d3f45686cea1",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/kosmos/KosmosTimeline.tsx": {
+    "mtime": 1792423285.5325363,
+    "seen": 1792423315.040064,
+    "ast_hash": "c8ea1f22d0920a3f8f0ff1a217f6a784",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/kosmos/actions.ts": {
+    "mtime": 1792419420.2225418,
+    "seen": 1792419749.208543,
+    "ast_hash": "e9fd71b3de04ce019ec91d613a6403c0",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/kosmos/page.tsx": {
+    "mtime": 1792423285.5330777,
+    "seen": 1792423315.040102,
+    "ast_hash": "dcdc8d9a9ce46109e2093f4feea5b903",
+    "semantic_hash": ""
+  },
+  "src/lib/kosmos.ts": {
+    "mtime": 1792423285.5327418,
+    "seen": 1792423315.043027,
+    "ast_hash": "9f1e1f0fd0be486860742de4c05f14cd",
+    "semantic_hash": ""
+  },
+  "src/lib/server/services/kosmosService.ts": {
+    "mtime": 1792420701.9081812,
+    "seen": 1792420738.272804,
+    "ast_hash": "9322b994442abb0b4c18f97d73bf985a",
+    "semantic_hash": ""
+  },
+  "tests/kosmos.test.ts": {
+    "mtime": 1792419406.2816243,
+    "seen": 1792419749.211842,
+    "ast_hash": "d5f4ca068e9452d0236b11b8583267fb",
     "semantic_hash": ""
   }
 }

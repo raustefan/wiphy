@@ -150,6 +150,13 @@ export const RATE_LIMITS = {
     message: "Zu viele E-Mails in kurzer Zeit. Bitte warte 10 Minuten und versuche es erneut.",
     description: "Von Admins versendete E-Mails, z. B. Rundmails.",
   },
+  "kosmos-email": {
+    limit: 40,
+    windowMs: HOUR,
+    blockMs: HOUR,
+    message: "Du hast in kurzer Zeit sehr viele Adressen abgerufen. Bitte versuche es in einer Stunde erneut.",
+    description: "Im Alumni-Kosmos abgerufene E-Mail-Adressen pro Konto — gegen das Absaugen der ganzen Liste.",
+  },
 } as const satisfies Record<string, RateLimitRule>;
 
 export type RateLimitBucket = keyof typeof RATE_LIMITS;
