@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { MembershipApplication, Prisma } from "@prisma/client";
+import type { MembershipApplication } from "@prisma/client";
 import { AppError } from "@/lib/server/errors";
 import { planApplicationFees, resolveFeeDefault } from "@/lib/feeDefaults";
 import { annualFee } from "@/lib/feeCalculation";
@@ -270,18 +270,3 @@ export async function withdrawApplication(id: string, userId: string) {
     data: { status: "ZURUECKGEZOGEN", openForUserId: null, decidedAt: new Date() },
   });
 }
-
-export type ApplicationWithUser = Prisma.MembershipApplicationGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        email: true;
-        vorname: true;
-        name: true;
-        status: true;
-        mitgliedId: true;
-      };
-    };
-  };
-}>;

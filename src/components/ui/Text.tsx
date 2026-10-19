@@ -3,31 +3,10 @@ import { cn } from "@/lib/cn";
 /**
  * Typografie-Primitiven.
  *
- * Die drei Klassenketten hier standen vorher rund sechzig Mal wörtlich im
- * Markup. Als Komponenten sind sie an einer Stelle änderbar — und eine Seite
- * kann nicht mehr versehentlich eine halbe Variante davon benutzen.
+ * Die Klassenketten hier standen vorher vielfach wörtlich im Markup. Als
+ * Komponenten sind sie an einer Stelle änderbar — und eine Seite kann nicht
+ * mehr versehentlich eine halbe Variante davon benutzen.
  */
-
-/**
- * Titel in Seitengröße. Standardmäßig ein `h1`; Abschnitte einer Seite, die
- * denselben Schriftgrad tragen, setzen `as="h2"` — pro Seite darf es nur eine
- * `h1` geben.
- */
-export function PageTitle({
-  as: Tag = "h1",
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLHeadingElement> & { as?: "h1" | "h2" }) {
-  return (
-    <Tag
-      className={cn(
-        "headline text-3xl sm:text-4xl",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
 
 /** Abschnittsüberschrift (`h2`). */
 export function SectionTitle({
@@ -37,38 +16,6 @@ export function SectionTitle({
   return (
     <h2
       className={cn("headline text-2xl", className)}
-      {...props}
-    />
-  );
-}
-
-/** Fließtext in Lesegröße. */
-export function Prose({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn(
-        "text-sm leading-relaxed text-muted text-pretty sm:text-base",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
-/** Einleitungstext unter einem Seitentitel — eine Stufe größer als `Prose`. */
-export function Lead({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn(
-        "text-base leading-relaxed text-muted text-pretty sm:text-lg",
-        className,
-      )}
       {...props}
     />
   );

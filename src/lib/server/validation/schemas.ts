@@ -2,7 +2,7 @@ import { z } from "zod";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
 import { parseBerlinLocalInput, startOfBerlinDay } from "@/lib/berlinTime";
-import { birthDateField } from "@/lib/membershipFormSchemas";
+import { addDirectDebitIssues, birthDateField } from "@/lib/membershipFormSchemas";
 
 /**
  * Email addresses are always stored lowercased — `User.email` is case-sensitive
@@ -195,7 +195,7 @@ export const adminCreateUserSchema = registerSchema
       ),
   })
   .superRefine((data, ctx) => {
-    if (data.IBAN && !isValidIban(normalizeIban(data.IBAN))) {
+    if (data.IBAN && !isValidIban(data.IBAN)) {
       ctx.addIssue({ code: "custom", message: "Diese IBAN ist ungültig. Bitte prüfe die Eingabe.", path: ["IBAN"] });
     }
     if (data.BIC && !isValidBic(data.BIC)) {
@@ -554,7 +554,7 @@ export const userUpdateSchema = z
       ),
   })
   .superRefine((data, ctx) => {
-    if (data.IBAN && !isValidIban(normalizeIban(data.IBAN))) {
+    if (data.IBAN && !isValidIban(data.IBAN)) {
       ctx.addIssue({
         code: "custom",
         message: "Diese IBAN ist ungültig. Bitte prüfe die Eingabe.",
@@ -573,8 +573,6 @@ export const userUpdateSchema = z
     ...data,
     IBAN: data.IBAN ? normalizeIban(data.IBAN) : data.IBAN,
   }));
-
-export type UserUpdateParsed = z.infer<typeof userUpdateSchema>;
 
 /**
  * Schema für die Bankdaten-Änderung eines Mitglieds über die
@@ -600,27 +598,7 @@ export const bankUpdateSchema = z
     // Auf dem Lastschriftweg gelten dieselben Pflichten wie im Antrag — hier
     // einmal serverseitig, weil der Browser nicht vertrauenswürdig ist.
     if (data.zahlungsweise === "lastschrift") {
-      if (!data.IBAN || !isValidIban(normalizeIban(data.IBAN))) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
-          path: ["IBAN"],
-        });
-      }
-      if (data.BIC && !isValidBic(data.BIC)) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
-          path: ["BIC"],
-        });
-      }
-      if (!data.bankeinzug) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
-          path: ["bankeinzug"],
-        });
-      }
+      addDirectDebitIssues(data, ctx);
     }
   })
   .transform((data) =>
@@ -640,5 +618,3 @@ export const bankUpdateSchema = z
           bankeinzug: false,
         },
   );
-
-export type BankUpdateParsed = z.infer<typeof bankUpdateSchema>;

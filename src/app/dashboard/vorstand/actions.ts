@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ZodType } from "zod";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/server/authz";
 import {
@@ -11,21 +10,13 @@ import {
     removeMemberPhoto,
     saveAdminMember,
 } from "@/lib/server/services/boardService";
-import { AppError, executeAction } from "@/lib/server/errors";
+import { executeAction } from "@/lib/server/errors";
 import {
     boardDeleteSchema,
     boardMoveSchema,
     boardSaveSchema,
 } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabled, requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
-
-function parseOrThrow<T>(schema: ZodType<T>, raw: unknown, fallback: string): T {
-    const parsed = schema.safeParse(raw);
-    if (!parsed.success) {
-        throw new AppError("VALIDATION_ERROR", parsed.error.issues[0]?.message ?? fallback);
-    }
-    return parsed.data;
-}
 
 function revalidateBoard() {
     revalidatePath("/dashboard/vorstand");
@@ -62,15 +53,8 @@ export async function saveMember(formData: FormData) {
             published: formData.get("published"),
             inSignature: formData.get("inSignature"),
         };
-        const parsed = boardSaveSchema.safeParse(raw);
-        if (!parsed.success) {
-            throw new AppError(
-                "VALIDATION_ERROR",
-                parsed.error.issues[0]?.message ?? "Bitte alle Felder ausfüllen.",
-            );
-        }
-
-        await saveAdminMember(parsed.data);
+        // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
+        await saveAdminMember(boardSaveSchema.parse(raw));
         revalidateBoard();
         redirect("/dashboard/vorstand");
     });
@@ -80,7 +64,7 @@ export async function deleteMember(formData: FormData) {
     await executeAction(async () => {
         await requireAdmin();
         await requireFeatureEnabledOrRedirect("BOARD_MANAGEMENT", "/dashboard/vorstand");
-        const { id } = parseOrThrow(boardDeleteSchema, Object.fromEntries(formData), "Ungültige Mitglieds-ID.");
+        const { id } = boardDeleteSchema.parse(Object.fromEntries(formData));
         await removeAdminMember(id);
         revalidateBoard();
     });
@@ -90,11 +74,7 @@ export async function deleteMember(formData: FormData) {
 export async function moveMemberInList(formData: FormData) {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("BOARD_MANAGEMENT", "/dashboard/vorstand");
-    const { id, direction } = parseOrThrow(
-        boardMoveSchema,
-        Object.fromEntries(formData),
-        "Ungültige Mitglieds-ID.",
-    );
+    const { id, direction } = boardMoveSchema.parse(Object.fromEntries(formData));
     await moveMember(id, direction);
     revalidateBoard();
 }
@@ -103,7 +83,7 @@ export async function deletePhotoAction(formData: FormData) {
     return executeAction(async () => {
         await requireAdmin();
         await requireFeatureEnabled("BOARD_MANAGEMENT");
-        const { id } = parseOrThrow(boardDeleteSchema, Object.fromEntries(formData), "Ungültige Mitglieds-ID.");
+        const { id } = boardDeleteSchema.parse(Object.fromEntries(formData));
         await removeMemberPhoto(id);
         revalidatePath(`/dashboard/vorstand/${id}`);
         revalidateBoard();

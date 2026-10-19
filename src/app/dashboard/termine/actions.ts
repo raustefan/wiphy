@@ -57,15 +57,8 @@ export async function saveEventAction(formData: FormData) {
       published: formData.get("published") === "on",
     };
 
-    const parsed = eventSaveSchema.safeParse(raw);
-    if (!parsed.success) {
-      throw new AppError(
-        "VALIDATION_ERROR",
-        parsed.error.issues[0]?.message ?? "Bitte alle Pflichtfelder ausfüllen.",
-      );
-    }
-
-    const { id, ...data } = parsed.data;
+    // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
+    const { id, ...data } = eventSaveSchema.parse(raw);
     await saveEvent(id, data);
     revalidateEvent(id);
     redirect("/dashboard/termine");

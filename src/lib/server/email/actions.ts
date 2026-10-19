@@ -1,6 +1,6 @@
 "use server";
 
-import { AppError, executeAction } from "@/lib/server/errors";
+import { executeAction } from "@/lib/server/errors";
 import { directMailSchema } from "@/lib/server/validation/schemas";
 import { resolveUsersByIds, sendMailToUsers } from "./mailService";
 import { enforceAdminMailRateLimit } from "./rateLimitMail";
@@ -22,14 +22,8 @@ function parseDirectMailForm(formData: FormData) {
     bccToSelf: formData.get("bccToSelf") === "on",
   };
 
-  const parsed = directMailSchema.safeParse(raw);
-  if (!parsed.success) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      parsed.error.issues[0]?.message ?? "Ungültige Eingaben.",
-    );
-  }
-  return parsed.data;
+  // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
+  return directMailSchema.parse(raw);
 }
 
 export async function sendDirectMailAction(formData: FormData) {

@@ -1,6 +1,6 @@
 "use server";
 
-import { AppError, executeAction } from "@/lib/server/errors";
+import { executeAction } from "@/lib/server/errors";
 import { mailSendSchema } from "@/lib/server/validation/schemas";
 import { sendMailForTarget } from "@/lib/server/email/mailService";
 import { getAnnouncedEvent } from "@/lib/server/services/eventService";
@@ -25,14 +25,8 @@ function parseMailForm(formData: FormData) {
         eventId: String(formData.get("eventId") ?? ""),
     };
 
-    const parsed = mailSendSchema.safeParse(raw);
-    if (!parsed.success) {
-        throw new AppError(
-            "VALIDATION_ERROR",
-            parsed.error.issues[0]?.message ?? "Ungültige Eingaben.",
-        );
-    }
-    return parsed.data;
+    // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
+    return mailSendSchema.parse(raw);
 }
 
 export async function sendEmailAction(formData: FormData) {

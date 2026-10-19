@@ -12,4 +12,4 @@ export { Spinner } from "./Spinner";
 export { Switch } from "./Switch";
 export { Table, TableWrap, Th, Td } from "./Table";
 export { SortableTh, type SortState } from "./SortableTh";
-export { PageTitle, SectionTitle, Prose, Lead, Eyebrow } from "./Text";
+export { SectionTitle, Eyebrow } from "./Text";

@@ -138,8 +138,6 @@ export async function getFeeDashboardData(userId: string, role: Role, ensureYear
   return visible.map((user) => withResolvedFees(user, defaults, ensureYear));
 }
 
-export type AccountWithFees = Awaited<ReturnType<typeof getAccountsWithFees>>[number];
-
 /**
  * Alle Konten für die Benutzerverwaltung, jedes mit seinem Beitragsverlauf.
  * `inFeeYear` markiert die Beitragsliste von `year`; nur diese Konten bekommen

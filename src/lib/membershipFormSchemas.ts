@@ -120,6 +120,37 @@ const bankFieldsOptional = z.object({
 });
 
 /**
+ * Lastschrift-Pflichten: gültige IBAN, BIC nur wenn angegeben, erteiltes
+ * Mandat. Geteilt mit der Bankdaten-Änderung in der Zahlungsverwaltung.
+ */
+export function addDirectDebitIssues(
+  data: { IBAN?: string | null; BIC?: string | null; bankeinzug?: boolean | null },
+  ctx: z.RefinementCtx,
+) {
+  if (!data.IBAN || !isValidIban(data.IBAN)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
+      path: ["IBAN"],
+    });
+  }
+  if (data.BIC && !isValidBic(data.BIC)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
+      path: ["BIC"],
+    });
+  }
+  if (!data.bankeinzug) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
+      path: ["bankeinzug"],
+    });
+  }
+}
+
+/**
  * Gesamtschema für das Absenden. `studentYears` kommt über `getAll` als Array
  * und wird deshalb außerhalb von `parseFormData` eingespeist.
  */
@@ -143,27 +174,7 @@ export const membershipApplicationSchema = applicationPersonSchema
           path: ["kontoinhaber"],
         });
       }
-      if (!data.IBAN || !isValidIban(data.IBAN)) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
-          path: ["IBAN"],
-        });
-      }
-      if (data.BIC && !isValidBic(data.BIC)) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
-          path: ["BIC"],
-        });
-      }
-      if (!data.bankeinzug) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
-          path: ["bankeinzug"],
-        });
-      }
+      addDirectDebitIssues(data, ctx);
     }
 
     if (data.studienbeginn && data.studienende && data.studienende < data.studienbeginn) {

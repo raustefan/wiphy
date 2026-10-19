@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ZodType } from "zod";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/server/authz";
@@ -14,7 +13,7 @@ import {
     setPostCoverImage,
     setPostImageAlt,
 } from "@/lib/server/services/blogService";
-import { AppError, executeAction } from "@/lib/server/errors";
+import { executeAction } from "@/lib/server/errors";
 import {
     blogDeleteSchema,
     blogImageAltSchema,
@@ -23,15 +22,6 @@ import {
     blogSaveSchema,
 } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabled, requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
-
-/** Wirft die erste Zod-Meldung als Aktionsfehler — sonst steht sie nirgends. */
-function parseOrThrow<T>(schema: ZodType<T>, raw: unknown, fallback: string): T {
-    const parsed = schema.safeParse(raw);
-    if (!parsed.success) {
-        throw new AppError("VALIDATION_ERROR", parsed.error.issues[0]?.message ?? fallback);
-    }
-    return parsed.data;
-}
 
 /**
  * Legt einen leeren Entwurf an und springt direkt in seine Bearbeitung.
@@ -66,21 +56,16 @@ export async function savePost(formData: FormData) {
             published: formData.get("published") === "on",
             eventId: String(formData.get("eventId") ?? ""),
         };
-        const parsed = blogSaveSchema.safeParse(raw);
-        if (!parsed.success) {
-            throw new AppError(
-                "VALIDATION_ERROR",
-                parsed.error.issues[0]?.message ?? "Bitte alle Felder ausfüllen.",
-            );
-        }
+        // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
+        const data = blogSaveSchema.parse(raw);
 
-        await saveAdminPost(parsed.data);
+        await saveAdminPost(data);
         revalidatePath("/dashboard/blog");
         revalidatePath("/blog");
         revalidatePath("/blog/[id]", "page");
         // Der Rückblick erscheint auf der Terminseite — die muss ihn mitbekommen.
         revalidatePath("/termine");
-        if (parsed.data.eventId) revalidatePath("/termine/[id]", "page");
+        if (data.eventId) revalidatePath("/termine/[id]", "page");
         redirect("/dashboard/blog");
     });
 }
@@ -89,15 +74,8 @@ export async function deletePost(formData: FormData) {
     await executeAction(async () => {
         await requireAdmin();
         await requireFeatureEnabledOrRedirect("BLOG_MANAGEMENT", "/dashboard/blog");
-        const raw = { id: String(formData.get("id") ?? "") };
-        const parsed = blogDeleteSchema.safeParse(raw);
-        if (!parsed.success) {
-            throw new AppError(
-                "VALIDATION_ERROR",
-                parsed.error.issues[0]?.message ?? "Ungültige Beitrags-ID.",
-            );
-        }
-        await removeAdminPost(parsed.data.id);
+        const { id } = blogDeleteSchema.parse({ id: String(formData.get("id") ?? "") });
+        await removeAdminPost(id);
         revalidatePath("/dashboard/blog");
         revalidatePath("/blog");
     });
@@ -126,11 +104,7 @@ function revalidateBlogImages(postId: string) {
 export async function deleteBlogImage(formData: FormData) {
     return executeAction(async () => {
         await beginImageAction();
-        const { postId, imageId } = parseOrThrow(
-            blogImageSchema,
-            Object.fromEntries(formData),
-            "Ungültige Bild-ID.",
-        );
+        const { postId, imageId } = blogImageSchema.parse(Object.fromEntries(formData));
         await removePostImage(postId, imageId);
         revalidateBlogImages(postId);
     });
@@ -139,11 +113,7 @@ export async function deleteBlogImage(formData: FormData) {
 export async function setBlogCoverImage(formData: FormData) {
     return executeAction(async () => {
         await beginImageAction();
-        const { postId, imageId } = parseOrThrow(
-            blogImageSchema,
-            Object.fromEntries(formData),
-            "Ungültige Bild-ID.",
-        );
+        const { postId, imageId } = blogImageSchema.parse(Object.fromEntries(formData));
         await setPostCoverImage(postId, imageId);
         revalidateBlogImages(postId);
     });
@@ -152,11 +122,7 @@ export async function setBlogCoverImage(formData: FormData) {
 export async function moveBlogImage(formData: FormData) {
     return executeAction(async () => {
         await beginImageAction();
-        const { postId, imageId, direction } = parseOrThrow(
-            blogImageMoveSchema,
-            Object.fromEntries(formData),
-            "Ungültige Bild-ID.",
-        );
+        const { postId, imageId, direction } = blogImageMoveSchema.parse(Object.fromEntries(formData));
         await movePostImage(postId, imageId, direction);
         revalidateBlogImages(postId);
     });
@@ -165,11 +131,7 @@ export async function moveBlogImage(formData: FormData) {
 export async function saveBlogImageAlt(formData: FormData) {
     return executeAction(async () => {
         await beginImageAction();
-        const { postId, imageId, alt } = parseOrThrow(
-            blogImageAltSchema,
-            Object.fromEntries(formData),
-            "Der Alternativtext ist zu lang.",
-        );
+        const { postId, imageId, alt } = blogImageAltSchema.parse(Object.fromEntries(formData));
         await setPostImageAlt(postId, imageId, alt);
         revalidateBlogImages(postId);
     });
