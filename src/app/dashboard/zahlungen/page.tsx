@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/server/authz";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
 import { getFeeRatesForYear } from "@/lib/server/services/feeDefaultService";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { formatEuro } from "@/lib/format";
 import { Badge, Card, Container, Separator, buttonClasses } from "@/components/ui";
@@ -21,10 +22,11 @@ export default async function ZahlungenPage() {
     const currentUser = await requireUser();
 
     const currentYear = new Date().getFullYear();
-    const [profile, feeUsers, rates] = await Promise.all([
+    const [profile, feeUsers, rates, pdfEnabled] = await Promise.all([
         getEditableUser(currentUser.id),
         getFeeDashboardData(currentUser.id, "MEMBER", currentYear),
         getFeeRatesForYear(currentYear),
+        isFeatureEnabled("PDF_DOCUMENTS"),
     ]);
 
     /*
@@ -50,10 +52,12 @@ export default async function ZahlungenPage() {
                 description="Deine vollständige Beitragshistorie und deine Bankverbindung für den Mitgliedsbeitrag."
                 backHref="/dashboard"
             >
-                <a href="/api/dashboard/zahlungen/pdf" className={buttonClasses({ variant: "soft", color: "neutral" })}>
-                    <Download size={16} aria-hidden="true" />
-                    Als PDF herunterladen
-                </a>
+                {pdfEnabled && (
+                    <a href="/api/dashboard/zahlungen/pdf" className={buttonClasses({ variant: "soft", color: "neutral" })}>
+                        <Download size={16} aria-hidden="true" />
+                        Als PDF herunterladen
+                    </a>
+                )}
             </DashboardPageHeader>
 
             <div className="grid gap-6">

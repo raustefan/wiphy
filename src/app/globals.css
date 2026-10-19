@@ -504,6 +504,13 @@ html:has(dialog:modal) {
   }
 }
 
+/* Ladeanzeige erst nach 300 ms einblenden: Die meisten Seitenwechsel sind
+   schneller, und ein Spinner, der nur kurz aufblitzt, wirkt langsamer als gar
+   keiner. */
+.loading-delayed {
+  animation: dialog-backdrop-in 0.2s ease 0.3s both;
+}
+
 /* Auf dem Telefon fährt der Dialog als Bottom Sheet von unten herein. */
 @media (max-width: 639px) {
   .dialog-panel[open] {

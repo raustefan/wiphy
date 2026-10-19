@@ -1,31 +1,57 @@
 import type { FeatureFlagKey } from "@prisma/client";
 
-export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = [
-  "LOGIN",
-  "PASSWORD_RESET",
-  "REGISTRATION",
-  "EMAIL_CHANGE",
-  "PROFILE_EDIT",
-  "FEE_CHANGES",
-  "MAIL_SERVICES",
-  "USER_CREATION",
-  "USER_DELETION",
-  "BLOG_MANAGEMENT",
-  "EMAIL_VERIFICATION",
-  "CONTACT_FORM",
-  "CONTACT_FORM_MAIL",
-  "CONTACT_FORM_STORAGE",
-  "MEMBERSHIP_APPLICATION",
-  "MEMBERSHIP_APPLICATION_MAIL",
-  "MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL",
-  "MEMBERSHIP_TERMINATION",
-  "MEMBERSHIP_TERMINATION_MAIL",
-  "MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL",
-  "ACCOUNT_NOTICE_MAIL",
-  "REGISTRATION_CLEANUP",
-  "EVENT_MANAGEMENT",
-  "BOARD_MANAGEMENT",
+/** Gruppierung auf /dashboard/feature-flags; jeder Schlüssel steht in genau einer Kategorie. */
+export const FEATURE_FLAG_CATEGORIES: { title: string; keys: FeatureFlagKey[] }[] = [
+  {
+    title: "E-Mail",
+    keys: ["EMAIL_DELIVERY", "MAIL_SERVICES"],
+  },
+  {
+    title: "Konto & Anmeldung",
+    keys: [
+      "LOGIN",
+      "REGISTRATION",
+      "EMAIL_VERIFICATION",
+      "REGISTRATION_CLEANUP",
+      "PASSWORD_RESET",
+      "EMAIL_CHANGE",
+      "PROFILE_EDIT",
+      "ACCOUNT_NOTICE_MAIL",
+    ],
+  },
+  {
+    title: "Mitgliedschaft",
+    keys: [
+      "MEMBERSHIP_APPLICATION",
+      "MEMBERSHIP_APPLICATION_MAIL",
+      "MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL",
+      "MEMBERSHIP_TERMINATION",
+      "MEMBERSHIP_TERMINATION_MAIL",
+      "MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL",
+    ],
+  },
+  {
+    title: "Mitgliederbereich",
+    keys: ["KOSMOS", "PDF_DOCUMENTS"],
+  },
+  {
+    title: "Kontaktformular",
+    keys: ["CONTACT_FORM", "CONTACT_FORM_MAIL", "CONTACT_FORM_STORAGE"],
+  },
+  {
+    title: "Verwaltung",
+    keys: [
+      "USER_CREATION",
+      "USER_DELETION",
+      "FEE_CHANGES",
+      "BLOG_MANAGEMENT",
+      "EVENT_MANAGEMENT",
+      "BOARD_MANAGEMENT",
+    ],
+  },
 ];
+
+export const FEATURE_FLAG_ORDER: FeatureFlagKey[] = FEATURE_FLAG_CATEGORIES.flatMap((c) => c.keys);
 
 export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   LOGIN: "Login",
@@ -34,7 +60,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   EMAIL_CHANGE: "E-Mail-Änderung",
   PROFILE_EDIT: "Profil bearbeiten",
   FEE_CHANGES: "Beitragsänderungen",
-  MAIL_SERVICES: "Mail-Versand",
+  MAIL_SERVICES: "Mail-Versand an Mitglieder",
   USER_CREATION: "Nutzer anlegen",
   USER_DELETION: "Nutzer löschen",
   BLOG_MANAGEMENT: "Blog-Verwaltung",
@@ -52,6 +78,9 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   REGISTRATION_CLEANUP: "Registrierung: unbestätigte Konten löschen",
   EVENT_MANAGEMENT: "Termin-Verwaltung",
   BOARD_MANAGEMENT: "Vorstands-Verwaltung",
+  KOSMOS: "Alumni-Kosmos",
+  PDF_DOCUMENTS: "PDF-Dokumente",
+  EMAIL_DELIVERY: "Mail-Versand (alle Mails)",
 };
 
 export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
@@ -61,7 +90,8 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
   EMAIL_CHANGE: "Erlaubt Mitgliedern, ihre hinterlegte E-Mail-Adresse zu ändern.",
   PROFILE_EDIT: "Erlaubt das Bearbeiten von Profildaten (durch Mitglieder und Admins).",
   FEE_CHANGES: "Erlaubt Admins, Mitgliedsbeiträge zu ändern.",
-  MAIL_SERVICES: "Erlaubt den Versand von Rundmails/E-Mails an Mitglieder.",
+  MAIL_SERVICES:
+    "Erlaubt Admins, Rundmails und Direktnachrichten an Mitglieder zu verschicken. Systemmails (Passwort-Reset, E-Mail-Bestätigung, Benachrichtigungen zu Anträgen, Kündigungen und Kontaktanfragen) sind davon nicht betroffen — die haben eigene Schalter.",
   USER_CREATION: "Erlaubt Admins, neue Benutzerkonten manuell anzulegen.",
   USER_DELETION: "Erlaubt Admins, Benutzerkonten unwiderruflich zu löschen.",
   BLOG_MANAGEMENT: "Erlaubt Admins, Blogbeiträge zu erstellen, zu bearbeiten oder zu löschen.",
@@ -92,6 +122,12 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
     "Erlaubt Admins, Termine anzulegen, zu bearbeiten oder zu löschen. Aus: Bereits veröffentlichte Termine bleiben unter /termine sichtbar, lassen sich aber nicht mehr ändern.",
   BOARD_MANAGEMENT:
     "Erlaubt Admins, Vorstandsmitglieder anzulegen, zu bearbeiten oder zu löschen. Aus: Die Seite /vorstand und die Mail-Signatur bleiben mit dem zuletzt gespeicherten Stand sichtbar, lassen sich aber nicht mehr ändern.",
+  EMAIL_DELIVERY:
+    "Hauptschalter für jede ausgehende Mail, auch Systemmails wie Passwort-Reset, E-Mail-Bestätigung und alle Benachrichtigungen. Aus: Keine Mail verlässt den Server, die Seite verhält sich wie bei einem ausgefallenen Mailserver. Neue Nutzer können ihre Adresse nicht bestätigen (und werden bei aktiver Registrierungs-Bereinigung nach 24 Stunden gelöscht), Passwörter lassen sich nicht zurücksetzen.",
+  KOSMOS:
+    "Schaltet den Alumni-Kosmos im Mitgliederbereich ein oder aus. Aus: Niemand sieht den Zeitstrahl oder kann E-Mail-Adressen aufdecken; Mitglieder können ihre Sichtbarkeit weiterhin ausschalten.",
+  PDF_DOCUMENTS:
+    "Erlaubt Mitgliedern, ihre Zahlungshistorie und ihr Mitgliedschaftszertifikat als PDF herunterzuladen. Aus: Die Download-Knöpfe verschwinden, die Angaben bleiben im Mitgliederbereich sichtbar.",
 };
 
 export function isFeatureFlagKey(value: string | null): value is FeatureFlagKey {

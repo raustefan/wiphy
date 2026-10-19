@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/server/authz";
 import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit } from "@/lib/server/rateLimit";
+import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import {
     getKosmosEmail,
     isKosmosParticipant,
@@ -13,6 +14,8 @@ import {
 export async function setKosmosVisibilityAction(visible: boolean) {
     return executeAction(async () => {
         const user = await requireUser();
+        // Austreten geht immer — der Widerruf darf nicht an einem Schalter hängen.
+        if (visible === true) await requireFeatureEnabled("KOSMOS");
         await setKosmosVisibility(user.id, visible === true);
         revalidatePath("/dashboard/kosmos");
     });
@@ -25,6 +28,7 @@ export async function setKosmosVisibilityAction(visible: boolean) {
 export async function revealKosmosEmailAction(userId: string) {
     return executeAction(async () => {
         const viewer = await requireUser();
+        await requireFeatureEnabled("KOSMOS");
         if (!(await isKosmosParticipant(viewer.id))) {
             throw new AppError("FORBIDDEN", "Der Kosmos ist nur sichtbar, solange du selbst sichtbar bist.");
         }

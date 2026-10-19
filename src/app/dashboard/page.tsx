@@ -141,7 +141,7 @@ export default async function DashboardPage() {
               issuedAt: new Date(),
           })
         : null;
-    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent, debugMode] =
+    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent, debugMode, kosmosEnabled, pdfEnabled] =
         await Promise.all([
             isNonMember ? getOpenApplication(currentUser.id) : null,
             isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
@@ -149,6 +149,8 @@ export default async function DashboardPage() {
             isAdmin ? countOpenTerminations() : 0,
             getDashboardEvent(),
             isAdmin ? isDebugMode() : false,
+            isNonMember ? false : isFeatureEnabled("KOSMOS"),
+            certificate ? isFeatureEnabled("PDF_DOCUMENTS") : false,
         ]);
     const openMembershipTasks = openApplicationCount + openTerminationCount;
     const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
@@ -336,7 +338,7 @@ export default async function DashboardPage() {
                             action="Zugang verwalten"
                         />
 
-                        {!isNonMember && (
+                        {kosmosEnabled && (
                             <CtaCard
                                 href="/dashboard/kosmos"
                                 icon={<Sparkles size={18} aria-hidden="true" />}
@@ -415,7 +417,7 @@ export default async function DashboardPage() {
                         )}
 
                         {/* ---------- Mitgliedschaftszertifikat ---------- */}
-                        {certificate && <MembershipCertificateCard facts={certificate} />}
+                        {certificate && <MembershipCertificateCard facts={certificate} downloadable={pdfEnabled} />}
 
                         {/* ---------- Mein Profil ----------
                           Für Admins dasselbe wie für alle anderen: die

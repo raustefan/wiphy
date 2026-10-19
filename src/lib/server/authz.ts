@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import type { Role } from "@prisma/client";
+import { cache } from "react";
 
 export type UserContext = {
   id: string;
@@ -16,9 +17,16 @@ function normalizeRole(value: unknown): Role {
   return value === "ADMIN" ? "ADMIN" : "MEMBER";
 }
 
+/**
+ * `auth()` liest bei jedem Aufruf den Nutzer aus der Datenbank (`jwt`-Callback).
+ * Layout, Seite und Kopfzeile fragen pro Anfrage alle danach — `cache` macht
+ * daraus eine Abfrage. Der Cache gilt nur innerhalb einer Anfrage.
+ */
+export const getSession = cache(() => auth());
+
 /** Die Sitzung, wie sie ist — ohne die Mitgliederansicht des Debug-Modus. */
 async function sessionUser(): Promise<UserContext | null> {
-  const session = await auth();
+  const session = await getSession();
   const user = session?.user as
     | { id?: string; role?: string; email?: string | null; name?: string | null; status?: string }
     | undefined;

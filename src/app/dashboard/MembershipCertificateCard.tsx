@@ -16,7 +16,7 @@ import { SectionHeader } from "./SectionHeader";
  * Router. `Link` würde sie zu prefetchen versuchen und bei jedem Überfahren der
  * Kachel ein PDF auf dem Server rendern.
  */
-export function MembershipCertificateCard({ facts }: { facts: CertificateFacts }) {
+export function MembershipCertificateCard({ facts, downloadable }: { facts: CertificateFacts; downloadable: boolean }) {
   const { coverage, duration, feeExempt, memberSince } = facts;
 
   const secured = feeExempt
@@ -33,13 +33,15 @@ export function MembershipCertificateCard({ facts }: { facts: CertificateFacts }
         title="Mitgliedschaftszertifikat"
         description="Eine Urkunde mit deinen Mitgliedsdaten, dem Aufnahmedatum und dem Zeitraum, für den deine Beiträge entrichtet sind — zum Vorzeigen als PDF."
         aside={
-          <a
-            href="/api/dashboard/zertifikat/pdf"
-            className={buttonClasses({ size: "sm", className: "self-start" })}
-          >
-            <Download size={15} aria-hidden="true" />
-            Herunterladen
-          </a>
+          downloadable && (
+            <a
+              href="/api/dashboard/zertifikat/pdf"
+              className={buttonClasses({ size: "sm", className: "self-start" })}
+            >
+              <Download size={15} aria-hidden="true" />
+              Herunterladen
+            </a>
+          )
         }
       />
 

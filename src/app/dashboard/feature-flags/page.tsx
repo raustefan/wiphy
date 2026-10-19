@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireDebugAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
+import { FEATURE_FLAG_CATEGORIES } from "@/lib/featureFlags";
 import { AlertTriangle } from "lucide-react";
 import { Badge, Callout, Card, Container } from "@/components/ui";
 import { FeatureFlagToggle } from "./FeatureFlagToggle";
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Feature Flags" };
 
 export default async function FeatureFlagsPage() {
     await requireDebugAdmin();
-    const flags = await getAllFeatureFlags();
+    const flagsByKey = new Map((await getAllFeatureFlags()).map((flag) => [flag.key, flag]));
 
     return (
         <Container size="3" className="py-8 sm:py-12">
@@ -32,29 +33,39 @@ export default async function FeatureFlagsPage() {
                 du tust.
             </Callout>
 
-            <Card className="divide-y divide-line">
-                {flags.map((flag) => (
-                    <div
-                        key={flag.key}
-                        className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:gap-6"
-                    >
-                        <div className="grid min-w-0 flex-1 gap-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-semibold">{flag.label}</span>
-                                <Badge tone={flag.enabled ? "positive" : "negative"}>
-                                    {flag.enabled ? "Aktiv" : "Deaktiviert"}
-                                </Badge>
-                            </div>
-                            <p className="text-sm text-muted text-pretty">{flag.description}</p>
-                        </div>
-                        <FeatureFlagToggle
-                            flagKey={flag.key}
-                            label={flag.label}
-                            enabled={flag.enabled}
-                        />
-                    </div>
+            <div className="grid gap-8">
+                {FEATURE_FLAG_CATEGORIES.map((category) => (
+                    <section key={category.title} className="grid gap-3">
+                        <h2 className="text-lg font-semibold">{category.title}</h2>
+                        <Card className="divide-y divide-line">
+                            {category.keys.map((key) => {
+                                const flag = flagsByKey.get(key)!;
+                                return (
+                                    <div
+                                        key={flag.key}
+                                        className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:gap-6"
+                                    >
+                                        <div className="grid min-w-0 flex-1 gap-1">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="font-semibold">{flag.label}</span>
+                                                <Badge tone={flag.enabled ? "positive" : "negative"}>
+                                                    {flag.enabled ? "Aktiv" : "Deaktiviert"}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-sm text-muted text-pretty">{flag.description}</p>
+                                        </div>
+                                        <FeatureFlagToggle
+                                            flagKey={flag.key}
+                                            label={flag.label}
+                                            enabled={flag.enabled}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </Card>
+                    </section>
                 ))}
-            </Card>
+            </div>
         </Container>
     );
 }

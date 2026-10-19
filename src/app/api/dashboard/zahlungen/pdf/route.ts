@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getOptionalUser } from "@/lib/server/authz";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
 import { PaymentHistoryPdf } from "@/lib/server/pdf/paymentHistoryPdf";
@@ -9,6 +10,9 @@ export async function GET() {
   const currentUser = await getOptionalUser();
   if (!currentUser) {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+  }
+  if (!(await isFeatureEnabled("PDF_DOCUMENTS"))) {
+    return NextResponse.json({ error: "PDF-Dokumente sind derzeit deaktiviert" }, { status: 403 });
   }
 
   const currentYear = new Date().getFullYear();

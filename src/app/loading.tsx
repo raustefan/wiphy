@@ -13,7 +13,7 @@ export default function Loading() {
         <Container size="1" className="grid place-items-center py-24 sm:py-32">
             <p
                 role="status"
-                className="flex items-center gap-3 text-sm font-semibold text-muted"
+                className="loading-delayed flex items-center gap-3 text-sm font-semibold text-muted"
             >
                 <Spinner className="size-5 text-physics" />
                 Wird geladen …

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/server/authz";
+import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import {
     countKosmosMembers,
     getKosmosMembers,
@@ -21,6 +22,23 @@ export default async function KosmosPage() {
     const currentUser = await requireUser();
     const viewer = await getKosmosViewer(currentUser.id);
     if (!viewer) redirect("/login");
+
+    if (!(await isFeatureEnabled("KOSMOS"))) {
+        return (
+            <Container size="3" className="py-8 sm:py-12">
+                <DashboardPageHeader eyebrow="Mitgliederbereich" title="Alumni-Kosmos" backHref="/dashboard" />
+                <Callout tone="info" title="Derzeit deaktiviert">
+                    Der Alumni-Kosmos wurde von einem Administrator vorübergehend abgeschaltet.
+                    {viewer.kosmosSichtbar && " Deine Sichtbarkeit kannst du trotzdem ausschalten."}
+                </Callout>
+                {viewer.kosmosSichtbar && (
+                    <div className="mt-4">
+                        <KosmosVisibility visible />
+                    </div>
+                )}
+            </Container>
+        );
+    }
 
     if (viewer.status === "KEIN_MITGLIED") {
         return (

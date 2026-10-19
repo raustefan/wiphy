@@ -10,6 +10,7 @@ import nodemailer, { type Transporter } from "nodemailer";
 import { getSmtpConfig } from "@/lib/server/env";
 import type { EmailMessage } from "@/lib/email/blocks";
 import { getSignatureBoardLine } from "@/lib/server/services/boardService";
+import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { renderEmailHtml, renderEmailText } from "./layout";
 
 let cachedTransporter: Transporter | null = null;
@@ -45,6 +46,9 @@ export async function sendEmail(input: Recipients & { message: EmailMessage }): 
   // Ohne Empfänger gibt es nichts zu tun — etwa wenn keine Admin-Adresse
   // hinterlegt ist. Das ist kein Fehler, der den Aufrufer scheitern lassen soll.
   if (!to && !bcc) return;
+  // Hauptschalter: wirft wie ein nicht erreichbarer Mailserver — diesen Fall
+  // fangen die Aufrufer ohnehin schon ab.
+  await requireFeatureEnabled("EMAIL_DELIVERY");
 
   const { from } = getSmtpConfig();
   const boardLine = await getSignatureBoardLine();

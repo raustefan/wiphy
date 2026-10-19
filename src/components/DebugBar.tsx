@@ -2,8 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import Link from "next/link";
 import { Bug, Clock, Eye, Flag, GitCommit, Power, ShieldCheck, Timer } from "lucide-react";
-import { auth } from "@/auth";
-import { isDebugMode, isViewingAsMember } from "@/lib/server/authz";
+import { getSession, isDebugMode, isViewingAsMember } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
 import { ADMIN_SESSION_MAX_MS } from "@/lib/server/sessionPolicy";
 import { toggleDebugMode, toggleMemberView } from "@/app/dashboard/actions";
@@ -46,12 +45,12 @@ function Segment({ icon, children, title }: { icon: React.ReactNode; children: R
  */
 export async function DebugBar() {
     if (!(await isDebugMode())) return null;
-    const user = (await auth())?.user as
+    const user = (await getSession())?.user as
         | { email?: string | null; role?: string; loginAt?: number }
         | undefined;
     if (user?.role !== "ADMIN") return null;
 
-    // `auth()` statt `getOptionalUser()`: die Leiste braucht die echte Rolle,
+    // `getSession()` statt `getOptionalUser()`: die Leiste braucht die echte Rolle,
     // sonst verschwände sie in der Mitgliederansicht samt Rückweg.
     const [flags, sha, asMember] = await Promise.all([getAllFeatureFlags(), commit, isViewingAsMember()]);
     const off = flags.filter((f) => !f.enabled);
