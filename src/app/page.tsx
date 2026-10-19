@@ -87,8 +87,7 @@ export default async function HomePage() {
             <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty">
               Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
               <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
-              <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen, und mit der
-              Überzeugung, dass sich Märkte mit den Werkzeugen der Physik verstehen lassen.
+              <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen.
             </p>
             <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
               {session ? (
