@@ -117,15 +117,15 @@ export default async function DashboardPage() {
     // Erstjahresmitglied sähe sonst zwei Jahre „Ausstehend“, für die es nie
     // beitragspflichtig war. Ohne Aufnahmedatum (Altbestand) bleibt es bei
     // den letzten drei Jahren.
-    const membershipStartYear = myRecord?.aufnahmedatum?.getFullYear() ?? null;
+    const membershipStartYear = myRecord?.joinedAt?.getFullYear() ?? null;
     const last3Years = [currentYear - 2, currentYear - 1, currentYear].filter(
         (year) => membershipStartYear == null || year >= membershipStartYear,
     );
-    const userStatus = profile?.status ?? currentUser.status ?? "KEIN_MITGLIED";
+    const userStatus = profile?.status ?? currentUser.status ?? "NON_MEMBER";
     const memberSince = profile?.createdAt ?? null;
 
     // Der Antrags-CTA ist nur für Konten ohne Mitgliedschaft relevant.
-    const isNonMember = userStatus === "KEIN_MITGLIED";
+    const isNonMember = userStatus === "NON_MEMBER";
 
     /*
      * Das Zertifikat gibt es für ordentliche Mitglieder und Ehrenmitglieder —
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
     const certificate = isCertifiableStatus(userStatus)
         ? certificateFacts({
               status: userStatus,
-              aufnahmedatum: profile?.aufnahmedatum ?? null,
+              joinedAt: profile?.joinedAt ?? null,
               fees: myFees,
               issuedAt: new Date(),
           })
@@ -176,7 +176,7 @@ export default async function DashboardPage() {
                             <Eyebrow>Mitgliederbereich</Eyebrow>
                             <h1 className="display text-[clamp(2.75rem,8vw,5rem)] [overflow-wrap:anywhere]">
                                 Hallo,{" "}
-                                {profile?.vorname ?? profile?.name ?? currentUser.email ?? "Gast"}
+                                {profile?.firstName ?? profile?.lastName ?? currentUser.email ?? "Gast"}
                             </h1>
                         </div>
                         <LogoutButton />
@@ -388,10 +388,10 @@ export default async function DashboardPage() {
                                 */}
                                 <ul className="mt-4 grid grid-cols-1 divide-y divide-line rounded-[3px] border border-line">
                                     {last3Years.map((year) => {
-                                        const fee = myFees.find((f) => f.jahr === year);
-                                        const isPaid = fee?.bezahlt ?? false;
+                                        const fee = myFees.find((f) => f.year === year);
+                                        const isPaid = fee?.paid ?? false;
                                         const isStudent = fee?.isStudent ?? false;
-                                        const amount = fee?.beitrag ?? 0;
+                                        const amount = fee?.amount ?? 0;
                                         return (
                                             <li
                                                 key={year}

@@ -26,7 +26,7 @@ export async function GET() {
   }
 
   const myRecord = feeUsers.find((u) => u.id === currentUser.id);
-  const fees = (myRecord?.fees ?? []).slice().sort((a, b) => b.jahr - a.jahr);
+  const fees = (myRecord?.fees ?? []).slice().sort((a, b) => b.year - a.year);
 
   const buffer = await renderToBuffer(
     PaymentHistoryPdf({ user: profile, fees, generatedAt: new Date() }),

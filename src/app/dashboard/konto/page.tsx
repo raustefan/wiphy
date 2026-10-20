@@ -76,7 +76,7 @@ export default async function KontoPage() {
                             {formatDateTime(user.passwordChangedAt)}
                         </Fact>
                         <Fact icon={<LogIn size={17} />} label="Letzte Anmeldung">
-                            {formatDateTime(user.lastLogin)}
+                            {formatDateTime(user.lastLoginAt)}
                         </Fact>
                     </dl>
                 </Card>

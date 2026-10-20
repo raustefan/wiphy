@@ -12,8 +12,9 @@ import {
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
 import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { calculateFee, wasMemberInYear, type FeeBreakdown } from "@/lib/feeCalculation";
-import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
-import { isoDate } from "@/lib/sepa";
+import { isSepaIban, isValidBic, isValidIban, normalizeIban, requiresBic } from "@/lib/iban";
+import { isCountryCode } from "@/lib/countries";
+import { defaultMandateId, isoDate, type SepaDebtorAddress } from "@/lib/sepa";
 
 export function getArchivedFees() {
   return findArchivedFees();
@@ -24,11 +25,11 @@ export function getFeeLiableUsers() {
 }
 
 export type DashboardFee = {
-  jahr: number;
-  bezahlt: boolean;
+  year: number;
+  paid: boolean;
   isStudent: boolean;
   /** Tatsächlich fälliger Betrag — Standardbeitrag oder manuelle Ausnahme. */
-  beitrag: number;
+  amount: number;
   /** Was der Standardbeitrag für dieses Jahr ergibt. */
   standard: number;
   /** true, wenn ein Admin den Betrag abweichend festgelegt hat. */
@@ -49,11 +50,11 @@ type FeeDefaults = Awaited<ReturnType<typeof findFeeDefaults>>;
  * verbuchte Zahlung wird dagegen nie ausgeblendet.
  */
 function isInFeeYear(user: UserWithFees, year: number): boolean {
-  const fee = user.fees.find((f) => f.jahr === year);
-  if (fee?.bezahlt) return true;
+  const fee = user.fees.find((f) => f.year === year);
+  if (fee?.paid) return true;
   return (
-    wasMemberInYear(year, user.aufnahmedatum) &&
-    (user.status === "ORDENTLICHES_MITGLIED" || fee !== undefined)
+    wasMemberInYear(year, user.joinedAt) &&
+    (user.status === "REGULAR_MEMBER" || fee !== undefined)
   );
 }
 
@@ -71,30 +72,30 @@ function isInFeeYear(user: UserWithFees, year: number): boolean {
  */
 function withResolvedFees(user: UserWithFees, defaults: FeeDefaults, ensureYear?: number) {
   function toDashboardFee(input: {
-    jahr: number;
-    bezahlt: boolean;
+    year: number;
+    paid: boolean;
     isStudent: boolean;
-    beitrag: number;
-    beitragManuell: boolean;
+    amount: number;
+    manualAmount: boolean;
     angelegt: boolean;
   }): DashboardFee {
-    const rates = resolveFeeDefault(defaults, input.jahr);
+    const rates = resolveFeeDefault(defaults, input.year);
     const breakdown = calculateFee({
       monthlyRegular: rates.regular,
       monthlyStudent: rates.student,
       isStudent: input.isStudent,
-      bankeinzug: user.bankeinzug ?? false,
-      jahr: input.jahr,
-      aufnahmedatum: user.aufnahmedatum,
+      directDebit: user.directDebit,
+      year: input.year,
+      joinedAt: user.joinedAt,
     });
 
     return {
-      jahr: input.jahr,
-      bezahlt: input.bezahlt,
+      year: input.year,
+      paid: input.paid,
       isStudent: input.isStudent,
-      beitrag: input.beitragManuell ? input.beitrag : breakdown.total,
+      amount: input.manualAmount ? input.amount : breakdown.total,
       standard: breakdown.total,
-      manuell: input.beitragManuell,
+      manuell: input.manualAmount,
       angelegt: input.angelegt,
       breakdown,
     };
@@ -102,15 +103,15 @@ function withResolvedFees(user: UserWithFees, defaults: FeeDefaults, ensureYear?
 
   const fees = user.fees.map((fee) => toDashboardFee({ ...fee, angelegt: true }));
 
-  if (ensureYear !== undefined && !fees.some((fee) => fee.jahr === ensureYear)) {
+  if (ensureYear !== undefined && !fees.some((fee) => fee.year === ensureYear)) {
     fees.push(
       toDashboardFee({
-        jahr: ensureYear,
-        bezahlt: false,
+        year: ensureYear,
+        paid: false,
         // Ohne Zeile zählt die Erklärung des Mitglieds.
         isStudent: user.studentYears.includes(ensureYear),
-        beitrag: 0,
-        beitragManuell: false,
+        amount: 0,
+        manualAmount: false,
         angelegt: false,
       }),
     );
@@ -178,14 +179,21 @@ export async function setFeeComment(input: { userId: string; comment: string | n
 
 export type SepaCandidate = {
   id: string;
-  mitgliedId: number | null;
+  memberNumber: number | null;
+  /** Name des Mitglieds — zur Anzeige. */
   name: string;
+  /** Zahler in der Lastschrift: Kontoinhaber:in, sonst das Mitglied selbst. */
+  debtorName: string;
   iban: string | null;
   bic: string | null;
+  /** Gespeicherte Mandatsreferenz oder die Vorbelegung aus der Mitgliedsnummer. */
+  mandateReference: string;
+  /** Nur bei Konten außerhalb des EWR — dort verlangt die Lastschrift die Anschrift. */
+  address: SepaDebtorAddress | null;
   amount: number;
   /** YYYY-MM-DD, leer bei Altmandaten ohne erfasstes Datum. */
   mandateDate: string;
-  aufnahmedatum: Date | null;
+  joinedAt: Date | null;
   /** Grund, warum das Mitglied nicht eingezogen werden kann. */
   problem: string | null;
 };
@@ -198,29 +206,55 @@ export async function getSepaCandidates(adminId: string, year: number): Promise<
   return toSepaCandidates(await getFeeDashboardData(adminId, "ADMIN", year), year);
 }
 
+/** Warum ein Mitglied mit Mandat trotzdem nicht in die Lastschriftdatei kann. */
+function sepaProblem(iban: string | null, bic: string | null, missingAddress: boolean): string | null {
+  if (!iban) return "Keine IBAN hinterlegt";
+  if (!isValidIban(iban)) return "IBAN ungültig";
+  if (!isSepaIban(iban)) return "Konto außerhalb des SEPA-Raums";
+  if (requiresBic(iban) && !bic) return "BIC fehlt (Konto außerhalb des EWR)";
+  if (missingAddress) return "Anschrift mit Ort und Land fehlt (Konto außerhalb des EWR)";
+  return null;
+}
+
 /** Wie `getSepaCandidates`, für schon geladene Konten (Benutzerverwaltung). */
 export function toSepaCandidates(
   users: Awaited<ReturnType<typeof getFeeDashboardData>>,
   year: number,
 ): SepaCandidate[] {
   return users.flatMap((user) => {
-    const fee = user.fees.find((f) => f.jahr === year);
+    const fee = user.fees.find((f) => f.year === year);
     // Nur aktuelle Mitglieder: bei Ausgetretenen ist das Mandat erloschen.
-    if (user.status !== "ORDENTLICHES_MITGLIED") return [];
-    if (!user.bankeinzug || !fee || fee.bezahlt || fee.beitrag <= 0) return [];
+    if (user.status !== "REGULAR_MEMBER") return [];
+    if (!user.directDebit || !fee || fee.paid || fee.amount <= 0) return [];
 
-    const iban = user.IBAN ? normalizeIban(user.IBAN) : null;
-    const bic = user.BIC?.replace(/\s/g, "").toUpperCase() || null;
+    const iban = user.iban ? normalizeIban(user.iban) : null;
+    const rawBic = user.bic?.replace(/\s/g, "").toUpperCase() || null;
+    const bic = rawBic && isValidBic(rawBic) ? rawBic : null;
+    const name = `${user.firstName} ${user.lastName}`;
+    const outsideEea = iban !== null && requiresBic(iban);
+    const address =
+      outsideEea && user.city && user.countryCode && isCountryCode(user.countryCode)
+        ? {
+            street: user.addressLine1,
+            postalCode: user.postalCode,
+            city: user.city,
+            region: user.region,
+            country: user.countryCode,
+          }
+        : null;
     return [{
       id: user.id,
-      mitgliedId: user.mitgliedId,
-      name: `${user.vorname} ${user.name}`,
+      memberNumber: user.memberNumber,
+      name,
+      debtorName: user.accountHolder || name,
       iban,
-      bic: bic && isValidBic(bic) ? bic : null,
-      amount: fee.beitrag,
-      mandateDate: user.mandatserteilung ? isoDate(user.mandatserteilung) : "",
-      aufnahmedatum: user.aufnahmedatum,
-      problem: !iban ? "Keine IBAN hinterlegt" : !isValidIban(iban) ? "IBAN ungültig" : null,
+      bic,
+      mandateReference: user.mandateReference || defaultMandateId(user.memberNumber),
+      address,
+      amount: fee.amount,
+      mandateDate: user.mandateSignedAt ? isoDate(user.mandateSignedAt) : "",
+      joinedAt: user.joinedAt,
+      problem: sepaProblem(iban, bic, outsideEea && !address),
     }];
   });
 }

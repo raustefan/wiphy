@@ -10,48 +10,48 @@ import {
   type DirectoryAccountBase,
 } from "../src/lib/memberDirectory";
 
-function account(overrides: Partial<DirectoryAccountBase & { aufnahmedatum: Date | null }>) {
+function account(overrides: Partial<DirectoryAccountBase & { joinedAt: Date | null }>) {
   return {
-    vorname: "Erika",
+    firstName: "Erika",
     name: "Muster",
     email: "erika@example.org",
-    mitgliedId: 7,
+    memberNumber: 7,
     role: "MEMBER",
-    status: "ORDENTLICHES_MITGLIED",
+    status: "REGULAR_MEMBER",
     emailVerified: true,
     loginDisabled: false,
-    bankeinzug: true,
+    directDebit: true,
     inFeeYear: true,
-    fees: [{ jahr: 2026, bezahlt: false, isStudent: true, beitrag: 30 }],
-    aufnahmedatum: new Date("2020-01-01T00:00:00Z"),
+    fees: [{ year: 2026, paid: false, isStudent: true, amount: 30 }],
+    joinedAt: new Date("2020-01-01T00:00:00Z"),
     ...overrides,
   };
 }
 
 const member = account({});
 const leftThisYear = account({
-  vorname: "Max",
-  status: "KEIN_MITGLIED",
-  fees: [{ jahr: 2026, bezahlt: true, isStudent: false, beitrag: 60 }],
-  aufnahmedatum: new Date("2026-03-01T00:00:00Z"),
+  firstName: "Max",
+  status: "NON_MEMBER",
+  fees: [{ year: 2026, paid: true, isStudent: false, amount: 60 }],
+  joinedAt: new Date("2026-03-01T00:00:00Z"),
 });
-const honorary = account({ vorname: "Hanna", status: "EHRENMITGLIED", inFeeYear: false, fees: [] });
+const honorary = account({ firstName: "Hanna", status: "HONORARY_MEMBER", inFeeYear: false, fees: [] });
 const guest = account({
-  vorname: "Gast",
+  firstName: "Gast",
   role: "ADMIN",
-  status: "KEIN_MITGLIED",
+  status: "NON_MEMBER",
   inFeeYear: false,
   fees: [],
   emailVerified: false,
-  aufnahmedatum: null,
+  joinedAt: null,
 });
 
 test("Jedes Konto landet in genau einer Gruppe, Ausgetretene mit Beitrag bei den Mitgliedern", () => {
-  const joinsLater = account({ vorname: "Neu", inFeeYear: false, fees: [] });
+  const joinsLater = account({ firstName: "Neu", inFeeYear: false, fees: [] });
   const groups = groupAccounts([member, leftThisYear, honorary, guest, joinsLater]);
-  assert.deepEqual(groups.members.map((a) => a.vorname), ["Erika", "Max", "Neu"]);
-  assert.deepEqual(groups.honorary.map((a) => a.vorname), ["Hanna"]);
-  assert.deepEqual(groups.none.map((a) => a.vorname), ["Gast"]);
+  assert.deepEqual(groups.members.map((a) => a.firstName), ["Erika", "Max", "Neu"]);
+  assert.deepEqual(groups.honorary.map((a) => a.firstName), ["Hanna"]);
+  assert.deepEqual(groups.none.map((a) => a.firstName), ["Gast"]);
 });
 
 test("Beitragsfilter schließen Konten ohne Beitrag im Jahr aus", () => {

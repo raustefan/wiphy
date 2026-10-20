@@ -19,8 +19,8 @@ import { berlinParts, berlinWallTimeToDate } from "./berlinTime";
 
 /** Eine Beitragszeile, soweit das Zertifikat sie braucht. */
 export type CertificateFee = {
-  jahr: number;
-  bezahlt: boolean;
+  year: number;
+  paid: boolean;
 };
 
 /** Deutsches Kalenderjahr eines Zeitpunkts. */
@@ -133,8 +133,8 @@ export function paidCoverage(
   reference: Date,
 ): PaidCoverage {
   const paidYears = fees
-    .filter((fee) => fee.bezahlt)
-    .map((fee) => fee.jahr)
+    .filter((fee) => fee.paid)
+    .map((fee) => fee.year)
     .sort((a, b) => a - b);
 
   const paid = new Set(paidYears);
@@ -200,13 +200,13 @@ export function formatPaidYears(paidYears: readonly number[]): string {
  * des Mitglieds selbst, es entsteht kein neues Datum.
  */
 export function certificateNumber(input: {
-  mitgliedId: number | null;
+  memberNumber: number | null;
   userId: string;
   issuedAt: Date;
 }): string {
   const suffix =
-    input.mitgliedId != null
-      ? String(input.mitgliedId).padStart(4, "0")
+    input.memberNumber != null
+      ? String(input.memberNumber).padStart(4, "0")
       : input.userId.slice(-6).toUpperCase();
 
   return `WPA-${berlinYear(input.issuedAt)}-${suffix}`;
@@ -214,7 +214,7 @@ export function certificateNumber(input: {
 
 // ─────────────────────────── Zusammenzug ───────────────────────────
 
-export type CertificateStatus = "ORDENTLICHES_MITGLIED" | "EHRENMITGLIED";
+export type CertificateStatus = "REGULAR_MEMBER" | "HONORARY_MEMBER";
 
 /**
  * Wer ein Zertifikat bekommt.
@@ -224,7 +224,7 @@ export type CertificateStatus = "ORDENTLICHES_MITGLIED" | "EHRENMITGLIED";
  * Mitglied“ bescheinigt, wäre ein Widerspruch in sich.
  */
 export function isCertifiableStatus(status: string | null | undefined): status is CertificateStatus {
-  return status === "ORDENTLICHES_MITGLIED" || status === "EHRENMITGLIED";
+  return status === "REGULAR_MEMBER" || status === "HONORARY_MEMBER";
 }
 
 export type CertificateFacts = {
@@ -243,17 +243,17 @@ export type CertificateFacts = {
 
 export function certificateFacts(input: {
   status: CertificateStatus;
-  aufnahmedatum: Date | null;
+  joinedAt: Date | null;
   fees: readonly CertificateFee[];
   issuedAt: Date;
 }): CertificateFacts {
   return {
     status: input.status,
-    memberSince: input.aufnahmedatum,
-    duration: input.aufnahmedatum
-      ? membershipDuration(input.aufnahmedatum, input.issuedAt)
+    memberSince: input.joinedAt,
+    duration: input.joinedAt
+      ? membershipDuration(input.joinedAt, input.issuedAt)
       : null,
     coverage: paidCoverage(input.fees, input.issuedAt),
-    feeExempt: input.status === "EHRENMITGLIED",
+    feeExempt: input.status === "HONORARY_MEMBER",
   };
 }

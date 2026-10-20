@@ -7,25 +7,31 @@
  */
 
 import { z } from "zod";
-import { isValidBic, isValidIban, normalizeIban } from "@/lib/iban";
+import { isSepaIban, isValidBic, isValidIban, normalizeIban, requiresBic } from "@/lib/iban";
+import { isCountryCode } from "@/lib/countries";
+import { hasControlChars, isPlausibleBirthDate, isValidPhone, isValidPostalCode } from "@/lib/inputRules";
 import {
   MINOR_HINT,
   STUDENT_YEAR_LOOKAHEAD,
   isOldEnough,
 } from "@/lib/membership";
 
+const CONTROL_CHARS = "Bitte ohne Zeilenumbrüche oder Steuerzeichen eingeben.";
+
 const required = (max: number, label: string) =>
   z
     .string()
     .trim()
     .min(1, `Bitte ${label} angeben.`)
-    .max(max, `${label.charAt(0).toUpperCase()}${label.slice(1)} ist zu lang.`);
+    .max(max, `${label.charAt(0).toUpperCase()}${label.slice(1)} ist zu lang.`)
+    .refine((v) => !hasControlChars(v), CONTROL_CHARS);
 
 const optional = (max: number) =>
   z
     .string()
     .max(max)
     .optional()
+    .refine((v) => v === undefined || !hasControlChars(v), CONTROL_CHARS)
     .transform((v) => (v === undefined || v.trim() === "" ? null : v.trim()));
 
 const optionalDate = z.preprocess(
@@ -43,29 +49,55 @@ const checkedBox = z
 export const birthDateField = z.coerce
   .date({ message: "Bitte ein gültiges Geburtsdatum angeben." })
   .refine((d) => d <= new Date(), "Das Geburtsdatum kann nicht in der Zukunft liegen.")
+  .refine((d) => isPlausibleBirthDate(d), "Bitte ein gültiges Geburtsdatum angeben.")
   .refine((d) => isOldEnough(d), MINOR_HINT);
 
 /** Die Steps validieren im Wizard einzeln; der Server prüft immer alles zusammen. */
 export const applicationPersonSchema = z.object({
-  vorname: required(200, "einen Vornamen"),
-  name: required(200, "einen Nachnamen"),
-  titel: optional(120),
-  geburtsdatum: birthDateField,
-  strasse: required(200, "eine Straße und Hausnummer"),
-  plz: required(20, "eine Postleitzahl"),
-  stadt: required(120, "einen Ort"),
-  land: required(120, "ein Land"),
-  telefon: optional(50),
+  firstName: required(200, "einen Vornamen"),
+  lastName: required(200, "einen Nachnamen"),
+  title: optional(120),
+  birthDate: birthDateField,
+  addressLine1: required(200, "eine Straße und Hausnummer"),
+  addressLine2: optional(200),
+  // Nicht jedes Land hat Postleitzahlen — Pflicht nur für Deutschland, siehe `addAddressIssues`.
+  postalCode: optional(20),
+  city: required(120, "einen Ort"),
+  region: optional(120),
+  countryCode: z.string().trim().refine(isCountryCode, "Bitte ein Land auswählen."),
+  phone: optional(50).refine(
+    (v) => v === null || isValidPhone(v),
+    "Bitte eine Telefonnummer aus Ziffern angeben, z. B. +49 731 123456.",
+  ),
 });
 
+/** Feldübergreifende Adressprüfung; als `superRefine`, weil sie das Land kennen muss. */
+export function addAddressIssues(
+  data: { countryCode: string; postalCode: string | null },
+  ctx: z.RefinementCtx,
+) {
+  if (data.countryCode === "DE" && !data.postalCode) {
+    ctx.addIssue({ code: "custom", message: "Bitte eine Postleitzahl angeben.", path: ["postalCode"] });
+  } else if (data.postalCode && !isValidPostalCode(data.countryCode, data.postalCode)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Diese Postleitzahl passt nicht zum gewählten Land.",
+      path: ["postalCode"],
+    });
+  }
+}
+
+/** Der Personenschritt im Wizard — mit derselben Adressprüfung wie beim Absenden. */
+export const applicationPersonStepSchema = applicationPersonSchema.superRefine(addAddressIssues);
+
 export const applicationStudySchema = z.object({
-  studiengang: optional(200),
-  studienbeginn: optionalDate,
-  studienende: optionalDate,
-  arbeitgeber: optional(200),
-  berufsstand: optional(200),
-  berufszweig: optional(200),
-  position: optional(200),
+  degreeProgram: optional(200),
+  studyStart: optionalDate,
+  studyEnd: optionalDate,
+  employer: optional(200),
+  employmentStatus: optional(200),
+  industry: optional(200),
+  jobTitle: optional(200),
 });
 
 /**
@@ -86,22 +118,14 @@ export const applicationPaymentSchema = z.object({
  * ein und hat für die Kontodaten keine Verwendung; der Antrag fragt sie dann
  * gar nicht erst ab.
  */
-export const applicationBankSchema = z.object({
-  kontoinhaber: required(200, "den Kontoinhaber"),
-  IBAN: z
-    .string()
-    .trim()
-    .min(1, "Bitte eine IBAN angeben.")
-    .transform(normalizeIban)
-    .refine(isValidIban, "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe."),
-  // Für SEPA-Inlandslastschriften nicht erforderlich, deshalb optional.
-  BIC: optional(40).refine(
-    (v) => v === null || isValidBic(v),
-    "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
-  ),
-  bank: optional(200),
-  bankeinzug: checkedBox,
-});
+export const applicationBankSchema = z
+  .object({
+    accountHolder: required(200, "den Kontoinhaber"),
+    iban: z.string().trim().min(1, "Bitte eine IBAN angeben.").transform(normalizeIban),
+    bic: optional(40),
+    directDebit: checkedBox,
+  })
+  .superRefine(addDirectDebitIssues);
 
 /**
  * Dieselben Felder, aber ohne Pflicht: Für das Gesamtschema hängt es von der
@@ -109,43 +133,55 @@ export const applicationBankSchema = z.object({
  * `superRefine` weiter unten, nicht das Feld für sich.
  */
 const bankFieldsOptional = z.object({
-  kontoinhaber: optional(200),
-  IBAN: optional(80),
-  BIC: optional(40),
-  bank: optional(200),
-  bankeinzug: z
+  accountHolder: optional(200),
+  iban: optional(80),
+  bic: optional(40),
+  directDebit: z
     .string()
     .optional()
     .transform((v) => v === "on" || v === "true"),
 });
 
 /**
- * Lastschrift-Pflichten: gültige IBAN, BIC nur wenn angegeben, erteiltes
- * Mandat. Geteilt mit der Bankdaten-Änderung in der Zahlungsverwaltung.
+ * Lastschrift-Pflichten: gültige IBAN aus dem SEPA-Raum, BIC bei Konten
+ * außerhalb des EWR, erteiltes Mandat. Geteilt mit der Bankdaten-Änderung in
+ * der Zahlungsverwaltung.
  */
 export function addDirectDebitIssues(
-  data: { IBAN?: string | null; BIC?: string | null; bankeinzug?: boolean | null },
+  data: { iban?: string | null; bic?: string | null; directDebit?: boolean | null },
   ctx: z.RefinementCtx,
 ) {
-  if (!data.IBAN || !isValidIban(data.IBAN)) {
+  if (!data.iban || !isValidIban(data.iban)) {
     ctx.addIssue({
       code: "custom",
       message: "Diese IBAN ist ungültig. Bitte prüfe deine Eingabe.",
-      path: ["IBAN"],
+      path: ["iban"],
+    });
+  } else if (!isSepaIban(data.iban)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Lastschriften sind nur von Konten im SEPA-Raum möglich. Bitte wähle Überweisung.",
+      path: ["iban"],
+    });
+  } else if (requiresBic(data.iban) && !data.bic) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Für Konten außerhalb des EWR ist der BIC Pflicht.",
+      path: ["bic"],
     });
   }
-  if (data.BIC && !isValidBic(data.BIC)) {
+  if (data.bic && !isValidBic(data.bic)) {
     ctx.addIssue({
       code: "custom",
       message: "Dieser BIC ist ungültig (8 oder 11 Zeichen).",
-      path: ["BIC"],
+      path: ["bic"],
     });
   }
-  if (!data.bankeinzug) {
+  if (!data.directDebit) {
     ctx.addIssue({
       code: "custom",
       message: "Bitte bestätige das SEPA-Lastschriftmandat, um fortzufahren.",
-      path: ["bankeinzug"],
+      path: ["directDebit"],
     });
   }
 }
@@ -160,28 +196,30 @@ export const membershipApplicationSchema = applicationPersonSchema
   .extend(bankFieldsOptional.shape)
   .extend({
     studentYears: z.array(z.coerce.number().int()).default([]),
-    satzungAccepted: checkedBox,
-    datenschutzAccepted: checkedBox,
+    bylawsAccepted: checkedBox,
+    privacyAccepted: checkedBox,
   })
   .superRefine((data, ctx) => {
+    addAddressIssues(data, ctx);
+
     // Auf dem Lastschriftweg gelten dieselben Pflichten wie im Schrittschema —
     // hier noch einmal, weil der Server dem Browser nicht glaubt.
     if (data.zahlungsweise === "lastschrift") {
-      if (!data.kontoinhaber) {
+      if (!data.accountHolder) {
         ctx.addIssue({
           code: "custom",
           message: "Bitte den Kontoinhaber angeben.",
-          path: ["kontoinhaber"],
+          path: ["accountHolder"],
         });
       }
       addDirectDebitIssues(data, ctx);
     }
 
-    if (data.studienbeginn && data.studienende && data.studienende < data.studienbeginn) {
+    if (data.studyStart && data.studyEnd && data.studyEnd < data.studyStart) {
       ctx.addIssue({
         code: "custom",
         message: "Das Studienende kann nicht vor dem Studienbeginn liegen.",
-        path: ["studienende"],
+        path: ["studyEnd"],
       });
     }
 
@@ -208,7 +246,7 @@ export const membershipApplicationSchema = applicationPersonSchema
    */
   .transform((data) =>
     data.zahlungsweise === "lastschrift"
-      ? { ...data, IBAN: data.IBAN ? normalizeIban(data.IBAN) : null }
-      : { ...data, kontoinhaber: null, IBAN: null, BIC: null, bank: null, bankeinzug: false },
+      ? { ...data, iban: data.iban ? normalizeIban(data.iban) : null }
+      : { ...data, accountHolder: null, iban: null, bic: null, directDebit: false },
   );
 

@@ -670,7 +670,7 @@ function MemberCard({
             <div className="grid gap-1 pr-8">
                 <p className="text-lg leading-tight font-semibold">{member.name}</p>
                 <p className="font-mono text-[11px] tracking-wider uppercase opacity-80">
-                    {member.studiengang ? `${member.studiengang} · ` : ""}
+                    {member.degreeProgram ? `${member.degreeProgram} · ` : ""}
                     {years(member)}
                 </p>
                 <p className="font-mono text-[11px] tracking-wider uppercase opacity-80">

@@ -17,10 +17,10 @@ import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
 import { logSentMail } from "./mailHistory";
 
-type StatusTarget = "EHRENMITGLIED" | "ORDENTLICHES_MITGLIED" | "KEIN_MITGLIED";
+type StatusTarget = "HONORARY_MEMBER" | "REGULAR_MEMBER" | "NON_MEMBER";
 export type MailTarget = "ALL" | StatusTarget | "SELECTED";
 
-type Recipient = { email: string; vorname: string | null; name: string | null };
+type Recipient = { email: string; firstName: string | null; lastName: string | null };
 
 export async function resolveUsersByIds(userIds: string[]) {
   const uniqueIds = [...new Set(userIds)];
@@ -30,7 +30,7 @@ export async function resolveUsersByIds(userIds: string[]) {
 
   const found = await prisma.user.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true, email: true, vorname: true, name: true },
+    select: { id: true, email: true, firstName: true, lastName: true },
   });
 
   if (found.length !== uniqueIds.length) {
@@ -45,11 +45,11 @@ export async function resolveUsersByIds(userIds: string[]) {
 
 export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
   if (target === "ALL") {
-    return prisma.user.findMany({ select: { email: true, vorname: true, name: true } });
+    return prisma.user.findMany({ select: { email: true, firstName: true, lastName: true } });
   }
   return prisma.user.findMany({
     where: { status: target },
-    select: { email: true, vorname: true, name: true },
+    select: { email: true, firstName: true, lastName: true },
   });
 }
 
@@ -71,8 +71,8 @@ export async function resolveRecipientEmails(input: {
  * Reihenfolge. Ohne hinterlegten Namen bleibt es beim schlichten „Guten Tag“ —
  * besser als eine Anrede mit einer Leerstelle darin.
  */
-function greeting(user: { vorname: string | null; name: string | null }): string {
-  const full = `${user.vorname || ""} ${user.name || ""}`.trim();
+function greeting(user: { firstName: string | null; lastName: string | null }): string {
+  const full = `${user.firstName || ""} ${user.lastName || ""}`.trim();
   return full ? `Guten Tag ${full}` : "Guten Tag";
 }
 
@@ -83,18 +83,18 @@ function greeting(user: { vorname: string | null; name: string | null }): string
  */
 function replacePlaceholders(
   template: string,
-  user: { vorname: string | null; name: string | null },
+  user: { firstName: string | null; lastName: string | null },
   options: { escape?: boolean } = {},
 ): string {
   const wrap = options.escape ? escapeHtml : (v: string) => v;
-  const vorname = wrap(user.vorname || "");
-  const nachname = wrap(user.name || "");
-  const full = wrap(`${user.vorname || ""} ${user.name || ""}`.trim());
+  const firstName = wrap(user.firstName || "");
+  const nachname = wrap(user.lastName || "");
+  const full = wrap(`${user.firstName || ""} ${user.lastName || ""}`.trim());
   const anrede = wrap(greeting(user));
 
   return template
     .replace(/\$Anrede/g, anrede)
-    .replace(/\$Vorname/g, vorname)
+    .replace(/\$Vorname/g, firstName)
     .replace(/\$Nachname/g, nachname)
     .replace(/\$Name/g, full);
 }

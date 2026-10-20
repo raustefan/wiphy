@@ -56,7 +56,7 @@ export type JourneyStage = JourneyStepId | "mitglied";
 export type JourneyState = {
   signedIn: boolean;
   emailVerified: boolean;
-  /** Irgendein Mitgliedsstatus außer `KEIN_MITGLIED`. */
+  /** Irgendein Mitgliedsstatus außer `NON_MEMBER`. */
   isMember: boolean;
   hasOpenApplication: boolean;
   /**

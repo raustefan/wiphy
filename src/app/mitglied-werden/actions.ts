@@ -70,8 +70,8 @@ export async function submitMembershipApplication(formData: FormData) {
           // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
           bcc: adminEmails,
           message: membershipApplicationNoticeMessage({
-            vorname: parsed.data.vorname,
-            name: parsed.data.name,
+            firstName: parsed.data.firstName,
+            lastName: parsed.data.lastName,
             email: currentUser.email ?? "",
             // Nie aus dem Host-Header: der ist vom Client steuerbar (Phishing-Link an Admins).
             dashboardUrl: siteUrl(MEMBERSHIP_ADMIN_PATH),
@@ -90,8 +90,8 @@ export async function submitMembershipApplication(formData: FormData) {
         await sendEmail({
           to: currentUser.email,
           message: membershipReceivedMessage({
-            vorname: parsed.data.vorname,
-            name: parsed.data.name,
+            firstName: parsed.data.firstName,
+            lastName: parsed.data.lastName,
           }),
         });
       } catch (error) {

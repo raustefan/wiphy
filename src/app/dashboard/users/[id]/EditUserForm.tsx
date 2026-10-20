@@ -7,8 +7,6 @@ import {
     ArrowLeft,
     Award,
     Banknote,
-    Bell,
-    BookOpen,
     Briefcase,
     Building,
     Calendar,
@@ -24,7 +22,6 @@ import {
     Landmark,
     Mail,
     MapPin,
-    MessageSquare,
     Pencil,
     Phone,
     ShieldCheck,
@@ -43,95 +40,81 @@ import {
     Input,
     Select,
     Separator,
+    TextArea,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
 import { IbanInput } from "@/components/IbanInput";
+import { CountryOptions } from "@/components/CountryOptions";
+import { countryName } from "@/lib/countries";
+import { defaultMandateId, MANDATE_ID_PATTERN } from "@/lib/sepa";
 
 type UserData = {
     id: string;
-    vorname: string | null;
-    name: string;
+    firstName: string | null;
+    lastName: string;
     email: string;
-    titel: string | null;
-    geburtsdatum: string | Date | null;
-    land: string | null;
-    plz: string | null;
-    stadt: string | null;
-    strasse: string | null;
-    telefon: string | null;
-    website: string | null;
-    studiengang: string | null;
-    studienbeginn: string | Date | null;
-    studienende: string | Date | null;
-    diplomarbeit: string | null;
-    bachelorarbeit: string | null;
-    masterarbeit: string | null;
-    dissertation: string | null;
-    arbeitgeber: string | null;
-    berufsstand: string | null;
-    berufszweig: string | null;
-    position: string | null;
-    praktika: string | null;
-    berufserfahrung: string | null;
-    zahlungsKommentar: string | null;
-    bank: string | null;
-    BLZ: string | null;
-    KTO: string | null;
-    bankeinzug: boolean | null;
-    zuwendungsbesch: boolean | null;
-    mahnung: string | null;
-    IBAN: string | null;
-    BIC: string | null;
-    mandatserteilung: string | Date | null;
-    mitgliedId: number | null;
+    title: string | null;
+    birthDate: string | Date | null;
+    phone: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    postalCode: string | null;
+    city: string | null;
+    region: string | null;
+    countryCode: string | null;
+    degreeProgram: string | null;
+    studyStart: string | Date | null;
+    studyEnd: string | Date | null;
+    employer: string | null;
+    employmentStatus: string | null;
+    industry: string | null;
+    jobTitle: string | null;
+    linkedinUrl: string | null;
+    adminNote: string | null;
+    directDebit: boolean;
+    accountHolder: string | null;
+    iban: string | null;
+    bic: string | null;
+    mandateReference: string | null;
+    mandateSignedAt: string | Date | null;
+    memberNumber: number | null;
     role: string;
     status: string;
-    datensperren: boolean | null;
-    ausschluss: boolean | null;
     loginDisabled: boolean;
 };
 
 const FIELD_LABELS: Record<string, string> = {
-    vorname: "Vorname",
-    name: "Name",
+    firstName: "Vorname",
+    lastName: "Nachname",
     email: "E-Mail",
-    titel: "Titel",
-    geburtsdatum: "Geburtsdatum",
-    land: "Land",
-    plz: "PLZ",
-    stadt: "Stadt",
-    strasse: "Straße",
-    telefon: "Telefon",
-    website: "Website",
-    studiengang: "Studiengang",
-    studienbeginn: "Studienbeginn",
-    studienende: "Studienende",
-    diplomarbeit: "Diplomarbeit",
-    bachelorarbeit: "Bachelorarbeit",
-    masterarbeit: "Masterarbeit",
-    dissertation: "Dissertation",
-    arbeitgeber: "Arbeitgeber",
-    berufsstand: "Berufsstand",
-    berufszweig: "Berufszweig",
-    position: "Position",
-    praktika: "Praktika",
-    berufserfahrung: "Berufserfahrung",
-    zahlungsKommentar: "Zahlungs-Kommentar",
-    bank: "Bank",
-    BLZ: "BLZ",
-    KTO: "Kontonummer",
-    bankeinzug: "Bankeinzug",
-    zuwendungsbesch: "Zuwendungsbeschreibung",
-    mahnung: "Mahnung",
-    IBAN: "IBAN",
-    BIC: "BIC",
-    mandatserteilung: "Mandatserteilung",
-    mitgliedId: "Mitglieds-ID",
+    title: "Titel",
+    birthDate: "Geburtsdatum",
+    phone: "Telefon",
+    addressLine1: "Straße",
+    addressLine2: "Adresszusatz",
+    postalCode: "PLZ",
+    city: "Ort",
+    region: "Region",
+    countryCode: "Land",
+    degreeProgram: "Studiengang",
+    studyStart: "Studienbeginn",
+    studyEnd: "Studienende",
+    employer: "Arbeitgeber",
+    employmentStatus: "Berufsstand",
+    industry: "Berufszweig",
+    jobTitle: "Position",
+    linkedinUrl: "LinkedIn",
+    adminNote: "Interner Vermerk",
+    directDebit: "Lastschrift",
+    accountHolder: "Kontoinhaber:in",
+    iban: "IBAN",
+    bic: "BIC",
+    mandateReference: "Mandatsreferenz",
+    mandateSignedAt: "Mandat erteilt am",
+    memberNumber: "Mitglieds-ID",
     role: "Rolle",
     status: "Status",
-    datensperren: "Datensperren",
-    ausschluss: "Ausschluss",
     loginDisabled: "Login deaktiviert",
 };
 
@@ -147,15 +130,9 @@ function toDateInput(d: string | Date | null): string {
     return new Date(d).toISOString().slice(0, 10);
 }
 
-/** Die vier Ja/Nein-Felder des Formulars — nur Admins sehen sie. */
+/** Die Ja/Nein-Felder des Formulars — nur Admins sehen sie. */
 function isCheckboxKey(key: string) {
-    return (
-        key === "bankeinzug" ||
-        key === "zuwendungsbesch" ||
-        key === "datensperren" ||
-        key === "ausschluss" ||
-        key === "loginDisabled"
-    );
+    return key === "directDebit" || key === "loginDisabled";
 }
 
 function formatDiffValue(field: string, value: string): string {
@@ -167,27 +144,23 @@ function formatDiffValue(field: string, value: string): string {
     if (value === "") return "—";
     if (field === "role") return ROLE_LABEL_MAP[value] ?? value;
     if (field === "status") return STATUS_LABEL_MAP[value] ?? value;
+    if (field === "countryCode") return countryName(value);
     return value;
 }
 
 // Felder, die nur Admins sehen/ändern dürfen (nicht im Formular vorhanden, wenn !isAdmin)
 const ADMIN_ONLY_KEYS = new Set([
-    "mitgliedId",
+    "memberNumber",
     "role",
     "status",
-    "datensperren",
-    "ausschluss",
     "loginDisabled",
-    "zahlungsKommentar",
-    "mahnung",
-    "bank",
-    "BLZ",
-    "KTO",
-    "IBAN",
-    "BIC",
-    "bankeinzug",
-    "zuwendungsbesch",
-    "mandatserteilung",
+    "adminNote",
+    "directDebit",
+    "accountHolder",
+    "iban",
+    "bic",
+    "mandateReference",
+    "mandateSignedAt",
 ]);
 
 export function EditUserForm({
@@ -208,51 +181,44 @@ export function EditUserForm({
 
     const initialValues = useMemo<Record<string, string>>(
         () => ({
-            vorname: user.vorname || "",
-            name: user.name || "",
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
             email: user.email || "",
-            titel: user.titel || "",
-            geburtsdatum: toDateInput(user.geburtsdatum),
-            land: user.land || "",
-            plz: user.plz || "",
-            stadt: user.stadt || "",
-            strasse: user.strasse || "",
-            telefon: user.telefon || "",
-            website: user.website || "",
-            studiengang: user.studiengang || "",
-            studienbeginn: toDateInput(user.studienbeginn),
-            studienende: toDateInput(user.studienende),
-            diplomarbeit: user.diplomarbeit || "",
-            bachelorarbeit: user.bachelorarbeit || "",
-            masterarbeit: user.masterarbeit || "",
-            dissertation: user.dissertation || "",
-            arbeitgeber: user.arbeitgeber || "",
-            berufsstand: user.berufsstand || "",
-            berufszweig: user.berufszweig || "",
-            position: user.position || "",
-            praktika: user.praktika || "",
-            berufserfahrung: user.berufserfahrung || "",
-            zahlungsKommentar: user.zahlungsKommentar || "",
-            bank: user.bank || "",
-            BLZ: user.BLZ || "",
-            KTO: user.KTO || "",
-            bankeinzug: user.bankeinzug ? "on" : "",
-            zuwendungsbesch: user.zuwendungsbesch ? "on" : "",
-            mahnung: user.mahnung || "",
-            IBAN: user.IBAN || "",
-            BIC: user.BIC || "",
-            mandatserteilung: toDateInput(user.mandatserteilung),
-            mitgliedId: user.mitgliedId != null ? String(user.mitgliedId) : "",
+            title: user.title || "",
+            birthDate: toDateInput(user.birthDate),
+            phone: user.phone || "",
+            addressLine1: user.addressLine1 || "",
+            addressLine2: user.addressLine2 || "",
+            postalCode: user.postalCode || "",
+            city: user.city || "",
+            region: user.region || "",
+            countryCode: user.countryCode || "",
+            degreeProgram: user.degreeProgram || "",
+            studyStart: toDateInput(user.studyStart),
+            studyEnd: toDateInput(user.studyEnd),
+            employer: user.employer || "",
+            employmentStatus: user.employmentStatus || "",
+            industry: user.industry || "",
+            jobTitle: user.jobTitle || "",
+            linkedinUrl: user.linkedinUrl || "",
+            adminNote: user.adminNote || "",
+            directDebit: user.directDebit ? "on" : "",
+            accountHolder: user.accountHolder || "",
+            iban: user.iban || "",
+            bic: user.bic || "",
+            mandateReference: user.mandateReference || "",
+            mandateSignedAt: toDateInput(user.mandateSignedAt),
+            memberNumber: user.memberNumber != null ? String(user.memberNumber) : "",
             role: user.role,
             status: user.status,
-            datensperren: user.datensperren ? "on" : "",
-            ausschluss: user.ausschluss ? "on" : "",
             loginDisabled: user.loginDisabled ? "on" : "",
         }),
         [user]
     );
 
     const [isDirty, setIsDirty] = useState(false);
+    // Steuert, ob die Frage nach dem Grund für das Ende der Mitgliedschaft erscheint.
+    const [status, setStatus] = useState(initialValues.status);
     const [diff, setDiff] = useState<{ label: string; from: string; to: string }[]>([]);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -376,22 +342,22 @@ export function EditUserForm({
                     >
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Vorname">
-                                <IconInput icon={<User size={15} />} name="vorname" defaultValue={initialValues.vorname} />
+                                <IconInput icon={<User size={15} />} name="firstName" defaultValue={initialValues.firstName} />
                             </Field>
                             <Field label="Name" required>
-                                <IconInput icon={<User size={15} />} name="name" defaultValue={initialValues.name} required />
+                                <IconInput icon={<User size={15} />} name="lastName" defaultValue={initialValues.lastName} required />
                             </Field>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Titel">
-                                <IconInput icon={<Award size={15} />} name="titel" defaultValue={initialValues.titel} />
+                                <IconInput icon={<Award size={15} />} name="title" defaultValue={initialValues.title} />
                             </Field>
                             <Field label="Geburtsdatum">
                                 <IconInput
                                     icon={<Calendar size={15} />}
-                                    name="geburtsdatum"
+                                    name="birthDate"
                                     type="date"
-                                    defaultValue={initialValues.geburtsdatum}
+                                    defaultValue={initialValues.birthDate}
                                 />
                             </Field>
                         </div>
@@ -432,10 +398,16 @@ export function EditUserForm({
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
-                                <IconInput icon={<Phone size={15} />} name="telefon" defaultValue={initialValues.telefon} />
+                                <IconInput icon={<Phone size={15} />} name="phone" defaultValue={initialValues.phone} />
                             </Field>
-                            <Field label="Website">
-                                <IconInput icon={<Globe size={15} />} name="website" defaultValue={initialValues.website} />
+                            <Field label="LinkedIn">
+                                <IconInput
+                                    icon={<Globe size={15} />}
+                                    name="linkedinUrl"
+                                    type="url"
+                                    placeholder="https://www.linkedin.com/in/…"
+                                    defaultValue={initialValues.linkedinUrl}
+                                />
                             </Field>
                         </div>
                     </Section>
@@ -444,18 +416,31 @@ export function EditUserForm({
 
                     {/* Adresse */}
                     <Section icon={<MapPin size={16} />} title="Adresse">
-                        <Field label="Straße">
-                            <IconInput icon={<Home size={15} />} name="strasse" defaultValue={initialValues.strasse} />
+                        <Field label="Land">
+                            <Select name="countryCode" defaultValue={initialValues.countryCode} autoComplete="country">
+                                <CountryOptions current={initialValues.countryCode} allowEmpty />
+                            </Select>
+                        </Field>
+                        <Field label="Straße und Hausnummer">
+                            <IconInput icon={<Home size={15} />} name="addressLine1" defaultValue={initialValues.addressLine1} />
+                        </Field>
+                        <Field label="Adresszusatz" hint="c/o, Apartment, Postfach …">
+                            <IconInput icon={<Home size={15} />} name="addressLine2" defaultValue={initialValues.addressLine2} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-3">
                             <Field label="PLZ">
-                                <IconInput icon={<MapPin size={15} />} name="plz" defaultValue={initialValues.plz} />
+                                <IconInput icon={<MapPin size={15} />} name="postalCode" defaultValue={initialValues.postalCode} />
                             </Field>
-                            <Field label="Stadt">
-                                <IconInput icon={<Building size={15} />} name="stadt" defaultValue={initialValues.stadt} />
+                            <Field label="Ort">
+                                <IconInput icon={<Building size={15} />} name="city" defaultValue={initialValues.city} />
                             </Field>
-                            <Field label="Land">
-                                <IconInput icon={<Flag size={15} />} name="land" defaultValue={initialValues.land} />
+                            <Field label="Region">
+                                <IconInput
+                                    icon={<Flag size={15} />}
+                                    name="region"
+                                    placeholder="Bundesstaat, Provinz …"
+                                    defaultValue={initialValues.region}
+                                />
                             </Field>
                         </div>
                     </Section>
@@ -465,40 +450,24 @@ export function EditUserForm({
                     {/* Studium */}
                     <Section icon={<GraduationCap size={16} />} title="Studium">
                         <Field label="Studiengang">
-                            <IconInput icon={<GraduationCap size={15} />} name="studiengang" defaultValue={initialValues.studiengang} />
+                            <IconInput icon={<GraduationCap size={15} />} name="degreeProgram" defaultValue={initialValues.degreeProgram} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Studienbeginn">
                                 <IconInput
                                     icon={<Calendar size={15} />}
-                                    name="studienbeginn"
+                                    name="studyStart"
                                     type="date"
-                                    defaultValue={initialValues.studienbeginn}
+                                    defaultValue={initialValues.studyStart}
                                 />
                             </Field>
                             <Field label="Studienende">
                                 <IconInput
                                     icon={<Calendar size={15} />}
-                                    name="studienende"
+                                    name="studyEnd"
                                     type="date"
-                                    defaultValue={initialValues.studienende}
+                                    defaultValue={initialValues.studyEnd}
                                 />
-                            </Field>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label="Diplomarbeit">
-                                <IconInput icon={<BookOpen size={15} />} name="diplomarbeit" defaultValue={initialValues.diplomarbeit} />
-                            </Field>
-                            <Field label="Bachelorarbeit">
-                                <IconInput icon={<BookOpen size={15} />} name="bachelorarbeit" defaultValue={initialValues.bachelorarbeit} />
-                            </Field>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label="Masterarbeit">
-                                <IconInput icon={<BookOpen size={15} />} name="masterarbeit" defaultValue={initialValues.masterarbeit} />
-                            </Field>
-                            <Field label="Dissertation">
-                                <IconInput icon={<BookOpen size={15} />} name="dissertation" defaultValue={initialValues.dissertation} />
                             </Field>
                         </div>
                     </Section>
@@ -508,26 +477,18 @@ export function EditUserForm({
                     {/* Beruf */}
                     <Section icon={<Briefcase size={16} />} title="Beruf">
                         <Field label="Arbeitgeber">
-                            <IconInput icon={<Briefcase size={15} />} name="arbeitgeber" defaultValue={initialValues.arbeitgeber} />
+                            <IconInput icon={<Briefcase size={15} />} name="employer" defaultValue={initialValues.employer} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Berufsstand">
-                                <IconInput icon={<Award size={15} />} name="berufsstand" defaultValue={initialValues.berufsstand} />
+                                <IconInput icon={<Award size={15} />} name="employmentStatus" defaultValue={initialValues.employmentStatus} />
                             </Field>
                             <Field label="Berufszweig">
-                                <IconInput icon={<Briefcase size={15} />} name="berufszweig" defaultValue={initialValues.berufszweig} />
+                                <IconInput icon={<Briefcase size={15} />} name="industry" defaultValue={initialValues.industry} />
                             </Field>
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <Field label="Position">
-                                <IconInput icon={<Briefcase size={15} />} name="position" defaultValue={initialValues.position} />
-                            </Field>
-                            <Field label="Praktika">
-                                <IconInput icon={<BookOpen size={15} />} name="praktika" defaultValue={initialValues.praktika} />
-                            </Field>
-                        </div>
-                        <Field label="Berufserfahrung">
-                            <IconInput icon={<StickyNote size={15} />} name="berufserfahrung" defaultValue={initialValues.berufserfahrung} />
+                        <Field label="Position">
+                            <IconInput icon={<Briefcase size={15} />} name="jobTitle" defaultValue={initialValues.jobTitle} />
                         </Field>
                     </Section>
 
@@ -566,44 +527,42 @@ export function EditUserForm({
                                 title="Zahlungsdaten"
                                 description="Bankverbindung des Mitglieds für den Mitgliedsbeitrag."
                             >
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                    <Field label="Bank">
-                                        <IconInput icon={<Landmark size={15} />} name="bank" defaultValue={initialValues.bank} />
-                                    </Field>
-                                    <Field label="BLZ">
-                                        <IconInput icon={<Hash size={15} />} name="BLZ" defaultValue={initialValues.BLZ} />
-                                    </Field>
-                                    <Field label="Kontonummer">
-                                        <IconInput icon={<Hash size={15} />} name="KTO" defaultValue={initialValues.KTO} />
-                                    </Field>
-                                </div>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <Field label="IBAN">
-                                        <IbanInput name="IBAN" defaultValue={initialValues.IBAN} />
-                                    </Field>
-                                    <Field label="BIC">
-                                        <IconInput icon={<CreditCard size={15} />} name="BIC" defaultValue={initialValues.BIC} />
-                                    </Field>
-                                </div>
-                                <Field label="Mandatserteilung">
-                                    <IconInput
-                                        icon={<Calendar size={15} />}
-                                        name="mandatserteilung"
-                                        type="date"
-                                        defaultValue={initialValues.mandatserteilung}
-                                    />
+                                <CheckboxField
+                                    label="Lastschrift (SEPA-Mandat erteilt)"
+                                    name="directDebit"
+                                    defaultChecked={user.directDebit}
+                                />
+                                <Field label="Kontoinhaber:in">
+                                    <IconInput icon={<User size={15} />} name="accountHolder" defaultValue={initialValues.accountHolder} />
                                 </Field>
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    <CheckboxField
-                                        label="Bankeinzug"
-                                        name="bankeinzug"
-                                        defaultChecked={Boolean(user.bankeinzug)}
-                                    />
-                                    <CheckboxField
-                                        label="Zuwendungsbeschreibung"
-                                        name="zuwendungsbesch"
-                                        defaultChecked={Boolean(user.zuwendungsbesch)}
-                                    />
+                                    <Field label="IBAN">
+                                        <IbanInput name="iban" defaultValue={initialValues.iban} />
+                                    </Field>
+                                    <Field label="BIC" hint="Pflicht für Konten außerhalb des EWR (CH, GB …).">
+                                        <IconInput icon={<CreditCard size={15} />} name="bic" defaultValue={initialValues.bic} />
+                                    </Field>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <Field
+                                        label="Mandatsreferenz"
+                                        hint={`Leer = ${defaultMandateId(user.memberNumber) || "aus der Mitglieds-ID"}`}
+                                    >
+                                        <IconInput
+                                            icon={<Hash size={15} />}
+                                            name="mandateReference"
+                                            defaultValue={initialValues.mandateReference}
+                                            pattern={MANDATE_ID_PATTERN}
+                                        />
+                                    </Field>
+                                    <Field label="Mandat erteilt am">
+                                        <IconInput
+                                            icon={<Calendar size={15} />}
+                                            name="mandateSignedAt"
+                                            type="date"
+                                            defaultValue={initialValues.mandateSignedAt}
+                                        />
+                                    </Field>
                                 </div>
                             </Section>
 
@@ -619,9 +578,9 @@ export function EditUserForm({
                                     <Field label="Mitglieds-ID">
                                         <IconInput
                                             icon={<KeyRound size={15} />}
-                                            name="mitgliedId"
+                                            name="memberNumber"
                                             type="number"
-                                            defaultValue={initialValues.mitgliedId}
+                                            defaultValue={initialValues.memberNumber}
                                         />
                                     </Field>
                                     <Field label="Rolle">
@@ -634,7 +593,11 @@ export function EditUserForm({
                                         </Select>
                                     </Field>
                                     <Field label="Status">
-                                        <Select name="status" defaultValue={initialValues.status}>
+                                        <Select
+                                            name="status"
+                                            defaultValue={initialValues.status}
+                                            onChange={(event) => setStatus(event.target.value)}
+                                        >
                                             {STATUS_OPTIONS.map((o) => (
                                                 <option key={o.value} value={o.value}>
                                                     {o.label}
@@ -643,18 +606,18 @@ export function EditUserForm({
                                         </Select>
                                     </Field>
                                 </div>
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <CheckboxField
-                                        label="Datensperren"
-                                        name="datensperren"
-                                        defaultChecked={Boolean(user.datensperren)}
-                                    />
-                                    <CheckboxField
-                                        label="Ausschluss"
-                                        name="ausschluss"
-                                        defaultChecked={Boolean(user.ausschluss)}
-                                    />
-                                </div>
+                                {initialValues.status !== "NON_MEMBER" && status === "NON_MEMBER" && (
+                                    <Field
+                                        label="Grund für das Ende der Mitgliedschaft"
+                                        hint="Bei „Verstorben“ wird der Login gesperrt."
+                                    >
+                                        <Select name="terminationReason" defaultValue="RESIGNATION">
+                                            <option value="RESIGNATION">Austritt</option>
+                                            <option value="EXCLUSION">Ausschluss</option>
+                                            <option value="DECEASED">Verstorben</option>
+                                        </Select>
+                                    </Field>
+                                )}
                                 {/* Gesperrter Login, Datensatz bleibt — so „löschen“
                                     Mitglieder ihren Zugang. Abwählen reaktiviert ihn.
                                     Fürs eigene Konto nicht angeboten: Selbstaussperrung. */}
@@ -669,28 +632,15 @@ export function EditUserForm({
 
                             <Separator />
 
-                            {/* Admin-interne Zahlungsvermerke */}
+                            {/* Admin-interne Vermerke */}
                             <Section
                                 icon={<StickyNote size={16} />}
-                                title="Interne Zahlungsvermerke"
-                                description="Nur für Administratoren sichtbar."
+                                title="Interner Vermerk"
+                                description="Nur für Administratoren sichtbar — etwa zu Zahlungen, Mahnungen oder Absprachen."
                             >
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <Field label="Zahlungs-Kommentar">
-                                        <IconInput
-                                            icon={<MessageSquare size={15} />}
-                                            name="zahlungsKommentar"
-                                            defaultValue={initialValues.zahlungsKommentar}
-                                        />
-                                    </Field>
-                                    <Field label="Mahnung">
-                                        <IconInput
-                                            icon={<Bell size={15} />}
-                                            name="mahnung"
-                                            defaultValue={initialValues.mahnung}
-                                        />
-                                    </Field>
-                                </div>
+                                <Field label="Vermerk">
+                                    <TextArea name="adminNote" rows={4} defaultValue={initialValues.adminNote} />
+                                </Field>
                             </Section>
                         </>
                     )}

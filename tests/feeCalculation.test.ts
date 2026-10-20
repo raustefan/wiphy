@@ -42,19 +42,19 @@ test("the 10% surcharge is rounded up to full euros (§ 5 Abs. 5)", () => {
 });
 
 test("a regular member with direct debit pays exactly the annual fee", () => {
-  const fee = calculateFee({ ...rates, isStudent: false, bankeinzug: true, jahr: 2026 });
+  const fee = calculateFee({ ...rates, isStudent: false, directDebit: true, year: 2026 });
   assert.equal(fee.total, 24);
   assert.equal(fee.surcharge, 0);
   assert.equal(fee.months, 12);
 });
 
 test("special status halves the fee", () => {
-  const fee = calculateFee({ ...rates, isStudent: true, bankeinzug: true, jahr: 2026 });
+  const fee = calculateFee({ ...rates, isStudent: true, directDebit: true, year: 2026 });
   assert.equal(fee.total, 12);
 });
 
 test("without direct debit the surcharge applies to the full amount", () => {
-  const fee = calculateFee({ ...rates, isStudent: false, bankeinzug: false, jahr: 2026 });
+  const fee = calculateFee({ ...rates, isStudent: false, directDebit: false, year: 2026 });
   assert.equal(fee.base, 24);
   assert.equal(fee.total, 27);
   assert.equal(fee.surcharge, 3);
@@ -66,9 +66,9 @@ test("the surcharge is applied after the pro-rata reduction, not before", () => 
   const fee = calculateFee({
     ...rates,
     isStudent: false,
-    bankeinzug: false,
-    jahr: 2026,
-    aufnahmedatum: new Date(2026, 6, 1),
+    directDebit: false,
+    year: 2026,
+    joinedAt: new Date(2026, 6, 1),
   });
   assert.equal(fee.base, 12);
   assert.equal(fee.total, 14);
@@ -78,9 +78,9 @@ test("a year before joining costs nothing", () => {
   const fee = calculateFee({
     ...rates,
     isStudent: false,
-    bankeinzug: true,
-    jahr: 2025,
-    aufnahmedatum: new Date(2026, 0, 1),
+    directDebit: true,
+    year: 2025,
+    joinedAt: new Date(2026, 0, 1),
   });
   assert.equal(fee.total, 0);
 });

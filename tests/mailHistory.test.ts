@@ -25,9 +25,9 @@ test("mehrere ausgewählte Personen: nur die Anzahl", () => {
 test("Gruppe mit nur einem Mitglied: Gruppe statt Adresse", () => {
   const record = sentMailRecord({
     subject: "Hallo",
-    recipientGroup: "EHRENMITGLIED",
+    recipientGroup: "HONORARY_MEMBER",
     recipients: one,
   });
   assert.equal(record.recipientEmail, null);
-  assert.equal(record.recipientGroup, "EHRENMITGLIED");
+  assert.equal(record.recipientGroup, "HONORARY_MEMBER");
 });

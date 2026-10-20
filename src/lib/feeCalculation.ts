@@ -18,11 +18,11 @@ export type FeeInput = {
   monthlyStudent: number;
   isStudent: boolean;
   /** Nimmt das Mitglied am Lastschriftverfahren teil? */
-  bankeinzug: boolean;
+  directDebit: boolean;
   /** Beitragsjahr. */
-  jahr: number;
+  year: number;
   /** Aufnahmedatum — nur im Eintrittsjahr wird anteilig berechnet. */
-  aufnahmedatum?: Date | null;
+  joinedAt?: Date | null;
 };
 
 export type FeeBreakdown = {
@@ -50,21 +50,21 @@ function toCents(value: number): number {
  * bereits vergangenen Monate fällig. Ein Eintritt im Juli kostet also noch
  * sechs Zwölftel. Jahre vor dem Eintritt ergeben 0, spätere volle 12.
  */
-export function billableMonths(jahr: number, aufnahmedatum?: Date | null): number {
-  if (!aufnahmedatum) return 12;
-  const joinYear = aufnahmedatum.getFullYear();
-  if (jahr < joinYear) return 0;
-  if (jahr > joinYear) return 12;
-  return 12 - aufnahmedatum.getMonth();
+export function billableMonths(year: number, joinedAt?: Date | null): number {
+  if (!joinedAt) return 12;
+  const joinYear = joinedAt.getFullYear();
+  if (year < joinYear) return 0;
+  if (year > joinYear) return 12;
+  return 12 - joinedAt.getMonth();
 }
 
 /**
- * War das Mitglied in `jahr` schon dabei? Ohne Aufnahmedatum lässt sich das
+ * War das Mitglied in `year` schon dabei? Ohne Aufnahmedatum lässt sich das
  * nicht ausschließen — dann ja. Gleiche Grenze wie bei den Beitragsmonaten:
  * wer erst später eintritt, schuldet für das Jahr nichts.
  */
-export function wasMemberInYear(jahr: number, aufnahmedatum?: Date | null): boolean {
-  return billableMonths(jahr, aufnahmedatum) > 0;
+export function wasMemberInYear(year: number, joinedAt?: Date | null): boolean {
+  return billableMonths(year, joinedAt) > 0;
 }
 
 /**
@@ -87,9 +87,9 @@ export function withSurcharge(base: number): number {
 /** Vollständige Berechnung inklusive Zwischenschritten für die Anzeige. */
 export function calculateFee(input: FeeInput): FeeBreakdown {
   const monthly = input.isStudent ? input.monthlyStudent : input.monthlyRegular;
-  const months = billableMonths(input.jahr, input.aufnahmedatum);
+  const months = billableMonths(input.year, input.joinedAt);
   const base = toCents(monthly * months);
-  const total = input.bankeinzug ? base : withSurcharge(base);
+  const total = input.directDebit ? base : withSurcharge(base);
 
   return { monthly, months, base, surcharge: toCents(total - base), total };
 }

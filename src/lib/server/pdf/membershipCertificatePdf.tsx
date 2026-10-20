@@ -262,10 +262,10 @@ const styles = StyleSheet.create({
 
 export type CertificateMember = {
   id: string;
-  titel: string | null;
-  vorname: string | null;
-  name: string;
-  mitgliedId: number | null;
+  title: string | null;
+  firstName: string | null;
+  lastName: string;
+  memberNumber: number | null;
 };
 
 /** Ein Vorstandsmitglied, das die Urkunde zeichnet. */
@@ -309,12 +309,12 @@ export function MembershipCertificatePdf({
   logoSrc: string | null;
   issuedAt: Date;
 }) {
-  const displayName = [member.titel, member.vorname, member.name].filter(Boolean).join(" ");
+  const displayName = [member.title, member.firstName, member.lastName].filter(Boolean).join(" ");
   const currentYear = berlinYear(issuedAt);
   const { coverage, duration, feeExempt, memberSince } = facts;
 
   const identity = [
-    member.mitgliedId != null ? `Mitgliedsnummer ${member.mitgliedId}` : null,
+    member.memberNumber != null ? `Mitgliedsnummer ${member.memberNumber}` : null,
     formatStatus(facts.status),
   ]
     .filter(Boolean)
@@ -442,7 +442,7 @@ export function MembershipCertificatePdf({
 
         <Text style={styles.colophon}>
           {certificateNumber({
-            mitgliedId: member.mitgliedId,
+            memberNumber: member.memberNumber,
             userId: member.id,
             issuedAt,
           })}

@@ -16,11 +16,13 @@ export async function GET() {
 
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, status: true },
-      orderBy: { name: "asc" },
+      select: { id: true, firstName: true, lastName: true, email: true, role: true, status: true },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json(
+      users.map(({ firstName, lastName, ...user }) => ({ ...user, name: `${firstName} ${lastName}`.trim() })),
+    );
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });

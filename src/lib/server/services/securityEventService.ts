@@ -139,7 +139,7 @@ export async function getSecurityOverview(days: WindowDays): Promise<SecurityOve
         orderBy: { createdAt: "desc" },
         take: 60,
         include: {
-          user: { select: { id: true, vorname: true, name: true, email: true } },
+          user: { select: { id: true, firstName: true, lastName: true, email: true } },
         },
       }),
       prisma.securityEvent.count(),
@@ -193,7 +193,7 @@ export async function getSecurityOverview(days: WindowDays): Promise<SecurityOve
       account: event.user
         ? {
             id: event.user.id,
-            name: `${event.user.vorname} ${event.user.name}`.trim(),
+            name: `${event.user.firstName} ${event.user.lastName}`.trim(),
             email: event.user.email,
           }
         : null,
@@ -323,7 +323,7 @@ export async function getRegistrationFunnel(days: WindowDays): Promise<Registrat
       SELECT
         count(*) FILTER (WHERE "submittedAt" >= ${windowStart(days - 1)})::int AS applied,
         count(*) FILTER (
-          WHERE "decidedAt" >= ${windowStart(days - 1)} AND "status" = 'ANGENOMMEN'
+          WHERE "decidedAt" >= ${windowStart(days - 1)} AND "status" = 'ACCEPTED'
         )::int AS accepted
       FROM "MembershipApplication"
     `,

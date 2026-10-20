@@ -3,7 +3,7 @@
 import { Download } from "lucide-react";
 import type { SepaCandidate } from "@/lib/server/services/feeService";
 import { SEPA_CREDITOR_ID } from "@/lib/membership";
-import { CREDITOR_ID_PATTERN, MANDATE_ID_PATTERN, defaultMandateId, isoDate } from "@/lib/sepa";
+import { CREDITOR_ID_PATTERN, MANDATE_ID_PATTERN, isoDate } from "@/lib/sepa";
 import { formatDate, formatEuro } from "@/lib/format";
 import { formatIban } from "@/lib/iban";
 import { IbanInput } from "@/components/IbanInput";
@@ -38,7 +38,7 @@ export function SepaDialog({
 }: {
   year: number;
   candidates: SepaCandidate[];
-  selectedUsers: Array<{ id: string; vorname: string; name: string | null }>;
+  selectedUsers: Array<{ id: string; firstName: string; name: string | null }>;
   onClose: () => void;
 }) {
   const selected = new Set(selectedUsers.map((u) => u.id));
@@ -130,7 +130,8 @@ export function SepaDialog({
           {formatEuro(ready.reduce((sum, c) => sum + c.amount, 0))})
         </h3>
         <p className="-mt-2 text-sm text-muted text-pretty">
-          Mandatsreferenz und Mandatsdatum müssen bei jedem Einzug gleich bleiben. „Mitglied seit …“
+          Mandatsreferenz und Mandatsdatum müssen bei jedem Einzug gleich bleiben — dauerhaft
+          ändern lassen sie sich beim Mitglied unter „Zahlungsdaten“. „Mitglied seit …“
           markiert Mitglieder, die noch kein Jahr dabei sind — oft ihr erster Einzug.
         </p>
 
@@ -155,13 +156,16 @@ export function SepaDialog({
                     <Td>
                       <input type="hidden" name="include" value={c.id} />
                       {c.name}
+                      {c.debtorName !== c.name && (
+                        <span className="block text-xs text-muted">Konto: {c.debtorName}</span>
+                      )}
                       <span className="block text-xs whitespace-nowrap text-muted tabular-nums">
-                        {c.mitgliedId !== null && `Nr. ${c.mitgliedId} · `}
+                        {c.memberNumber !== null && `Nr. ${c.memberNumber} · `}
                         {formatIban(c.iban!)}
                       </span>
-                      {c.aufnahmedatum && new Date(c.aufnahmedatum) > oneYearAgo && (
+                      {c.joinedAt && new Date(c.joinedAt) > oneYearAgo && (
                         <Badge tone="info" className="mt-1">
-                          Mitglied seit {formatDate(c.aufnahmedatum)}
+                          Mitglied seit {formatDate(c.joinedAt)}
                         </Badge>
                       )}
                     </Td>
@@ -169,7 +173,7 @@ export function SepaDialog({
                     <Td>
                       <Input
                         name={`mandate_${c.id}`}
-                        defaultValue={defaultMandateId(c.mitgliedId)}
+                        defaultValue={c.mandateReference}
                         pattern={MANDATE_ID_PATTERN}
                         aria-label={`Mandatsreferenz ${c.name}`}
                         className="min-w-36"
@@ -210,7 +214,7 @@ export function SepaDialog({
               {skipped.length} ausgewählte {skipped.length === 1 ? "Person" : "Personen"} ohne SEPA
             </summary>
             <p className="mt-1">
-              {skipped.map((u) => [u.vorname, u.name].filter(Boolean).join(" ")).join(", ")}
+              {skipped.map((u) => [u.firstName, u.name].filter(Boolean).join(" ")).join(", ")}
             </p>
           </details>
         )}

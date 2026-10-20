@@ -29,9 +29,9 @@ export default async function KosmosPage() {
                 <DashboardPageHeader eyebrow="Mitgliederbereich" title="Alumni-Kosmos" backHref="/dashboard" />
                 <Callout tone="info" title="Derzeit deaktiviert">
                     Der Alumni-Kosmos wurde von einem Administrator vorübergehend abgeschaltet.
-                    {viewer.kosmosSichtbar && " Deine Sichtbarkeit kannst du trotzdem ausschalten."}
+                    {viewer.kosmosVisible && " Deine Sichtbarkeit kannst du trotzdem ausschalten."}
                 </Callout>
-                {viewer.kosmosSichtbar && (
+                {viewer.kosmosVisible && (
                     <div className="mt-4">
                         <KosmosVisibility visible />
                     </div>
@@ -40,7 +40,7 @@ export default async function KosmosPage() {
         );
     }
 
-    if (viewer.status === "KEIN_MITGLIED") {
+    if (viewer.status === "NON_MEMBER") {
         return (
             <Container size="3" className="py-8 sm:py-12">
                 <DashboardPageHeader eyebrow="Mitgliederbereich" title="Alumni-Kosmos" backHref="/dashboard" />
@@ -52,7 +52,7 @@ export default async function KosmosPage() {
         );
     }
 
-    if (!viewer.kosmosSichtbar) return <JoinStage count={await countKosmosMembers()} />;
+    if (!viewer.kosmosVisible) return <JoinStage count={await countKosmosMembers()} />;
 
     return (
         <>
@@ -62,7 +62,7 @@ export default async function KosmosPage() {
                 now={toYear(new Date())}
                 actions={<KosmosVisibility visible />}
                 notice={
-                    !viewer.studienbeginn && (
+                    !viewer.studyStart && (
                         <Link href={`/dashboard/users/${currentUser.id}`} className="link w-fit text-sm font-semibold">
                             Du fehlst noch: Studienbeginn im Profil eintragen →
                         </Link>

@@ -17,11 +17,11 @@ import { formatEuro } from "@/lib/format";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { saveFeeDefault, deleteFeeDefaultYear } from "./feeActions";
 
-export type FeeDefaultRow = { jahr: number; regular: number; student: number };
+export type FeeDefaultRow = { year: number; regular: number; student: number };
 
 export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
-    const nextYear = (defaults.at(-1)?.jahr ?? new Date().getFullYear() - 1) + 1;
-    const [jahr, setJahr] = useState(String(nextYear));
+    const nextYear = (defaults.at(-1)?.year ?? new Date().getFullYear() - 1) + 1;
+    const [year, setYear] = useState(String(nextYear));
     const [regular, setRegular] = useState("");
     const [student, setStudent] = useState("");
     const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
 
     function save() {
         const fd = new FormData();
-        fd.set("jahr", jahr);
+        fd.set("year", year);
         fd.set("regular", regular);
         fd.set("student", student);
         run(saveFeeDefault, fd);
@@ -82,8 +82,8 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
                         </thead>
                         <tbody>
                             {defaults.map((entry) => (
-                                <tr key={entry.jahr}>
-                                    <Td className="font-mono font-semibold">{entry.jahr}</Td>
+                                <tr key={entry.year}>
+                                    <Td className="font-mono font-semibold">{entry.year}</Td>
                                     <Td className="tabular-nums">{formatEuro(entry.regular)}</Td>
                                     <Td className="tabular-nums">{formatEuro(entry.student)}</Td>
                                     <Td className="tabular-nums text-muted">
@@ -101,11 +101,11 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
                                             size="sm"
                                             variant="ghost"
                                             color="danger"
-                                            aria-label={`Beitragssatz ${entry.jahr} löschen`}
+                                            aria-label={`Beitragssatz ${entry.year} löschen`}
                                             disabled={isPending}
                                             onClick={() => {
                                                 const fd = new FormData();
-                                                fd.set("jahr", String(entry.jahr));
+                                                fd.set("year", String(entry.year));
                                                 run(deleteFeeDefaultYear, fd);
                                             }}
                                         >
@@ -124,8 +124,8 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
                     <Input
                         type="number"
                         inputMode="numeric"
-                        value={jahr}
-                        onChange={(event) => setJahr(event.target.value)}
+                        value={year}
+                        onChange={(event) => setYear(event.target.value)}
                     />
                 </Field>
                 <Field label="Regulär (€/Monat)">

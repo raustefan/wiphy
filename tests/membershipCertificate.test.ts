@@ -71,9 +71,9 @@ test("nach „seit“ steht die Dauer im Dativ", () => {
 test("bezahlte Jahre decken bis zum 31. Dezember des letzten lückenlosen Jahres", () => {
   const coverage = paidCoverage(
     [
-      { jahr: 2024, bezahlt: true },
-      { jahr: 2025, bezahlt: true },
-      { jahr: 2026, bezahlt: true },
+      { year: 2024, paid: true },
+      { year: 2025, paid: true },
+      { year: 2026, paid: true },
     ],
     NOW,
   );
@@ -87,8 +87,8 @@ test("bezahlte Jahre decken bis zum 31. Dezember des letzten lückenlosen Jahres
 test("ein im Voraus bezahltes Jahr verlängert die gesicherte Zeit", () => {
   const coverage = paidCoverage(
     [
-      { jahr: 2026, bezahlt: true },
-      { jahr: 2027, bezahlt: true },
+      { year: 2026, paid: true },
+      { year: 2027, paid: true },
     ],
     NOW,
   );
@@ -100,9 +100,9 @@ test("ein im Voraus bezahltes Jahr verlängert die gesicherte Zeit", () => {
 test("ein offenes laufendes Jahr sichert gar nichts — auch nicht rückwirkend", () => {
   const coverage = paidCoverage(
     [
-      { jahr: 2024, bezahlt: true },
-      { jahr: 2025, bezahlt: true },
-      { jahr: 2026, bezahlt: false },
+      { year: 2024, paid: true },
+      { year: 2025, paid: true },
+      { year: 2026, paid: false },
     ],
     NOW,
   );
@@ -115,12 +115,12 @@ test("ein offenes laufendes Jahr sichert gar nichts — auch nicht rückwirkend"
 });
 
 test("eine Lücke vor dem laufenden Jahr verkürzt die Deckung nicht", () => {
-  // 2023 bezahlt, 2024/2025 nicht, 2026 wieder: gesichert ist nur 2026.
+  // 2023 paid, 2024/2025 nicht, 2026 wieder: gesichert ist nur 2026.
   const coverage = paidCoverage(
     [
-      { jahr: 2023, bezahlt: true },
-      { jahr: 2024, bezahlt: false },
-      { jahr: 2026, bezahlt: true },
+      { year: 2023, paid: true },
+      { year: 2024, paid: false },
+      { year: 2026, paid: true },
     ],
     NOW,
   );
@@ -132,8 +132,8 @@ test("eine Lücke vor dem laufenden Jahr verkürzt die Deckung nicht", () => {
 test("ein künftiges Jahr ohne das laufende zählt nicht als Deckung", () => {
   const coverage = paidCoverage(
     [
-      { jahr: 2026, bezahlt: false },
-      { jahr: 2027, bezahlt: true },
+      { year: 2026, paid: false },
+      { year: 2027, paid: true },
     ],
     NOW,
   );
@@ -150,26 +150,26 @@ test("zusammenhängende Beitragsjahre werden zur Spanne zusammengezogen", () => 
 
 test("die Kennung nutzt die Mitgliedsnummer und weicht sonst auf die Konto-ID aus", () => {
   assert.equal(
-    certificateNumber({ mitgliedId: 42, userId: "clx0000abcdef", issuedAt: NOW }),
+    certificateNumber({ memberNumber: 42, userId: "clx0000abcdef", issuedAt: NOW }),
     "WPA-2026-0042",
   );
   assert.equal(
-    certificateNumber({ mitgliedId: null, userId: "clx0000abcdef", issuedAt: NOW }),
+    certificateNumber({ memberNumber: null, userId: "clx0000abcdef", issuedAt: NOW }),
     "WPA-2026-ABCDEF",
   );
 });
 
 test("nur Mitgliedschaften werden bescheinigt", () => {
-  assert.equal(isCertifiableStatus("ORDENTLICHES_MITGLIED"), true);
-  assert.equal(isCertifiableStatus("EHRENMITGLIED"), true);
-  assert.equal(isCertifiableStatus("KEIN_MITGLIED"), false);
+  assert.equal(isCertifiableStatus("REGULAR_MEMBER"), true);
+  assert.equal(isCertifiableStatus("HONORARY_MEMBER"), true);
+  assert.equal(isCertifiableStatus("NON_MEMBER"), false);
   assert.equal(isCertifiableStatus(null), false);
 });
 
 test("Ehrenmitglieder sind beitragsfrei — ihre Deckung hängt an keinem Jahr", () => {
   const facts = certificateFacts({
-    status: "EHRENMITGLIED",
-    aufnahmedatum: new Date("2010-05-01T00:00:00Z"),
+    status: "HONORARY_MEMBER",
+    joinedAt: new Date("2010-05-01T00:00:00Z"),
     fees: [],
     issuedAt: NOW,
   });
@@ -181,9 +181,9 @@ test("Ehrenmitglieder sind beitragsfrei — ihre Deckung hängt an keinem Jahr",
 
 test("ohne Aufnahmedatum bleibt die Dauer leer statt geraten zu werden", () => {
   const facts = certificateFacts({
-    status: "ORDENTLICHES_MITGLIED",
-    aufnahmedatum: null,
-    fees: [{ jahr: 2026, bezahlt: true }],
+    status: "REGULAR_MEMBER",
+    joinedAt: null,
+    fees: [{ year: 2026, paid: true }],
     issuedAt: NOW,
   });
 

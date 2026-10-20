@@ -11,7 +11,7 @@ import { getDatabaseUrl } from "./server/env";
  */
 function createPrismaClient() {
   const adapter = new PrismaPg({ connectionString: getDatabaseUrl() });
-  return new PrismaClient({ adapter, omit: { user: { password: true } } });
+  return new PrismaClient({ adapter, omit: { user: { passwordHash: true } } });
 }
 
 const globalForPrisma = globalThis as unknown as {

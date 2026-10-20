@@ -7,76 +7,78 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  name     String
-  vorname  String
-  password String
-  titel    String?
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  role         Role   @default(MEMBER)
 
-  // Mitgliedsdaten
-  mitgliedId    Int?      @unique
-  aufnahmedatum DateTime?
-  role          Role      @default(MEMBER)
-  status        Status    @default(KEIN_MITGLIED)
-  user          String?
+  // Person
+  firstName String
+  lastName  String
+  /// Akademischer Titel für Anschreiben, z. B. „Dr.“.
+  title     String?
+  birthDate DateTime?
+  phone     String?
 
-  // Kontakt & Adresse
-  plz          String?
-  stadt        String?
-  strasse      String?
-  telefon      String?
-  geburtsdatum DateTime?
-  land         String?
+  // Anschrift — international: Postleitzahl, zweite Zeile und Region sind
+  // optional, weil es sie nicht in jedem Land gibt.
+  /// Straße und Hausnummer.
+  addressLine1 String?
+  /// Adresszusatz: c/o, Apartment, Postfach …
+  addressLine2 String?
+  postalCode   String?
+  city         String?
+  /// Bundesstaat, Provinz, Kanton — nur wo die Post ihn braucht (USA, Kanada …).
+  region       String?
+  /// ISO 3166-1 alpha-2 („DE“, „CH“). Altdaten, die sich beim Umstellen nicht
+  /// zuordnen ließen, stehen noch im Klartext da — `countryName()` zeigt beides.
+  countryCode  String?
 
-  //Sonstiges
-  website        String?
-  studiengang    String?
-  studienbeginn  DateTime?
-  studienende    DateTime?
+  // Mitgliedschaft
+  memberNumber  Int?         @unique
+  joinedAt      DateTime?
+  status        MemberStatus @default(NON_MEMBER)
   /// Jahre mit Sonderstatus nach § 5 (z. B. Studierende). Maßgeblich für den
   /// Beitragssatz eines Jahres, solange dafür noch keine `MemberFee`-Zeile
   /// existiert — und damit auch für Jahre, die erst künftig angelegt werden.
-  studentYears   Int[]
-  diplomarbeit   String?
-  bachelorarbeit String?
-  masterarbeit   String?
-  dissertation   String?
-
-  //Beruf
-  arbeitgeber     String?
-  berufsstand     String?
-  berufszweig     String?
-  position        String?
-  praktika        String?
-  berufserfahrung String?
-
-  // Nur für Admins sichtbarer Kommentar zu Zahlungs-/Mitgliedschaftsthemen
-  zahlungsKommentar String?
-  bank              String?
-  BLZ               String?
-  KTO               String?
-  bankeinzug        Boolean?
-  zuwendungsbesch   Boolean?
-  mahnung           String?
-  IBAN              String?
-  BIC               String?
-  mandatserteilung  DateTime?
-
-  datensperren Boolean?
-  ausschluss   Boolean?
+  studentYears  Int[]
   /// Einwilligung, im Alumni-Kosmos (/dashboard/kosmos) mit Name,
   /// Studiengang, Studienzeit und auf Klick E-Mail-Adresse für andere
   /// Mitglieder sichtbar zu sein, die ebenfalls eingewilligt haben.
-  kosmosSichtbar Boolean @default(false)
+  kosmosVisible Boolean      @default(false)
+  /// Nur für Admins sichtbarer Kommentar zu Zahlungs-/Mitgliedschaftsthemen.
+  adminNote     String?
 
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  fees              MemberFee[]
-  applications      MembershipApplication[]
-  securityEvents    SecurityEvent[]
-  lastLogin         DateTime    @default(now())
-  emailVerified     Boolean     @default(false)
+  // Studium & Beruf
+  degreeProgram    String?
+  studyStart       DateTime?
+  studyEnd         DateTime?
+  employer         String?
+  /// Angestellt, selbstständig, im Studium …
+  employmentStatus String?
+  industry         String?
+  jobTitle         String?
+  linkedinUrl      String?
+
+  // SEPA-Lastschrift. Ohne Mandat bleiben die Bankfelder leer — der Verein zieht
+  // dann nichts ein und hat für Kontodaten keine Verwendung.
+  /// Teilnahme am Lastschriftverfahren; ohne sie greift der Aufschlag nach § 5 Abs. 5.
+  directDebit      Boolean   @default(false)
+  accountHolder    String?
+  iban             String?
+  /// Pflicht für Lastschriften von Konten außerhalb des EWR (CH, GB …), sonst optional.
+  bic              String?
+  /// Leer = Vorbelegung aus der Mitgliedsnummer (`defaultMandateId`).
+  mandateReference String?
+  mandateSignedAt  DateTime?
+
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  fees                     MemberFee[]
+  applications             MembershipApplication[]
+  securityEvents           SecurityEvent[]
+  lastLoginAt              DateTime                @default(now())
+  emailVerified            Boolean                 @default(false)
   /// Gesetzt, solange eine **Selbstregistrierung** über das öffentliche
   /// Formular noch unbestätigt ist; der Klick auf den Bestätigungslink nullt
   /// den Wert. Steuert beides, was an einer Registrierung erst nach der
@@ -89,16 +91,16 @@ model User {
   /// Bestätigung darf beliebig lange dauern, ohne dass sie verschwinden.
   registrationPendingSince DateTime?
   /// Bumped whenever the password changes; JWT sessions issued before this are rejected.
-  passwordChangedAt DateTime    @default(now())
+  passwordChangedAt        DateTime                @default(now())
   /// Bumped on logout; JWT sessions carrying an older value are rejected, so a
   /// copied cookie dies with the logout instead of living on until it expires.
-  sessionVersion    Int         @default(0)
+  sessionVersion           Int                     @default(0)
   /// Login gesperrt, der Datensatz bleibt. So „löscht“ ein Mitglied seinen
   /// Zugang, ohne dass die Mitgliedschaft (und damit die Daten, die der Verein
   /// für sie braucht) endet. Admins heben die Sperre im Adminbereich auf.
-  loginDisabled     Boolean     @default(false)
-  terminations      MembershipTermination[]
-  backupToken       BackupToken?
+  loginDisabled            Boolean                 @default(false)
+  terminations             MembershipTermination[]
+  backupToken              BackupToken?
 
   @@index([registrationPendingSince])
 }
@@ -108,10 +110,10 @@ enum Role {
   ADMIN
 }
 
-enum Status {
-  ORDENTLICHES_MITGLIED
-  EHRENMITGLIED
-  KEIN_MITGLIED
+enum MemberStatus {
+  REGULAR_MEMBER
+  HONORARY_MEMBER
+  NON_MEMBER
 }
 
 model MemberFee {
@@ -121,30 +123,30 @@ model MemberFee {
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
 
-  // Jahr des Mitgliedsbeitrags (z.B. 2000, 2001, ...)
-  jahr      Int
-  bezahlt   Boolean @default(false)
-  isStudent Boolean @default(false)
-  /// Effektiver Betrag. Nur maßgeblich, wenn `beitragManuell` gesetzt ist —
+  /// Beitragsjahr (z. B. 2000, 2001, ...).
+  year         Int
+  paid         Boolean @default(false)
+  isStudent    Boolean @default(false)
+  /// Effektiver Betrag. Nur maßgeblich, wenn `manualAmount` gesetzt ist —
   /// sonst gilt der aus `FeeDefault` berechnete Standardbeitrag.
-  beitrag   Float   @default(0)
+  amount       Float   @default(0)
   /// Ausnahmefall: ein Admin hat den Betrag von Hand abweichend festgelegt.
   /// Solange false, folgt die Zeile automatisch den Standardbeiträgen.
-  beitragManuell Boolean @default(false)
+  manualAmount Boolean @default(false)
 
   /// Beim Löschen des Kontos eingefroren: wem die Zeile gehörte. Mehr als
   /// Name und Mitgliedsnummer braucht die Aufzeichnung nicht (Datenminimierung).
-  archivName       String?
-  archivMitgliedId Int?
+  archivedName         String?
+  archivedMemberNumber Int?
   /// Gesetzt = archiviert und gesperrt (Art. 18 DSGVO): nur noch lesbar, gelöscht
   /// nach Ablauf der Aufbewahrungsfrist (`pruneArchivedFees`).
-  archivedAt       DateTime?
+  archivedAt           DateTime?
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
-  @@unique([userId, jahr])
-  @@index([archivedAt, jahr])
+  @@unique([userId, year])
+  @@index([archivedAt, year])
 }
 
 model BlogPost {
@@ -179,24 +181,24 @@ model BlogPost {
 model Event {
   id String @id @default(cuid())
 
-  title String
+  title       String
   /// Ein bis zwei Sätze für Übersicht, Startseite und Ankündigungsmail.
-  summary String @default("")
+  summary     String @default("")
   /// Ausführliche Beschreibung als Markdown, wie beim Blog.
   description String @default("")
 
-  start DateTime
+  start  DateTime
   /// Ende, falls bekannt. Ohne Angabe gilt der Termin am Starttag als vorbei
   /// (siehe `eventEnd()`), und die Kalenderdatei setzt eine Standarddauer.
-  end DateTime?
+  end    DateTime?
   /// Ganztägig: Uhrzeiten werden weder angezeigt noch in die `.ics` geschrieben.
-  allDay Boolean @default(false)
+  allDay Boolean   @default(false)
 
   /// Name des Orts, z. B. „Universität Ulm, Hörsaal H3“.
-  location String @default("")
+  location  String @default("")
   /// Anschrift, getrennt vom Namen — sie landet als eigene Zeile in der
   /// Kalenderdatei und im Kartenlink.
-  address String @default("")
+  address   String @default("")
   /// Videokonferenz- oder Streamlink für hybride Termine.
   onlineUrl String @default("")
 
@@ -282,9 +284,9 @@ model BoardMember {
   linkedin String @default("")
 
   /// Reihenfolge auf /vorstand und im Dashboard.
-  position Int @default(0)
+  position    Int     @default(0)
   /// Entwurf vs. öffentlich sichtbar — wie BlogPost.published.
-  published Boolean @default(false)
+  published   Boolean @default(false)
   /// Ob dieses Mitglied in der Mail-Signatur genannt wird.
   inSignature Boolean @default(false)
 
@@ -437,7 +439,7 @@ model ContactRequest {
 /// bewertet. Fehlt ein Jahr, gilt das jüngste hinterlegte Jahr davor
 /// (siehe `resolveFeeDefault`).
 model FeeDefault {
-  jahr    Int   @id
+  year    Int   @id
   /// Monatsbeitrag für reguläre ordentliche Mitglieder.
   regular Float
   /// Monatsbeitrag für Mitglieder mit Sonderstatus (z. B. Studierende).
@@ -448,10 +450,10 @@ model FeeDefault {
 }
 
 enum MembershipApplicationStatus {
-  EINGEREICHT
-  ANGENOMMEN
-  ABGELEHNT
-  ZURUECKGEZOGEN
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
 }
 
 /// Aufnahmeantrag eines Accounts ohne Mitgliedschaft.
@@ -465,7 +467,7 @@ model MembershipApplication {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  status MembershipApplicationStatus @default(EINGEREICHT)
+  status MembershipApplicationStatus @default(SUBMITTED)
 
   /// Trägt `userId` solange der Antrag offen ist, sonst NULL. Erzwingt über den
   /// Unique-Constraint genau einen offenen Antrag pro Account, ohne dass dafür
@@ -473,53 +475,55 @@ model MembershipApplication {
   openForUserId String? @unique
 
   // --- Snapshot: Person & Adresse ---
-  vorname      String
-  name         String
-  titel        String?
-  geburtsdatum DateTime
-  strasse      String
-  plz          String
-  stadt        String
-  land         String
-  telefon      String?
+  firstName    String
+  lastName     String
+  title        String?
+  birthDate    DateTime
+  addressLine1 String
+  addressLine2 String?
+  postalCode   String?
+  city         String
+  region       String?
+  /// Wie `User.countryCode`; Anträge von vor der Umstellung tragen Klartext.
+  countryCode  String
+  phone        String?
 
   // --- Snapshot: Studium & Beruf ---
-  studiengang   String?
-  studienbeginn DateTime?
-  studienende   DateTime?
-  arbeitgeber   String?
-  berufsstand   String?
-  berufszweig   String?
-  position      String?
+  degreeProgram    String?
+  studyStart       DateTime?
+  studyEnd         DateTime?
+  employer         String?
+  employmentStatus String?
+  industry         String?
+  jobTitle         String?
   /// Jahre, für die die Studierendenermäßigung beantragt wird.
-  studentYears  Int[]
+  studentYears     Int[]
 
   // --- Snapshot: SEPA ---
   /// Bankdaten und Mandatsdatum fehlen, wenn kein Lastschriftmandat erteilt
   /// wurde: ohne Mandat zieht der Verein nichts ein, hat für die Kontodaten
   /// also keine Verwendung — und erhebt sie deshalb gar nicht erst.
-  kontoinhaber String?
-  IBAN         String?
-  BIC          String?
-  bank         String?
-  bankeinzug   Boolean @default(true)
+  accountHolder    String?
+  iban             String?
+  bic              String?
+  directDebit      Boolean   @default(true)
   /// Datum der Mandatserteilung (= Zeitpunkt des Absendens), sonst leer.
-  mandatDatum  DateTime?
+  mandateSignedAt  DateTime?
   /// Wird erst vergeben, wenn dem Verein eine Gläubiger-ID vorliegt.
-  mandatsreferenz String?
+  mandateReference String?
 
   // --- Einwilligungen ---
-  satzungAccepted     Boolean
-  datenschutzAccepted Boolean
+  bylawsAccepted  Boolean
+  privacyAccepted Boolean
   /// Version der zugestimmten Texte, damit später nachweisbar bleibt, worauf
   /// sich die Zustimmung bezog.
-  consentVersion      String
+  consentVersion  String
 
   /// Jahresbeiträge zum Zeitpunkt der Antragstellung. Eingefroren, damit eine
   /// Beitragserhöhung zwischen Antrag und Aufnahmebeschluss den Antragsteller
   /// nicht nachträglich überrascht.
-  beitragRegularSnapshot Float
-  beitragStudentSnapshot Float
+  regularFeeSnapshot Float
+  studentFeeSnapshot Float
 
   /// SHA-256 der Client-IP — genug zur Missbrauchskorrelation, kein Klardatum.
   ipHash    String?
@@ -540,14 +544,22 @@ model MembershipApplication {
 
 enum MembershipTerminationStatus {
   /// Eingegangen, Austritt ist damit erklärt; der Vorstand hat noch nicht bestätigt.
-  EINGEREICHT
+  SUBMITTED
   /// Vom Vorstand bestätigt. Wirksam wird der Austritt erst zu `effectiveAt`.
-  BESTAETIGT
-  ZURUECKGEZOGEN
+  CONFIRMED
+  WITHDRAWN
 }
 
-/// Austrittserklärung eines Mitglieds (§ 6 Satzung: schriftlich, vier Wochen
-/// zum Ende des Geschäftsjahres).
+/// Warum die Mitgliedschaft endet. Austritte erklärt das Mitglied selbst,
+/// Ausschluss und Tod (§ 6 Satzung) trägt der Vorstand ein.
+enum TerminationReason {
+  RESIGNATION
+  EXCLUSION
+  DECEASED
+}
+
+/// Ende einer Mitgliedschaft — meist die Austrittserklärung eines Mitglieds
+/// (§ 6 Satzung: schriftlich, vier Wochen zum Ende des Geschäftsjahres).
 ///
 /// Der Austritt ist eine einseitige Erklärung und wirkt mit dem Zugang — der
 /// Vorstand „genehmigt“ ihn nicht, er bestätigt den Eingang und hält das
@@ -559,7 +571,8 @@ model MembershipTermination {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  status MembershipTerminationStatus @default(EINGEREICHT)
+  status MembershipTerminationStatus @default(SUBMITTED)
+  reason TerminationReason           @default(RESIGNATION)
 
   /// `userId`, solange die Kündigung noch nicht vollzogen ist — gleicher
   /// Trick wie bei `MembershipApplication.openForUserId`.
@@ -576,7 +589,7 @@ model MembershipTermination {
   decidedAt    DateTime?
   decidedById  String?
   decisionNote String?
-  /// Gesetzt, sobald der Status des Mitglieds auf KEIN_MITGLIED umgestellt wurde.
+  /// Gesetzt, sobald der Status des Mitglieds auf NON_MEMBER umgestellt wurde.
   completedAt  DateTime?
 
   createdAt DateTime @default(now())

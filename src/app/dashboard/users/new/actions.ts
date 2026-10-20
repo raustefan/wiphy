@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/server/authz";
 import { adminCreateUser } from "@/lib/server/services/userService";
 import { AppError } from "@/lib/server/errors";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
-import { adminCreateUserSchema, userImportExtraSchema } from "@/lib/server/validation/schemas";
+import { adminCreateUserSchema, userImportSchema } from "@/lib/server/validation/schemas";
 import { generatePassword } from "@/lib/passwordStrength";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -46,17 +46,19 @@ export async function createUserAction(formData: FormData): Promise<{ error: str
     redirect(parsed.notify && !result.mailed ? "/dashboard?mail=failed" : "/dashboard");
 }
 
-const importRowsSchema = z.array(z.record(z.string(), z.string())).max(2000);
+const importEntriesSchema = z.array(z.unknown()).max(2000);
 
-export type ImportRowResult = { error: string | null; created: boolean; mailFailed?: boolean };
+export type ImportIssue = { field: string; message: string };
+export type ImportRowResult = { issues: ImportIssue[]; created: boolean; mailFailed?: boolean };
 
 /**
- * JSON-Massenimport (einmalige Übernahme aus der alten DB). `dryRun` prüft nur;
- * sonst wird Zeile für Zeile angelegt, jeweils mit Zufallspasswort.
- * Ergebnis hat dieselbe Reihenfolge wie `rows`.
+ * JSON-Massenimport (Übernahme bestehender Alumni). `dryRun` prüft nur; sonst
+ * wird Eintrag für Eintrag angelegt, jeweils mit Zufallspasswort. Ergebnis hat
+ * dieselbe Reihenfolge wie `entries` und nennt alle Fehler je Feld, damit die
+ * Vorschau sie am richtigen Feld anzeigen kann.
  */
 export async function bulkCreateUsersAction(
-    rows: Record<string, string>[],
+    entries: unknown[],
     notify: boolean,
     dryRun: boolean,
 ): Promise<ImportRowResult[]> {
@@ -64,67 +66,79 @@ export async function bulkCreateUsersAction(
     if (currentUser.role !== "ADMIN") redirect("/dashboard");
     await requireFeatureEnabledOrRedirect("USER_CREATION", "/dashboard/users/new");
 
-    const parsedRows = importRowsSchema.parse(rows).map((row) => {
-        const core = adminCreateUserSchema.safeParse({
-            ...row,
-            // `bankeinzug: false` aus der alten DB heißt hier „Selbstzahler“.
-            selbstzahler: row.selbstzahler || (row.bankeinzug === "false" ? "true" : ""),
-            password: generatePassword(),
-            notify: String(notify),
-        });
-        const extra = userImportExtraSchema.safeParse(row);
-        const issue = !core.success ? core.error.issues[0] : !extra.success ? extra.error.issues[0] : null;
+    const parsed = importEntriesSchema.parse(entries).map((entry) => {
+        const result = userImportSchema.safeParse(entry);
         return {
-            core: core.data,
-            extra: extra.data,
-            error: issue ? `${issue.path.join(".")}: ${issue.message}` : null,
+            data: result.success ? result.data : undefined,
+            issues: result.success
+                ? []
+                : result.error.issues.map((issue) => ({ field: issue.path.join("."), message: issue.message })),
         };
     });
 
     // Konflikte vorab: gegen die DB und innerhalb der Datei.
-    const emails = parsedRows.map((r) => r.core?.email);
-    const ids = parsedRows.map((r) => r.core?.mitgliedId);
+    const emails = parsed.map((r) => r.data?.email);
+    const numbers = parsed.map((r) => r.data?.memberNumber);
     const existing = await prisma.user.findMany({
         where: {
             OR: [
                 { email: { in: emails.filter((e): e is string => !!e) } },
-                { mitgliedId: { in: ids.filter((i): i is number => i != null) } },
+                { memberNumber: { in: numbers.filter((n): n is number => n != null) } },
             ],
         },
-        select: { email: true, mitgliedId: true },
+        select: { email: true, memberNumber: true },
     });
-    for (const [i, r] of parsedRows.entries()) {
-        if (r.error || !r.core) continue;
-        const { email, mitgliedId } = r.core;
-        if (existing.some((u) => u.email === email)) r.error = "E-Mail existiert bereits in der DB.";
-        else if (emails.indexOf(email) !== i) r.error = "E-Mail doppelt in der Datei.";
-        else if (mitgliedId != null && existing.some((u) => u.mitgliedId === mitgliedId))
-            r.error = "Mitglieds-ID existiert bereits in der DB.";
-        else if (mitgliedId != null && ids.indexOf(mitgliedId) !== i) r.error = "Mitglieds-ID doppelt in der Datei.";
+    for (const [i, r] of parsed.entries()) {
+        if (!r.data) continue;
+        const { email, memberNumber } = r.data;
+        if (existing.some((u) => u.email === email)) {
+            r.issues.push({ field: "email", message: "Existiert bereits in der Datenbank." });
+        } else if (emails.indexOf(email) !== i) {
+            r.issues.push({ field: "email", message: "Doppelt in der Datei." });
+        }
+        if (memberNumber != null && existing.some((u) => u.memberNumber === memberNumber)) {
+            r.issues.push({ field: "memberNumber", message: "Existiert bereits in der Datenbank." });
+        } else if (memberNumber != null && numbers.indexOf(memberNumber) !== i) {
+            r.issues.push({ field: "memberNumber", message: "Doppelt in der Datei." });
+        }
     }
 
-    const results: ImportRowResult[] = parsedRows.map((r) => ({ error: r.error, created: false }));
+    const results: ImportRowResult[] = parsed.map((r) => ({ issues: r.issues, created: false }));
     if (dryRun) return results;
 
-    // Zeilen mit fester Mitglieds-ID zuerst, sonst könnte eine automatisch
-    // vergebene ID (max + 1) einer späteren festen in die Quere kommen.
-    const order = parsedRows
-        .map((r, i) => i)
-        .filter((i) => !parsedRows[i].error)
-        .sort((a, b) => Number(parsedRows[a].core!.mitgliedId == null) - Number(parsedRows[b].core!.mitgliedId == null));
+    // Einträge mit fester Mitgliedsnummer zuerst, sonst könnte eine automatisch
+    // vergebene Nummer (max + 1) einer späteren festen in die Quere kommen.
+    const order = parsed
+        .map((_, i) => i)
+        .filter((i) => parsed[i].issues.length === 0)
+        .sort((a, b) => Number(parsed[a].data!.memberNumber == null) - Number(parsed[b].data!.memberNumber == null));
     for (const i of order) {
-        const { core, extra } = parsedRows[i];
+        const { fees, allPaid, directDebit, title, phone, degreeProgram, studyStart, studyEnd, employer, employmentStatus, industry, jobTitle, linkedinUrl, loginDisabled, ...core } =
+            parsed[i].data!;
         try {
-            const result = await adminCreateUser(core!, currentUser.role, extra);
+            const result = await adminCreateUser(
+                { ...core, password: generatePassword(), notify, selfPayer: !directDebit, allPaid },
+                currentUser.role,
+                { title, phone, degreeProgram, studyStart, studyEnd, employer, employmentStatus, industry, jobTitle, linkedinUrl, loginDisabled },
+                fees,
+            );
             results[i] = result.ok
-                ? { error: null, created: true, mailFailed: notify && !result.mailed }
-                : { error: result.reason, created: false };
+                ? { issues: [], created: true, mailFailed: notify && !result.mailed }
+                : {
+                      issues: [
+                          result.reason === "email_taken"
+                              ? { field: "email", message: "Existiert bereits in der Datenbank." }
+                              : { field: "memberNumber", message: "Existiert bereits in der Datenbank." },
+                      ],
+                      created: false,
+                  };
         } catch (error) {
             console.error("Bulk import row failed:", error);
-            results[i] = { error: "Anlegen fehlgeschlagen (siehe Server-Log).", created: false };
+            results[i] = { issues: [{ field: "", message: "Anlegen fehlgeschlagen (siehe Server-Log)." }], created: false };
         }
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/users");
     return results;
 }

@@ -43,29 +43,29 @@ export async function acceptMembershipApplication(formData: FormData) {
     const admin = await requireAdmin();
     const {
       id,
-      aufnahmedatum,
+      joinedAt,
       note,
-      mitgliedId: mitgliedIdOverride,
+      memberNumber: memberNumberOverride,
     } = parseFormData(applicationDecisionSchema, formData);
 
     const application = await getApplication(id);
     if (!application) throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
 
-    const { mitgliedId } = await approveApplication({
+    const { memberNumber } = await approveApplication({
       id,
       adminId: admin.id,
-      aufnahmedatum,
+      joinedAt,
       note,
-      mitgliedId: mitgliedIdOverride,
+      memberNumber: memberNumberOverride,
     });
 
     await notifyApplicant(
       application.user.email,
       membershipApprovedMessage({
-        vorname: application.vorname,
-        name: application.name,
-        aufnahmedatum,
-        mitgliedId,
+        firstName: application.firstName,
+        lastName: application.lastName,
+        joinedAt,
+        memberNumber,
       }),
     );
 
@@ -88,8 +88,8 @@ export async function declineMembershipApplication(formData: FormData) {
     await notifyApplicant(
       application.user.email,
       membershipRejectedMessage({
-        vorname: application.vorname,
-        name: application.name,
+        firstName: application.firstName,
+        lastName: application.lastName,
         note,
       }),
     );
@@ -129,8 +129,8 @@ export async function confirmMembershipTermination(formData: FormData) {
         await sendEmail({
           to: termination.user.email,
           message: terminationConfirmedMessage({
-            vorname: termination.user.vorname,
-            name: termination.user.name,
+            firstName: termination.user.firstName,
+            lastName: termination.user.lastName,
             effectiveAt,
             keepAccount: termination.keepAccount,
           }),

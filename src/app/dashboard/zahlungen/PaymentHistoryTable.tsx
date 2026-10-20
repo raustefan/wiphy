@@ -27,11 +27,11 @@ export function PaymentHistoryTable({ fees }: { fees: DashboardFee[] }) {
                 </thead>
                 <tbody>
                     {fees.map((fee) => (
-                        <tr key={fee.jahr}>
-                            <Td className="font-mono font-semibold">{fee.jahr}</Td>
+                        <tr key={fee.year}>
+                            <Td className="font-mono font-semibold">{fee.year}</Td>
                             <Td>
-                                <Badge tone={fee.bezahlt ? "positive" : "negative"}>
-                                    {fee.bezahlt ? "Bezahlt" : "Ausstehend"}
+                                <Badge tone={fee.paid ? "positive" : "negative"}>
+                                    {fee.paid ? "Bezahlt" : "Ausstehend"}
                                 </Badge>
                             </Td>
                             <Td>
@@ -39,7 +39,7 @@ export function PaymentHistoryTable({ fees }: { fees: DashboardFee[] }) {
                                     {fee.isStudent ? "Student" : "Regulär"}
                                 </Badge>
                             </Td>
-                            <Td className="text-right font-medium">{formatEuro(fee.beitrag)}</Td>
+                            <Td className="text-right font-medium">{formatEuro(fee.amount)}</Td>
                         </tr>
                     ))}
                 </tbody>

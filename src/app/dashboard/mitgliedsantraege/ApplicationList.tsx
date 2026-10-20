@@ -16,6 +16,7 @@ import {
     TextArea,
 } from "@/components/ui";
 import { formatIban, maskIban } from "@/lib/iban";
+import { formatAddress } from "@/lib/countries";
 import { formatEuro } from "@/lib/format";
 import {
     acceptMembershipApplication,
@@ -31,32 +32,33 @@ export type ApplicationItem = {
     decisionNote: string | null;
     mailedAt: string | null;
     consentVersion: string;
-    applicant: { id: string; email: string; status: string; mitgliedId: number | null };
-    vorname: string;
-    name: string;
-    titel: string | null;
-    geburtsdatum: string;
-    strasse: string;
-    plz: string;
-    stadt: string;
-    land: string;
-    telefon: string | null;
-    studiengang: string | null;
-    studienbeginn: string | null;
-    studienende: string | null;
-    arbeitgeber: string | null;
-    berufsstand: string | null;
-    berufszweig: string | null;
-    position: string | null;
+    applicant: { id: string; email: string; status: string; memberNumber: number | null };
+    firstName: string;
+    lastName: string;
+    title: string | null;
+    birthDate: string;
+    addressLine1: string;
+    addressLine2: string | null;
+    postalCode: string | null;
+    city: string;
+    region: string | null;
+    countryCode: string;
+    phone: string | null;
+    degreeProgram: string | null;
+    studyStart: string | null;
+    studyEnd: string | null;
+    employer: string | null;
+    employmentStatus: string | null;
+    industry: string | null;
+    jobTitle: string | null;
     studentYears: number[];
-    kontoinhaber: string | null;
-    IBAN: string | null;
-    BIC: string | null;
-    bank: string | null;
-    mandatDatum: string | null;
-    beitragRegularSnapshot: number;
-    beitragStudentSnapshot: number;
-    feePlan: Array<{ jahr: number; isStudent: boolean; beitrag: number }>;
+    accountHolder: string | null;
+    iban: string | null;
+    bic: string | null;
+    mandateSignedAt: string | null;
+    regularFeeSnapshot: number;
+    studentFeeSnapshot: number;
+    feePlan: Array<{ year: number; isStudent: boolean; amount: number }>;
 };
 
 const dateFormat = new Intl.DateTimeFormat("de-DE", { dateStyle: "medium" });
@@ -69,10 +71,10 @@ const STATUS_META: Record<
     MembershipApplicationStatus,
     { label: string; tone: "warning" | "positive" | "negative" | "neutral" }
 > = {
-    EINGEREICHT: { label: "Offen", tone: "warning" },
-    ANGENOMMEN: { label: "Angenommen", tone: "positive" },
-    ABGELEHNT: { label: "Abgelehnt", tone: "negative" },
-    ZURUECKGEZOGEN: { label: "Zurückgezogen", tone: "neutral" },
+    SUBMITTED: { label: "Offen", tone: "warning" },
+    ACCEPTED: { label: "Angenommen", tone: "positive" },
+    REJECTED: { label: "Abgelehnt", tone: "negative" },
+    WITHDRAWN: { label: "Zurückgezogen", tone: "neutral" },
 };
 
 function todayInputValue() {
@@ -81,10 +83,10 @@ function todayInputValue() {
 
 export function ApplicationList({
     applications,
-    nextMitgliedId,
+    nextMemberNumber,
 }: {
     applications: ApplicationItem[];
-    nextMitgliedId: number;
+    nextMemberNumber: number;
 }) {
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -93,9 +95,9 @@ export function ApplicationList({
     const [accepting, setAccepting] = useState<ApplicationItem | null>(null);
     const [declining, setDeclining] = useState<ApplicationItem | null>(null);
     const [pendingDelete, setPendingDelete] = useState<ApplicationItem | null>(null);
-    const [aufnahmedatum, setAufnahmedatum] = useState(todayInputValue);
+    const [joinedAt, setJoinedAt] = useState(todayInputValue);
     const [note, setNote] = useState("");
-    const [mitgliedIdOverride, setMitgliedIdOverride] = useState("");
+    const [memberNumberOverride, setMemberNumberOverride] = useState("");
 
     function run(
         action: (fd: FormData) => Promise<{ ok: boolean; message?: string }>,
@@ -114,9 +116,9 @@ export function ApplicationList({
     }
 
     function openAccept(application: ApplicationItem) {
-        setAufnahmedatum(todayInputValue());
+        setJoinedAt(todayInputValue());
         setNote("");
-        setMitgliedIdOverride(String(application.applicant.mitgliedId ?? nextMitgliedId));
+        setMemberNumberOverride(String(application.applicant.memberNumber ?? nextMemberNumber));
         setAccepting(application);
     }
 
@@ -124,9 +126,9 @@ export function ApplicationList({
         if (!accepting) return;
         const fd = new FormData();
         fd.set("id", accepting.id);
-        fd.set("aufnahmedatum", aufnahmedatum);
+        fd.set("joinedAt", joinedAt);
         fd.set("note", note);
-        fd.set("mitgliedId", mitgliedIdOverride);
+        fd.set("memberNumber", memberNumberOverride);
         run(acceptMembershipApplication, fd, () => setAccepting(null));
     }
 
@@ -168,10 +170,10 @@ export function ApplicationList({
                             <div className="grid min-w-0 gap-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="font-semibold">
-                                        {application.vorname} {application.name}
+                                        {application.firstName} {application.lastName}
                                     </span>
                                     <Badge tone={meta.tone}>{meta.label}</Badge>
-                                    {application.status === "EINGEREICHT" &&
+                                    {application.status === "SUBMITTED" &&
                                         !application.mailedAt && <Badge>Nicht gemailt</Badge>}
                                 </div>
                                 <p className="text-sm break-words text-muted">
@@ -189,7 +191,7 @@ export function ApplicationList({
                                 >
                                     {isOpen ? "Zuklappen" : "Details"}
                                 </Button>
-                                {application.status === "EINGEREICHT" && (
+                                {application.status === "SUBMITTED" && (
                                     <>
                                         <Button
                                             size="sm"
@@ -237,37 +239,37 @@ export function ApplicationList({
                                 <Separator />
                                 <div className="grid gap-4 text-sm sm:grid-cols-2">
                                     <DetailGroup title="Person">
-                                        <Detail label="Titel" value={application.titel} />
+                                        <Detail label="Titel" value={application.title} />
                                         <Detail
                                             label="Geburtsdatum"
                                             value={dateFormat.format(
-                                                new Date(application.geburtsdatum),
+                                                new Date(application.birthDate),
                                             )}
                                         />
                                         <Detail
                                             label="Anschrift"
-                                            value={`${application.strasse}, ${application.plz} ${application.stadt}, ${application.land}`}
+                                            value={formatAddress(application)}
                                         />
-                                        <Detail label="Telefon" value={application.telefon} />
+                                        <Detail label="Telefon" value={application.phone} />
                                     </DetailGroup>
 
                                     <DetailGroup title="Studium & Beruf">
-                                        <Detail label="Studiengang" value={application.studiengang} />
+                                        <Detail label="Studiengang" value={application.degreeProgram} />
                                         <Detail
                                             label="Studienzeitraum"
                                             value={formatRange(
-                                                application.studienbeginn,
-                                                application.studienende,
+                                                application.studyStart,
+                                                application.studyEnd,
                                             )}
                                         />
-                                        <Detail label="Arbeitgeber" value={application.arbeitgeber} />
-                                        <Detail label="Position" value={application.position} />
-                                        <Detail label="Berufsstand" value={application.berufsstand} />
-                                        <Detail label="Berufszweig" value={application.berufszweig} />
+                                        <Detail label="Arbeitgeber" value={application.employer} />
+                                        <Detail label="Position" value={application.jobTitle} />
+                                        <Detail label="Berufsstand" value={application.employmentStatus} />
+                                        <Detail label="Berufszweig" value={application.industry} />
                                     </DetailGroup>
 
                                     <DetailGroup title="Zahlungsweise">
-                                        {application.IBAN ? (
+                                        {application.iban ? (
                                             <>
                                                 <Detail
                                                     label="Weg"
@@ -275,15 +277,15 @@ export function ApplicationList({
                                                 />
                                                 <Detail
                                                     label="Kontoinhaber:in"
-                                                    value={application.kontoinhaber}
+                                                    value={application.accountHolder}
                                                 />
                                                 <div className="flex items-center justify-between gap-3">
                                                     <span className="text-muted">IBAN</span>
                                                     <span className="flex items-center gap-1">
                                                         <span className="font-mono text-[13px] font-medium">
                                                             {ibanVisible
-                                                                ? formatIban(application.IBAN)
-                                                                : maskIban(application.IBAN)}
+                                                                ? formatIban(application.iban)
+                                                                : maskIban(application.iban)}
                                                         </span>
                                                         <IconButton
                                                             type="button"
@@ -309,17 +311,13 @@ export function ApplicationList({
                                                         </IconButton>
                                                     </span>
                                                 </div>
-                                                <Detail label="BIC" value={application.BIC} />
-                                                <Detail
-                                                    label="Kreditinstitut"
-                                                    value={application.bank}
-                                                />
+                                                <Detail label="BIC" value={application.bic} />
                                                 <Detail
                                                     label="Mandat erteilt"
                                                     value={
-                                                        application.mandatDatum
+                                                        application.mandateSignedAt
                                                             ? dateFormat.format(
-                                                                  new Date(application.mandatDatum),
+                                                                  new Date(application.mandateSignedAt),
                                                               )
                                                             : null
                                                     }
@@ -344,7 +342,7 @@ export function ApplicationList({
                                     <DetailGroup title="Beitrag">
                                         <Detail
                                             label="Satz bei Antragstellung"
-                                            value={`${formatEuro(application.beitragRegularSnapshot)} regulär / ${formatEuro(application.beitragStudentSnapshot)} ermäßigt`}
+                                            value={`${formatEuro(application.regularFeeSnapshot)} regulär / ${formatEuro(application.studentFeeSnapshot)} ermäßigt`}
                                         />
                                         <Detail
                                             label="Studienjahre"
@@ -379,8 +377,8 @@ export function ApplicationList({
                     >
                         <Input
                             type="date"
-                            value={aufnahmedatum}
-                            onChange={(event) => setAufnahmedatum(event.target.value)}
+                            value={joinedAt}
+                            onChange={(event) => setJoinedAt(event.target.value)}
                         />
                     </Field>
                     <Field label="Mitglieds-ID" hint="Bei Bedarf überschreiben (falls noch nicht vergeben).">
@@ -389,16 +387,16 @@ export function ApplicationList({
                             min={1}
                             step={1}
                             className="max-w-32"
-                            value={mitgliedIdOverride}
-                            onChange={(event) => setMitgliedIdOverride(event.target.value)}
+                            value={memberNumberOverride}
+                            onChange={(event) => setMemberNumberOverride(event.target.value)}
                         />
                     </Field>
                     {accepting && (
                         <div className="grid gap-1 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                             <p className="font-semibold">Es werden folgende Beiträge angelegt:</p>
                             {accepting.feePlan.map((fee) => (
-                                <p key={fee.jahr} className="text-muted">
-                                    {fee.jahr}: {formatEuro(fee.beitrag)}
+                                <p key={fee.year} className="text-muted">
+                                    {fee.year}: {formatEuro(fee.amount)}
                                     {fee.isStudent ? " (ermäßigt)" : ""}
                                 </p>
                             ))}
@@ -460,7 +458,7 @@ export function ApplicationList({
                 size="sm"
             >
                 <p className="text-sm leading-relaxed text-muted">
-                    Der Antrag von {pendingDelete?.vorname} {pendingDelete?.name} wird endgültig
+                    Der Antrag von {pendingDelete?.firstName} {pendingDelete?.lastName} wird endgültig
                     gelöscht — inklusive des dokumentierten SEPA-Mandats. Das lässt sich nicht
                     rückgängig machen.
                 </p>

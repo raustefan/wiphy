@@ -5,8 +5,8 @@ import { ageAt, deriveStudentYears, isOldEnough, selectableStudentYears } from "
 
 /** Monatsbeträge, wie sie in `FeeDefault` stehen. */
 const defaults = [
-  { jahr: 2024, regular: 2, student: 1 },
-  { jahr: 2026, regular: 3, student: 1.5 },
+  { year: 2024, regular: 2, student: 1 },
+  { year: 2026, regular: 3, student: 1.5 },
 ];
 
 /** Aufnahme zum Jahresanfang — volle 12 Monate, keine anteilige Kürzung. */
@@ -27,50 +27,50 @@ test("without any configured rate the fee is zero rather than undefined", () => 
 
 test("the fee plan starts at the joining year and never before it", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2026),
+    joinedAt: januar(2026),
     studentYears: [2024, 2025, 2026, 2027],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
   });
   assert.deepEqual(
-    plan.map((f) => f.jahr),
+    plan.map((f) => f.year),
     [2026, 2027],
   );
 });
 
 test("student years get the reduced rate, gaps in between the regular one", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2026),
+    joinedAt: januar(2026),
     // Unterbrechung im Studium: 2027 ist regulär beitragspflichtig.
     studentYears: [2026, 2028],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
   });
   assert.deepEqual(plan, [
-    { jahr: 2026, isStudent: true, beitrag: 18 },
-    { jahr: 2027, isStudent: false, beitrag: 36 },
-    { jahr: 2028, isStudent: true, beitrag: 18 },
+    { year: 2026, isStudent: true, amount: 18 },
+    { year: 2027, isStudent: false, amount: 36 },
+    { year: 2028, isStudent: true, amount: 18 },
   ]);
 });
 
 test("the plan ends with the joining year when no later student year is claimed", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2026),
+    joinedAt: januar(2026),
     studentYears: [2026],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
   });
-  assert.deepEqual(plan, [{ jahr: 2026, isStudent: true, beitrag: 18 }]);
+  assert.deepEqual(plan, [{ year: 2026, isStudent: true, amount: 18 }]);
 });
 
 test("without student years only the joining year is planned", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2026),
+    joinedAt: januar(2026),
     studentYears: [],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
   });
-  assert.deepEqual(plan, [{ jahr: 2026, isStudent: false, beitrag: 36 }]);
+  assert.deepEqual(plan, [{ year: 2026, isStudent: false, amount: 36 }]);
 });
 
 test("age is counted in full years, so a birthday tomorrow does not count yet", () => {
@@ -96,35 +96,35 @@ test("student years are derived from the end of studies and capped at the lookah
 test("joining mid-year charges only the remaining twelfths (§ 5 Abs. 3)", () => {
   // Beitritt im Juli: Januar bis Juni sind vergangen, es bleiben 6 Monate.
   const plan = planApplicationFees({
-    aufnahmedatum: new Date(2026, 6, 15),
+    joinedAt: new Date(2026, 6, 15),
     studentYears: [],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
   });
-  assert.deepEqual(plan, [{ jahr: 2026, isStudent: false, beitrag: 18 }]);
+  assert.deepEqual(plan, [{ year: 2026, isStudent: false, amount: 18 }]);
 });
 
 test("without direct debit the plan carries the rounded-up 10% surcharge", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2026),
+    joinedAt: januar(2026),
     studentYears: [],
     defaults,
-    bankeinzug: false,
+    directDebit: false,
   });
   // 36,- € + 10 % = 39,60 € -> auf volle Euro aufgerundet.
-  assert.deepEqual(plan, [{ jahr: 2026, isStudent: false, beitrag: 40 }]);
+  assert.deepEqual(plan, [{ year: 2026, isStudent: false, amount: 40 }]);
 });
 
 test("a migrated member gets every year from joining up to untilYear", () => {
   const plan = planApplicationFees({
-    aufnahmedatum: januar(2022),
+    joinedAt: januar(2022),
     studentYears: [2023],
     defaults,
-    bankeinzug: true,
+    directDebit: true,
     untilYear: 2026,
   });
   assert.deepEqual(
-    plan.map((f) => [f.jahr, f.isStudent]),
+    plan.map((f) => [f.year, f.isStudent]),
     [[2022, false], [2023, true], [2024, false], [2025, false], [2026, false]],
   );
 });

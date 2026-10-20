@@ -56,14 +56,14 @@ export async function GET() {
     MembershipCertificatePdf({
       member: {
         id: profile.id,
-        titel: profile.titel,
-        vorname: profile.vorname,
-        name: profile.name,
-        mitgliedId: profile.mitgliedId,
+        title: profile.title,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        memberNumber: profile.memberNumber,
       },
       facts: certificateFacts({
         status: profile.status,
-        aufnahmedatum: profile.aufnahmedatum,
+        joinedAt: profile.joinedAt,
         fees,
         issuedAt,
       }),

@@ -39,7 +39,7 @@ const MIN_SEARCH_LEN = 2;
 const MAX_SEARCH_RESULTS = 50;
 
 /** Sortier- und Anzeigereihenfolge der Empfängergruppen nach Mitgliedsstatus. */
-const STATUS_ORDER = ["EHRENMITGLIED", "ORDENTLICHES_MITGLIED", "KEIN_MITGLIED"] as const;
+const STATUS_ORDER = ["HONORARY_MEMBER", "REGULAR_MEMBER", "NON_MEMBER"] as const;
 
 const STATUS_RANK: Record<string, number> = Object.fromEntries(
     STATUS_ORDER.map((status, index) => [status, index]),

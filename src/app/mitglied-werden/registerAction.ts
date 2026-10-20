@@ -32,7 +32,7 @@ export async function registerUser(formData: FormData) {
     return executeAction(async () => {
         await requireFeatureEnabled("REGISTRATION");
 
-        const { vorname, name, email, geburtsdatum, password, securityAnswer, website, renderedAt } =
+        const { firstName, lastName, email, birthDate, password, securityAnswer, website, renderedAt } =
             parseFormData(registerFormSchema, formData);
 
         // Vorgezogen, weil auch die stillen Abbrüche unten protokolliert werden
@@ -123,11 +123,11 @@ export async function registerUser(formData: FormData) {
 
         const user = await prisma.user.create({
             data: {
-                vorname,
-                name,
+                firstName,
+                lastName,
                 email,
-                geburtsdatum,
-                password: hashedPassword,
+                birthDate,
+                passwordHash: hashedPassword,
                 emailVerified: false,
                 // Markiert das Konto als „öffentlich registriert, noch nicht
                 // bestätigt“. Daran hängen die Admin-Benachrichtigung (kommt
@@ -173,7 +173,7 @@ export async function registerUser(formData: FormData) {
             try {
                 await sendEmail({
                     to: email,
-                    message: registrationConfirmationMessage({ vorname, name }, verificationUrl),
+                    message: registrationConfirmationMessage({ firstName, lastName }, verificationUrl),
                 });
             } catch (error) {
                 console.error("Failed to send registration confirmation email:", error);

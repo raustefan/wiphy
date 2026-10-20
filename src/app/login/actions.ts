@@ -69,7 +69,7 @@ export async function resendVerificationEmail(email: string) {
                 await sendEmail({
                     to: user.email,
                     message: registrationConfirmationMessage(
-                        { vorname: user.vorname, name: user.name },
+                        { firstName: user.firstName, lastName: user.lastName },
                         verificationUrl,
                     ),
                 });

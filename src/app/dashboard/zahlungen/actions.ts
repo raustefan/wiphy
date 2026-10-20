@@ -21,12 +21,10 @@ export async function updateBankDetails(formData: FormData) {
         const parsed = parseFormData(bankUpdateSchema, formData);
 
         await updateOwnBankDetails(currentUser.id, {
-            bank: parsed.bank ?? null,
-            BLZ: parsed.BLZ ?? null,
-            KTO: parsed.KTO ?? null,
-            IBAN: parsed.IBAN ?? null,
-            BIC: parsed.BIC ?? null,
-            bankeinzug: parsed.bankeinzug,
+            accountHolder: parsed.accountHolder ?? null,
+            iban: parsed.iban ?? null,
+            bic: parsed.bic ?? null,
+            directDebit: parsed.directDebit,
         });
 
         revalidatePath("/dashboard/zahlungen");

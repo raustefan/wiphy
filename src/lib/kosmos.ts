@@ -17,7 +17,7 @@ export const STAGE_CLASS =
 export type KosmosMember = {
   id: string;
   name: string;
-  studiengang: string | null;
+  degreeProgram: string | null;
   /** Bruchjahre, z. B. 2008.75 für Oktober 2008. */
   start: number;
   /** `null` heißt: studiert noch. */

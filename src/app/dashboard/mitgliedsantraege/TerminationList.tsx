@@ -29,9 +29,9 @@ export type TerminationItem = {
     member: {
         id: string;
         email: string;
-        vorname: string;
-        name: string;
-        mitgliedId: number | null;
+        firstName: string;
+        lastName: string;
+        memberNumber: number | null;
         loginDisabled: boolean;
     };
 };
@@ -41,8 +41,8 @@ function statusMeta(item: TerminationItem): {
     tone: "warning" | "positive" | "neutral";
 } {
     if (item.completedAt) return { label: "Ausgetreten", tone: "neutral" };
-    if (item.status === "EINGEREICHT") return { label: "Offen", tone: "warning" };
-    if (item.status === "BESTAETIGT") return { label: "Bestätigt", tone: "positive" };
+    if (item.status === "SUBMITTED") return { label: "Offen", tone: "warning" };
+    if (item.status === "CONFIRMED") return { label: "Bestätigt", tone: "positive" };
     return { label: "Zurückgenommen", tone: "neutral" };
 }
 
@@ -96,11 +96,11 @@ export function TerminationList({
                                         href={`/dashboard/users/${item.member.id}`}
                                         className="font-semibold underline-offset-2 hover:underline"
                                     >
-                                        {item.member.vorname} {item.member.name}
+                                        {item.member.firstName} {item.member.lastName}
                                     </Link>
-                                    {item.member.mitgliedId != null && (
+                                    {item.member.memberNumber != null && (
                                         <span className="text-sm text-muted">
-                                            Nr. {item.member.mitgliedId}
+                                            Nr. {item.member.memberNumber}
                                         </span>
                                     )}
                                     <Badge tone={meta.tone}>{meta.label}</Badge>
@@ -128,7 +128,7 @@ export function TerminationList({
                                     </p>
                                 )}
                             </div>
-                            {item.status === "EINGEREICHT" && (
+                            {item.status === "SUBMITTED" && (
                                 <Button
                                     size="sm"
                                     disabled={isPending}

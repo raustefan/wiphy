@@ -7,10 +7,10 @@ export function findUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });
 }
 
-export function findUserByMitgliedIdExcludingUser(mitgliedId: number, excludedUserId: string) {
+export function findUserByMemberNumberExcludingUser(memberNumber: number, excludedUserId: string) {
   return prisma.user.findFirst({
     where: {
-      mitgliedId,
+      memberNumber,
       id: { not: excludedUserId },
     },
   });

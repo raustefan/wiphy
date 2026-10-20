@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Check, Dices, X } from "lucide-react";
 import { PasswordInput } from "@/components/PasswordField";
 import { IbanInput } from "@/components/IbanInput";
+import { CountryOptions } from "@/components/CountryOptions";
+import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { generatePassword, PASSWORD_MIN_LENGTH } from "@/lib/passwordStrength";
 import { STUDENT_YEAR_LOOKAHEAD } from "@/lib/membership";
 import { STATUS_OPTIONS, ROLE_OPTIONS } from "@/lib/statusLabels";
@@ -28,13 +30,13 @@ export function NewUserForm() {
     const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
     const [password, setPassword] = useState("");
-    const [status, setStatus] = useState("KEIN_MITGLIED");
-    const [aufnahmedatum, setAufnahmedatum] = useState("");
-    const [selbstzahler, setSelbstzahler] = useState(false);
+    const [status, setStatus] = useState("NON_MEMBER");
+    const [joinedAt, setJoinedAt] = useState("");
+    const [selfPayer, setSelfPayer] = useState(false);
     const [studentYears, setStudentYears] = useState<number[]>([]);
 
     const currentYear = new Date().getFullYear();
-    const joinYear = aufnahmedatum ? Number(aufnahmedatum.slice(0, 4)) : null;
+    const joinYear = joinedAt ? Number(joinedAt.slice(0, 4)) : null;
     const feeYears =
         joinYear && joinYear <= currentYear + STUDENT_YEAR_LOOKAHEAD
             ? Array.from(
@@ -42,7 +44,7 @@ export function NewUserForm() {
                   (_, i) => joinYear + i,
               )
             : [];
-    const showFees = status === "ORDENTLICHES_MITGLIED" && feeYears.length > 0;
+    const showFees = status === "REGULAR_MEMBER" && feeYears.length > 0;
 
     function toggleStudentYear(year: number) {
         setStudentYears((years) =>
@@ -66,11 +68,11 @@ export function NewUserForm() {
             {error && <Callout tone="danger">{error}</Callout>}
 
             <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Vorname" required htmlFor="new-user-vorname">
-                    <Input id="new-user-vorname" name="vorname" required />
+                <Field label="Vorname" required htmlFor="new-user-firstName">
+                    <Input id="new-user-firstName" name="firstName" required />
                 </Field>
-                <Field label="Nachname" required htmlFor="new-user-name">
-                    <Input id="new-user-name" name="name" required />
+                <Field label="Nachname" required htmlFor="new-user-lastName">
+                    <Input id="new-user-lastName" name="lastName" required />
                 </Field>
             </div>
 
@@ -148,37 +150,45 @@ export function NewUserForm() {
                 </Field>
                 <Field
                     label="Mitglieds-ID"
-                    htmlFor="new-user-mitgliedId"
+                    htmlFor="new-user-memberNumber"
                     hint="Leer lassen: Mitglieder bekommen automatisch die nächste freie ID."
                 >
-                    <Input id="new-user-mitgliedId" name="mitgliedId" type="number" min={0} />
+                    <Input id="new-user-memberNumber" name="memberNumber" type="number" min={0} />
                 </Field>
-                <Field label="Vereinsbeitritt" htmlFor="new-user-aufnahmedatum">
+                <Field label="Vereinsbeitritt" htmlFor="new-user-joinedAt">
                     <Input
-                        id="new-user-aufnahmedatum"
-                        name="aufnahmedatum"
+                        id="new-user-joinedAt"
+                        name="joinedAt"
                         type="date"
-                        value={aufnahmedatum}
-                        onChange={(e) => setAufnahmedatum(e.target.value)}
+                        value={joinedAt}
+                        onChange={(e) => setJoinedAt(e.target.value)}
                     />
                 </Field>
-                <Field label="Geburtsdatum" htmlFor="new-user-geburtsdatum">
-                    <Input id="new-user-geburtsdatum" name="geburtsdatum" type="date" />
+                <Field label="Geburtsdatum" htmlFor="new-user-birthDate">
+                    <Input id="new-user-birthDate" name="birthDate" type="date" />
                 </Field>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Straße und Hausnummer" htmlFor="new-user-strasse" className="sm:col-span-2">
-                    <Input id="new-user-strasse" name="strasse" autoComplete="off" />
+                <Field label="Land" htmlFor="new-user-countryCode" className="sm:col-span-2">
+                    <Select id="new-user-countryCode" name="countryCode" defaultValue={DEFAULT_COUNTRY}>
+                        <CountryOptions />
+                    </Select>
                 </Field>
-                <Field label="PLZ" htmlFor="new-user-plz">
-                    <Input id="new-user-plz" name="plz" autoComplete="off" />
+                <Field label="Straße und Hausnummer" htmlFor="new-user-addressLine1">
+                    <Input id="new-user-addressLine1" name="addressLine1" autoComplete="off" />
                 </Field>
-                <Field label="Ort" htmlFor="new-user-stadt">
-                    <Input id="new-user-stadt" name="stadt" autoComplete="off" />
+                <Field label="Adresszusatz" htmlFor="new-user-addressLine2">
+                    <Input id="new-user-addressLine2" name="addressLine2" autoComplete="off" />
                 </Field>
-                <Field label="Land" htmlFor="new-user-land">
-                    <Input id="new-user-land" name="land" autoComplete="off" />
+                <Field label="PLZ" htmlFor="new-user-postalCode">
+                    <Input id="new-user-postalCode" name="postalCode" autoComplete="off" />
+                </Field>
+                <Field label="Ort" htmlFor="new-user-city">
+                    <Input id="new-user-city" name="city" autoComplete="off" />
+                </Field>
+                <Field label="Region" htmlFor="new-user-region">
+                    <Input id="new-user-region" name="region" placeholder="Bundesstaat, Provinz …" autoComplete="off" />
                 </Field>
             </div>
 
@@ -186,26 +196,26 @@ export function NewUserForm() {
 
             <label className="flex cursor-pointer items-center gap-2">
                 <Checkbox
-                    name="selbstzahler"
-                    checked={selbstzahler}
-                    onChange={(e) => setSelbstzahler(e.target.checked)}
+                    name="selfPayer"
+                    checked={selfPayer}
+                    onChange={(e) => setSelfPayer(e.target.checked)}
                 />
                 <span className="text-sm font-semibold">Nimmt nicht an SEPA teil (überweist selbst)</span>
             </label>
 
-            {!selbstzahler && (
+            {!selfPayer && (
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Mandatserteilung" htmlFor="new-user-mandat">
-                        <Input id="new-user-mandat" name="mandatserteilung" type="date" />
+                        <Input id="new-user-mandat" name="mandateSignedAt" type="date" />
                     </Field>
-                    <Field label="Bankinstitut" htmlFor="new-user-bank">
-                        <Input id="new-user-bank" name="bank" autoComplete="off" />
+                    <Field label="Kontoinhaber:in" htmlFor="new-user-accountHolder" hint="Leer = Name des Mitglieds.">
+                        <Input id="new-user-accountHolder" name="accountHolder" autoComplete="off" />
                     </Field>
                     <Field label="IBAN" htmlFor="new-user-iban">
-                        <IbanInput id="new-user-iban" name="IBAN" />
+                        <IbanInput id="new-user-iban" name="iban" />
                     </Field>
                     <Field label="BIC" htmlFor="new-user-bic">
-                        <Input id="new-user-bic" name="BIC" autoComplete="off" />
+                        <Input id="new-user-bic" name="bic" autoComplete="off" />
                     </Field>
                 </div>
             )}
@@ -213,7 +223,7 @@ export function NewUserForm() {
             {showFees && (
                 <>
                     <label className="flex cursor-pointer items-start gap-2">
-                        <Checkbox name="allePaid" />
+                        <Checkbox name="allPaid" />
                         <span className="text-sm">
                             <span className="font-semibold">Alle Beiträge bezahlt</span>
                             <span className="block text-muted">
@@ -238,14 +248,14 @@ export function NewUserForm() {
                     </fieldset>
                 </>
             )}
-            {status === "ORDENTLICHES_MITGLIED" && !showFees && (
+            {status === "REGULAR_MEMBER" && !showFees && (
                 <p className="text-sm text-muted">
                     Mit Vereinsbeitritt werden die Beiträge ab dem Beitrittsjahr angelegt.
                 </p>
             )}
 
             <Field label="Bemerkung" htmlFor="new-user-kommentar" hint="Erscheint als Zahlungskommentar auf der Beitragsseite.">
-                <TextArea id="new-user-kommentar" name="zahlungsKommentar" rows={3} />
+                <TextArea id="new-user-kommentar" name="adminNote" rows={3} />
             </Field>
 
             <div className="mt-2 flex flex-col gap-3 sm:flex-row">

@@ -62,53 +62,44 @@ async function updateUser(formData: FormData) {
         idToEdit: parsed.id,
         currentUserRole: currentUser.role,
         currentUserId: currentUser.id,
-        // basic
-        name: parsed.name,
-        vorname: parsed.vorname,
+        // Person
+        lastName: parsed.lastName,
+        firstName: parsed.firstName,
         email: parsed.email,
-        titel: parsed.titel,
-        // kontakt & adresse
-        plz: parsed.plz,
-        stadt: parsed.stadt,
-        strasse: parsed.strasse,
-        telefon: parsed.telefon,
-        land: parsed.land,
-        geburtsdatum: parsed.geburtsdatum,
-        website: parsed.website,
-        // studium
-        studiengang: parsed.studiengang,
-        studienbeginn: parsed.studienbeginn,
-        studienende: parsed.studienende,
-        diplomarbeit: parsed.diplomarbeit,
-        bachelorarbeit: parsed.bachelorarbeit,
-        masterarbeit: parsed.masterarbeit,
-        dissertation: parsed.dissertation,
-        // beruf
-        arbeitgeber: parsed.arbeitgeber,
-        berufsstand: parsed.berufsstand,
-        berufszweig: parsed.berufszweig,
-        position: parsed.position,
-        praktika: parsed.praktika,
-        berufserfahrung: parsed.berufserfahrung,
-        // zahlungs/admin
-        zahlungsKommentar: parsed.zahlungsKommentar,
-        bank: parsed.bank,
-        BLZ: parsed.BLZ,
-        KTO: parsed.KTO,
+        title: parsed.title,
+        birthDate: parsed.birthDate,
+        phone: parsed.phone,
+        // Anschrift
+        addressLine1: parsed.addressLine1,
+        addressLine2: parsed.addressLine2,
+        postalCode: parsed.postalCode,
+        city: parsed.city,
+        region: parsed.region,
+        countryCode: parsed.countryCode,
+        // Studium & Beruf
+        degreeProgram: parsed.degreeProgram,
+        studyStart: parsed.studyStart,
+        studyEnd: parsed.studyEnd,
+        employer: parsed.employer,
+        employmentStatus: parsed.employmentStatus,
+        industry: parsed.industry,
+        jobTitle: parsed.jobTitle,
+        linkedinUrl: parsed.linkedinUrl,
+        // Zahlung & Verwaltung (nur Admins)
+        adminNote: parsed.adminNote,
         // Ein abgewähltes Kontrollkästchen schickt der Browser gar nicht mit.
         // Nach dem Schema kommt es damit als `undefined` an, und `undefined`
         // heißt für `buildUserUpdateData` „nicht anfassen“ — ein Haken ließ
         // sich hier also setzen, aber nie wieder entfernen. Dieses Formular
-        // zeigt Admins immer alle vier Kästchen, „fehlt“ bedeutet hier deshalb
+        // zeigt Admins das Kästchen immer, „fehlt“ bedeutet hier deshalb
         // „abgewählt“ und nicht „unbekannt“.
-        bankeinzug: parsed.bankeinzug ?? false,
-        zuwendungsbesch: parsed.zuwendungsbesch ?? false,
-        mahnung: parsed.mahnung,
-        IBAN: parsed.IBAN,
-        BIC: parsed.BIC,
-        mandatserteilung: parsed.mandatserteilung,
-        datensperren: parsed.datensperren ?? false,
-        ausschluss: parsed.ausschluss ?? false,
+        directDebit: parsed.directDebit ?? false,
+        accountHolder: parsed.accountHolder,
+        iban: parsed.iban,
+        bic: parsed.bic,
+        mandateReference: parsed.mandateReference,
+        mandateSignedAt: parsed.mandateSignedAt,
+        terminationReason: parsed.terminationReason,
         // Das eigene Konto kann ein Admin hier nicht sperren (das Kästchen
         // fehlt dann im Formular) — sonst sperrte er sich selbst aus.
         loginDisabled:
@@ -119,16 +110,16 @@ async function updateUser(formData: FormData) {
                 ? parsed.role
                 : undefined,
         status:
-            parsed.status === "ORDENTLICHES_MITGLIED" ||
-                parsed.status === "EHRENMITGLIED" ||
-                parsed.status === "KEIN_MITGLIED"
+            parsed.status === "REGULAR_MEMBER" ||
+                parsed.status === "HONORARY_MEMBER" ||
+                parsed.status === "NON_MEMBER"
                 ? parsed.status
                 : undefined,
-        mitgliedId: parsed.mitgliedId,
+        memberNumber: parsed.memberNumber,
     });
 
     if (!result.ok) {
-        redirect(`/dashboard/users/${parsed.id}?mitgliedIdError=1`);
+        redirect(`/dashboard/users/${parsed.id}?memberNumberError=1`);
     }
 
     revalidatePath("/dashboard");
@@ -156,7 +147,7 @@ export default async function EditUserPage({
 }: {
     params: Promise<{ id: string }>;
     searchParams?: Promise<{
-        mitgliedIdError?: string;
+        memberNumberError?: string;
         validationError?: string;
     }>;
 }) {
@@ -190,7 +181,7 @@ export default async function EditUserPage({
     }
 
     const isSelf = currentUser.id === user.id;
-    const isMember = user.status !== "KEIN_MITGLIED";
+    const isMember = user.status !== "NON_MEMBER";
     const canDelete = isAdmin && !isSelf;
     const [ownTermination, terminationEnabled, contactFormEnabled] = isSelf
         ? await Promise.all([
@@ -199,7 +190,7 @@ export default async function EditUserPage({
               isFeatureEnabled("CONTACT_FORM"),
           ])
         : [null, false, false];
-    const displayName = [user.vorname, user.name].filter(Boolean).join(" ") || user.email;
+    const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
     const formErrors: { title: string; detail: string }[] = [];
     if (resolvedSearchParams?.validationError === "1") {
@@ -208,7 +199,7 @@ export default async function EditUserPage({
             detail: "Ein oder mehrere Felder sind ungültig oder fehlen.",
         });
     }
-    if (isAdmin && resolvedSearchParams?.mitgliedIdError === "1") {
+    if (isAdmin && resolvedSearchParams?.memberNumberError === "1") {
         formErrors.push({
             title: "Diese Mitglieds-ID ist bereits einem anderen Mitglied zugeordnet.",
             detail: "Bitte wähle eine andere eindeutige Nummer.",

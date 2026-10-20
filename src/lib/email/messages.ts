@@ -10,11 +10,11 @@ import type { EmailBlock, EmailMessage } from "./blocks";
 import { VEREIN } from "./branding";
 import { formatDate, formatDateTime } from "@/lib/format";
 
-type Person = { vorname?: string | null; name?: string | null };
+type Person = { firstName?: string | null; lastName?: string | null };
 
 /** Persönliche Anrede, mit neutralem Fallback wenn kein Name bekannt ist. */
 function greeting(person: Person | undefined, fallback = "Mitglied"): EmailBlock {
-  const full = `${person?.vorname?.trim() ?? ""} ${person?.name?.trim() ?? ""}`.trim();
+  const full = `${person?.firstName?.trim() ?? ""} ${person?.lastName?.trim() ?? ""}`.trim();
   return { type: "text", content: `Hallo ${full || fallback},` };
 }
 
@@ -178,13 +178,13 @@ export function contactRequestMessage(request: {
 }
 
 export function adminRegistrationNoticeMessage(newUser: {
-  vorname: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 }): EmailMessage {
   return {
     subject: "Neuer Benutzer registriert",
-    preheader: `${newUser.vorname} ${newUser.name} wartet auf Freischaltung.`,
+    preheader: `${newUser.firstName} ${newUser.lastName} wartet auf Freischaltung.`,
     signature: "system",
     blocks: [
       { type: "text", content: "Hallo Admin," },
@@ -192,7 +192,7 @@ export function adminRegistrationNoticeMessage(newUser: {
       {
         type: "facts",
         items: [
-          { label: "Name", value: `${newUser.vorname} ${newUser.name}` },
+          { label: "Name", value: `${newUser.firstName} ${newUser.lastName}` },
           { label: "E-Mail", value: newUser.email },
         ],
       },
@@ -207,14 +207,14 @@ export function adminRegistrationNoticeMessage(newUser: {
  * Kanal, und die vollständigen Antragsdaten stehen ohnehin hinter dem Login.
  */
 export function membershipApplicationNoticeMessage(application: {
-  vorname: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   dashboardUrl: string;
 }): EmailMessage {
   return {
     subject: "Neuer Antrag auf Vereinsmitgliedschaft",
-    preheader: `${application.vorname} ${application.name} möchte Mitglied werden.`,
+    preheader: `${application.firstName} ${application.lastName} möchte Mitglied werden.`,
     signature: "system",
     blocks: [
       { type: "text", content: "Hallo Admin," },
@@ -222,7 +222,7 @@ export function membershipApplicationNoticeMessage(application: {
       {
         type: "facts",
         items: [
-          { label: "Name", value: `${application.vorname} ${application.name}` },
+          { label: "Name", value: `${application.firstName} ${application.lastName}` },
           { label: "E-Mail", value: application.email },
         ],
       },
@@ -246,10 +246,10 @@ export function membershipReceivedMessage(applicant: Person): EmailMessage {
 }
 
 export function membershipApprovedMessage(params: Person & {
-  aufnahmedatum: Date;
-  mitgliedId: number;
+  joinedAt: Date;
+  memberNumber: number;
 }): EmailMessage {
-  const datum = params.aufnahmedatum.toLocaleDateString("de-DE", {
+  const datum = params.joinedAt.toLocaleDateString("de-DE", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -265,7 +265,7 @@ export function membershipApprovedMessage(params: Person & {
         type: "facts",
         items: [
           { label: "Aufnahmedatum", value: datum },
-          { label: "Mitgliedsnummer", value: String(params.mitgliedId) },
+          { label: "Mitgliedsnummer", value: String(params.memberNumber) },
         ],
       },
       { type: "text", content: "Deine Beiträge findest du ab sofort in deinem Mitgliederbereich." },
@@ -336,16 +336,16 @@ export function terminationReceivedMessage(params: Person & {
 }
 
 export function terminationNoticeMessage(params: {
-  vorname: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  mitgliedId: number | null;
+  memberNumber: number | null;
   submittedAt: Date;
   effectiveAt: Date;
   dashboardUrl: string;
 }): EmailMessage {
   return {
-    subject: `Austrittserklärung: ${params.vorname} ${params.name}`,
+    subject: `Austrittserklärung: ${params.firstName} ${params.lastName}`,
     preheader: "Ein Mitglied hat die Mitgliedschaft gekündigt.",
     blocks: [
       { type: "text", content: "Hallo," },
@@ -353,9 +353,9 @@ export function terminationNoticeMessage(params: {
       {
         type: "facts",
         items: [
-          { label: "Name", value: `${params.vorname} ${params.name}` },
+          { label: "Name", value: `${params.firstName} ${params.lastName}` },
           { label: "E-Mail", value: params.email },
-          { label: "Mitgliedsnummer", value: params.mitgliedId != null ? String(params.mitgliedId) : "—" },
+          { label: "Mitgliedsnummer", value: params.memberNumber != null ? String(params.memberNumber) : "—" },
           { label: "Eingegangen am", value: formatDateTime(params.submittedAt) },
           { label: "Austritt zum", value: formatDate(params.effectiveAt) },
         ],

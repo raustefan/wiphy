@@ -35,9 +35,9 @@ export async function updateFeeAmount(formData: FormData) {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/users");
 
-    const { userId, year, beitrag } = parseFormData(feeAmountUpdateSchema, formData);
+    const { userId, year, amount } = parseFormData(feeAmountUpdateSchema, formData);
 
-    await setFeeAmount({ userId, year, amount: beitrag });
+    await setFeeAmount({ userId, year, amount: amount });
     revalidatePath("/dashboard/users");
   });
 }
@@ -66,13 +66,13 @@ export async function initializeBillingYear(formData: FormData) {
 
     // Nur beitragspflichtige Mitglieder, die in dem Jahr schon dabei waren —
     // für alle anderen wäre die Zeile sinnlos.
-    const users = (await getFeeLiableUsers()).filter((u) => wasMemberInYear(year, u.aufnahmedatum));
+    const users = (await getFeeLiableUsers()).filter((u) => wasMemberInYear(year, u.joinedAt));
 
     // Status des zuletzt erfassten Jahres je Mitglied, in einer Abfrage:
     // absteigend sortiert liefert `distinct` die jüngste Zeile.
     const lastFees = await prisma.memberFee.findMany({
-      where: { userId: { in: users.map((u) => u.id) }, jahr: { lt: year } },
-      orderBy: { jahr: "desc" },
+      where: { userId: { in: users.map((u) => u.id) }, year: { lt: year } },
+      orderBy: { year: "desc" },
       distinct: ["userId"],
       select: { userId: true, isStudent: true },
     });
@@ -81,8 +81,8 @@ export async function initializeBillingYear(formData: FormData) {
     await prisma.memberFee.createMany({
       data: users.map((user) => ({
         userId: user.id,
-        jahr: year,
-        bezahlt: false,
+        year: year,
+        paid: false,
         // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der
         // Status des zuletzt erfassten Jahres fortgeschrieben.
         isStudent:
@@ -91,8 +91,8 @@ export async function initializeBillingYear(formData: FormData) {
             : (lastIsStudent.get(user.id) ?? false),
         // Kein Betrag: die Zeile folgt automatisch den Standard-Beitragssätzen,
         // bis ein Admin sie ausdrücklich als Ausnahme überschreibt.
-        beitrag: 0,
-        beitragManuell: false,
+        amount: 0,
+        manualAmount: false,
       })),
       // Bestehende Zeilen bleiben unangetastet.
       skipDuplicates: true,
@@ -119,9 +119,9 @@ export async function saveFeeDefault(formData: FormData) {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/users");
 
-    const { jahr, regular, student } = parseFormData(feeDefaultSchema, formData);
+    const { year, regular, student } = parseFormData(feeDefaultSchema, formData);
 
-    await setFeeDefault(jahr, regular, student);
+    await setFeeDefault(year, regular, student);
     revalidatePath("/dashboard/users");
   });
 }
@@ -131,12 +131,12 @@ export async function deleteFeeDefaultYear(formData: FormData) {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/users");
 
-    const jahr = Number(formData.get("jahr"));
-    if (!Number.isInteger(jahr)) {
+    const year = Number(formData.get("year"));
+    if (!Number.isInteger(year)) {
       throw new AppError("VALIDATION_ERROR", "Ungültiges Jahr.");
     }
 
-    await removeFeeDefault(jahr);
+    await removeFeeDefault(year);
     revalidatePath("/dashboard/users");
   });
 }

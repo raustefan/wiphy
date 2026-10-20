@@ -6,8 +6,8 @@
 import { TIME_ZONE } from "@/lib/berlinTime";
 
 /** Vorbelegte Mandatsreferenz eines Mitglieds, z. B. `ID158-Mandat0`. */
-export function defaultMandateId(mitgliedId: number | null): string {
-  return mitgliedId === null ? "" : `ID${mitgliedId}-Mandat0`;
+export function defaultMandateId(memberNumber: number | null): string {
+  return memberNumber === null ? "" : `ID${memberNumber}-Mandat0`;
 }
 
 /** Zeichen, die in Mandatsreferenzen erlaubt sind (max. 35 Stellen, kein Leerzeichen). */
@@ -47,10 +47,24 @@ export function sepaText(value: string, max = 70): string {
 
 export type SepaCreditor = { name: string; iban: string; bic?: string; creditorId: string };
 
+/**
+ * Anschrift des Zahlers, strukturiert. Pflicht bei Konten außerhalb des EWR
+ * (CH, GB …): ohne sie weist die Bank die Lastschrift zurück.
+ */
+export type SepaDebtorAddress = {
+  street: string | null;
+  postalCode: string | null;
+  city: string;
+  region: string | null;
+  /** ISO 3166-1 alpha-2 */
+  country: string;
+};
+
 export type SepaDebit = {
   name: string;
   iban: string;
   bic?: string;
+  address?: SepaDebtorAddress | null;
   amount: number;
   mandateId: string;
   /** YYYY-MM-DD */
@@ -58,6 +72,18 @@ export type SepaDebit = {
   endToEndId: string;
   remittance: string;
 };
+
+function postalAddress(address?: SepaDebtorAddress | null): string {
+  if (!address) return "";
+  const parts = [
+    address.street && `<StrtNm>${sepaText(address.street)}</StrtNm>`,
+    address.postalCode && `<PstCd>${sepaText(address.postalCode, 16)}</PstCd>`,
+    `<TwnNm>${sepaText(address.city, 35)}</TwnNm>`,
+    address.region && `<CtrySubDvsn>${sepaText(address.region, 35)}</CtrySubDvsn>`,
+    `<Ctry>${address.country}</Ctry>`,
+  ];
+  return `<PstlAdr>${parts.filter(Boolean).join("")}</PstlAdr>`;
+}
 
 function agent(bic?: string): string {
   return bic
@@ -89,7 +115,7 @@ export function buildPain008(input: {
         <InstdAmt Ccy="EUR">${d.amount.toFixed(2)}</InstdAmt>
         <DrctDbtTx><MndtRltdInf><MndtId>${d.mandateId}</MndtId><DtOfSgntr>${d.mandateDate}</DtOfSgntr></MndtRltdInf></DrctDbtTx>
         <DbtrAgt>${agent(d.bic)}</DbtrAgt>
-        <Dbtr><Nm>${sepaText(d.name)}</Nm></Dbtr>
+        <Dbtr><Nm>${sepaText(d.name)}</Nm>${postalAddress(d.address)}</Dbtr>
         <DbtrAcct><Id><IBAN>${d.iban}</IBAN></Id></DbtrAcct>
         <RmtInf><Ustrd>${sepaText(d.remittance, 140)}</Ustrd></RmtInf>
       </DrctDbtTxInf>`,

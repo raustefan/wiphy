@@ -96,7 +96,7 @@ export async function resetPassword(token: string, password: string) {
     const updatedUser = await prisma.user.update({
       where: { email: resetToken.email },
       data: {
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         passwordChangedAt: new Date(),
         emailVerified: true,
       },
