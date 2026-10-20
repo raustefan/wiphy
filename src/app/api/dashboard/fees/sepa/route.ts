@@ -54,13 +54,14 @@ export async function POST(request: Request) {
     if (!isValidMandateId(mandateId)) errors.push(`${c.name}: Mandatsreferenz fehlt oder ist ungültig.`);
     if (!DATE.test(mandateDate)) errors.push(`${c.name}: Mandatsdatum fehlt.`);
     return {
-      name: c.name,
+      name: c.debtorName,
       iban: c.iban!,
       bic: c.bic ?? undefined,
+      address: c.address,
       amount: c.amount,
       mandateId,
       mandateDate,
-      endToEndId: `BEITRAG-${year}-${c.mitgliedId ?? c.id}`,
+      endToEndId: `BEITRAG-${year}-${c.memberNumber ?? c.id}`,
       remittance,
     };
   });

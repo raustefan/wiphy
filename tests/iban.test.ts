@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatIban, isValidBic, isValidIban, maskIban, normalizeIban } from "../src/lib/iban";
+import { formatIban, isSepaIban, isValidBic, isValidIban, maskIban, normalizeIban, requiresBic } from "../src/lib/iban";
 
 test("accepts a valid German IBAN regardless of spacing and case", () => {
   assert.ok(isValidIban("DE89 3704 0044 0532 0130 00"));
@@ -43,4 +43,20 @@ test("BIC accepts 8 and 11 characters, rejects other lengths", () => {
   assert.ok(isValidBic("COBADEFFXXX"));
   assert.equal(isValidBic("COBADEF"), false);
   assert.equal(isValidBic("COBADEFFXX"), false);
+});
+
+test("accepts IBANs outside the EU and tells SEPA from non-SEPA accounts", () => {
+  const swiss = "CH93 0076 2011 6238 5295 7";
+  const british = "GB29 NWBK 6016 1331 9268 19";
+  const turkish = "TR33 0006 1005 1978 6457 8413 26";
+  for (const iban of [swiss, british, turkish]) assert.ok(isValidIban(iban));
+
+  assert.ok(isSepaIban("DE89370400440532013000"));
+  assert.ok(isSepaIban(swiss));
+  assert.equal(isSepaIban(turkish), false);
+
+  // Außerhalb des EWR verlangt die Lastschrift den BIC.
+  assert.equal(requiresBic("DE89370400440532013000"), false);
+  assert.ok(requiresBic(swiss));
+  assert.ok(requiresBic(british));
 });

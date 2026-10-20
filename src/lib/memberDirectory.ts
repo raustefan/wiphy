@@ -3,21 +3,21 @@
  * React-Imports, damit Seite, Client-Tabelle und Tests dieselbe Logik teilen.
  */
 
-type Status = "ORDENTLICHES_MITGLIED" | "EHRENMITGLIED" | "KEIN_MITGLIED";
+type Status = "REGULAR_MEMBER" | "HONORARY_MEMBER" | "NON_MEMBER";
 
 export type DirectoryAccountBase = {
-  vorname: string;
+  firstName: string;
   name: string | null;
   email: string;
-  mitgliedId: number | null;
+  memberNumber: number | null;
   role: string;
   status: Status | string;
   emailVerified: boolean;
   loginDisabled: boolean;
-  bankeinzug: boolean;
+  directDebit: boolean;
   /** Steht in der Beitragsliste des gewählten Jahres. */
   inFeeYear: boolean;
-  fees: Array<{ jahr: number; bezahlt: boolean; isStudent: boolean; beitrag: number }>;
+  fees: Array<{ year: number; paid: boolean; isStudent: boolean; amount: number }>;
 };
 
 export type DirectoryFilters = {
@@ -48,11 +48,11 @@ export function hasAnyFilter(filters: DirectoryFilters): boolean {
 }
 
 /** Beitragszeile des Jahres — nur für Konten in der Beitragsliste. */
-export function yearFee<F extends { jahr: number }>(
+export function yearFee<F extends { year: number }>(
   account: { inFeeYear: boolean; fees: F[] },
   year: number,
 ): F | undefined {
-  return account.inFeeYear ? account.fees.find((f) => f.jahr === year) : undefined;
+  return account.inFeeYear ? account.fees.find((f) => f.year === year) : undefined;
 }
 
 /** Erlaubte Werte je Auswahlfilter — alles andere aus der URL wird verworfen. */
@@ -95,7 +95,7 @@ export function matchesFilters(
   const term = filters.search.trim().toLowerCase();
   if (
     term &&
-    !`${account.vorname} ${account.name ?? ""} ${account.email} ${account.mitgliedId ?? ""}`
+    !`${account.firstName} ${account.name ?? ""} ${account.email} ${account.memberNumber ?? ""}`
       .toLowerCase()
       .includes(term)
   ) {
@@ -105,12 +105,12 @@ export function matchesFilters(
   if (filters.access === "active" && (account.loginDisabled || !account.emailVerified)) return false;
   if (filters.access === "locked" && !account.loginDisabled) return false;
   if (filters.access === "unverified" && account.emailVerified) return false;
-  if (filters.sepa && account.bankeinzug !== (filters.sepa === "yes")) return false;
+  if (filters.sepa && account.directDebit !== (filters.sepa === "yes")) return false;
 
   if (hasFeeFilter(filters)) {
     const fee = yearFee(account, year);
     if (!fee) return false;
-    if (filters.payment && fee.bezahlt !== (filters.payment === "paid")) return false;
+    if (filters.payment && fee.paid !== (filters.payment === "paid")) return false;
     if (filters.tariff && fee.isStudent !== (filters.tariff === "student")) return false;
   }
   return true;
@@ -122,18 +122,18 @@ export function matchesFilters(
  * Ehrenmitglieder, dann die Konten ohne Mitgliedschaft.
  */
 export function groupAccounts<T extends DirectoryAccountBase>(accounts: T[]) {
-  const isMemberRow = (a: T) => a.inFeeYear || a.status === "ORDENTLICHES_MITGLIED";
+  const isMemberRow = (a: T) => a.inFeeYear || a.status === "REGULAR_MEMBER";
   return {
     members: accounts.filter(isMemberRow),
-    honorary: accounts.filter((a) => !isMemberRow(a) && a.status === "EHRENMITGLIED"),
-    none: accounts.filter((a) => !isMemberRow(a) && a.status !== "EHRENMITGLIED"),
+    honorary: accounts.filter((a) => !isMemberRow(a) && a.status === "HONORARY_MEMBER"),
+    none: accounts.filter((a) => !isMemberRow(a) && a.status !== "HONORARY_MEMBER"),
   };
 }
 
 export const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 export function directoryStats(
-  accounts: Array<DirectoryAccountBase & { aufnahmedatum: Date | string | null }>,
+  accounts: Array<DirectoryAccountBase & { joinedAt: Date | string | null }>,
   year: number,
   now: Date = new Date(),
 ) {
@@ -151,18 +151,18 @@ export function directoryStats(
   };
   for (const account of accounts) {
     if (account.role === "ADMIN") stats.admins++;
-    if (account.status === "ORDENTLICHES_MITGLIED") stats.regular++;
-    else if (account.status === "EHRENMITGLIED") stats.honorary++;
+    if (account.status === "REGULAR_MEMBER") stats.regular++;
+    else if (account.status === "HONORARY_MEMBER") stats.honorary++;
     else stats.none++;
 
     const fee = yearFee(account, year);
     if (fee) {
-      stats.feeDue += fee.beitrag;
-      if (fee.bezahlt) stats.feePaid += fee.beitrag;
-      if (fee.isStudent && account.status === "ORDENTLICHES_MITGLIED") stats.students++;
+      stats.feeDue += fee.amount;
+      if (fee.paid) stats.feePaid += fee.amount;
+      if (fee.isStudent && account.status === "REGULAR_MEMBER") stats.students++;
     }
 
-    const joinedAt = account.aufnahmedatum ? new Date(account.aufnahmedatum).getTime() : NaN;
+    const joinedAt = account.joinedAt ? new Date(account.joinedAt).getTime() : NaN;
     if (joinedAt > since && joinedAt <= now.getTime()) stats.joined++;
   }
   return stats;

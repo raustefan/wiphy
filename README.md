@@ -134,9 +134,11 @@ Das vollständige Schema steht in `prisma/schema.prisma` und ist dort mit
 ausführlichen Kommentaren zu den fachlichen Hintergründen versehen. Die
 wichtigsten Modelle im Überblick:
 
-- **`User`** — Mitglieds- und Kontodaten: Stammdaten, Adresse, Studium/Beruf,
-  Bankverbindung, Rolle (`MEMBER`/`ADMIN`), Mitgliedsstatus
-  (`ORDENTLICHES_MITGLIED`, `EHRENMITGLIED`, `KEIN_MITGLIED`).
+- **`User`** — Mitglieds- und Kontodaten: Stammdaten, internationale Anschrift
+  (`addressLine1/2`, `postalCode`, `city`, `region`, `countryCode` nach
+  ISO 3166-1), Studium/Beruf, SEPA-Mandat (`accountHolder`, `iban`, `bic`,
+  `mandateReference`, `mandateSignedAt`), Rolle (`MEMBER`/`ADMIN`),
+  Mitgliedsstatus (`REGULAR_MEMBER`, `HONORARY_MEMBER`, `NON_MEMBER`).
 - **`MemberFee`** — Mitgliedsbeitrag pro Nutzer und Jahr, inkl. manuellem
   Override für Sonderfälle.
 - **`FeeDefault`** — Standard-Monatsbeiträge (regulär/Student) je Beitragsjahr,
@@ -149,6 +151,8 @@ wichtigsten Modelle im Überblick:
   `/vorstand` und die Mail-Signatur.
 - **`MembershipApplication`** — Aufnahmeanträge als Snapshot der zum
   Antragszeitpunkt gültigen Daten (Person, Studium, SEPA, Einwilligungen).
+- **`MembershipTermination`** — Ende einer Mitgliedschaft mit Grund
+  (`RESIGNATION`, `EXCLUSION`, `DECEASED`).
 - **`ContactRequest`** — Eingänge des öffentlichen Kontaktformulars.
 - **`FeatureFlag`** — Ein- und Ausschalter für einzelne Funktionen (siehe
   [Feature Flags](#feature-flags)).

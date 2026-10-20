@@ -11,7 +11,7 @@ export function findApplicationById(id: string) {
     where: { id },
     include: {
       user: {
-        select: { id: true, email: true, vorname: true, name: true, status: true, mitgliedId: true },
+        select: { id: true, email: true, firstName: true, lastName: true, status: true, memberNumber: true },
       },
     },
   });
@@ -24,14 +24,14 @@ export function findApplications(status?: MembershipApplicationStatus, limit = 2
     take: limit,
     include: {
       user: {
-        select: { id: true, email: true, vorname: true, name: true, status: true, mitgliedId: true },
+        select: { id: true, email: true, firstName: true, lastName: true, status: true, memberNumber: true },
       },
     },
   });
 }
 
 export function countOpenApplications() {
-  return prisma.membershipApplication.count({ where: { status: "EINGEREICHT" } });
+  return prisma.membershipApplication.count({ where: { status: "SUBMITTED" } });
 }
 
 export function markApplicationMailed(id: string) {
@@ -46,7 +46,7 @@ export function deleteApplication(id: string) {
 }
 
 /** Höchste vergebene Mitglieds-ID; Basis für die automatische Vergabe. */
-export async function getMaxMitgliedId(): Promise<number> {
-  const result = await prisma.user.aggregate({ _max: { mitgliedId: true } });
-  return result._max.mitgliedId ?? 0;
+export async function getMaxMemberNumber(): Promise<number> {
+  const result = await prisma.user.aggregate({ _max: { memberNumber: true } });
+  return result._max.memberNumber ?? 0;
 }

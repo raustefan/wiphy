@@ -20,7 +20,7 @@ export function findUsersWithFees(userId: string, role: Role, year?: number) {
       role !== "ADMIN"
         ? { id: userId }
         : year === undefined
-          ? { status: "ORDENTLICHES_MITGLIED" }
+          ? { status: "REGULAR_MEMBER" }
           : undefined,
     orderBy: { createdAt: "asc" },
     include: { fees: true },
@@ -30,8 +30,8 @@ export function findUsersWithFees(userId: string, role: Role, year?: number) {
 /** Beitragspflichtige Mitglieder — Zielgruppe beim Anlegen eines Geschäftsjahres. */
 export function findFeeLiableUsers() {
   return prisma.user.findMany({
-    where: { status: "ORDENTLICHES_MITGLIED" },
-    select: { id: true, studentYears: true, aufnahmedatum: true },
+    where: { status: "REGULAR_MEMBER" },
+    select: { id: true, studentYears: true, joinedAt: true },
   });
 }
 
@@ -44,16 +44,16 @@ export function findFeeLiableUsers() {
  * nichts hinterlegt ist, wird der Status des zuletzt erfassten Jahres
  * fortgeschrieben.
  */
-async function resolveIsStudentDefault(userId: string, jahr: number): Promise<boolean> {
+async function resolveIsStudentDefault(userId: string, year: number): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { studentYears: true },
   });
-  if (user?.studentYears.length) return user.studentYears.includes(jahr);
+  if (user?.studentYears.length) return user.studentYears.includes(year);
 
   const lastFee = await prisma.memberFee.findFirst({
-    where: { userId, jahr: { lt: jahr } },
-    orderBy: { jahr: "desc" },
+    where: { userId, year: { lt: year } },
+    orderBy: { year: "desc" },
   });
   return lastFee?.isStudent ?? false;
 }
@@ -63,7 +63,7 @@ async function resolveIsStudentDefault(userId: string, jahr: number): Promise<bo
  * würde ein im Dashboard umgeschalteter Sonderstatus von der Erklärung des
  * Mitglieds überstimmt, sobald eine neue Zeile angelegt wird.
  */
-async function syncStudentYear(userId: string, jahr: number, isStudent: boolean) {
+async function syncStudentYear(userId: string, year: number, isStudent: boolean) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { studentYears: true },
@@ -71,8 +71,8 @@ async function syncStudentYear(userId: string, jahr: number, isStudent: boolean)
   if (!user) return;
 
   const years = new Set(user.studentYears);
-  if (isStudent) years.add(jahr);
-  else years.delete(jahr);
+  if (isStudent) years.add(year);
+  else years.delete(year);
 
   await prisma.user.update({
     where: { id: userId },
@@ -80,20 +80,20 @@ async function syncStudentYear(userId: string, jahr: number, isStudent: boolean)
   });
 }
 
-export async function upsertFeeStatus(userId: string, jahr: number, field: "paid" | "isStudent", value: boolean) {
+export async function upsertFeeStatus(userId: string, year: number, field: "paid" | "isStudent", value: boolean) {
   if (field === "isStudent") {
-    await syncStudentYear(userId, jahr, value);
+    await syncStudentYear(userId, year, value);
   }
 
   const existing = await prisma.memberFee.findUnique({
-    where: { userId_jahr: { userId, jahr } },
+    where: { userId_year: { userId, year } },
   });
 
   if (existing) {
     return prisma.memberFee.update({
-      where: { userId_jahr: { userId, jahr } },
+      where: { userId_year: { userId, year } },
       data: {
-        [field === "paid" ? "bezahlt" : "isStudent"]: value,
+        [field === "paid" ? "paid" : "isStudent"]: value,
       },
     });
   }
@@ -101,45 +101,45 @@ export async function upsertFeeStatus(userId: string, jahr: number, field: "paid
   return prisma.memberFee.create({
     data: {
       userId,
-      jahr,
-      bezahlt: field === "paid" ? value : false,
+      year,
+      paid: field === "paid" ? value : false,
       isStudent:
-        field === "isStudent" ? value : await resolveIsStudentDefault(userId, jahr),
-      beitrag: 0,
+        field === "isStudent" ? value : await resolveIsStudentDefault(userId, year),
+      amount: 0,
     },
   });
 }
 
 /** Setzt einen abweichenden Betrag und markiert die Zeile als manuell gepflegt. */
-export async function upsertFeeAmount(userId: string, jahr: number, beitrag: number) {
+export async function upsertFeeAmount(userId: string, year: number, amount: number) {
   const existing = await prisma.memberFee.findUnique({
-    where: { userId_jahr: { userId, jahr } },
+    where: { userId_year: { userId, year } },
   });
 
   if (existing) {
     return prisma.memberFee.update({
-      where: { userId_jahr: { userId, jahr } },
-      data: { beitrag, beitragManuell: true },
+      where: { userId_year: { userId, year } },
+      data: { amount, manualAmount: true },
     });
   }
 
   return prisma.memberFee.create({
     data: {
       userId,
-      jahr,
-      bezahlt: false,
-      isStudent: await resolveIsStudentDefault(userId, jahr),
-      beitrag,
-      beitragManuell: true,
+      year,
+      paid: false,
+      isStudent: await resolveIsStudentDefault(userId, year),
+      amount,
+      manualAmount: true,
     },
   });
 }
 
 /** Hebt eine manuelle Festlegung auf; die Zeile folgt wieder dem Standardbeitrag. */
-export function clearFeeAmountOverride(userId: string, jahr: number) {
+export function clearFeeAmountOverride(userId: string, year: number) {
   return prisma.memberFee.update({
-    where: { userId_jahr: { userId, jahr } },
-    data: { beitrag: 0, beitragManuell: false },
+    where: { userId_year: { userId, year } },
+    data: { amount: 0, manualAmount: false },
   });
 }
 
@@ -153,17 +153,17 @@ export async function findExistingFeeYears(): Promise<number[]> {
   const rows = await prisma.memberFee.findMany({
     // Archivzeilen gelöschter Konten eröffnen kein Beitragsjahr.
     where: { archivedAt: null },
-    distinct: ["jahr"],
-    select: { jahr: true },
-    orderBy: { jahr: "asc" },
+    distinct: ["year"],
+    select: { year: true },
+    orderBy: { year: "asc" },
   });
-  return rows.map((row) => row.jahr);
+  return rows.map((row) => row.year);
 }
 
 export function updateFeeComment(userId: string, comment: string | null) {
   return prisma.user.update({
     where: { id: userId },
-    data: { zahlungsKommentar: comment },
+    data: { adminNote: comment },
   });
 }
 
@@ -181,11 +181,11 @@ export async function archiveFeesOfUser(tx: Prisma.TransactionClient, userId: st
   const user = await tx.user.findUnique({
     where: { id: userId },
     select: {
-      vorname: true,
-      name: true,
-      mitgliedId: true,
-      bankeinzug: true,
-      aufnahmedatum: true,
+      firstName: true,
+      lastName: true,
+      memberNumber: true,
+      directDebit: true,
+      joinedAt: true,
       fees: true,
     },
   });
@@ -194,24 +194,24 @@ export async function archiveFeesOfUser(tx: Prisma.TransactionClient, userId: st
   const defaults = await tx.feeDefault.findMany();
   const archivedAt = new Date();
   for (const fee of user.fees) {
-    const rates = resolveFeeDefault(defaults, fee.jahr);
-    const beitrag = fee.beitragManuell
-      ? fee.beitrag
+    const rates = resolveFeeDefault(defaults, fee.year);
+    const amount = fee.manualAmount
+      ? fee.amount
       : calculateFeeAmount({
           monthlyRegular: rates.regular,
           monthlyStudent: rates.student,
           isStudent: fee.isStudent,
-          bankeinzug: user.bankeinzug ?? false,
-          jahr: fee.jahr,
-          aufnahmedatum: user.aufnahmedatum,
+          directDebit: user.directDebit,
+          year: fee.year,
+          joinedAt: user.joinedAt,
         });
     await tx.memberFee.update({
       where: { id: fee.id },
       data: {
-        beitrag,
-        beitragManuell: true,
-        archivName: `${user.vorname} ${user.name}`.trim(),
-        archivMitgliedId: user.mitgliedId,
+        amount,
+        manualAmount: true,
+        archivedName: `${user.firstName} ${user.lastName}`.trim(),
+        archivedMemberNumber: user.memberNumber,
         archivedAt,
       },
     });
@@ -222,13 +222,13 @@ export async function archiveFeesOfUser(tx: Prisma.TransactionClient, userId: st
 export function findArchivedFees() {
   return prisma.memberFee.findMany({
     where: { archivedAt: { not: null } },
-    orderBy: [{ archivName: "asc" }, { jahr: "asc" }],
+    orderBy: [{ archivedName: "asc" }, { year: "asc" }],
   });
 }
 
 /** Löscht Archivzeilen nach Ablauf der Aufbewahrungsfrist. */
 export function pruneArchivedFees(now: Date = new Date()) {
   return prisma.memberFee.deleteMany({
-    where: { archivedAt: { not: null }, jahr: { lt: feeRetentionCutoffYear(now) } },
+    where: { archivedAt: { not: null }, year: { lt: feeRetentionCutoffYear(now) } },
   });
 }

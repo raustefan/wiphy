@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { CheckCircle2, Clock, Info, LayoutDashboard } from "lucide-react";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 import { getOptionalUser } from "@/lib/server/authz";
@@ -44,8 +45,8 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
     const [{ konto }, currentUser] = await Promise.all([searchParams, getOptionalUser()]);
 
     const profile = currentUser ? await getEditableUser(currentUser.id) : null;
-    const status = profile?.status ?? currentUser?.status ?? "KEIN_MITGLIED";
-    const isMember = status !== "KEIN_MITGLIED";
+    const status = profile?.status ?? currentUser?.status ?? "NON_MEMBER";
+    const isMember = status !== "NON_MEMBER";
 
     const openApplication =
         currentUser && !isMember ? await getOpenApplication(currentUser.id) : null;
@@ -212,29 +213,31 @@ async function ApplicationStage({
     return (
         <ApplicationWizard
             initial={{
-                vorname: profile?.vorname ?? "",
-                name: profile?.name ?? "",
-                titel: profile?.titel ?? "",
-                geburtsdatum: toDateInput(profile?.geburtsdatum),
-                strasse: profile?.strasse ?? "",
-                plz: profile?.plz ?? "",
-                stadt: profile?.stadt ?? "",
-                land: profile?.land ?? "Deutschland",
-                telefon: profile?.telefon ?? "",
-                studiengang: profile?.studiengang ?? "",
-                studienbeginn: toDateInput(profile?.studienbeginn),
-                studienende: toDateInput(profile?.studienende),
-                arbeitgeber: profile?.arbeitgeber ?? "",
-                berufsstand: profile?.berufsstand ?? "",
-                berufszweig: profile?.berufszweig ?? "",
-                position: profile?.position ?? "",
-                kontoinhaber: `${profile?.vorname ?? ""} ${profile?.name ?? ""}`.trim(),
-                IBAN: profile?.IBAN ?? "",
-                BIC: profile?.BIC ?? "",
-                bank: profile?.bank ?? "",
+                firstName: profile?.firstName ?? "",
+                lastName: profile?.lastName ?? "",
+                title: profile?.title ?? "",
+                birthDate: toDateInput(profile?.birthDate),
+                addressLine1: profile?.addressLine1 ?? "",
+                addressLine2: profile?.addressLine2 ?? "",
+                postalCode: profile?.postalCode ?? "",
+                city: profile?.city ?? "",
+                region: profile?.region ?? "",
+                countryCode: profile?.countryCode ?? DEFAULT_COUNTRY,
+                phone: profile?.phone ?? "",
+                degreeProgram: profile?.degreeProgram ?? "",
+                studyStart: toDateInput(profile?.studyStart),
+                studyEnd: toDateInput(profile?.studyEnd),
+                employer: profile?.employer ?? "",
+                employmentStatus: profile?.employmentStatus ?? "",
+                industry: profile?.industry ?? "",
+                jobTitle: profile?.jobTitle ?? "",
+                accountHolder:
+                    profile?.accountHolder ?? `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim(),
+                iban: profile?.iban ?? "",
+                bic: profile?.bic ?? "",
             }}
             selectableYears={selectableStudentYears(currentYear)}
-            preselectedYears={deriveStudentYears(profile?.studienende, currentYear)}
+            preselectedYears={deriveStudentYears(profile?.studyEnd, currentYear)}
             rates={resolveFeeDefault(feeDefaults, currentYear)}
             feeYear={currentYear}
         />

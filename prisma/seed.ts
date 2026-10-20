@@ -18,9 +18,9 @@ async function main() {
         update: {},
         create: {
             email: "admin@wiphy.de",
-            name: "Admin",
-            vorname: "Admin",
-            password: hashed,
+            lastName: "Admin",
+            firstName: "Admin",
+            passwordHash: hashed,
             role: "ADMIN",
             emailVerified: true,
         },

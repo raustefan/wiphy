@@ -1,17 +1,17 @@
 import { prisma } from "@/lib/prisma";
 
 export function findFeeDefaults() {
-  return prisma.feeDefault.findMany({ orderBy: { jahr: "asc" } });
+  return prisma.feeDefault.findMany({ orderBy: { year: "asc" } });
 }
 
-export function upsertFeeDefault(jahr: number, regular: number, student: number) {
+export function upsertFeeDefault(year: number, regular: number, student: number) {
   return prisma.feeDefault.upsert({
-    where: { jahr },
+    where: { year },
     update: { regular, student },
-    create: { jahr, regular, student },
+    create: { year, regular, student },
   });
 }
 
-export function deleteFeeDefault(jahr: number) {
-  return prisma.feeDefault.delete({ where: { jahr } });
+export function deleteFeeDefault(year: number) {
+  return prisma.feeDefault.delete({ where: { year } });
 }

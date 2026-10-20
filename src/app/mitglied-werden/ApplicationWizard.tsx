@@ -24,10 +24,13 @@ import {
     Checkbox,
     Field,
     Input,
+    Select,
     Separator,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { formatIban } from "@/lib/iban";
+import { countryName } from "@/lib/countries";
+import { CountryOptions } from "@/components/CountryOptions";
 import { IbanInput } from "@/components/IbanInput";
 import {
     CONSENT_VERSION,
@@ -43,7 +46,7 @@ import { annualFee, billableMonths, withSurcharge } from "@/lib/feeCalculation";
 import {
     applicationBankSchema,
     applicationPaymentSchema,
-    applicationPersonSchema,
+    applicationPersonStepSchema,
     applicationStudySchema,
     type PaymentMethod,
 } from "@/lib/membershipFormSchemas";
@@ -60,7 +63,7 @@ const STEP_ICONS = [FileText, UserRound, GraduationCap, Wallet, Banknote, Check]
  */
 const STEP_SCHEMAS = [
     null,
-    applicationPersonSchema,
+    applicationPersonStepSchema,
     applicationStudySchema,
     applicationPaymentSchema,
     applicationBankSchema,
@@ -197,34 +200,48 @@ export function ApplicationWizard({
                     />
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Vorname">
-                            <Input enterKeyHint="next" name="vorname" defaultValue={initial.vorname} autoComplete="given-name" />
+                            <Input enterKeyHint="next" name="firstName" defaultValue={initial.firstName} autoComplete="given-name" />
                         </Field>
                         <Field label="Nachname">
-                            <Input enterKeyHint="next" name="name" defaultValue={initial.name} autoComplete="family-name" />
+                            <Input enterKeyHint="next" name="lastName" defaultValue={initial.lastName} autoComplete="family-name" />
                         </Field>
                         <Field label="Titel (optional)">
-                            <Input enterKeyHint="next" name="titel" defaultValue={initial.titel} />
+                            <Input enterKeyHint="next" name="title" defaultValue={initial.title} />
                         </Field>
                         <Field label="Geburtsdatum">
-                            <Input enterKeyHint="next" type="date" name="geburtsdatum" defaultValue={initial.geburtsdatum} />
+                            <Input enterKeyHint="next" type="date" name="birthDate" defaultValue={initial.birthDate} />
                         </Field>
                     </div>
+                    <Field label="Land">
+                        <Select name="countryCode" defaultValue={initial.countryCode} autoComplete="country">
+                            <CountryOptions current={initial.countryCode} />
+                        </Select>
+                    </Field>
                     <Field label="Straße und Hausnummer">
-                        <Input enterKeyHint="next" name="strasse" defaultValue={initial.strasse} autoComplete="street-address" />
+                        <Input enterKeyHint="next" name="addressLine1" defaultValue={initial.addressLine1} autoComplete="address-line1" />
+                    </Field>
+                    <Field label="Adresszusatz (optional)" hint="c/o, Apartment, Postfach …">
+                        <Input enterKeyHint="next" name="addressLine2" defaultValue={initial.addressLine2} autoComplete="address-line2" />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-3">
                         <Field label="PLZ">
-                            <Input enterKeyHint="next" name="plz" defaultValue={initial.plz} autoComplete="postal-code" />
+                            <Input enterKeyHint="next" name="postalCode" defaultValue={initial.postalCode} autoComplete="postal-code" />
                         </Field>
                         <Field label="Ort">
-                            <Input enterKeyHint="next" name="stadt" defaultValue={initial.stadt} autoComplete="address-level2" />
+                            <Input enterKeyHint="next" name="city" defaultValue={initial.city} autoComplete="address-level2" />
                         </Field>
-                        <Field label="Land">
-                            <Input enterKeyHint="next" name="land" defaultValue={initial.land} autoComplete="country-name" />
+                        <Field label="Region (optional)">
+                            <Input
+                                enterKeyHint="next"
+                                name="region"
+                                defaultValue={initial.region}
+                                placeholder="Bundesstaat, Provinz …"
+                                autoComplete="address-level1"
+                            />
                         </Field>
                     </div>
                     <Field label="Telefon (optional)">
-                        <Input enterKeyHint="next" name="telefon" defaultValue={initial.telefon} autoComplete="tel" />
+                        <Input enterKeyHint="next" name="phone" defaultValue={initial.phone} autoComplete="tel" />
                     </Field>
                 </div>
 
@@ -234,17 +251,17 @@ export function ApplicationWizard({
                         description="Alle Angaben sind freiwillig — außer den Studienjahren, wenn du die ermäßigte Beitragsstufe nutzen möchtest."
                     />
                     <Field label="Studiengang">
-                        <Input enterKeyHint="next" name="studiengang" defaultValue={initial.studiengang} />
+                        <Input enterKeyHint="next" name="degreeProgram" defaultValue={initial.degreeProgram} />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Studienbeginn">
-                            <Input enterKeyHint="next" type="date" name="studienbeginn" defaultValue={initial.studienbeginn} />
+                            <Input enterKeyHint="next" type="date" name="studyStart" defaultValue={initial.studyStart} />
                         </Field>
                         <Field
                             label="Studienende (ggf. voraussichtlich)"
                             hint="Bestimmt die Vorauswahl der Studienjahre."
                         >
-                            <Input enterKeyHint="next" type="date" name="studienende" defaultValue={initial.studienende} />
+                            <Input enterKeyHint="next" type="date" name="studyEnd" defaultValue={initial.studyEnd} />
                         </Field>
                     </div>
 
@@ -287,16 +304,16 @@ export function ApplicationWizard({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Arbeitgeber">
-                            <Input enterKeyHint="next" name="arbeitgeber" defaultValue={initial.arbeitgeber} />
+                            <Input enterKeyHint="next" name="employer" defaultValue={initial.employer} />
                         </Field>
                         <Field label="Position">
-                            <Input enterKeyHint="next" name="position" defaultValue={initial.position} />
+                            <Input enterKeyHint="next" name="jobTitle" defaultValue={initial.jobTitle} />
                         </Field>
                         <Field label="Berufsstand">
-                            <Input enterKeyHint="next" name="berufsstand" defaultValue={initial.berufsstand} />
+                            <Input enterKeyHint="next" name="employmentStatus" defaultValue={initial.employmentStatus} />
                         </Field>
                         <Field label="Berufszweig">
-                            <Input enterKeyHint="next" name="berufszweig" defaultValue={initial.berufszweig} />
+                            <Input enterKeyHint="next" name="industry" defaultValue={initial.industry} />
                         </Field>
                     </div>
                 </div>
@@ -366,30 +383,25 @@ export function ApplicationWizard({
                             <Field label="Kontoinhaber:in">
                                 <Input
                                     enterKeyHint="next"
-                                    name="kontoinhaber"
-                                    defaultValue={initial.kontoinhaber}
+                                    name="accountHolder"
+                                    defaultValue={initial.accountHolder}
                                     autoComplete="name"
                                 />
                             </Field>
                             <Field label="IBAN" hint="Wird beim Absenden auf ihre Prüfziffer geprüft.">
-                                <IbanInput defaultValue={initial.IBAN} />
+                                <IbanInput defaultValue={initial.iban} />
                             </Field>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <Field
-                                    label="BIC (optional)"
-                                    hint="Für Konten im SEPA-Raum nicht erforderlich."
-                                >
-                                    <Input enterKeyHint="next" name="BIC" defaultValue={initial.BIC} autoComplete="off" />
-                                </Field>
-                                <Field label="Kreditinstitut (optional)">
-                                    <Input enterKeyHint="next" name="bank" defaultValue={initial.bank} />
-                                </Field>
-                            </div>
+                            <Field
+                                label="BIC"
+                                hint="Nur nötig für Konten außerhalb der EU und des EWR, z. B. in der Schweiz oder in Großbritannien."
+                            >
+                                <Input enterKeyHint="next" name="bic" defaultValue={initial.bic} autoComplete="off" />
+                            </Field>
 
                             <MandateText />
 
                             <label className="flex cursor-pointer items-start gap-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
-                                <Checkbox name="bankeinzug" className="mt-0.5" />
+                                <Checkbox name="directDebit" className="mt-0.5" />
                                 <span className="text-pretty">
                                     Ich ermächtige den WirtschaftsPhysik Alumni e.V., den
                                     Mitgliedsbeitrag von meinem Konto mittels Lastschrift
@@ -524,7 +536,7 @@ export function ApplicationWizard({
 
                     <div className="grid gap-3">
                         <label className="flex cursor-pointer items-start gap-3 text-sm">
-                            <Checkbox name="satzungAccepted" className="mt-0.5" />
+                            <Checkbox name="bylawsAccepted" className="mt-0.5" />
                             <span className="text-pretty">
                                 Ich erkenne die{" "}
                                 <a href={SATZUNG_URL} className="font-semibold text-physics underline">
@@ -535,7 +547,7 @@ export function ApplicationWizard({
                             </span>
                         </label>
                         <label className="flex cursor-pointer items-start gap-3 text-sm">
-                            <Checkbox name="datenschutzAccepted" className="mt-0.5" />
+                            <Checkbox name="privacyAccepted" className="mt-0.5" />
                             <span className="text-pretty">
                                 Ich habe die{" "}
                                 <a
@@ -748,26 +760,27 @@ function MandateText() {
 }
 
 const SUMMARY_FIELDS: Array<[string, string]> = [
-    ["vorname", "Vorname"],
-    ["name", "Nachname"],
-    ["titel", "Titel"],
-    ["geburtsdatum", "Geburtsdatum"],
-    ["strasse", "Straße"],
-    ["plz", "PLZ"],
-    ["stadt", "Ort"],
-    ["land", "Land"],
-    ["telefon", "Telefon"],
-    ["studiengang", "Studiengang"],
-    ["studienbeginn", "Studienbeginn"],
-    ["studienende", "Studienende"],
-    ["arbeitgeber", "Arbeitgeber"],
-    ["position", "Position"],
-    ["berufsstand", "Berufsstand"],
-    ["berufszweig", "Berufszweig"],
-    ["kontoinhaber", "Kontoinhaber:in"],
-    ["IBAN", "IBAN"],
-    ["BIC", "BIC"],
-    ["bank", "Kreditinstitut"],
+    ["firstName", "Vorname"],
+    ["lastName", "Nachname"],
+    ["title", "Titel"],
+    ["birthDate", "Geburtsdatum"],
+    ["addressLine1", "Straße"],
+    ["addressLine2", "Adresszusatz"],
+    ["postalCode", "PLZ"],
+    ["city", "Ort"],
+    ["region", "Region"],
+    ["countryCode", "Land"],
+    ["phone", "Telefon"],
+    ["degreeProgram", "Studiengang"],
+    ["studyStart", "Studienbeginn"],
+    ["studyEnd", "Studienende"],
+    ["employer", "Arbeitgeber"],
+    ["jobTitle", "Position"],
+    ["employmentStatus", "Berufsstand"],
+    ["industry", "Berufszweig"],
+    ["accountHolder", "Kontoinhaber:in"],
+    ["iban", "IBAN"],
+    ["bic", "BIC"],
 ];
 
 function SummaryBlock({
@@ -791,7 +804,11 @@ function SummaryBlock({
                     <div key={key} className="flex justify-between gap-4">
                         <dt className="text-muted">{label}</dt>
                         <dd className="min-w-0 truncate font-medium">
-                            {key === "IBAN" ? formatIban(summary[key]) : summary[key]}
+                            {key === "iban"
+                                ? formatIban(summary[key])
+                                : key === "countryCode"
+                                  ? countryName(summary[key])
+                                  : summary[key]}
                         </dd>
                     </div>
                 ))}

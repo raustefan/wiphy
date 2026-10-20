@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DoorOpen, FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
-import { getApplications, getMaxMitgliedId } from "@/lib/server/services/membershipService";
+import { getApplications, getMaxMemberNumber } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { planApplicationFees } from "@/lib/feeDefaults";
@@ -27,7 +27,7 @@ export default async function MembershipApplicationsPage() {
         feeDefaults,
         applicationEnabled,
         mailEnabled,
-        maxMitgliedId,
+        maxMemberNumber,
         terminations,
         terminationEnabled,
         terminationMailEnabled,
@@ -37,19 +37,19 @@ export default async function MembershipApplicationsPage() {
             getFeeDefaults(),
             isFeatureEnabled("MEMBERSHIP_APPLICATION"),
             isFeatureEnabled("MEMBERSHIP_APPLICATION_MAIL"),
-            getMaxMitgliedId(),
+            getMaxMemberNumber(),
             getTerminations(),
             isFeatureEnabled("MEMBERSHIP_TERMINATION"),
             isFeatureEnabled("MEMBERSHIP_TERMINATION_MAIL"),
             isFeatureEnabled("MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL"),
         ]);
     // Vorschau der ID, die eine Annahme vergeben würde (nächste freie ID).
-    const nextMitgliedId = maxMitgliedId + 1;
+    const nextMemberNumber = maxMemberNumber + 1;
 
     // Vorschau für „heute beschlossen“; die Annahme rechnet mit dem im Dialog
     // gewählten Beschlussdatum neu.
     const today = new Date();
-    const openCount = applications.filter((a) => a.status === "EINGEREICHT").length;
+    const openCount = applications.filter((a) => a.status === "SUBMITTED").length;
 
     // Der Beitragsplan wird serverseitig vorberechnet, damit die Liste zeigen
     // kann, was eine Annahme konkret anlegen würde.
@@ -65,37 +65,38 @@ export default async function MembershipApplicationsPage() {
             id: application.user.id,
             email: application.user.email,
             status: application.user.status,
-            mitgliedId: application.user.mitgliedId,
+            memberNumber: application.user.memberNumber,
         },
-        vorname: application.vorname,
-        name: application.name,
-        titel: application.titel,
-        geburtsdatum: application.geburtsdatum.toISOString(),
-        strasse: application.strasse,
-        plz: application.plz,
-        stadt: application.stadt,
-        land: application.land,
-        telefon: application.telefon,
-        studiengang: application.studiengang,
-        studienbeginn: application.studienbeginn?.toISOString() ?? null,
-        studienende: application.studienende?.toISOString() ?? null,
-        arbeitgeber: application.arbeitgeber,
-        berufsstand: application.berufsstand,
-        berufszweig: application.berufszweig,
-        position: application.position,
+        firstName: application.firstName,
+        lastName: application.lastName,
+        title: application.title,
+        birthDate: application.birthDate.toISOString(),
+        addressLine1: application.addressLine1,
+        addressLine2: application.addressLine2,
+        postalCode: application.postalCode,
+        city: application.city,
+        region: application.region,
+        countryCode: application.countryCode,
+        phone: application.phone,
+        degreeProgram: application.degreeProgram,
+        studyStart: application.studyStart?.toISOString() ?? null,
+        studyEnd: application.studyEnd?.toISOString() ?? null,
+        employer: application.employer,
+        employmentStatus: application.employmentStatus,
+        industry: application.industry,
+        jobTitle: application.jobTitle,
         studentYears: application.studentYears,
-        kontoinhaber: application.kontoinhaber,
-        IBAN: application.IBAN,
-        BIC: application.BIC,
-        bank: application.bank,
-        mandatDatum: application.mandatDatum?.toISOString() ?? null,
-        beitragRegularSnapshot: application.beitragRegularSnapshot,
-        beitragStudentSnapshot: application.beitragStudentSnapshot,
+        accountHolder: application.accountHolder,
+        iban: application.iban,
+        bic: application.bic,
+        mandateSignedAt: application.mandateSignedAt?.toISOString() ?? null,
+        regularFeeSnapshot: application.regularFeeSnapshot,
+        studentFeeSnapshot: application.studentFeeSnapshot,
         feePlan: planApplicationFees({
-            aufnahmedatum: today,
+            joinedAt: today,
             studentYears: application.studentYears,
             defaults: feeDefaults,
-            bankeinzug: application.bankeinzug,
+            directDebit: application.directDebit,
         }),
     }));
 
@@ -107,13 +108,13 @@ export default async function MembershipApplicationsPage() {
         keepAccount: t.keepAccount,
         decisionNote: t.decisionNote,
         completedAt: t.completedAt?.toISOString() ?? null,
-        overdue: t.status === "EINGEREICHT" && isTerminationDue(t.effectiveAt, today),
+        overdue: t.status === "SUBMITTED" && isTerminationDue(t.effectiveAt, today),
         member: {
             id: t.user.id,
             email: t.user.email,
-            vorname: t.user.vorname,
-            name: t.user.name,
-            mitgliedId: t.user.mitgliedId,
+            firstName: t.user.firstName,
+            lastName: t.user.lastName,
+            memberNumber: t.user.memberNumber,
             loginDisabled: t.user.loginDisabled,
         },
     }));
@@ -163,7 +164,7 @@ export default async function MembershipApplicationsPage() {
                     />
                 </Card>
             ) : (
-                <ApplicationList applications={items} nextMitgliedId={nextMitgliedId} />
+                <ApplicationList applications={items} nextMemberNumber={nextMemberNumber} />
             )}
 
             <div className="mt-10 grid gap-4">

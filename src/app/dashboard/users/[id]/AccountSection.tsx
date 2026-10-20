@@ -122,7 +122,7 @@ export function AccountSection({
                 </p>
             </div>
 
-            {termination?.status === "EINGEREICHT" && (
+            {termination?.status === "SUBMITTED" && (
                 <Callout tone="info" title="Deine Kündigung ist eingegangen">
                     Eingegangen am {formatDateTime(termination.submittedAt)}. Du bleibst Mitglied
                     bis einschließlich {formatDate(termination.effectiveAt)}. Der Vorstand
@@ -141,7 +141,7 @@ export function AccountSection({
                 </Callout>
             )}
 
-            {termination?.status === "BESTAETIGT" && (
+            {termination?.status === "CONFIRMED" && (
                 <Callout tone="info" title="Austritt bestätigt">
                     Deine Mitgliedschaft endet mit Ablauf des{" "}
                     {formatDate(termination.effectiveAt)}.{" "}

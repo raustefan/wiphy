@@ -58,3 +58,43 @@ test("builds a pain.008 with correct totals", () => {
   assert.match(xml, /<Othr><Id>NOTPROVIDED<\/Id><\/Othr>/);
   assert.match(xml, /<SeqTp>RCUR<\/SeqTp>/);
 });
+
+test("debtors outside the EEA carry BIC and a structured address", () => {
+  const xml = buildPain008({
+    messageId: "WIPHY-2026-2",
+    createdAt: new Date("2026-09-29T10:00:00Z"),
+    collectionDate: "2026-10-15",
+    sequenceType: "RCUR",
+    creditor: { name: "wiphy e.V.", iban: "DE89370400440532013000", creditorId: "DE98ZZZ09999999999" },
+    debits: [
+      {
+        name: "Jürg Meier",
+        iban: "CH9300762011623852957",
+        bic: "UBSWCHZH80A",
+        address: { street: "Bahnhofstr. 1", postalCode: "8001", city: "Zürich", region: null, country: "CH" },
+        amount: 24,
+        mandateId: "ID7-Mandat0",
+        mandateDate: "2020-01-01",
+        endToEndId: "BEITRAG-2026-7",
+        remittance: "Mitgliedsbeitrag 2026",
+      },
+      {
+        name: "Erika Mustermann",
+        iban: "DE89370400440532013000",
+        amount: 24,
+        mandateId: "ID8-Mandat0",
+        mandateDate: "2020-01-01",
+        endToEndId: "BEITRAG-2026-8",
+        remittance: "Mitgliedsbeitrag 2026",
+      },
+    ],
+  });
+
+  assert.match(xml, /<BICFI>UBSWCHZH80A<\/BICFI>/);
+  assert.match(
+    xml,
+    /<Dbtr><Nm>Juerg Meier<\/Nm><PstlAdr><StrtNm>Bahnhofstr. 1<\/StrtNm><PstCd>8001<\/PstCd><TwnNm>Zuerich<\/TwnNm><Ctry>CH<\/Ctry><\/PstlAdr><\/Dbtr>/,
+  );
+  // Inlandslastschrift: weiterhin ohne Anschrift.
+  assert.match(xml, /<Dbtr><Nm>Erika Mustermann<\/Nm><\/Dbtr>/);
+});

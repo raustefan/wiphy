@@ -14,28 +14,29 @@ import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { updateBankDetails } from "./actions";
 
 type BankValues = {
-    bank: string;
-    BLZ: string;
-    KTO: string;
-    IBAN: string;
-    BIC: string;
-    bankeinzug: boolean;
+    accountHolder: string;
+    iban: string;
+    bic: string;
+    directDebit: boolean;
 };
 
 export function BankDetailsForm({
     initial,
-    mandatserteilung,
+    mandateSignedAt,
+    mandateReference,
     rates,
 }: {
     initial: BankValues;
-    mandatserteilung: Date | string | null;
+    mandateSignedAt: Date | string | null;
+    /** Steht bei jedem Einzug auf dem Kontoauszug — daran erkennt das Mitglied die Lastschrift. */
+    mandateReference: string;
     rates: FeeRates;
 }) {
     const router = useRouter();
     const formRef = useRef<HTMLFormElement>(null);
     const [editing, setEditing] = useState(false);
     const [zahlungsweise, setZahlungsweise] = useState<"lastschrift" | "ueberweisung">(
-        initial.bankeinzug ? "lastschrift" : "ueberweisung",
+        initial.directDebit ? "lastschrift" : "ueberweisung",
     );
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -57,31 +58,43 @@ export function BankDetailsForm({
     }
 
     if (!editing) {
-        const hasIban = initial.IBAN.trim() !== "";
+        const hasIban = initial.iban.trim() !== "";
         return (
             <div className="grid gap-4">
                 {hasIban ? (
                     <dl className="grid gap-x-6 gap-y-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm sm:grid-cols-2">
                         <div>
                             <dt className="text-muted">IBAN</dt>
-                            <dd className="font-mono font-medium">{maskIban(initial.IBAN)}</dd>
+                            <dd className="font-mono font-medium">{maskIban(initial.iban)}</dd>
                         </div>
                         <div>
-                            <dt className="text-muted">Kreditinstitut</dt>
-                            <dd className="font-medium">{initial.bank || "—"}</dd>
+                            <dt className="text-muted">Kontoinhaber:in</dt>
+                            <dd className="font-medium">{initial.accountHolder || "—"}</dd>
                         </div>
+                        {initial.bic && (
+                            <div>
+                                <dt className="text-muted">BIC</dt>
+                                <dd className="font-mono font-medium">{initial.bic}</dd>
+                            </div>
+                        )}
                         <div>
                             <dt className="text-muted">Lastschriftmandat</dt>
                             <dd>
-                                <Badge tone={initial.bankeinzug ? "positive" : "negative"}>
-                                    {initial.bankeinzug ? "Erteilt" : "Nicht erteilt"}
+                                <Badge tone={initial.directDebit ? "positive" : "negative"}>
+                                    {initial.directDebit ? "Erteilt" : "Nicht erteilt"}
                                 </Badge>
                             </dd>
                         </div>
                         <div>
                             <dt className="text-muted">Mandat vom</dt>
-                            <dd className="font-medium">{formatDate(mandatserteilung)}</dd>
+                            <dd className="font-medium">{formatDate(mandateSignedAt)}</dd>
                         </div>
+                        {initial.directDebit && mandateReference && (
+                            <div>
+                                <dt className="text-muted">Mandatsreferenz</dt>
+                                <dd className="font-mono font-medium">{mandateReference}</dd>
+                            </div>
+                        )}
                     </dl>
                 ) : (
                     <Callout tone="info" icon={<Info size={16} />}>
@@ -159,25 +172,18 @@ export function BankDetailsForm({
 
             {zahlungsweise === "lastschrift" ? (
                 <>
-                    <Field label="IBAN" hint="Wird beim Speichern auf ihre Prüfziffer geprüft.">
-                        <IbanInput defaultValue={initial.IBAN} />
+                    <Field label="Kontoinhaber:in">
+                        <Input name="accountHolder" defaultValue={initial.accountHolder} autoComplete="name" />
                     </Field>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="BIC (optional)" hint="Für Konten im SEPA-Raum nicht erforderlich.">
-                            <Input name="BIC" defaultValue={initial.BIC} autoComplete="off" />
-                        </Field>
-                        <Field label="Kreditinstitut (optional)">
-                            <Input name="bank" defaultValue={initial.bank} />
-                        </Field>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="BLZ (optional)">
-                            <Input name="BLZ" defaultValue={initial.BLZ} />
-                        </Field>
-                        <Field label="Kontonummer (optional)">
-                            <Input name="KTO" defaultValue={initial.KTO} />
-                        </Field>
-                    </div>
+                    <Field label="IBAN" hint="Wird beim Speichern auf ihre Prüfziffer geprüft.">
+                        <IbanInput defaultValue={initial.iban} />
+                    </Field>
+                    <Field
+                        label="BIC"
+                        hint="Nur nötig für Konten außerhalb der EU und des EWR, z. B. in der Schweiz oder in Großbritannien."
+                    >
+                        <Input name="bic" defaultValue={initial.bic} autoComplete="off" />
+                    </Field>
 
                     <div className="grid gap-2 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
                         <p className="font-semibold">SEPA-Lastschriftmandat</p>
@@ -196,7 +202,7 @@ export function BankDetailsForm({
                     </div>
 
                     <label className="flex cursor-pointer items-start gap-3 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
-                        <Checkbox name="bankeinzug" defaultChecked={initial.bankeinzug} className="mt-0.5" />
+                        <Checkbox name="directDebit" defaultChecked={initial.directDebit} className="mt-0.5" />
                         <span className="text-pretty">
                             Ich ermächtige den WirtschaftsPhysik Alumni e.V., den Mitgliedsbeitrag von
                             meinem Konto mittels Lastschrift einzuziehen, und weise mein Kreditinstitut

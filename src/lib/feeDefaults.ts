@@ -7,8 +7,8 @@
 import { FALLBACK_FEE_DEFAULT } from "@/lib/membership";
 import { calculateFee } from "@/lib/feeCalculation";
 
-/** Monatsbeträge je Beitragsstufe, gültig ab `jahr`. */
-export type FeeDefaultEntry = { jahr: number; regular: number; student: number };
+/** Monatsbeträge je Beitragsstufe, gültig ab `year`. */
+export type FeeDefaultEntry = { year: number; regular: number; student: number };
 export type FeeRates = { regular: number; student: number };
 
 /**
@@ -21,10 +21,10 @@ export type FeeRates = { regular: number; student: number };
 export function resolveFeeDefault(defaults: FeeDefaultEntry[], year: number): FeeRates {
   if (defaults.length === 0) return FALLBACK_FEE_DEFAULT;
 
-  const sorted = [...defaults].sort((a, b) => a.jahr - b.jahr);
+  const sorted = [...defaults].sort((a, b) => a.year - b.year);
   let match: FeeDefaultEntry | undefined;
   for (const entry of sorted) {
-    if (entry.jahr <= year) match = entry;
+    if (entry.year <= year) match = entry;
     else break;
   }
   const resolved = match ?? sorted[0];
@@ -40,33 +40,33 @@ export function resolveFeeDefault(defaults: FeeDefaultEntry[], year: number): Fe
  * Eintrittsjahr selbst wird nach § 5 Abs. 3 anteilig gerechnet.
  */
 export function planApplicationFees(params: {
-  aufnahmedatum: Date;
+  joinedAt: Date;
   studentYears: number[];
   defaults: FeeDefaultEntry[];
   /** Teilnahme am Lastschriftverfahren; ohne sie greift der 10-%-Aufschlag. */
-  bankeinzug: boolean;
+  directDebit: boolean;
   /** Spätestes Jahr, das mindestens angelegt wird — beim Übernehmen von
    *  Bestandsmitgliedern das laufende Jahr, damit die Jahre dazwischen nicht fehlen. */
   untilYear?: number;
-}): Array<{ jahr: number; isStudent: boolean; beitrag: number }> {
-  const joinYear = params.aufnahmedatum.getFullYear();
+}): Array<{ year: number; isStudent: boolean; amount: number }> {
+  const joinYear = params.joinedAt.getFullYear();
   const futureStudentYears = params.studentYears.filter((y) => y >= joinYear);
   const lastYear = Math.max(joinYear, params.untilYear ?? joinYear, ...futureStudentYears);
 
-  const plan: Array<{ jahr: number; isStudent: boolean; beitrag: number }> = [];
-  for (let jahr = joinYear; jahr <= lastYear; jahr++) {
-    const isStudent = futureStudentYears.includes(jahr);
-    const rates = resolveFeeDefault(params.defaults, jahr);
+  const plan: Array<{ year: number; isStudent: boolean; amount: number }> = [];
+  for (let year = joinYear; year <= lastYear; year++) {
+    const isStudent = futureStudentYears.includes(year);
+    const rates = resolveFeeDefault(params.defaults, year);
     plan.push({
-      jahr,
+      year,
       isStudent,
-      beitrag: calculateFee({
+      amount: calculateFee({
         monthlyRegular: rates.regular,
         monthlyStudent: rates.student,
         isStudent,
-        bankeinzug: params.bankeinzug,
-        jahr,
-        aufnahmedatum: params.aufnahmedatum,
+        directDebit: params.directDebit,
+        year,
+        joinedAt: params.joinedAt,
       }).total,
     });
   }

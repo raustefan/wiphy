@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { overlaps, packLanes, type KosmosMember } from "../src/lib/kosmos";
 
-const m = (id: string, start: number, end: number | null): KosmosMember => ({ id, name: id, studiengang: null, start, end });
+const m = (id: string, start: number, end: number | null): KosmosMember => ({ id, name: id, degreeProgram: null, start, end });
 const NOW = 2026.8;
 
 test("Überlappung: angrenzende Zeiträume zählen nicht, laufende Studien reichen bis heute", () => {

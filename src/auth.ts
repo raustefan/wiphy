@@ -139,7 +139,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
                 const user = await prisma.user.findUnique({
                     where: { email },
-                    omit: { password: false },
+                    omit: { passwordHash: false },
                 });
                 // Unbekannte Adresse und falsches Passwort teilen sich denselben
                 // Grund: die Unterscheidung stünde sonst dauerhaft im Protokoll,
@@ -149,7 +149,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     await logAttempt("FAILURE", "invalid_credentials");
                     return null;
                 }
-                const valid = await bcrypt.compare(credentials.password as string, user.password);
+                const valid = await bcrypt.compare(credentials.password as string, user.passwordHash);
                 if (!valid) {
                     await logAttempt("FAILURE", "invalid_credentials", user.id);
                     return null;
@@ -174,7 +174,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
                 await prisma.user.update({
                     where: { id: user.id },
-                    data: { lastLogin: new Date() },
+                    data: { lastLoginAt: new Date() },
                 });
                 // Only the per-(IP, email) bucket: resetting "login-ip" here would let
                 // anyone with a valid account wipe the IP cap and keep spraying.
@@ -183,7 +183,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 return {
                     id: user.id,
                     email: user.email,
-                    name: user.name,
+                    name: user.lastName,
                     role: user.role,
                     status: user.status,
                     passwordChangedAt: user.passwordChangedAt,
@@ -202,9 +202,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     token.role = role;
                 }
                 if (
-                    status === "ORDENTLICHES_MITGLIED" ||
-                    status === "EHRENMITGLIED" ||
-                    status === "KEIN_MITGLIED"
+                    status === "REGULAR_MEMBER" ||
+                    status === "HONORARY_MEMBER" ||
+                    status === "NON_MEMBER"
                 ) {
                     token.status = status;
                 }
@@ -262,9 +262,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     (session.user as { id?: string }).id = token.id;
                 }
                 if (
-                    token.status === "ORDENTLICHES_MITGLIED" ||
-                    token.status === "EHRENMITGLIED" ||
-                    token.status === "KEIN_MITGLIED"
+                    token.status === "REGULAR_MEMBER" ||
+                    token.status === "HONORARY_MEMBER" ||
+                    token.status === "NON_MEMBER"
                 ) {
                     (session.user as { status?: string }).status = token.status;
                 }

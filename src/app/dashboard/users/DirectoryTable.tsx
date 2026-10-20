@@ -73,12 +73,12 @@ import { SepaDialog } from "./SepaDialog";
 export type DirectoryAccount = {
   id: string;
   name: string | null;
-  vorname: string;
+  firstName: string;
   email: string;
-  mitgliedId: number | null;
-  zahlungsKommentar: string | null;
-  aufnahmedatum: string | null;
-  bankeinzug: boolean;
+  memberNumber: number | null;
+  adminNote: string | null;
+  joinedAt: string | null;
+  directDebit: boolean;
   /** Vom Mitglied erklärte Jahre mit Sonderstatus (§ 5). */
   studentYears: number[];
   role: string;
@@ -86,15 +86,15 @@ export type DirectoryAccount = {
   emailVerified: boolean;
   loginDisabled: boolean;
   /** ISO-Zeitpunkt. */
-  lastLogin: string;
+  lastLoginAt: string;
   /** Steht in der Beitragsliste des gewählten Jahres. */
   inFeeYear: boolean;
   fees: Array<{
-    jahr: number;
-    bezahlt: boolean;
+    year: number;
+    paid: boolean;
     isStudent: boolean;
     /** Tatsächlich fälliger Betrag: Standard oder manuelle Ausnahme. */
-    beitrag: number;
+    amount: number;
     /** Was der beschlossene Standardbeitrag ergäbe. */
     standard: number;
     manuell: boolean;
@@ -103,10 +103,10 @@ export type DirectoryAccount = {
   }>;
 };
 
-type SortKey = "mitgliedId" | "name" | "aufnahme" | "lastLogin" | "student" | "paid" | "amount";
+type SortKey = "memberNumber" | "name" | "aufnahme" | "lastLoginAt" | "student" | "paid" | "amount";
 
 function displayName(user: DirectoryAccount) {
-  return [user.vorname, user.name].filter(Boolean).join(" ");
+  return [user.firstName, user.name].filter(Boolean).join(" ");
 }
 
 /** Leere Werte bleiben in beide Richtungen hinten — sie haben keinen Wert, nicht den kleinsten. */
@@ -124,16 +124,16 @@ function compareNullable<T>(a: T | null | undefined, b: T | null | undefined, co
  */
 function compareBy(key: SortKey, a: DirectoryAccount, b: DirectoryAccount, year: number): number {
   switch (key) {
-    case "mitgliedId":
-      return compareNullable(a.mitgliedId, b.mitgliedId, (x, y) => x - y);
+    case "memberNumber":
+      return compareNullable(a.memberNumber, b.memberNumber, (x, y) => x - y);
     case "name":
       return displayName(a).localeCompare(displayName(b), "de");
     case "aufnahme":
-      return compareNullable(a.aufnahmedatum, b.aufnahmedatum, (x, y) => x.localeCompare(y));
-    case "lastLogin":
-      return a.lastLogin.localeCompare(b.lastLogin);
+      return compareNullable(a.joinedAt, b.joinedAt, (x, y) => x.localeCompare(y));
+    case "lastLoginAt":
+      return a.lastLoginAt.localeCompare(b.lastLoginAt);
     case "paid":
-      return compareNullable(yearFee(a, year)?.bezahlt, yearFee(b, year)?.bezahlt, (x, y) => Number(x) - Number(y));
+      return compareNullable(yearFee(a, year)?.paid, yearFee(b, year)?.paid, (x, y) => Number(x) - Number(y));
     case "student":
       // Ohne Beitragszeile zählt die Erklärung des Mitglieds — genau das zeigt die Spalte.
       return compareNullable(
@@ -142,7 +142,7 @@ function compareBy(key: SortKey, a: DirectoryAccount, b: DirectoryAccount, year:
         (x, y) => Number(y) - Number(x),
       );
     case "amount":
-      return compareNullable(yearFee(a, year)?.beitrag, yearFee(b, year)?.beitrag, (x, y) => x - y);
+      return compareNullable(yearFee(a, year)?.amount, yearFee(b, year)?.amount, (x, y) => x - y);
   }
 }
 
@@ -171,17 +171,17 @@ function explainFee(fee: DirectoryAccount["fees"][number]) {
  * Die Angabe gehört hierher, weil sie den Betrag daneben erklärt: ohne
  * Lastschrift kommen 10 % Aufschlag dazu (§ 5 Abs. 5).
  */
-function SepaMark({ bankeinzug }: { bankeinzug: boolean }) {
-  const label = bankeinzug
+function SepaMark({ directDebit }: { directDebit: boolean }) {
+  const label = directDebit
     ? "SEPA-Lastschrift erteilt"
     : "Keine SEPA-Lastschrift — Beitrag mit Aufschlag (§ 5 Abs. 5)";
 
   return (
     <span
       title={label}
-      className={`shrink-0 ${bankeinzug ? "text-physics" : "text-faint"}`}
+      className={`shrink-0 ${directDebit ? "text-physics" : "text-faint"}`}
     >
-      {bankeinzug ? (
+      {directDebit ? (
         <Landmark size={14} aria-hidden="true" />
       ) : (
         <HandCoins size={14} aria-hidden="true" />
@@ -277,7 +277,7 @@ function CommentDialog({
         <TextArea
           name="comment"
           rows={4}
-          defaultValue={user.zahlungsKommentar ?? ""}
+          defaultValue={user.adminNote ?? ""}
           placeholder="Kommentar eingeben…"
         />
         <DialogFooter>
@@ -312,7 +312,7 @@ function AmountDialog({
     <Dialog
       open
       onClose={onClose}
-      title={`Beitrag ${fee.jahr} – ${displayName(user)}`}
+      title={`Beitrag ${fee.year} – ${displayName(user)}`}
       description="Nur für Ausnahmefälle. Ohne Abweichung gilt automatisch der Standardbeitrag."
     >
       <div className="mb-4 grid gap-1 rounded-[3px] border border-line bg-raised/60 p-4 text-sm">
@@ -325,14 +325,14 @@ function AmountDialog({
 
       <form action={updateFeeAmount} onSubmit={onClose}>
         <input type="hidden" name="userId" value={user.id} />
-        <input type="hidden" name="year" value={fee.jahr} />
+        <input type="hidden" name="year" value={fee.year} />
         <Field label="Abweichender Betrag (€)">
           <Input
             type="number"
-            name="beitrag"
+            name="amount"
             step="0.01"
             min="0"
-            defaultValue={fee.beitrag}
+            defaultValue={fee.amount}
             autoFocus
           />
         </Field>
@@ -347,7 +347,7 @@ function AmountDialog({
       {fee.manuell && (
         <form action={revertFeeAmount} onSubmit={onClose} className="mt-2">
           <input type="hidden" name="userId" value={user.id} />
-          <input type="hidden" name="year" value={fee.jahr} />
+          <input type="hidden" name="year" value={fee.year} />
           <Button type="submit" variant="ghost" color="neutral" size="sm" className="w-full">
             Auf Standardbeitrag zurücksetzen
           </Button>
@@ -368,8 +368,8 @@ export function UserPaymentHistoryDialog({
 }) {
   if (!user) return null;
 
-  const sortedFees = [...user.fees].sort((a, b) => b.jahr - a.jahr);
-  const openCount = sortedFees.filter((f) => !f.bezahlt).length;
+  const sortedFees = [...user.fees].sort((a, b) => b.year - a.year);
+  const openCount = sortedFees.filter((f) => !f.paid).length;
 
   return (
     <Dialog open={open} onClose={onClose} size="lg">
@@ -381,7 +381,7 @@ export function UserPaymentHistoryDialog({
 
       <p className="mt-3 flex items-center gap-2 text-sm">
         <Calendar size={16} className="text-faint" aria-hidden="true" />
-        Mitglied seit <span className="font-medium">{formatDate(user.aufnahmedatum)}</span>
+        Mitglied seit <span className="font-medium">{formatDate(user.joinedAt)}</span>
       </p>
 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
@@ -400,7 +400,7 @@ export function UserPaymentHistoryDialog({
 
       <p className="mt-1 flex items-center gap-2 text-sm text-muted">
         <CircleEuro size={16} className="text-faint" aria-hidden="true" />
-        {user.bankeinzug
+        {user.directDebit
           ? "Lastschrifteinzug erteilt"
           : "Kein Lastschriftmandat — Beiträge mit 10 % Aufschlag (§ 5 Abs. 5)"}
       </p>
@@ -426,20 +426,20 @@ export function UserPaymentHistoryDialog({
             </thead>
             <tbody>
               {sortedFees.map((fee) => (
-                <tr key={fee.jahr}>
-                  <Td className="font-mono font-medium tabular-nums">{fee.jahr}</Td>
+                <tr key={fee.year}>
+                  <Td className="font-mono font-medium tabular-nums">{fee.year}</Td>
                   <Td className="text-center">
                     <Badge tone={fee.isStudent ? "info" : "neutral"}>
                       {fee.isStudent ? "Ja" : "Nein"}
                     </Badge>
                   </Td>
                   <Td className="text-center">
-                    <Badge tone={fee.bezahlt ? "positive" : "negative"}>
-                      {fee.bezahlt ? "Bezahlt" : "Offen"}
+                    <Badge tone={fee.paid ? "positive" : "negative"}>
+                      {fee.paid ? "Bezahlt" : "Offen"}
                     </Badge>
                   </Td>
                   <Td className="text-right tabular-nums">
-                    {formatEuro(fee.beitrag)}
+                    {formatEuro(fee.amount)}
                     {fee.manuell && (
                       <Badge tone="warning" className="ml-2">
                         Ausnahme
@@ -561,8 +561,8 @@ export function DirectoryTable({
   const reminderDefaults = useMemo(() => {
     const single = mailUsers?.length === 1 ? mailUsers[0] : undefined;
     const message = feeReminderMessage({
-      vorname: single?.vorname,
-      name: single?.name,
+      firstName: single?.firstName,
+      lastName: single?.name,
       year: selectedYear,
     });
     return { subject: message.subject, html: renderBlocksEditorHtml(message.blocks) };
@@ -601,7 +601,7 @@ export function DirectoryTable({
         visibleUsers
           .filter((u) => {
             const fee = yearFee(u, selectedYear);
-            return fee != null && !fee.bezahlt;
+            return fee != null && !fee.paid;
           })
           .map((u) => u.id),
       ),
@@ -811,10 +811,10 @@ export function DirectoryTable({
                   aria-label="Alle sichtbaren Konten auswählen"
                 />
               </Th>
-              <SortableTh sortKey="mitgliedId" label="Nr." sort={sort} onSort={toggleSort} className="hidden w-14 sm:table-cell" />
+              <SortableTh sortKey="memberNumber" label="Nr." sort={sort} onSort={toggleSort} className="hidden w-14 sm:table-cell" />
               <SortableTh sortKey="name" label="Konto" sort={sort} onSort={toggleSort} />
               <SortableTh sortKey="aufnahme" label="Aufnahme" sort={sort} onSort={toggleSort} className="hidden w-24 md:table-cell" />
-              <SortableTh sortKey="lastLogin" label="Login" sort={sort} onSort={toggleSort} className="hidden w-24 lg:table-cell" />
+              <SortableTh sortKey="lastLoginAt" label="Login" sort={sort} onSort={toggleSort} className="hidden w-24 lg:table-cell" />
               <SortableTh
                 sortKey="student"
                 label="Tarif"
@@ -869,11 +869,11 @@ export function DirectoryTable({
                   {group.users.map((user) => {
                     const name = displayName(user) || "—";
                     const fee = yearFee(user, selectedYear);
-                    const paid = fee?.bezahlt ?? false;
+                    const paid = fee?.paid ?? false;
                     const isStudent = fee?.isStudent ?? false;
                     const declaredStudent = user.studentYears.includes(selectedYear);
                     const isSelected = selectedIds.has(user.id);
-                    const leftThisYear = user.inFeeYear && user.status === "KEIN_MITGLIED";
+                    const leftThisYear = user.inFeeYear && user.status === "NON_MEMBER";
                     return (
                       <tr
                         key={user.id}
@@ -887,7 +887,7 @@ export function DirectoryTable({
                           />
                         </Td>
                         <Td className="hidden px-2 py-1.5 font-mono text-xs text-muted tabular-nums sm:table-cell">
-                          {user.mitgliedId ?? "—"}
+                          {user.memberNumber ?? "—"}
                         </Td>
 
                         {/* `w-full max-w-0`: die Spalte nimmt den Rest der
@@ -917,15 +917,15 @@ export function DirectoryTable({
                                 <span className="sr-only">Login gesperrt</span>
                               </span>
                             )}
-                            {(user.inFeeYear || user.status === "ORDENTLICHES_MITGLIED") && (
-                              <SepaMark bankeinzug={user.bankeinzug} />
+                            {(user.inFeeYear || user.status === "REGULAR_MEMBER") && (
+                              <SepaMark directDebit={user.directDebit} />
                             )}
                             {leftThisYear && (
                               <Badge className="shrink-0 px-1.5 py-0 text-[11px]" title="Im Beitragsjahr ausgetreten">
                                 ausgetreten
                               </Badge>
                             )}
-                            {!user.inFeeYear && user.status === "ORDENTLICHES_MITGLIED" && (
+                            {!user.inFeeYear && user.status === "REGULAR_MEMBER" && (
                               <Badge className="shrink-0 px-1.5 py-0 text-[11px]" title={`Erst nach ${selectedYear} eingetreten`}>
                                 neu
                               </Badge>
@@ -953,10 +953,10 @@ export function DirectoryTable({
                         </Td>
 
                         <Td className="hidden px-2 py-1.5 text-xs whitespace-nowrap text-muted tabular-nums md:table-cell">
-                          {formatDateShort(user.aufnahmedatum)}
+                          {formatDateShort(user.joinedAt)}
                         </Td>
                         <Td className="hidden px-2 py-1.5 text-xs whitespace-nowrap text-muted tabular-nums lg:table-cell">
-                          {formatDateShort(user.lastLogin)}
+                          {formatDateShort(user.lastLoginAt)}
                         </Td>
 
                         <Td className="hidden px-1 py-1.5 text-center sm:table-cell">
@@ -1045,11 +1045,11 @@ export function DirectoryTable({
                                   title={`${explainFee(fee)} — klicken für abweichenden Betrag`}
                                   className="cursor-pointer rounded-sm text-sm font-semibold tabular-nums underline decoration-dashed underline-offset-4 hover:text-physics focus-visible:outline-2 focus-visible:outline-physics"
                                 >
-                                  {formatEuro(fee.beitrag)}
+                                  {formatEuro(fee.amount)}
                                 </button>
                               ) : (
                                 <span className="text-sm font-semibold tabular-nums" title={explainFee(fee)}>
-                                  {formatEuro(fee.beitrag)}
+                                  {formatEuro(fee.amount)}
                                 </span>
                               )}
                             </span>
@@ -1066,12 +1066,12 @@ export function DirectoryTable({
                               variant="soft"
                               color="neutral"
                               onClick={() => setCommentUser(user)}
-                              aria-label={user.zahlungsKommentar ? `Notiz: ${user.zahlungsKommentar}` : "Notiz hinzufügen"}
-                              title={user.zahlungsKommentar ?? "Notiz hinzufügen"}
+                              aria-label={user.adminNote ? `Notiz: ${user.adminNote}` : "Notiz hinzufügen"}
+                              title={user.adminNote ?? "Notiz hinzufügen"}
                               className={cn(
                                 // Auf dem Telefon nur Profil — die Notiz ist dort einen Klick weiter.
                                 "max-sm:hidden",
-                                user.zahlungsKommentar
+                                user.adminNote
                                   ? "bg-warning/20 text-warning hover:bg-warning/30"
                                   : "text-faint",
                               )}

@@ -8,10 +8,10 @@ import type { MembershipApplicationInput } from "@/lib/server/validation/members
 import {
   findApplicationById,
   findOpenApplication,
-  getMaxMitgliedId,
+  getMaxMemberNumber,
 } from "@/lib/server/repositories/membershipRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
-import { findUserByMitgliedIdExcludingUser } from "@/lib/server/repositories/userRepository";
+import { findUserByMemberNumberExcludingUser } from "@/lib/server/repositories/userRepository";
 
 export {
   countOpenApplications,
@@ -19,7 +19,7 @@ export {
   findApplications as getApplications,
   findApplicationById as getApplication,
   findOpenApplication as getOpenApplication,
-  getMaxMitgliedId,
+  getMaxMemberNumber,
   markApplicationMailed,
 } from "@/lib/server/repositories/membershipRepository";
 
@@ -32,7 +32,7 @@ export type SubmitContext = {
 /**
  * Nimmt einen Aufnahmeantrag entgegen.
  *
- * Der Status des Accounts bleibt bewusst `KEIN_MITGLIED`: die Mitgliedschaft
+ * Der Status des Accounts bleibt bewusst `NON_MEMBER`: die Mitgliedschaft
  * entsteht erst durch den Aufnahmebeschluss (siehe `approveApplication`). Die
  * Profildaten werden dagegen sofort ins `User`-Objekt übernommen — es sind die
  * eigenen Daten des Nutzers, die er über die Selbstverwaltung ohnehin ändern
@@ -50,7 +50,7 @@ export async function submitApplication(
   if (!user) {
     throw new AppError("NOT_FOUND", "Benutzerkonto nicht gefunden.");
   }
-  if (user.status !== "KEIN_MITGLIED") {
+  if (user.status !== "NON_MEMBER") {
     throw new AppError("FORBIDDEN", "Für dieses Konto besteht bereits eine Mitgliedschaft.");
   }
   if (await findOpenApplication(context.userId)) {
@@ -70,44 +70,45 @@ export async function submitApplication(
         user: { connect: { id: context.userId } },
         openForUserId: context.userId,
 
-        vorname: input.vorname,
-        name: input.name,
-        titel: input.titel,
-        geburtsdatum: input.geburtsdatum,
-        strasse: input.strasse,
-        plz: input.plz,
-        stadt: input.stadt,
-        land: input.land,
-        telefon: input.telefon,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        title: input.title,
+        birthDate: input.birthDate,
+        addressLine1: input.addressLine1,
+        addressLine2: input.addressLine2,
+        postalCode: input.postalCode,
+        city: input.city,
+        region: input.region,
+        countryCode: input.countryCode,
+        phone: input.phone,
 
-        studiengang: input.studiengang,
-        studienbeginn: input.studienbeginn,
-        studienende: input.studienende,
-        arbeitgeber: input.arbeitgeber,
-        berufsstand: input.berufsstand,
-        berufszweig: input.berufszweig,
-        position: input.position,
+        degreeProgram: input.degreeProgram,
+        studyStart: input.studyStart,
+        studyEnd: input.studyEnd,
+        employer: input.employer,
+        employmentStatus: input.employmentStatus,
+        industry: input.industry,
+        jobTitle: input.jobTitle,
         studentYears,
 
-        kontoinhaber: input.kontoinhaber,
-        IBAN: input.IBAN,
-        BIC: input.BIC,
-        bank: input.bank,
+        accountHolder: input.accountHolder,
+        iban: input.iban,
+        bic: input.bic,
         // Früher fest `true`, weil das Formular das Mandat verlangte. Seit es
         // den Weg „Überweisung“ gibt, entscheidet die Wahl im Antrag — und
         // ohne Mandat gibt es auch kein Mandatsdatum.
-        bankeinzug: input.bankeinzug,
-        mandatDatum: input.bankeinzug ? submittedAt : null,
+        directDebit: input.directDebit,
+        mandateSignedAt: input.directDebit ? submittedAt : null,
         // Mandatsreferenzen werden erst vergeben, wenn dem Verein eine
         // Gläubiger-Identifikationsnummer vorliegt.
-        mandatsreferenz: null,
+        mandateReference: null,
 
-        satzungAccepted: input.satzungAccepted,
-        datenschutzAccepted: input.datenschutzAccepted,
+        bylawsAccepted: input.bylawsAccepted,
+        privacyAccepted: input.privacyAccepted,
         consentVersion: CONSENT_VERSION,
 
-        beitragRegularSnapshot: annualFee(monthly.regular),
-        beitragStudentSnapshot: annualFee(monthly.student),
+        regularFeeSnapshot: annualFee(monthly.regular),
+        studentFeeSnapshot: annualFee(monthly.student),
 
         ipHash: context.ipHash,
         userAgent: context.userAgent,
@@ -118,28 +119,30 @@ export async function submitApplication(
     await tx.user.update({
       where: { id: context.userId },
       data: {
-        vorname: input.vorname,
-        name: input.name,
-        titel: input.titel,
-        geburtsdatum: input.geburtsdatum,
-        strasse: input.strasse,
-        plz: input.plz,
-        stadt: input.stadt,
-        land: input.land,
-        telefon: input.telefon,
-        studiengang: input.studiengang,
-        studienbeginn: input.studienbeginn,
-        studienende: input.studienende,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        title: input.title,
+        birthDate: input.birthDate,
+        addressLine1: input.addressLine1,
+        addressLine2: input.addressLine2,
+        postalCode: input.postalCode,
+        city: input.city,
+        region: input.region,
+        countryCode: input.countryCode,
+        phone: input.phone,
+        degreeProgram: input.degreeProgram,
+        studyStart: input.studyStart,
+        studyEnd: input.studyEnd,
         studentYears,
-        arbeitgeber: input.arbeitgeber,
-        berufsstand: input.berufsstand,
-        berufszweig: input.berufszweig,
-        position: input.position,
-        bank: input.bank,
-        IBAN: input.IBAN,
-        BIC: input.BIC,
-        bankeinzug: input.bankeinzug,
-        mandatserteilung: input.bankeinzug ? submittedAt : null,
+        employer: input.employer,
+        employmentStatus: input.employmentStatus,
+        industry: input.industry,
+        jobTitle: input.jobTitle,
+        accountHolder: input.accountHolder,
+        iban: input.iban,
+        bic: input.bic,
+        directDebit: input.directDebit,
+        mandateSignedAt: input.directDebit ? submittedAt : null,
       },
     });
 
@@ -157,45 +160,45 @@ export async function submitApplication(
 export async function approveApplication(params: {
   id: string;
   adminId: string;
-  aufnahmedatum: Date;
+  joinedAt: Date;
   note: string | null;
   // Manuelle Übersteuerung der automatischen Vergabe, z. B. beim Übertragen
   // von Mitgliedern aus dem alten System mit bereits bestehender ID.
-  mitgliedId?: number;
+  memberNumber?: number;
 }) {
   const application = await findApplicationById(params.id);
   if (!application) throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
-  if (application.status !== "EINGEREICHT") {
+  if (application.status !== "SUBMITTED") {
     throw new AppError("CONFLICT", "Über diesen Antrag wurde bereits entschieden.");
   }
 
   const feePlan = planApplicationFees({
-    aufnahmedatum: params.aufnahmedatum,
+    joinedAt: params.joinedAt,
     studentYears: application.studentYears,
     defaults: await findFeeDefaults(),
     // Ohne Mandat greift der 10-%-Aufschlag nach § 5 Abs. 5.
-    bankeinzug: application.bankeinzug,
+    directDebit: application.directDebit,
   });
 
-  let nextMitgliedId: number;
-  if (params.mitgliedId != null) {
-    const existing = await findUserByMitgliedIdExcludingUser(
-      params.mitgliedId,
+  let nextMemberNumber: number;
+  if (params.memberNumber != null) {
+    const existing = await findUserByMemberNumberExcludingUser(
+      params.memberNumber,
       application.userId,
     );
     if (existing) {
       throw new AppError("CONFLICT", "Diese Mitglieds-ID ist bereits vergeben.");
     }
-    nextMitgliedId = params.mitgliedId;
+    nextMemberNumber = params.memberNumber;
   } else {
-    nextMitgliedId = application.user.mitgliedId ?? (await getMaxMitgliedId()) + 1;
+    nextMemberNumber = application.user.memberNumber ?? (await getMaxMemberNumber()) + 1;
   }
 
   await prisma.$transaction(async (tx) => {
     await tx.membershipApplication.update({
       where: { id: application.id },
       data: {
-        status: "ANGENOMMEN",
+        status: "ACCEPTED",
         openForUserId: null,
         decidedAt: new Date(),
         decidedById: params.adminId,
@@ -206,30 +209,30 @@ export async function approveApplication(params: {
     await tx.user.update({
       where: { id: application.userId },
       data: {
-        status: "ORDENTLICHES_MITGLIED",
-        aufnahmedatum: params.aufnahmedatum,
-        mitgliedId: nextMitgliedId,
+        status: "REGULAR_MEMBER",
+        joinedAt: params.joinedAt,
+        memberNumber: nextMemberNumber,
       },
     });
 
     for (const fee of feePlan) {
       await tx.memberFee.upsert({
-        where: { userId_jahr: { userId: application.userId, jahr: fee.jahr } },
+        where: { userId_year: { userId: application.userId, year: fee.year } },
         // Bestehende Beitragszeilen werden nicht überschrieben: sie können
         // bereits von einem Admin angepasst oder als bezahlt markiert sein.
         update: {},
         create: {
           userId: application.userId,
-          jahr: fee.jahr,
-          bezahlt: false,
+          year: fee.year,
+          paid: false,
           isStudent: fee.isStudent,
-          beitrag: fee.beitrag,
+          amount: fee.amount,
         },
       });
     }
   });
 
-  return { mitgliedId: nextMitgliedId, feePlan };
+  return { memberNumber: nextMemberNumber, feePlan };
 }
 
 export async function rejectApplication(params: {
@@ -239,14 +242,14 @@ export async function rejectApplication(params: {
 }) {
   const application = await findApplicationById(params.id);
   if (!application) throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
-  if (application.status !== "EINGEREICHT") {
+  if (application.status !== "SUBMITTED") {
     throw new AppError("CONFLICT", "Über diesen Antrag wurde bereits entschieden.");
   }
 
   await prisma.membershipApplication.update({
     where: { id: params.id },
     data: {
-      status: "ABGELEHNT",
+      status: "REJECTED",
       openForUserId: null,
       decidedAt: new Date(),
       decidedById: params.adminId,
@@ -261,12 +264,12 @@ export async function withdrawApplication(id: string, userId: string) {
   if (!application || application.userId !== userId) {
     throw new AppError("NOT_FOUND", "Antrag nicht gefunden.");
   }
-  if (application.status !== "EINGEREICHT") {
+  if (application.status !== "SUBMITTED") {
     throw new AppError("CONFLICT", "Über diesen Antrag wurde bereits entschieden.");
   }
 
   await prisma.membershipApplication.update({
     where: { id },
-    data: { status: "ZURUECKGEZOGEN", openForUserId: null, decidedAt: new Date() },
+    data: { status: "WITHDRAWN", openForUserId: null, decidedAt: new Date() },
   });
 }

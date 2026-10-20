@@ -15,7 +15,7 @@ import { birthDateField } from "@/lib/membershipFormSchemas";
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /** In Anzeigereihenfolge — der Fokus springt auf das erste fehlerhafte Feld. */
-const FIRST_HALF_FIELDS = ["vorname", "name", "email", "geburtsdatum"] as const;
+const FIRST_HALF_FIELDS = ["firstName", "lastName", "email", "birthDate"] as const;
 type FirstHalfField = (typeof FIRST_HALF_FIELDS)[number];
 
 /**
@@ -36,10 +36,10 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
     const headingRef = useRef<HTMLParagraphElement>(null);
 
     const [half, setHalf] = useState<0 | 1>(0);
-    const [vorname, setVorname] = useState("");
-    const [name, setName] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
-    const [geburtsdatum, setGeburtsdatum] = useState("");
+    const [birthDate, setGeburtsdatum] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [fieldErrors, setFieldErrors] = useState<Partial<Record<FirstHalfField, string>>>({});
@@ -53,14 +53,14 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
         // hängen — vorher stand nur der erste Fehler als Banner über dem
         // Formular, und die Felder selbst blieben unmarkiert.
         const errors: Partial<Record<FirstHalfField, string>> = {};
-        if (!vorname.trim()) errors.vorname = "Bitte gib deinen Vornamen an.";
-        if (!name.trim()) errors.name = "Bitte gib deinen Nachnamen an.";
+        if (!firstName.trim()) errors.firstName = "Bitte gib deinen Vornamen an.";
+        if (!lastName.trim()) errors.lastName = "Bitte gib deinen Nachnamen an.";
         if (!email.trim()) errors.email = "Bitte gib deine E-Mail-Adresse an.";
         else if (!EMAIL_PATTERN.test(email.trim())) {
             errors.email = "Diese E-Mail-Adresse sieht nicht vollständig aus.";
         }
-        const birthDate = birthDateField.safeParse(geburtsdatum);
-        if (!birthDate.success) errors.geburtsdatum = birthDate.error.issues[0].message;
+        const birthDateCheck = birthDateField.safeParse(birthDate);
+        if (!birthDateCheck.success) errors.birthDate = birthDateCheck.error.issues[0].message;
         setFieldErrors(errors);
 
         const firstInvalid = FIRST_HALF_FIELDS.find((field) => errors[field]);
@@ -128,36 +128,36 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field
                             label="Vorname"
-                            htmlFor="register-vorname"
+                            htmlFor="register-firstName"
                             required
-                            error={fieldErrors.vorname}
+                            error={fieldErrors.firstName}
                         >
                             <Input
-                                id="register-vorname"
-                                name="vorname"
+                                id="register-firstName"
+                                name="firstName"
                                 autoComplete="given-name"
-                                value={vorname}
+                                value={firstName}
                                 onChange={(event) => {
-                                    setVorname(event.target.value);
-                                    clearFieldError("vorname");
+                                    setFirstName(event.target.value);
+                                    clearFieldError("firstName");
                                 }}
                                 placeholder="Marie"
                             />
                         </Field>
                         <Field
                             label="Nachname"
-                            htmlFor="register-name"
+                            htmlFor="register-lastName"
                             required
-                            error={fieldErrors.name}
+                            error={fieldErrors.lastName}
                         >
                             <Input
-                                id="register-name"
-                                name="name"
+                                id="register-lastName"
+                                name="lastName"
                                 autoComplete="family-name"
-                                value={name}
+                                value={lastName}
                                 onChange={(event) => {
-                                    setName(event.target.value);
-                                    clearFieldError("name");
+                                    setLastName(event.target.value);
+                                    clearFieldError("lastName");
                                 }}
                                 placeholder="Musterfrau"
                             />
@@ -187,20 +187,20 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
 
                     <Field
                         label="Geburtsdatum"
-                        htmlFor="register-geburtsdatum"
+                        htmlFor="register-birthDate"
                         required
                         hint="Beitreten kannst du ab 18 Jahren."
-                        error={fieldErrors.geburtsdatum}
+                        error={fieldErrors.birthDate}
                     >
                         <Input
-                            id="register-geburtsdatum"
-                            name="geburtsdatum"
+                            id="register-birthDate"
+                            name="birthDate"
                             type="date"
                             autoComplete="bday"
-                            value={geburtsdatum}
+                            value={birthDate}
                             onChange={(event) => {
                                 setGeburtsdatum(event.target.value);
-                                clearFieldError("geburtsdatum");
+                                clearFieldError("birthDate");
                             }}
                         />
                     </Field>
@@ -210,10 +210,10 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                     {/* Die Angaben der ersten Hälfte reisen als versteckte
                         Felder mit — sie stehen sonst nur im Zustand und
                         fehlten in der FormData. */}
-                    <input type="hidden" name="vorname" value={vorname} />
-                    <input type="hidden" name="name" value={name} />
+                    <input type="hidden" name="firstName" value={firstName} />
+                    <input type="hidden" name="lastName" value={lastName} />
                     <input type="hidden" name="email" value={email} />
-                    <input type="hidden" name="geburtsdatum" value={geburtsdatum} />
+                    <input type="hidden" name="birthDate" value={birthDate} />
 
                     <NewPasswordFields
                         idPrefix="register"

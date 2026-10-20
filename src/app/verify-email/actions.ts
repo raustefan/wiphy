@@ -28,8 +28,8 @@ import { FEATURE_FLAG_LABELS } from "@/lib/featureFlags";
  * geänderte Adresse, geht keine Mail raus.
  */
 async function notifyAdminsAboutRegistration(user: {
-  vorname: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 }) {
   try {
@@ -167,8 +167,8 @@ export async function verifyEmail(token: string) {
 
       if (!isEmailChange && user.registrationPendingSince) {
         await notifyAdminsAboutRegistration({
-          vorname: user.vorname,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: verificationToken.email,
         });
       }
@@ -208,8 +208,8 @@ export async function verifyEmail(token: string) {
 
       if (user.registrationPendingSince) {
         await notifyAdminsAboutRegistration({
-          vorname: user.vorname,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
         });
       }

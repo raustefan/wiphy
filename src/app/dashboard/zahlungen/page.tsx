@@ -8,6 +8,7 @@ import { getFeeRatesForYear } from "@/lib/server/services/feeDefaultService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { annualFee, withSurcharge } from "@/lib/feeCalculation";
 import { formatEuro } from "@/lib/format";
+import { defaultMandateId } from "@/lib/sepa";
 import { Badge, Card, Container, Separator, buttonClasses } from "@/components/ui";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { SectionHeader } from "../SectionHeader";
@@ -38,11 +39,11 @@ export default async function ZahlungenPage() {
      * er seit der Anmeldung fest, ein frisch aufgenommenes Mitglied wäre sonst
      * bis zum nächsten Login ausgesperrt.
      */
-    const status = profile?.status ?? currentUser.status ?? "KEIN_MITGLIED";
-    if (status === "KEIN_MITGLIED") redirect("/dashboard");
+    const status = profile?.status ?? currentUser.status ?? "NON_MEMBER";
+    if (status === "NON_MEMBER") redirect("/dashboard");
 
     const myRecord = feeUsers.find((u) => u.id === currentUser.id);
-    const fees = (myRecord?.fees ?? []).slice().sort((a, b) => b.jahr - a.jahr);
+    const fees = (myRecord?.fees ?? []).slice().sort((a, b) => b.year - a.year);
 
     return (
         <Container size="3" className="py-8 sm:py-12">
@@ -104,14 +105,17 @@ export default async function ZahlungenPage() {
 
                     <BankDetailsForm
                         initial={{
-                            bank: profile?.bank ?? "",
-                            BLZ: profile?.BLZ ?? "",
-                            KTO: profile?.KTO ?? "",
-                            IBAN: profile?.IBAN ?? "",
-                            BIC: profile?.BIC ?? "",
-                            bankeinzug: Boolean(profile?.bankeinzug),
+                            accountHolder:
+                                profile?.accountHolder ??
+                                `${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim(),
+                            iban: profile?.iban ?? "",
+                            bic: profile?.bic ?? "",
+                            directDebit: Boolean(profile?.directDebit),
                         }}
-                        mandatserteilung={profile?.mandatserteilung ?? null}
+                        mandateSignedAt={profile?.mandateSignedAt ?? null}
+                        mandateReference={
+                            profile?.mandateReference || defaultMandateId(profile?.memberNumber ?? null)
+                        }
                         rates={rates}
                     />
                 </Card>

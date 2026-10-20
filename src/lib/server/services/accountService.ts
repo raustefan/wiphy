@@ -14,9 +14,9 @@ export async function verifyPasswordForAccountAction(userId: string, password: s
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { password: true },
+    select: { passwordHash: true },
   });
-  if (!user || !password || !(await bcrypt.compare(password, user.password))) {
+  if (!user || !password || !(await bcrypt.compare(password, user.passwordHash))) {
     throw new AppError("FORBIDDEN", "Das Passwort stimmt nicht.");
   }
 }
@@ -31,14 +31,14 @@ export async function verifyPasswordForAccountAction(userId: string, password: s
 export async function disableOwnLogin(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, status: true, email: true, vorname: true, name: true },
+    select: { role: true, status: true, email: true, firstName: true, lastName: true },
   });
   if (!user) throw new AppError("NOT_FOUND", "Benutzerkonto nicht gefunden.");
   // Ein Admin könnte sich so selbst (und im Zweifel den Verein) aussperren.
   if (user.role === "ADMIN") {
     throw new AppError("FORBIDDEN", "Administratoren können ihren Zugang nicht selbst sperren.");
   }
-  if (user.status === "KEIN_MITGLIED") {
+  if (user.status === "NON_MEMBER") {
     throw new AppError("FORBIDDEN", "Ohne Mitgliedschaft kannst du dein Konto vollständig löschen.");
   }
 
@@ -60,10 +60,10 @@ export async function disableOwnLogin(userId: string) {
 export async function deleteAccountWithoutMembership(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { status: true, email: true, vorname: true, name: true },
+    select: { status: true, email: true, firstName: true, lastName: true },
   });
   if (!user) throw new AppError("NOT_FOUND", "Benutzerkonto nicht gefunden.");
-  if (user.status !== "KEIN_MITGLIED") {
+  if (user.status !== "NON_MEMBER") {
     throw new AppError(
       "FORBIDDEN",
       "Solange eine Mitgliedschaft besteht, kann das Konto nicht gelöscht werden.",

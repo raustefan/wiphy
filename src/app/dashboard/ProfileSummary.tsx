@@ -1,14 +1,14 @@
 import { User, UserCircle, CheckCircle2, Clock, Mail, Check, X } from "lucide-react";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
-import type { Status } from "@prisma/client";
+import type { MemberStatus } from "@prisma/client";
 import { Badge } from "@/components/ui";
 
-function getStatusIcon(status?: Status | string) {
+function getStatusIcon(status?: MemberStatus | string) {
     switch (status) {
-        case "EHRENMITGLIED":
-        case "ORDENTLICHES_MITGLIED":
+        case "HONORARY_MEMBER":
+        case "REGULAR_MEMBER":
             return <CheckCircle2 size={14} />;
-        case "KEIN_MITGLIED":
+        case "NON_MEMBER":
         default:
             return <Clock size={14} />;
     }
@@ -16,10 +16,10 @@ function getStatusIcon(status?: Status | string) {
 
 export type ProfileSummaryUser = {
     email: string;
-    vorname: string | null;
-    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     role: string;
-    status: Status | string;
+    status: MemberStatus | string;
     emailVerified: boolean;
     loginDisabled: boolean;
 };
@@ -38,7 +38,7 @@ export function ProfileSummary({ user }: { user: ProfileSummaryUser }) {
             <ProfileRow
                 icon={<User size={15} aria-hidden="true" />}
                 label="Name"
-                value={[user.vorname, user.name].filter(Boolean).join(" ") || "—"}
+                value={[user.firstName, user.lastName].filter(Boolean).join(" ") || "—"}
             />
             <ProfileRow
                 icon={<Mail size={15} aria-hidden="true" />}

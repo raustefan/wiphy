@@ -72,8 +72,8 @@ export async function terminateMembership(formData: FormData) {
       "MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL",
       { to: user.email },
       terminationReceivedMessage({
-        vorname: user.vorname,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         submittedAt: termination.submittedAt,
         effectiveAt: termination.effectiveAt,
         keepAccount,
@@ -84,10 +84,10 @@ export async function terminateMembership(formData: FormData) {
       // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
       { bcc: await getAdminNotificationEmails() },
       terminationNoticeMessage({
-        vorname: user.vorname,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
-        mitgliedId: user.mitgliedId,
+        memberNumber: user.memberNumber,
         submittedAt: termination.submittedAt,
         effectiveAt: termination.effectiveAt,
         // Nie aus dem Host-Header: der ist vom Client steuerbar.

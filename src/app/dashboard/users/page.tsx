@@ -96,25 +96,25 @@ export default async function UserManagementPage({
   // Nur was die Tabellen zeigen — Bankdaten und Profilfelder bleiben auf dem Server.
   const accounts: DirectoryAccount[] = users.map((u) => ({
     id: u.id,
-    name: u.name,
-    vorname: u.vorname,
+    name: u.lastName,
+    firstName: u.firstName,
     email: u.email,
-    mitgliedId: u.mitgliedId,
-    zahlungsKommentar: u.zahlungsKommentar,
-    aufnahmedatum: u.aufnahmedatum?.toISOString() ?? null,
-    bankeinzug: u.bankeinzug ?? false,
+    memberNumber: u.memberNumber,
+    adminNote: u.adminNote,
+    joinedAt: u.joinedAt?.toISOString() ?? null,
+    directDebit: u.directDebit,
     studentYears: u.studentYears,
     role: u.role,
     status: u.status,
     emailVerified: u.emailVerified,
     loginDisabled: u.loginDisabled,
-    lastLogin: u.lastLogin.toISOString(),
+    lastLoginAt: u.lastLoginAt.toISOString(),
     inFeeYear: u.inFeeYear,
     fees: u.fees.map((f) => ({
-      jahr: f.jahr,
-      bezahlt: f.bezahlt,
+      year: f.year,
+      paid: f.paid,
       isStudent: f.isStudent,
-      beitrag: f.beitrag,
+      amount: f.amount,
       standard: f.standard,
       manuell: f.manuell,
       angelegt: f.angelegt,
@@ -132,12 +132,12 @@ export default async function UserManagementPage({
   // Archivzeilen je gelöschtem Konto bündeln — mehr als Name und Nummer ist
   // davon nicht übrig (Datenminimierung), also sind beide zusammen der Schlüssel.
   const archiveGroups = [
-    ...Map.groupBy(archivedFees, (fee) => `${fee.archivName ?? ""}\u0000${fee.archivMitgliedId ?? ""}`),
+    ...Map.groupBy(archivedFees, (fee) => `${fee.archivedName ?? ""}\u0000${fee.archivedMemberNumber ?? ""}`),
   ].map(([key, fees]) => ({
     key,
-    name: fees[0].archivName,
-    mitgliedId: fees[0].archivMitgliedId,
-    fees: fees.toSorted((a, b) => b.jahr - a.jahr),
+    name: fees[0].archivedName,
+    memberNumber: fees[0].archivedMemberNumber,
+    fees: fees.toSorted((a, b) => b.year - a.year),
   }));
   const paidShare = stats.feeDue > 0 ? Math.round((stats.feePaid / stats.feeDue) * 100) : 0;
 
@@ -162,7 +162,7 @@ export default async function UserManagementPage({
           >
             <FeeDefaultsCard
               defaults={feeDefaults.map((d) => ({
-                jahr: d.jahr,
+                year: d.year,
                 regular: d.regular,
                 student: d.student,
               }))}
@@ -178,13 +178,13 @@ export default async function UserManagementPage({
             >
               <div className="grid max-h-96 gap-2 overflow-auto">
                 {archiveGroups.map((group) => {
-                  const open = group.fees.filter((fee) => !fee.bezahlt).length;
+                  const open = group.fees.filter((fee) => !fee.paid).length;
                   return (
                     <details key={group.key} className="rounded-[3px] border border-line">
                       <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm">
                         <span className="min-w-0 flex-1 truncate font-medium">{group.name ?? "—"}</span>
                         <span className="font-mono text-muted tabular-nums">
-                          Nr. {group.mitgliedId ?? "—"}
+                          Nr. {group.memberNumber ?? "—"}
                         </span>
                         <Badge>
                           {group.fees.length} {group.fees.length === 1 ? "Eintrag" : "Einträge"}
@@ -203,11 +203,11 @@ export default async function UserManagementPage({
                         <tbody className="divide-y divide-line">
                           {group.fees.map((fee) => (
                             <tr key={fee.id}>
-                              <td className="py-1.5 pr-3 pl-3 tabular-nums">{fee.jahr}</td>
+                              <td className="py-1.5 pr-3 pl-3 tabular-nums">{fee.year}</td>
                               <td className="py-1.5 pr-3 text-right tabular-nums">
-                                {formatEuro(fee.beitrag)}
+                                {formatEuro(fee.amount)}
                               </td>
-                              <td className="py-1.5 pr-3">{fee.bezahlt ? "Bezahlt" : "Offen"}</td>
+                              <td className="py-1.5 pr-3">{fee.paid ? "Bezahlt" : "Offen"}</td>
                               <td className="py-1.5 pr-3">{formatDate(fee.archivedAt)}</td>
                             </tr>
                           ))}

@@ -1,3 +1,4 @@
+import { formatAddress, type PostalAddress } from "@/lib/countries";
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { formatEuro, formatDate } from "@/lib/format";
 import { maskIban } from "@/lib/iban";
@@ -99,25 +100,21 @@ const styles = StyleSheet.create({
   },
 });
 
-type PdfUser = {
-  vorname: string | null;
-  name: string;
+type PdfUser = PostalAddress & {
+  firstName: string | null;
+  lastName: string;
   email: string;
-  mitgliedId: number | null;
+  memberNumber: number | null;
   status: string;
-  strasse: string | null;
-  plz: string | null;
-  stadt: string | null;
-  land: string | null;
-  IBAN: string | null;
-  bank: string | null;
-  bankeinzug: boolean | null;
-  aufnahmedatum: Date | null;
+  accountHolder: string | null;
+  iban: string | null;
+  directDebit: boolean;
+  joinedAt: Date | null;
 };
 
 function statusLabel(status: string) {
-  if (status === "ORDENTLICHES_MITGLIED") return "Ordentliches Mitglied";
-  if (status === "EHRENMITGLIED") return "Ehrenmitglied";
+  if (status === "REGULAR_MEMBER") return "Ordentliches Mitglied";
+  if (status === "HONORARY_MEMBER") return "Ehrenmitglied";
   return "Kein Mitglied";
 }
 
@@ -130,11 +127,9 @@ export function PaymentHistoryPdf({
   fees: DashboardFee[];
   generatedAt: Date;
 }) {
-  const displayName = [user.vorname, user.name].filter(Boolean).join(" ");
-  const address = [user.strasse, [user.plz, user.stadt].filter(Boolean).join(" "), user.land]
-    .filter(Boolean)
-    .join(", ");
-  const totalPaid = fees.filter((f) => f.bezahlt).reduce((sum, f) => sum + f.beitrag, 0);
+  const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+  const address = formatAddress(user);
+  const totalPaid = fees.filter((f) => f.paid).reduce((sum, f) => sum + f.amount, 0);
 
   return (
     <Document title={`Zahlungshistorie ${displayName}`}>
@@ -155,7 +150,7 @@ export function PaymentHistoryPdf({
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Mitglieds-ID</Text>
               <Text style={styles.infoValue}>
-                {user.mitgliedId != null ? user.mitgliedId : "—"}
+                {user.memberNumber != null ? user.memberNumber : "—"}
               </Text>
             </View>
             <View style={styles.infoItem}>
@@ -172,7 +167,7 @@ export function PaymentHistoryPdf({
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Mitglied seit</Text>
-              <Text style={styles.infoValue}>{formatDate(user.aufnahmedatum)}</Text>
+              <Text style={styles.infoValue}>{formatDate(user.joinedAt)}</Text>
             </View>
           </View>
         </View>
@@ -182,15 +177,15 @@ export function PaymentHistoryPdf({
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>IBAN</Text>
-              <Text style={styles.infoValue}>{user.IBAN ? maskIban(user.IBAN) : "—"}</Text>
+              <Text style={styles.infoValue}>{user.iban ? maskIban(user.iban) : "—"}</Text>
             </View>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Kreditinstitut</Text>
-              <Text style={styles.infoValue}>{user.bank || "—"}</Text>
+              <Text style={styles.infoLabel}>Kontoinhaber:in</Text>
+              <Text style={styles.infoValue}>{user.accountHolder || "—"}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Lastschriftmandat</Text>
-              <Text style={styles.infoValue}>{user.bankeinzug ? "Erteilt" : "Nicht erteilt"}</Text>
+              <Text style={styles.infoValue}>{user.directDebit ? "Erteilt" : "Nicht erteilt"}</Text>
             </View>
           </View>
         </View>
@@ -205,11 +200,11 @@ export function PaymentHistoryPdf({
               <Text style={styles.cellAmount}>Betrag</Text>
             </View>
             {fees.map((fee) => (
-              <View style={styles.tableRow} key={fee.jahr}>
-                <Text style={styles.cellYear}>{fee.jahr}</Text>
-                <Text style={styles.cellStatus}>{fee.bezahlt ? "Bezahlt" : "Ausstehend"}</Text>
+              <View style={styles.tableRow} key={fee.year}>
+                <Text style={styles.cellYear}>{fee.year}</Text>
+                <Text style={styles.cellStatus}>{fee.paid ? "Bezahlt" : "Ausstehend"}</Text>
                 <Text style={styles.cellStufe}>{fee.isStudent ? "Student" : "Regulär"}</Text>
-                <Text style={styles.cellAmount}>{formatEuro(fee.beitrag)}</Text>
+                <Text style={styles.cellAmount}>{formatEuro(fee.amount)}</Text>
               </View>
             ))}
             <View style={styles.totalRow}>

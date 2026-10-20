@@ -25,7 +25,7 @@ export const STUDENT_YEAR_LOOKAHEAD = 5;
  * Satzungs-/Datenschutzhinweis oder Mandatstext hochzählen — nur so lässt sich
  * später belegen, worauf sich eine alte Zustimmung bezog.
  */
-export const CONSENT_VERSION = "2026-09-v3";
+export const CONSENT_VERSION = "2026-10-v4";
 
 /**
  * Gläubiger-Identifikationsnummer des Vereins (bei der Bundesbank zu
@@ -108,11 +108,11 @@ export function selectableStudentYears(currentYear: number = new Date().getFullY
  * in denen tatsächlich noch studiert wird.
  */
 export function deriveStudentYears(
-  studienende: Date | null | undefined,
+  studyEnd: Date | null | undefined,
   currentYear: number = new Date().getFullYear(),
 ): number[] {
-  if (!studienende) return [];
-  const endYear = studienende.getFullYear();
+  if (!studyEnd) return [];
+  const endYear = studyEnd.getFullYear();
   if (endYear < currentYear) return [];
   return selectableStudentYears(currentYear).filter((year) => year <= endYear);
 }

@@ -1,12 +1,12 @@
-import type { Status, Role } from "@prisma/client";
+import type { MemberStatus, Role } from "@prisma/client";
 
-export function formatStatus(status?: Status | string | null): string {
+export function formatStatus(status?: MemberStatus | string | null): string {
     switch (status) {
-        case "KEIN_MITGLIED":
+        case "NON_MEMBER":
             return "Kein Mitglied";
-        case "ORDENTLICHES_MITGLIED":
+        case "REGULAR_MEMBER":
             return "Ordentliches Mitglied";
-        case "EHRENMITGLIED":
+        case "HONORARY_MEMBER":
             return "Ehrenmitglied";
         default:
             return "Unbekannt";
@@ -15,23 +15,23 @@ export function formatStatus(status?: Status | string | null): string {
 
 /** Badge-Farbton des Mitgliedsstatus — die Werte sind `BadgeTone` des UI-Kits. */
 export function getStatusTone(
-    status?: Status | string | null,
+    status?: MemberStatus | string | null,
 ): "negative" | "info" | "positive" {
     switch (status) {
-        case "EHRENMITGLIED":
+        case "HONORARY_MEMBER":
             return "positive";
-        case "ORDENTLICHES_MITGLIED":
+        case "REGULAR_MEMBER":
             return "info";
-        case "KEIN_MITGLIED":
+        case "NON_MEMBER":
         default:
             return "negative";
     }
 }
 
-export const STATUS_OPTIONS: { value: Status; label: string }[] = [
-    { value: "ORDENTLICHES_MITGLIED", label: "Ordentliches Mitglied" },
-    { value: "EHRENMITGLIED", label: "Ehrenmitglied" },
-    { value: "KEIN_MITGLIED", label: "Kein Mitglied" },
+export const STATUS_OPTIONS: { value: MemberStatus; label: string }[] = [
+    { value: "REGULAR_MEMBER", label: "Ordentliches Mitglied" },
+    { value: "HONORARY_MEMBER", label: "Ehrenmitglied" },
+    { value: "NON_MEMBER", label: "Kein Mitglied" },
 ];
 
 export const ROLE_OPTIONS: { value: Role; label: string }[] = [

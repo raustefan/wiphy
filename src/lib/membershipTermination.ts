@@ -42,7 +42,7 @@ export const TERMINATION_RECORD_RETENTION_YEARS = 3;
 /**
  * Aufbewahrung archivierter Beitragszeilen gelöschter Konten: zehn Jahre nach
  * Ende des Beitragsjahres (§ 147 Abs. 1 Nr. 1, Abs. 3 AO — Aufzeichnungen).
- * Zeilen mit `jahr` unterhalb dieses Werts dürfen weg.
+ * Zeilen mit `year` unterhalb dieses Werts dürfen weg.
  *
  * ponytail: gerechnet ab dem Beitragsjahr, nicht ab der Zahlung — eine
  * Nachzahlung Jahre später läuft damit kürzer. Der Buchungsbeleg dazu liegt im

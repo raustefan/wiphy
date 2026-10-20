@@ -13,10 +13,10 @@ export async function getFeeRatesForYear(year: number): Promise<FeeRates> {
   return resolveFeeDefault(await findFeeDefaults(), year);
 }
 
-export async function setFeeDefault(jahr: number, regular: number, student: number) {
-  await upsertFeeDefault(jahr, regular, student);
+export async function setFeeDefault(year: number, regular: number, student: number) {
+  await upsertFeeDefault(year, regular, student);
 }
 
-export async function removeFeeDefault(jahr: number) {
-  await deleteFeeDefault(jahr);
+export async function removeFeeDefault(year: number) {
+  await deleteFeeDefault(year);
 }

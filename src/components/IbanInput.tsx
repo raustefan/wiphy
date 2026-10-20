@@ -28,7 +28,7 @@ function ibanError(value: string): string {
  * Berichtigung in der Mitte der Nummer unmöglich wird.
  */
 export function IbanInput({
-    name = "IBAN",
+    name = "iban",
     defaultValue = "",
     id,
     required,

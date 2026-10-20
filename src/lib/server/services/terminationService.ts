@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, TerminationReason } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { toBerlinDateInput } from "@/lib/berlinTime";
@@ -13,10 +13,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const userSelect = {
   id: true,
   email: true,
-  vorname: true,
-  name: true,
+  firstName: true,
+  lastName: true,
   status: true,
-  mitgliedId: true,
+  memberNumber: true,
   loginDisabled: true,
 } as const;
 
@@ -41,7 +41,7 @@ export function getTermination(id: string) {
 }
 
 export function countOpenTerminations() {
-  return prisma.membershipTermination.count({ where: { status: "EINGEREICHT" } });
+  return prisma.membershipTermination.count({ where: { status: "SUBMITTED" } });
 }
 
 /**
@@ -52,7 +52,7 @@ export function countOpenTerminations() {
 export async function submitTermination(userId: string, keepAccount: boolean) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: userSelect });
   if (!user) throw new AppError("NOT_FOUND", "Benutzerkonto nicht gefunden.");
-  if (user.status === "KEIN_MITGLIED") {
+  if (user.status === "NON_MEMBER") {
     throw new AppError("FORBIDDEN", "Für dieses Konto besteht keine Mitgliedschaft.");
   }
 
@@ -84,8 +84,8 @@ export async function submitTermination(userId: string, keepAccount: boolean) {
  */
 export async function withdrawTermination(id: string, userId: string) {
   const { count } = await prisma.membershipTermination.updateMany({
-    where: { id, userId, status: "EINGEREICHT" },
-    data: { status: "ZURUECKGEZOGEN", openForUserId: null, decidedAt: new Date() },
+    where: { id, userId, status: "SUBMITTED" },
+    data: { status: "WITHDRAWN", openForUserId: null, decidedAt: new Date() },
   });
   if (count === 0) {
     throw new AppError("CONFLICT", "Diese Kündigung kann nicht mehr zurückgenommen werden.");
@@ -100,9 +100,9 @@ export async function confirmTermination(params: {
   note: string | null;
 }) {
   const { count } = await prisma.membershipTermination.updateMany({
-    where: { id: params.id, status: "EINGEREICHT" },
+    where: { id: params.id, status: "SUBMITTED" },
     data: {
-      status: "BESTAETIGT",
+      status: "CONFIRMED",
       effectiveAt: params.effectiveAt,
       decidedAt: new Date(),
       decidedById: params.adminId,
@@ -123,6 +123,7 @@ export async function confirmTermination(params: {
 export async function removeMembershipByAdmin(params: {
   userId: string;
   adminId: string;
+  reason: TerminationReason;
   keepAccount: boolean;
   userData: Prisma.UserUpdateInput;
 }) {
@@ -138,7 +139,8 @@ export async function removeMembershipByAdmin(params: {
       await tx.membershipTermination.update({
         where: { id: open.id },
         data: {
-          status: "BESTAETIGT",
+          status: "CONFIRMED",
+          reason: params.reason,
           openForUserId: null,
           completedAt: now,
           // Früher als erklärt: dann endete die Mitgliedschaft heute.
@@ -151,7 +153,8 @@ export async function removeMembershipByAdmin(params: {
       await tx.membershipTermination.create({
         data: {
           userId: params.userId,
-          status: "BESTAETIGT",
+          status: "CONFIRMED",
+          reason: params.reason,
           submittedAt: now,
           effectiveAt: today,
           keepAccount: params.keepAccount,
@@ -177,7 +180,7 @@ let lastRunAt = 0;
 
 /**
  * Vollzieht bestätigte Kündigungen, deren Austrittstag vorbei ist: Status auf
- * KEIN_MITGLIED, und ohne Wunsch nach Weiterführung wird der Login gesperrt.
+ * NON_MEMBER, und ohne Wunsch nach Weiterführung wird der Login gesperrt.
  * Die Daten bleiben für den Vorstand stehen (offene Beiträge, Buchhaltung) —
  * endgültig löschen kann er das Konto danach, weil keine Mitgliedschaft mehr
  * besteht.
@@ -196,7 +199,7 @@ export async function processTerminations(force = false): Promise<void> {
   try {
     const due = await prisma.membershipTermination.findMany({
       where: {
-        status: "BESTAETIGT",
+        status: "CONFIRMED",
         completedAt: null,
         effectiveAt: { lte: new Date(now - DAY_MS) },
       },
@@ -213,7 +216,7 @@ export async function processTerminations(force = false): Promise<void> {
         prisma.user.update({
           where: { id: termination.userId },
           data: {
-            status: "KEIN_MITGLIED",
+            status: "NON_MEMBER",
             ...(termination.keepAccount ? {} : { loginDisabled: true }),
           },
         }),
@@ -226,7 +229,7 @@ export async function processTerminations(force = false): Promise<void> {
       where: {
         OR: [
           { completedAt: { lt: cutoff } },
-          { status: "ZURUECKGEZOGEN", decidedAt: { lt: cutoff } },
+          { status: "WITHDRAWN", decidedAt: { lt: cutoff } },
         ],
       },
     });

@@ -6,8 +6,8 @@ const baseInput: UpdateUserInput = {
   idToEdit: "user-1",
   currentUserId: "user-1",
   currentUserRole: "MEMBER",
-  name: "Rau",
-  vorname: "Stefan",
+  lastName: "Rau",
+  firstName: "Stefan",
   email: "stefan@example.com",
 };
 
@@ -21,59 +21,51 @@ test("member self-updates change neither payment data nor admin fields", () => {
   const data = buildUserUpdateData({
     ...baseInput,
     role: "ADMIN",
-    status: "EHRENMITGLIED",
-    zahlungsKommentar: "internal note",
-    bank: "Example Bank",
-    BLZ: "123",
-    KTO: "456",
-    IBAN: "DE123",
-    BIC: "TESTDEFF",
-    mahnung: "reminder",
-    mandatserteilung: "2026-01-02",
-    bankeinzug: "on",
-    zuwendungsbesch: "on",
-    datensperren: "on",
-    ausschluss: "on",
+    status: "HONORARY_MEMBER",
+    adminNote: "internal note",
+    accountHolder: "Someone Else",
+    iban: "DE123",
+    bic: "TESTDEFF",
+    mandateReference: "ID1-Mandat0",
+    mandateSignedAt: "2026-01-02",
+    directDebit: "on",
+    loginDisabled: "on",
   });
 
-  assert.equal(data.name, "Rau");
+  assert.equal(data.lastName, "Rau");
   assert.equal(data.email, "stefan@example.com");
 
   // Admin-exklusive Felder bleiben gesperrt
   assert.equal("role" in data, false);
   assert.equal("status" in data, false);
-  assert.equal("datensperren" in data, false);
-  assert.equal("ausschluss" in data, false);
-  assert.equal("zahlungsKommentar" in data, false);
-  assert.equal("mahnung" in data, false);
+  assert.equal("loginDisabled" in data, false);
+  assert.equal("adminNote" in data, false);
 
   // Zahlungsdaten bleiben dem Profilformular ebenfalls verschlossen
-  assert.equal("bank" in data, false);
-  assert.equal("BLZ" in data, false);
-  assert.equal("KTO" in data, false);
-  assert.equal("IBAN" in data, false);
-  assert.equal("BIC" in data, false);
-  assert.equal("bankeinzug" in data, false);
-  assert.equal("zuwendungsbesch" in data, false);
-  assert.equal("mandatserteilung" in data, false);
+  assert.equal("accountHolder" in data, false);
+  assert.equal("iban" in data, false);
+  assert.equal("bic" in data, false);
+  assert.equal("mandateReference" in data, false);
+  assert.equal("directDebit" in data, false);
+  assert.equal("mandateSignedAt" in data, false);
 
   // Die eigenen Profilfelder bleiben schreibbar
-  assert.equal(data.vorname, "Stefan");
+  assert.equal(data.firstName, "Stefan");
 });
 
 test("member editing another user's profile ignores payment and admin fields", () => {
   const data = buildUserUpdateData({
     ...baseInput,
     idToEdit: "other-user",
-    bank: "Example Bank",
-    IBAN: "DE123",
-    zahlungsKommentar: "internal note",
+    accountHolder: "Someone Else",
+    iban: "DE123",
+    adminNote: "internal note",
     role: "ADMIN",
   });
 
-  assert.equal("bank" in data, false);
-  assert.equal("IBAN" in data, false);
-  assert.equal("zahlungsKommentar" in data, false);
+  assert.equal("accountHolder" in data, false);
+  assert.equal("iban" in data, false);
+  assert.equal("adminNote" in data, false);
   assert.equal("role" in data, false);
 });
 
@@ -84,23 +76,23 @@ test("admin profile updates include admin and payment fields", () => {
     currentUserId: "admin-1",
     idToEdit: "user-1",
     role: "ADMIN",
-    status: "ORDENTLICHES_MITGLIED",
-    zahlungsKommentar: "paid manually",
-    IBAN: "DE123",
-    BIC: "TESTDEFF",
-    mandatserteilung: "2026-01-02",
-    bankeinzug: "on",
-    datensperren: "false",
+    status: "REGULAR_MEMBER",
+    adminNote: "paid manually",
+    iban: "DE123",
+    bic: "TESTDEFF",
+    mandateSignedAt: "2026-01-02",
+    directDebit: "on",
+    loginDisabled: "false",
   });
 
   assert.equal(data.role, "ADMIN");
-  assert.equal(data.status, "ORDENTLICHES_MITGLIED");
-  assert.equal(data.zahlungsKommentar, "paid manually");
-  assert.equal(data.IBAN, "DE123");
-  assert.equal(data.BIC, "TESTDEFF");
-  assert.equal(data.bankeinzug, true);
-  assert.equal(data.datensperren, false);
-  assert.ok(data.mandatserteilung instanceof Date);
+  assert.equal(data.status, "REGULAR_MEMBER");
+  assert.equal(data.adminNote, "paid manually");
+  assert.equal(data.iban, "DE123");
+  assert.equal(data.bic, "TESTDEFF");
+  assert.equal(data.directDebit, true);
+  assert.equal(data.loginDisabled, false);
+  assert.ok(data.mandateSignedAt instanceof Date);
 });
 
 /* Regressionstest zu dem Fehler, dass ein Haken sich setzen, aber nicht wieder
@@ -114,16 +106,12 @@ test("explizites false schaltet Admin-Kästchen wieder ab", () => {
     ...baseInput,
     currentUserRole: "ADMIN",
     currentUserId: "admin-1",
-    bankeinzug: false,
-    zuwendungsbesch: false,
-    datensperren: false,
-    ausschluss: false,
+    directDebit: false,
+    loginDisabled: false,
   });
 
-  assert.equal(data.bankeinzug, false);
-  assert.equal(data.zuwendungsbesch, false);
-  assert.equal(data.datensperren, false);
-  assert.equal(data.ausschluss, false);
+  assert.equal(data.directDebit, false);
+  assert.equal(data.loginDisabled, false);
 });
 
 /* Die Gegenprobe: `undefined` darf weiterhin „nicht anfassen“ bedeuten. Daran
@@ -136,8 +124,6 @@ test("undefined lässt Admin-Kästchen unverändert", () => {
     currentUserId: "admin-1",
   });
 
-  assert.equal("bankeinzug" in data, false);
-  assert.equal("zuwendungsbesch" in data, false);
-  assert.equal("datensperren" in data, false);
-  assert.equal("ausschluss" in data, false);
+  assert.equal("directDebit" in data, false);
+  assert.equal("loginDisabled" in data, false);
 });

@@ -1,13 +1,14 @@
-import type { Role } from "@prisma/client";
+import type { Prisma, Role } from "@prisma/client";
 import {
   findUserById,
-  findUserByMitgliedIdExcludingUser,
+  findUserByMemberNumberExcludingUser,
   updateUserById,
 } from "@/lib/server/repositories/userRepository";
-import { getMaxMitgliedId } from "@/lib/server/repositories/membershipRepository";
+import { getMaxMemberNumber } from "@/lib/server/repositories/membershipRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
-import { planApplicationFees } from "@/lib/feeDefaults";
-import type { AdminCreateUserInput, UserImportExtra } from "@/lib/server/validation/schemas";
+import { planApplicationFees, resolveFeeDefault } from "@/lib/feeDefaults";
+import { calculateFeeAmount } from "@/lib/feeCalculation";
+import type { AdminCreateUserInput, UserImportFee } from "@/lib/server/validation/schemas";
 import bcrypt from "bcryptjs";
 import { buildUserUpdateData, type UpdateUserInput } from "./userUpdateData";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
@@ -29,29 +30,25 @@ export async function getEditableUser(id: string) {
  * Ändert ausschließlich die eigene Bankverbindung eines Mitglieds
  * (`/dashboard/zahlungen`). Bewusst getrennt von `updateUserProfile`: hier
  * gibt es keine Rollen-/Fremdbearbeitungslogik — es ist immer der eigene
- * Account — und ein erneutes SEPA-Mandat setzt `mandatserteilung` neu. Wer
+ * Account — und ein erneutes SEPA-Mandat setzt `mandateSignedAt` neu. Wer
  * auf Überweisung umstellt, widerruft das Mandat; damit wird auch die
  * Mandatszeit zurückgesetzt.
  */
 export async function updateOwnBankDetails(
   userId: string,
   input: {
-    bank: string | null;
-    BLZ: string | null;
-    KTO: string | null;
-    IBAN: string | null;
-    BIC: string | null;
-    bankeinzug: boolean;
+    accountHolder: string | null;
+    iban: string | null;
+    bic: string | null;
+    directDebit: boolean;
   },
 ) {
   await updateUserById(userId, {
-    bank: input.bank,
-    BLZ: input.BLZ,
-    KTO: input.KTO,
-    IBAN: input.IBAN,
-    BIC: input.BIC,
-    bankeinzug: input.bankeinzug,
-    mandatserteilung: input.bankeinzug ? new Date() : null,
+    accountHolder: input.accountHolder,
+    iban: input.iban,
+    bic: input.bic,
+    directDebit: input.directDebit,
+    mandateSignedAt: input.directDebit ? new Date() : null,
   });
 }
 
@@ -68,7 +65,7 @@ export async function requestEmailChange(userId: string, email: string, currentP
   const { prisma } = await import("@/lib/prisma");
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, password: true },
+    select: { id: true, email: true, passwordHash: true },
   });
   if (!user) throw new Error("User not found");
 
@@ -89,7 +86,7 @@ export async function requestEmailChange(userId: string, email: string, currentP
     throw error;
   }
 
-  if (!(await bcrypt.compare(currentPassword, user.password))) {
+  if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
     await logSecurityEvent({
       type: "EMAIL_CHANGE",
       outcome: "FAILURE",
@@ -205,33 +202,36 @@ export async function updateUserProfile(input: UpdateUserInput) {
 
   // Admin-only updates
   if (input.currentUserRole === "ADMIN") {
-    if (typeof input.mitgliedId === "string" && input.mitgliedId !== "") {
-      const parsed = Number(input.mitgliedId);
+    if (typeof input.memberNumber === "string" && input.memberNumber !== "") {
+      const parsed = Number(input.memberNumber);
       if (!Number.isNaN(parsed)) {
-        const existing = await findUserByMitgliedIdExcludingUser(
+        const existing = await findUserByMemberNumberExcludingUser(
           parsed,
           input.idToEdit
         );
         if (existing) {
-          return { ok: false as const, reason: "mitgliedId_conflict" as const };
+          return { ok: false as const, reason: "memberNumber_conflict" as const };
         }
-        data.mitgliedId = parsed;
+        data.memberNumber = parsed;
       }
-    } else if (input.mitgliedId === "" || input.mitgliedId === null) {
-      data.mitgliedId = null;
+    } else if (input.memberNumber === "" || input.memberNumber === null) {
+      data.memberNumber = null;
     }
   }
 
   const removesMembership =
     input.currentUserRole === "ADMIN" &&
-    data.status === "KEIN_MITGLIED" &&
-    user.status !== "KEIN_MITGLIED";
+    data.status === "NON_MEMBER" &&
+    user.status !== "NON_MEMBER";
   if (removesMembership) {
+    // Ein verstorbenes Mitglied meldet sich nicht mehr an.
+    if (input.terminationReason === "DECEASED") data.loginDisabled = true;
     const loginDisabledAfter =
       typeof data.loginDisabled === "boolean" ? data.loginDisabled : user.loginDisabled;
     await removeMembershipByAdmin({
       userId: input.idToEdit,
       adminId: input.currentUserId,
+      reason: input.terminationReason ?? "RESIGNATION",
       keepAccount: !loginDisabledAfter,
       userData: data,
     });
@@ -240,6 +240,28 @@ export async function updateUserProfile(input: UpdateUserInput) {
   }
   return { ok: true as const };
 }
+
+/** Formular und JSON-Import liefern dieselben Felder, nur unterschiedlich vollständig. */
+type CreateUserInput = Partial<AdminCreateUserInput> &
+  Pick<AdminCreateUserInput, "email" | "password" | "firstName" | "lastName" | "role" | "status" | "studentYears">;
+
+/** Spalten, die nur der JSON-Import setzt — das Formular kennt sie nicht. */
+type ImportExtra = Partial<
+  Pick<
+    Prisma.UserUncheckedCreateInput,
+    | "title"
+    | "phone"
+    | "degreeProgram"
+    | "studyStart"
+    | "studyEnd"
+    | "employer"
+    | "employmentStatus"
+    | "industry"
+    | "jobTitle"
+    | "linkedinUrl"
+    | "loginDisabled"
+  >
+>;
 
 export async function adminDeleteUser(userIdToDelete: string, currentUserRole: Role) {
   if (currentUserRole !== "ADMIN") {
@@ -255,12 +277,16 @@ export async function adminDeleteUser(userIdToDelete: string, currentUserRole: R
  * nach einem angenommenen Antrag (`approveApplication`): Mitglieds-ID,
  * Studienjahre, Bankdaten und Beitragszeilen — hier bis zum laufenden Jahr,
  * weil die Mitgliedschaft schon länger besteht.
+ *
+ * Bringt der JSON-Import eigene Beitragsjahre mit (`fees`), gelten genau
+ * diese — samt Zahlstatus aus dem alten System — statt des Beitragsplans.
  */
 export async function adminCreateUser(
-  input: AdminCreateUserInput,
+  input: CreateUserInput,
   currentUserRole: Role,
   /** Weitere Spalten aus dem JSON-Massenimport. */
-  extra: Partial<UserImportExtra> = {},
+  extra: ImportExtra = {},
+  importedFees?: UserImportFee[],
 ) {
   if (currentUserRole !== "ADMIN") {
     throw new Error("Unauthorized: Only admins can create users");
@@ -271,65 +297,91 @@ export async function adminCreateUser(
     return { ok: false as const, reason: "email_taken" as const };
   }
 
-  const isMember = input.status !== "KEIN_MITGLIED";
-  let mitgliedId = input.mitgliedId;
-  if (mitgliedId != null) {
-    if (await prisma.user.findUnique({ where: { mitgliedId }, select: { id: true } })) {
-      return { ok: false as const, reason: "mitgliedId_conflict" as const };
+  const isMember = input.status !== "NON_MEMBER";
+  let memberNumber = input.memberNumber;
+  if (memberNumber != null) {
+    if (await prisma.user.findUnique({ where: { memberNumber }, select: { id: true } })) {
+      return { ok: false as const, reason: "memberNumber_conflict" as const };
     }
   } else if (isMember) {
-    mitgliedId = (await getMaxMitgliedId()) + 1;
+    memberNumber = (await getMaxMemberNumber()) + 1;
   }
 
   const studentYears = [...new Set(input.studentYears)].sort((a, b) => a - b);
-  const bankeinzug = !input.selbstzahler;
+  const directDebit = !input.selfPayer;
   const currentYear = new Date().getFullYear();
+  const defaults = await findFeeDefaults();
   // Wie bei der Antragsannahme: Beiträge nur für beitragspflichtige Mitglieder.
   const feePlan =
-    input.status === "ORDENTLICHES_MITGLIED" && input.aufnahmedatum
+    input.status === "REGULAR_MEMBER" && input.joinedAt
       ? planApplicationFees({
-          aufnahmedatum: input.aufnahmedatum,
+          joinedAt: input.joinedAt,
           studentYears,
-          defaults: await findFeeDefaults(),
-          bankeinzug,
+          defaults,
+          directDebit,
           untilYear: currentYear,
         })
       : [];
+  const fees = importedFees
+    ? importedFees.map((fee) => {
+        const rates = resolveFeeDefault(defaults, fee.year);
+        return {
+          year: fee.year,
+          isStudent: fee.isStudent,
+          paid: fee.paid,
+          manualAmount: fee.manualAmount,
+          // Ohne festen Betrag gilt der Standardsatz — wie bei jeder anderen Zeile.
+          amount: fee.manualAmount
+            ? fee.amount!
+            : calculateFeeAmount({
+                monthlyRegular: rates.regular,
+                monthlyStudent: rates.student,
+                isStudent: fee.isStudent,
+                directDebit,
+                year: fee.year,
+                joinedAt: input.joinedAt,
+              }),
+        };
+      })
+    : feePlan.map((fee) => ({
+        year: fee.year,
+        isStudent: fee.isStudent,
+        amount: fee.amount,
+        // Künftige Studienjahre sind noch nicht fällig, also nie „bezahlt“.
+        paid: Boolean(input.allPaid) && fee.year <= currentYear,
+      }));
 
   const user = await prisma.user.create({
     data: {
       ...extra,
       email: input.email,
-      password: await bcrypt.hash(input.password, 12),
-      name: input.name,
-      vorname: input.vorname,
+      passwordHash: await bcrypt.hash(input.password, 12),
+      lastName: input.lastName,
+      firstName: input.firstName,
       role: input.role,
       status: input.status,
       // Vom Admin angelegt = Adresse gilt als bestätigt, Anmelden geht sofort.
       emailVerified: true,
-      mitgliedId,
-      aufnahmedatum: input.aufnahmedatum,
-      geburtsdatum: input.geburtsdatum,
-      strasse: input.strasse,
-      plz: input.plz,
-      stadt: input.stadt,
-      land: input.land,
-      zahlungsKommentar: input.zahlungsKommentar,
+      memberNumber,
+      joinedAt: input.joinedAt,
+      birthDate: input.birthDate,
+      addressLine1: input.addressLine1,
+      addressLine2: input.addressLine2,
+      postalCode: input.postalCode,
+      city: input.city,
+      region: input.region,
+      countryCode: input.countryCode,
+      adminNote: input.adminNote,
       studentYears,
-      bankeinzug: isMember ? bankeinzug : undefined,
-      mandatserteilung: bankeinzug ? input.mandatserteilung : undefined,
-      bank: input.bank,
-      IBAN: input.IBAN,
-      BIC: input.BIC,
-      fees: {
-        create: feePlan.map((fee) => ({
-          jahr: fee.jahr,
-          isStudent: fee.isStudent,
-          beitrag: fee.beitrag,
-          // Künftige Studienjahre sind noch nicht fällig, also nie „bezahlt“.
-          bezahlt: Boolean(input.allePaid) && fee.jahr <= currentYear,
-        })),
-      },
+      directDebit: isMember && directDebit,
+      mandateSignedAt: directDebit ? input.mandateSignedAt : undefined,
+      mandateReference: input.mandateReference,
+      // Das alte System kannte keinen Kontoinhaber; eingezogen wurde auf den
+      // Namen des Mitglieds.
+      accountHolder: input.accountHolder ?? (input.iban ? `${input.firstName} ${input.lastName}` : undefined),
+      iban: input.iban,
+      bic: input.bic,
+      fees: { create: fees },
     },
   });
 
