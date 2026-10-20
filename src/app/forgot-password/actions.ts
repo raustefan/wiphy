@@ -2,7 +2,6 @@
 
 import { after } from "next/server";
 import { headers } from "next/headers";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createPasswordResetUrl } from "@/lib/server/services/userService";
 import { sendEmail } from "@/lib/server/email/mailer";
@@ -14,13 +13,15 @@ import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { logSecurityEvent } from "@/lib/server/securityLog";
 import { pruneUnverifiedRegistrations } from "@/lib/server/registrationCleanup";
 import { FEATURE_FLAG_LABELS } from "@/lib/featureFlags";
+import { parseFormData } from "@/lib/server/validation/parseFormData";
+import { forgotPasswordSchema } from "@/lib/server/validation/schemas";
 
 /**
  * Schickt einen Link zum Zurücksetzen des Passworts. Meldet immer Erfolg
  * (außer bei Sperre durch Feature-Flag oder Rate Limit), damit sich nicht
  * erfragen lässt, welche Adressen ein Konto haben.
  */
-export async function requestPasswordReset(email: string) {
+export async function requestPasswordReset(formData: FormData) {
   return executeAction(async () => {
     const requestHeaders = await headers();
     const clientIp = extractClientIp(requestHeaders);
@@ -37,7 +38,22 @@ export async function requestPasswordReset(email: string) {
       throw new AppError("FORBIDDEN", `${FEATURE_FLAG_LABELS.PASSWORD_RESET} wurde von einem Administrator deaktiviert.`);
     }
 
-    const trimmedEmail = normalizeEmail(z.string().min(1, "E-Mail ist erforderlich").parse(email));
+    const { email, website } = parseFormData(forgotPasswordSchema, formData);
+    const trimmedEmail = normalizeEmail(email);
+
+    // Honeypot vor den Rate Limits, wie bei Kontakt und Registrierung: kostet
+    // nichts, und der Bot bekommt denselben Erfolg wie alle anderen.
+    if (website && website.trim() !== "") {
+      await logSecurityEvent({
+        type: "PASSWORD_RESET_REQUEST",
+        outcome: "BLOCKED",
+        reason: "honeypot",
+        email: trimmedEmail,
+        ip: clientIp,
+        userAgent,
+      });
+      return;
+    }
 
     try {
       // Per-IP cap first: stops one IP from requesting resets for many different

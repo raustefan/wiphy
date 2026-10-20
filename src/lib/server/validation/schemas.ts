@@ -131,6 +131,17 @@ export const contactSchema = z.object({
 });
 
 /**
+ * „Passwort vergessen“. Ohne Zeitmessung: ein einziges Feld ist per Autofill
+ * schneller ausgefüllt als `MIN_FILL_TIME_MS`, und der vorgetäuschte Erfolg
+ * hieße hier, dass ein echtes Mitglied auf eine Mail wartet, die nie kommt.
+ */
+export const forgotPasswordSchema = z.object({
+  email: z.string().min(1, "E-Mail ist erforderlich"),
+  // Honeypot: im UI versteckt, jeder Wert stammt also von einem Bot.
+  website: z.string().max(200).optional(),
+});
+
+/**
  * Öffentliche Registrierung: `registerSchema` plus Bot-Abwehr.
  *
  * Bewusst *nicht* in `registerSchema` selbst — sonst erbt

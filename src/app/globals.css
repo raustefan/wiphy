@@ -535,7 +535,7 @@ html:has(dialog:modal) {
 }
 
 /* --------------------------------------------------------------------------
-   Formular-Honeypot (Kontakt, Registrierung)
+   Formular-Honeypot (Kontakt, Registrierung, Passwort vergessen)
    --------------------------------------------------------------------------
    Off-canvas statt `display: none` — Bots, die versteckte Felder überspringen,
    prüfen üblicherweise auf `display`/`visibility`. `aria-hidden` und

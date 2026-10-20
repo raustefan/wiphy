@@ -11,11 +11,10 @@ export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [sent, setSent] = useState(false);
 
-    const form = useActionForm(
-        (formData) =>
-            requestPasswordReset(String(formData.get("email") ?? "")),
-        { featureLabel: "Passwort zurücksetzen", onSuccess: () => setSent(true) },
-    );
+    const form = useActionForm(requestPasswordReset, {
+        featureLabel: "Passwort zurücksetzen",
+        onSuccess: () => setSent(true),
+    });
 
     return (
         <AuthShell
@@ -75,6 +74,20 @@ export default function ForgotPasswordPage() {
                             placeholder="beispiel@domain.de"
                         />
                     </Field>
+
+                    {/* Honeypot, off-canvas wie bei Kontakt und Registrierung. */}
+                    <div aria-hidden="true" className="form-honeypot">
+                        <label htmlFor="forgot-website">
+                            Website (bitte freilassen)
+                            <input
+                                id="forgot-website"
+                                type="text"
+                                name="website"
+                                tabIndex={-1}
+                                autoComplete="off"
+                            />
+                        </label>
+                    </div>
 
                     <Button type="submit" size="lg" loading={form.pending} className="w-full">
                         <MailCheck size={16} aria-hidden="true" />
