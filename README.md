@@ -413,7 +413,9 @@ Netzwerkzugriff, die sich deterministisch prüfen lassen.
 ## Deployment (Hetzner Cloud / Ubuntu)
 
 Diese Anwendung ist so vorkonfiguriert, dass sie reibungslos auf einem
-Ubuntu-Server (z. B. in der Hetzner Cloud) betrieben werden kann.
+Ubuntu-Server (z. B. in der Hetzner Cloud) betrieben werden kann. Was auf dem
+laufenden Server wo liegt und wie man prüft, ob alles läuft:
+[BETRIEB.md](BETRIEB.md).
 
 ### Einmalige Einrichtung auf dem Server
 
@@ -472,10 +474,10 @@ Ubuntu-Server (z. B. in der Hetzner Cloud) betrieben werden kann.
 
 5. **Datenbank & Anwendung initialisieren:**
    ```bash
-   npx prisma db push
-   SEED_ADMIN_PASSWORD='…' npx prisma db seed # Admin-Nutzer admin@wiphy.de, Passwort mind. 12 Zeichen
+   pnpm exec prisma migrate deploy
+   SEED_ADMIN_PASSWORD='…' pnpm exec prisma db seed # Admin-Nutzer admin@wiphy.de, Passwort mind. 12 Zeichen
    pnpm build
-   pm2 start pnpm --name "wiphy-app" -- start
+   pm2 start pnpm --name "wiphy" -- start
    pm2 startup
    pm2 save
    ```
@@ -557,23 +559,9 @@ cd /var/www/wiphy
 *(Hinweis: Falls das Skript auf dem Server noch nicht ausführbar ist, mache es einmalig mit `chmod +x deploy.sh` ausführbar).*
 
 `deploy.sh` zieht den neuesten Code, installiert Abhängigkeiten, generiert
-den Prisma-Client, spielt Schemaänderungen per `prisma db push` ein, baut die
+den Prisma-Client, spielt Migrationen per `prisma migrate deploy` ein, baut die
 Anwendung und startet den PM2-Prozess `wiphy` neu (bzw. legt ihn beim ersten
 Mal an).
-
-#### Migrationen statt `db push`
-
-`prisma db push` bricht ab, sobald eine Änderung Daten verlieren würde (z. B.
-das Entfernen einer Spalte, in der noch Werte stehen). In solchen Fällen
-stattdessen einmalig die entsprechende, im Repository dokumentierte Migration
-fahren:
-
-```bash
-cd /var/www/wiphy
-npx prisma migrate deploy
-```
-
-Danach läuft `deploy.sh` wieder unverändert durch.
 
 ---
 
