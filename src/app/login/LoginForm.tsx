@@ -1,9 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlertCircleIcon, Login01Icon, MailValidation01Icon } from "@hugeicons/core-free-icons";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, LogIn, MailCheck } from "lucide-react";
 import { LoginFaq } from "./LoginFaq";
 import {
     createLoginChallenge,
@@ -124,7 +125,7 @@ export function LoginForm({
             <div className="flex flex-col items-center justify-center gap-6 lg:flex-row-reverse lg:items-start lg:gap-10">
                 <div className="w-full max-w-md shrink-0">
                     <AuthShell
-                        icon={<LogIn size={22} aria-hidden="true" />}
+                        icon={<HugeiconsIcon icon={Login01Icon} size={22} aria-hidden="true" />}
                         title="Mitgliederbereich"
                         description={
                             // Wer aus dem Aufnahmeantrag hierher geschickt
@@ -146,7 +147,7 @@ export function LoginForm({
                         <form onSubmit={handleSubmit} className="grid gap-4">
                             {notice && !error && <Callout tone="success">{notice}</Callout>}
                             {error && (
-                                <Callout tone="danger" icon={<AlertCircle size={16} />}>
+                                <Callout tone="danger" icon={<HugeiconsIcon icon={AlertCircleIcon} size={16} />}>
                                     <span className="grid gap-2">
                                         <span className="block text-foreground">{error}</span>
                                         {emailUnverified && !resendSent && (
@@ -159,7 +160,7 @@ export function LoginForm({
                                                 loading={resend.pending}
                                                 className="w-full"
                                             >
-                                                <MailCheck size={15} aria-hidden="true" />
+                                                <HugeiconsIcon icon={MailValidation01Icon} size={15} aria-hidden="true" />
                                                 Bestätigungs-E-Mail erneut senden
                                             </Button>
                                         )}
@@ -221,7 +222,7 @@ export function LoginForm({
                             <AltchaField key={challenge} challengeJson={challenge} />
 
                             <Button type="submit" size="lg" loading={submitting} className="w-full">
-                                <LogIn size={16} aria-hidden="true" />
+                                <HugeiconsIcon icon={Login01Icon} size={16} aria-hidden="true" />
                                 Anmelden
                             </Button>
                         </form>

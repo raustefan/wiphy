@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, ArrowDown01Icon, ArrowUp01Icon, PencilIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminMembers } from "@/lib/server/services/boardService";
-import { ChevronDown, ChevronUp, Pencil, Plus, Users } from "lucide-react";
 import { Suspense } from "react";
 import { createDraft, deleteMember, moveMemberInList } from "./actions";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -40,7 +41,7 @@ export default async function AdminBoardPage() {
             >
                 <form action={createDraft} className="w-full sm:w-auto">
                     <Button type="submit" className="w-full sm:w-auto">
-                        <Plus size={16} aria-hidden="true" /> Neues Mitglied
+                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" /> Neues Mitglied
                     </Button>
                 </form>
             </DashboardPageHeader>
@@ -75,7 +76,7 @@ export default async function AdminBoardPage() {
                                                 className="grid size-12 place-items-center rounded-[3px] border border-dashed border-line text-faint"
                                                 title="Kein Foto"
                                             >
-                                                <Users size={16} aria-hidden="true" />
+                                                <HugeiconsIcon icon={UserGroupIcon} size={16} aria-hidden="true" />
                                             </span>
                                         )}
                                     </Td>
@@ -112,7 +113,7 @@ export default async function AdminBoardPage() {
                                                     disabled={index === 0}
                                                     aria-label="Nach oben verschieben"
                                                 >
-                                                    <ChevronUp size={16} aria-hidden="true" />
+                                                    <HugeiconsIcon icon={ArrowUp01Icon} size={16} aria-hidden="true" />
                                                 </Button>
                                             </form>
                                             <form action={moveMemberInList}>
@@ -126,7 +127,7 @@ export default async function AdminBoardPage() {
                                                     disabled={index === members.length - 1}
                                                     aria-label="Nach unten verschieben"
                                                 >
-                                                    <ChevronDown size={16} aria-hidden="true" />
+                                                    <HugeiconsIcon icon={ArrowDown01Icon} size={16} aria-hidden="true" />
                                                 </Button>
                                             </form>
                                             <ButtonLink
@@ -134,7 +135,7 @@ export default async function AdminBoardPage() {
                                                 size="sm"
                                                 variant="soft"
                                             >
-                                                <Pencil size={16} aria-hidden="true" /> Bearbeiten
+                                                <HugeiconsIcon icon={PencilIcon} size={16} aria-hidden="true" /> Bearbeiten
                                             </ButtonLink>
                                             <DeleteMemberButton
                                                 memberId={member.id}
@@ -149,13 +150,13 @@ export default async function AdminBoardPage() {
                                 <tr>
                                     <Td colSpan={5} className="p-0">
                                         <EmptyState
-                                            icon={<Users size={22} />}
+                                            icon={<HugeiconsIcon icon={UserGroupIcon} size={22} />}
                                             title="Noch kein Vorstand hinterlegt"
                                             description="Lege ein Mitglied an, trage Name und Funktion ein und veröffentliche es — bis dahin sieht es niemand außer dir."
                                             action={
                                                 <form action={createDraft}>
                                                     <Button type="submit" variant="soft">
-                                                        <Plus size={16} aria-hidden="true" />
+                                                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
                                                         Erstes Mitglied anlegen
                                                     </Button>
                                                 </form>

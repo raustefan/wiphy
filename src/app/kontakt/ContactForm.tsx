@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Info } from "lucide-react";
 import { MAX_MESSAGE_LENGTH } from "@/lib/contact";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -95,7 +96,7 @@ export function ContactForm({
                 <div className="max-w-2xl border-t border-line pt-6">
                 <form action={handleAction} className="grid gap-5">
                     {!enabled && (
-                        <Callout tone="warning" icon={<Info size={16} />}>
+                        <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                             Das Kontaktformular ist derzeit deaktiviert. Bitte wende dich
                             vorübergehend über die Angaben im{" "}
                             <Link

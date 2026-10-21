@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Key02Icon, MailValidation01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { KeyRound, MailCheck } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { Button, Callout, Field, Input } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -20,9 +21,9 @@ export default function ForgotPasswordPage() {
         <AuthShell
             icon={
                 sent ? (
-                    <MailCheck size={22} aria-hidden="true" />
+                    <HugeiconsIcon icon={MailValidation01Icon} size={22} aria-hidden="true" />
                 ) : (
-                    <KeyRound size={22} aria-hidden="true" />
+                    <HugeiconsIcon icon={Key02Icon} size={22} aria-hidden="true" />
                 )
             }
             title={sent ? "E-Mail unterwegs" : "Passwort vergessen"}
@@ -90,7 +91,7 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     <Button type="submit" size="lg" loading={form.pending} className="w-full">
-                        <MailCheck size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={MailValidation01Icon} size={16} aria-hidden="true" />
                         Link anfordern
                     </Button>
                 </form>

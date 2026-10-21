@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, Cancel01Icon, Copy01Icon, Mail01Icon, Maximize02Icon, Minimize02Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Copy, Mail, Maximize2, Minimize2, X } from "lucide-react";
 import { Button, Switch } from "@/components/ui";
 import { STAGE_CLASS, endOf, overlaps, packLanes, type KosmosMember } from "@/lib/kosmos";
 import { revealKosmosEmailAction, setKosmosVisibilityAction } from "./actions";
@@ -287,7 +288,7 @@ export function KosmosTimeline({
                         href="/dashboard"
                         className="inline-flex w-fit items-center gap-1.5 rounded-sm text-sm font-medium opacity-75 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-physics"
                     >
-                        <ArrowLeft size={14} aria-hidden="true" />
+                        <HugeiconsIcon icon={ArrowLeft01Icon} size={14} aria-hidden="true" />
                         Dashboard
                     </Link>
                     <h1 className="display text-[clamp(1.875rem,4.5vw,3rem)]">Alumni-Kosmos</h1>
@@ -308,7 +309,7 @@ export function KosmosTimeline({
                             title={isFullscreen ? "Vollbild beenden" : "Vollbild"}
                             className="grid size-10 cursor-pointer place-items-center rounded-full border border-current/25 transition-colors hover:bg-current/10 focus-visible:outline-2 focus-visible:outline-physics"
                         >
-                            {isFullscreen ? <Minimize2 size={17} aria-hidden="true" /> : <Maximize2 size={17} aria-hidden="true" />}
+                            {isFullscreen ? <HugeiconsIcon icon={Minimize02Icon} size={17} aria-hidden="true" /> : <HugeiconsIcon icon={Maximize02Icon} size={17} aria-hidden="true" />}
                         </button>
                     )}
                 </div>
@@ -665,7 +666,7 @@ function MemberCard({
                 aria-label="Schließen"
                 className="absolute top-2.5 right-2.5 grid size-8 cursor-pointer place-items-center rounded-full opacity-70 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-physics"
             >
-                <X size={16} aria-hidden="true" />
+                <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" />
             </button>
             <div className="grid gap-1 pr-8">
                 <p className="text-lg leading-tight font-semibold">{member.name}</p>
@@ -682,7 +683,7 @@ function MemberCard({
                 (email ? (
                     <div className="flex flex-wrap items-center gap-2">
                         <a href={`mailto:${email}`} className="k-cta inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold">
-                            <Mail size={15} aria-hidden="true" />
+                            <HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />
                             E-Mail schreiben
                         </a>
                         <button
@@ -693,14 +694,14 @@ function MemberCard({
                             }}
                             className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-current/30 px-3 text-sm font-semibold"
                         >
-                            {copied ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+                            {copied ? <HugeiconsIcon icon={Tick01Icon} size={15} aria-hidden="true" /> : <HugeiconsIcon icon={Copy01Icon} size={15} aria-hidden="true" />}
                             {copied ? "Kopiert" : "Kopieren"}
                         </button>
                         <p className="w-full truncate font-mono text-xs opacity-80">{email}</p>
                     </div>
                 ) : (
                     <Button size="sm" onClick={reveal} loading={pending} className="k-cta w-fit rounded-full">
-                        <Mail size={15} aria-hidden="true" />
+                        <HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />
                         E-Mail-Adresse anzeigen
                     </Button>
                 ))}

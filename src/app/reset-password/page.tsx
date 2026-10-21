@@ -1,9 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckmarkCircle01Icon, Key02Icon, Unlink01Icon } from "@hugeicons/core-free-icons";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { CheckCircle2, KeyRound, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { NewPasswordFields, validateNewPassword } from "@/components/PasswordField";
 import { Button, ButtonLink, Callout, Spinner } from "@/components/ui";
@@ -43,7 +44,7 @@ function ResetPasswordForm() {
     if (!token) {
         return (
             <AuthShell
-                icon={<Unlink size={22} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={Unlink01Icon} size={22} aria-hidden="true" />}
                 title="Link ungültig"
                 footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
             >
@@ -61,7 +62,7 @@ function ResetPasswordForm() {
     if (done) {
         return (
             <AuthShell
-                icon={<CheckCircle2 size={22} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={22} aria-hidden="true" />}
                 title="Passwort geändert"
             >
                 <Callout tone="success">
@@ -77,7 +78,7 @@ function ResetPasswordForm() {
 
     return (
         <AuthShell
-            icon={<KeyRound size={22} aria-hidden="true" />}
+            icon={<HugeiconsIcon icon={Key02Icon} size={22} aria-hidden="true" />}
             title="Neues Passwort festlegen"
             description="Wähle ein Passwort, das du noch nirgends sonst benutzt."
             footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}

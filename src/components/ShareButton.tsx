@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Share02Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { Check, Share2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -25,7 +26,7 @@ export default function ShareButton({ title, className }: { title: string; class
 
   return (
     <button type="button" onClick={share} className={cn("cta cta-line", className)}>
-      {copied ? <Check size={16} aria-hidden="true" /> : <Share2 size={16} aria-hidden="true" />}
+      {copied ? <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> : <HugeiconsIcon icon={Share02Icon} size={16} aria-hidden="true" />}
       <span aria-live="polite">{copied ? "Link kopiert" : "Teilen"}</span>
     </button>
   );

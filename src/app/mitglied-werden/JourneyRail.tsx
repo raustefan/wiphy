@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Tick01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/cn";
 import {
     JOURNEY_STEPS,
@@ -60,7 +61,7 @@ export function JourneyRail({ stage }: { stage: JourneyStage }) {
                                 )}
                             >
                                 {isDone ? (
-                                    <Check size={14} aria-hidden="true" className="shrink-0 text-physics" />
+                                    <HugeiconsIcon icon={Tick01Icon} size={14} aria-hidden="true" className="shrink-0 text-physics" />
                                 ) : (
                                     <span aria-hidden="true" className="font-serif text-base italic tabular-nums">
                                         {index + 1}

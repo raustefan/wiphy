@@ -1,3 +1,5 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, PencilIcon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -6,29 +8,6 @@ import { toggleDebugMode } from "./actions";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
-import {
-    User,
-    UserCircle,
-    IdCard,
-    Calendar,
-    CalendarDays,
-    SlidersHorizontal,
-    Send,
-    BookOpen,
-    ToggleLeft,
-    Mail,
-    UserCog,
-    FileText,
-    CreditCard,
-    ShieldAlert,
-    Pencil,
-    Users,
-    Contact,
-    Server,
-    Bug,
-    KeyRound,
-    Sparkles,
-} from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { ProfileSummary } from "./ProfileSummary";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -57,18 +36,18 @@ import {
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
-    { href: "/dashboard/users", label: "Benutzerverwaltung", description: "Konten, Rollen und Mitgliedsdaten", Icon: Contact },
-    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", description: "Aufnahmen und Kündigungen bearbeiten", Icon: FileText },
-    { href: "/dashboard/users/new", label: "Neuer User", description: "Konto anlegen oder importieren", Icon: User },
-    { href: "/dashboard/mail", label: "Rundmail", description: "Nachricht an Mitglieder senden", Icon: Send },
-    { href: "/dashboard/termine", label: "Termine", description: "Veranstaltungen planen", Icon: CalendarDays },
-    { href: "/dashboard/blog", label: "Blog", description: "Beiträge schreiben und pflegen", Icon: BookOpen },
-    { href: "/dashboard/vorstand", label: "Vorstand", description: "Vorstandsseite aktualisieren", Icon: Users },
-    { href: "/dashboard/kontakt", label: "Kontaktanfragen", description: "Nachrichten über das Formular", Icon: Mail },
+    { href: "/dashboard/users", label: "Benutzerverwaltung", description: "Konten, Rollen und Mitgliedsdaten", Icon: ContactIcon },
+    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", description: "Aufnahmen und Kündigungen bearbeiten", Icon: FileAttachmentIcon },
+    { href: "/dashboard/users/new", label: "Neuer User", description: "Konto anlegen oder importieren", Icon: UserIcon },
+    { href: "/dashboard/mail", label: "Rundmail", description: "Nachricht an Mitglieder senden", Icon: SentIcon },
+    { href: "/dashboard/termine", label: "Termine", description: "Veranstaltungen planen", Icon: Calendar01Icon },
+    { href: "/dashboard/blog", label: "Blog", description: "Beiträge schreiben und pflegen", Icon: BookOpen01Icon },
+    { href: "/dashboard/vorstand", label: "Vorstand", description: "Vorstandsseite aktualisieren", Icon: UserGroupIcon },
+    { href: "/dashboard/kontakt", label: "Kontaktanfragen", description: "Nachrichten über das Formular", Icon: Mail01Icon },
     // Nur im Debug-Modus sichtbar und erreichbar (`requireDebugAdmin`).
-    { href: "/dashboard/feature-flags", label: "Feature Flags", description: "Funktionen ein- und ausschalten", Icon: ToggleLeft, debug: true },
-    { href: "/dashboard/security", label: "Sicherheit", description: "Protokoll und Rate-Limits", Icon: ShieldAlert, debug: true },
-    { href: "/dashboard/server", label: "Server", description: "Systemzustand und Logs", Icon: Server, debug: true },
+    { href: "/dashboard/feature-flags", label: "Feature Flags", description: "Funktionen ein- und ausschalten", Icon: ToggleOffIcon, debug: true },
+    { href: "/dashboard/security", label: "Sicherheit", description: "Protokoll und Rate-Limits", Icon: Shield01Icon, debug: true },
+    { href: "/dashboard/server", label: "Server", description: "Systemzustand und Logs", Icon: ServerIcon, debug: true },
 ];
 
 /**
@@ -184,17 +163,17 @@ export default async function DashboardPage() {
 
                     <dl className="flex flex-col gap-4 border-t border-foreground pt-4 text-sm sm:flex-row sm:flex-wrap sm:gap-x-12">
                         <HeaderMeta
-                            icon={<IdCard size={15} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={IdCardIcon} size={15} aria-hidden="true" />}
                             label="Mitgliedschaft"
                             value={formatStatus(userStatus)}
                         />
                         <HeaderMeta
-                            icon={<UserCircle size={15} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
                             label="Rolle"
                             value={isAdmin ? "Administrator" : "Mitglied"}
                         />
                         <HeaderMeta
-                            icon={<Calendar size={15} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={Calendar01Icon} size={15} aria-hidden="true" />}
                             label="Account seit"
                             value={formatDate(memberSince)}
                         />
@@ -209,7 +188,7 @@ export default async function DashboardPage() {
                 {isAdmin && (
                     <Card className="p-5 sm:p-6">
                         <SectionHeader
-                            icon={<SlidersHorizontal size={16} />}
+                            icon={<HugeiconsIcon icon={SlidersHorizontalIcon} size={16} />}
                             eyebrow="Admin-Aktionen"
                             title="Verwaltung"
                             aside={
@@ -218,11 +197,7 @@ export default async function DashboardPage() {
                                         type="submit"
                                         className="inline-flex items-center gap-2 rounded-[3px] border border-line px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
                                     >
-                                        <Bug
-                                            size={15}
-                                            aria-hidden="true"
-                                            className={debugMode ? "text-warning" : "text-faint"}
-                                        />
+                                        <HugeiconsIcon icon={Bug01Icon} size={15} aria-hidden="true" className={debugMode ? "text-warning" : "text-faint"} />
                                         Debug-Modus
                                         <Badge tone={debugMode ? "warning" : "neutral"}>
                                             {debugMode ? "An" : "Aus"}
@@ -253,7 +228,7 @@ export default async function DashboardPage() {
                                                 }`}
                                                 aria-hidden="true"
                                             >
-                                                <Icon size={17} />
+                                                <HugeiconsIcon icon={Icon} size={17} />
                                             </span>
                                             <div className="grid min-w-0 flex-1 gap-0.5">
                                                 {/* Umbrechen statt abschneiden: in zwei
@@ -285,7 +260,7 @@ export default async function DashboardPage() {
                 {showApplicationCta && (
                     <CtaCard
                         href={MEMBERSHIP_APPLICATION_PATH}
-                        icon={<FileText size={18} aria-hidden="true" />}
+                        icon={<HugeiconsIcon icon={FileAttachmentIcon} size={18} aria-hidden="true" />}
                         eyebrow="Mitgliedschaft"
                         title={
                             openApplication
@@ -322,7 +297,7 @@ export default async function DashboardPage() {
                         <CtaCard
                             href={`/dashboard/users/${currentUser.id}`}
                             tone="accent"
-                            icon={<UserCog size={18} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={UserSettings01Icon} size={18} aria-hidden="true" />}
                             eyebrow="Mitgliederselbstverwaltung"
                             title="Verwalte deine Mitgliedsdaten"
                             description="Persönliche Daten, Kontakt, Studium und Beruf jederzeit selbst einsehen und aktualisieren."
@@ -331,7 +306,7 @@ export default async function DashboardPage() {
 
                         <CtaCard
                             href="/dashboard/konto"
-                            icon={<KeyRound size={18} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={Key02Icon} size={18} aria-hidden="true" />}
                             eyebrow="Login & Sicherheit"
                             title="Passwort & E-Mail-Adresse"
                             description="Ändere dein Passwort oder deine Login-Adresse — bestätigt per Link in deinem Postfach."
@@ -341,7 +316,7 @@ export default async function DashboardPage() {
                         {kosmosEnabled && (
                             <CtaCard
                                 href="/dashboard/kosmos"
-                                icon={<Sparkles size={18} aria-hidden="true" />}
+                                icon={<HugeiconsIcon icon={SparklesIcon} size={18} aria-hidden="true" />}
                                 eyebrow="Alumni-Kosmos"
                                 title="Wer war wann an der Uni?"
                                 description="Finde ehemalige Kommilitoninnen und Kommilitonen auf dem Zeitstrahl und schreib ihnen."
@@ -359,7 +334,7 @@ export default async function DashboardPage() {
                         {!isNonMember && (
                             <Card className="p-5 sm:p-6">
                                 <SectionHeader
-                                    icon={<IdCard size={16} />}
+                                    icon={<HugeiconsIcon icon={IdCardIcon} size={16} />}
                                     eyebrow="Zahlungsübersicht"
                                     title={
                                         membershipStartYear == null
@@ -374,7 +349,7 @@ export default async function DashboardPage() {
                                             size="sm"
                                             className="self-start"
                                         >
-                                            <CreditCard size={15} aria-hidden="true" />
+                                            <HugeiconsIcon icon={CreditCardIcon} size={15} aria-hidden="true" />
                                             Zahlungen verwalten
                                         </ButtonLink>
                                     }
@@ -426,7 +401,7 @@ export default async function DashboardPage() {
                         {profile && (
                             <Card className="p-5 sm:p-6">
                                 <SectionHeader
-                                    icon={<BookOpen size={16} />}
+                                    icon={<HugeiconsIcon icon={BookOpen01Icon} size={16} />}
                                     eyebrow="Deine hinterlegten Daten"
                                     title="Mein Profil"
                                     aside={
@@ -437,7 +412,7 @@ export default async function DashboardPage() {
                                             size="sm"
                                             className="self-start"
                                         >
-                                            <Pencil size={15} aria-hidden="true" />
+                                            <HugeiconsIcon icon={PencilIcon} size={15} aria-hidden="true" />
                                             Bearbeiten
                                         </ButtonLink>
                                     }

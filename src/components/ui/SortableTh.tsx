@@ -1,6 +1,6 @@
 "use client";
-
-import { ArrowUp } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/cn";
 import { Th } from "./Table";
 
@@ -64,15 +64,11 @@ export function SortableTh<K extends string>({
                 ) : (
                     label
                 )}
-                <ArrowUp
-                    size={13}
-                    aria-hidden="true"
-                    className={cn(
-                        "shrink-0 transition-transform motion-reduce:transition-none",
-                        active ? "opacity-100" : "opacity-0",
-                        active && sort.desc && "rotate-180",
-                    )}
-                />
+                <HugeiconsIcon icon={ArrowUp01Icon} size={13} aria-hidden="true" className={cn(
+                                        "shrink-0 transition-transform motion-reduce:transition-none",
+                                        active ? "opacity-100" : "opacity-0",
+                                        active && sort.desc && "rotate-180",
+                                    )} />
             </button>
         </Th>
     );

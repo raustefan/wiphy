@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Share01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState } from "react";
-import { Share, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 /** Chromium-only, fehlt deshalb in den DOM-Typen. */
@@ -108,7 +109,7 @@ export default function InstallHint() {
         {mode === "ios" && (
           <p className="text-muted">
             Tippe unten auf{" "}
-            <Share size={15} aria-label="Teilen" className="inline align-[-2px] text-physics" />{" "}
+            <HugeiconsIcon icon={Share01Icon} size={15} aria-label="Teilen" className="inline align-[-2px] text-physics" />{" "}
             und dann auf „Zum Home-Bildschirm“.
           </p>
         )}
@@ -124,7 +125,7 @@ export default function InstallHint() {
         aria-label="Hinweis schließen"
         className="-mt-2 -mr-2 grid size-9 shrink-0 cursor-pointer place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
       >
-        <X size={18} />
+        <HugeiconsIcon icon={Cancel01Icon} size={18} />
       </button>
     </aside>
   );

@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Calendar01Icon, Cancel01Icon, ListIcon, SentIcon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
-import { CalendarDays, Send, X, List } from "lucide-react";
 import {
     Badge,
     Button,
@@ -345,7 +346,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                         <input type="hidden" name="eventId" value={announcement.id} />
                         <div className="grid gap-2 rounded-[3px] border border-dashed border-line-strong bg-raised/40 p-4">
                             <p className="flex items-center gap-2 text-sm font-semibold">
-                                <CalendarDays size={16} aria-hidden="true" className="text-market" />
+                                <HugeiconsIcon icon={Calendar01Icon} size={16} aria-hidden="true" className="text-market" />
                                 Wird unter die Nachricht gesetzt
                             </p>
                             <p className="text-sm text-muted">
@@ -388,7 +389,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                             type="button"
                             onClick={() => setShowRecipients(true)}
                         >
-                            <List size={16} aria-hidden="true" /> Empfängerliste anzeigen (
+                            <HugeiconsIcon icon={ListIcon} size={16} aria-hidden="true" /> Empfängerliste anzeigen (
                             {recipients.length})
                         </Button>
                     </div>
@@ -431,13 +432,13 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <Button size="lg" type="submit" loading={form.pending}>
-                            <Send size={16} aria-hidden="true" />{" "}
+                            <HugeiconsIcon icon={SentIcon} size={16} aria-hidden="true" />{" "}
                             {form.pending
                                 ? "Wird gesendet…"
                                 : `An ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
                         </Button>
                         <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
-                            <X size={16} aria-hidden="true" /> Abbrechen
+                            <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                         </ButtonLink>
                     </div>
                 </div>

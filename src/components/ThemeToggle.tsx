@@ -1,6 +1,6 @@
 "use client";
-
-import { Moon, Sun } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MoonIcon, Sun01Icon } from "@hugeicons/core-free-icons";
 import { useAppearance } from "@/components/AppThemeProvider";
 
 export default function ThemeToggle({ className }: { className?: string }) {
@@ -14,7 +14,7 @@ export default function ThemeToggle({ className }: { className?: string }) {
             onClick={toggleAppearance}
             className={`grid size-10 cursor-pointer place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics ${className ?? ""}`}
         >
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
+            {dark ? <HugeiconsIcon icon={Sun01Icon} size={18} /> : <HugeiconsIcon icon={MoonIcon} size={18} />}
         </button>
     );
 }

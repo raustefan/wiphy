@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
-import { AlertTriangle } from "lucide-react";
 import { requireDebugAdmin } from "@/lib/server/authz";
 import { Badge, Callout, Card, Container, SectionTitle } from "@/components/ui";
 import { getVersions } from "@/lib/server/serverStatus";
@@ -23,7 +24,7 @@ export default async function ServerPage() {
 
             <Callout
                 tone="warning"
-                icon={<AlertTriangle size={16} />}
+                icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}
                 title="Vorsicht beim Deploy"
                 className="mb-6"
             >

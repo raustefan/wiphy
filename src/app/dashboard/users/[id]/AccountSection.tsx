@@ -1,9 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, Door01Icon, Logout01Icon } from "@hugeicons/core-free-icons";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DoorOpen, LogOut, Trash2 } from "lucide-react";
 import type { MembershipTerminationStatus } from "@prisma/client";
 import {
     Button,
@@ -179,17 +180,17 @@ export function AccountSection({
             <div className="flex flex-wrap gap-2">
                 {canTerminate && (
                     <Button variant="soft" color="danger" onClick={() => open("terminate")}>
-                        <DoorOpen size={16} aria-hidden="true" /> Mitgliedschaft kündigen
+                        <HugeiconsIcon icon={Door01Icon} size={16} aria-hidden="true" /> Mitgliedschaft kündigen
                     </Button>
                 )}
                 {canDisable && (
                     <Button variant="soft" color="neutral" onClick={() => open("disable")}>
-                        <LogOut size={16} aria-hidden="true" /> Zugang deaktivieren
+                        <HugeiconsIcon icon={Logout01Icon} size={16} aria-hidden="true" /> Zugang deaktivieren
                     </Button>
                 )}
                 {canDelete && (
                     <Button variant="soft" color="danger" onClick={() => open("delete")}>
-                        <Trash2 size={16} aria-hidden="true" /> Konto löschen
+                        <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Konto löschen
                     </Button>
                 )}
             </div>

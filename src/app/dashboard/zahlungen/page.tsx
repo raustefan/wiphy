@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CreditCardIcon, Download01Icon, LayoutThreeRowIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { CreditCard, Download, Rows3 } from "lucide-react";
 import { requireUser } from "@/lib/server/authz";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getFeeDashboardData } from "@/lib/server/services/feeService";
@@ -55,7 +56,7 @@ export default async function ZahlungenPage() {
             >
                 {pdfEnabled && (
                     <a href="/api/dashboard/zahlungen/pdf" className={buttonClasses({ variant: "soft", color: "neutral" })}>
-                        <Download size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
                         Als PDF herunterladen
                     </a>
                 )}
@@ -64,12 +65,12 @@ export default async function ZahlungenPage() {
             <div className="grid gap-6">
                 <Card className="p-5 sm:p-6">
                     <SectionHeader
-                        icon={<CreditCard size={16} />}
+                        icon={<HugeiconsIcon icon={CreditCardIcon} size={16} />}
                         eyebrow="Beitragshistorie"
                         title="Deine Beitragsjahre im Überblick"
                         aside={
                             <Badge className="self-start">
-                                <Rows3 size={14} aria-hidden="true" />
+                                <HugeiconsIcon icon={LayoutThreeRowIcon} size={14} aria-hidden="true" />
                                 {fees.length} {fees.length === 1 ? "Jahr" : "Jahre"}
                             </Badge>
                         }
@@ -80,7 +81,7 @@ export default async function ZahlungenPage() {
 
                 <Card className="p-5 sm:p-6">
                     <SectionHeader
-                        icon={<CreditCard size={16} />}
+                        icon={<HugeiconsIcon icon={CreditCardIcon} size={16} />}
                         eyebrow="SEPA-Lastschriftmandat"
                         title="Bankverbindung"
                         description="Hier kannst du deine Bankverbindung für den Mitgliedsbeitrag hinterlegen oder ändern. Wir ziehen den Beitrag dann automatisch per SEPA-Lastschrift ein."

@@ -1,9 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckmarkCircle01Icon, MailValidation01Icon, Unlink01Icon } from "@hugeicons/core-free-icons";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { CheckCircle2, MailCheck, Unlink } from "lucide-react";
 import { AuthShell, AuthLink } from "@/components/AuthShell";
 import { ButtonLink, Callout, Spinner } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -44,7 +45,7 @@ function VerifyEmailContent() {
     if (!token) {
         return (
             <AuthShell
-                icon={<Unlink size={22} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={Unlink01Icon} size={22} aria-hidden="true" />}
                 title="Link unvollständig"
             >
                 <Callout tone="danger">
@@ -61,7 +62,7 @@ function VerifyEmailContent() {
     if (verified) {
         return (
             <AuthShell
-                icon={<CheckCircle2 size={22} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={22} aria-hidden="true" />}
                 title="E-Mail bestätigt"
             >
                 <Callout tone="success">
@@ -84,7 +85,7 @@ function VerifyEmailContent() {
     if (!form.error && !form.featureDisabled) {
         return (
             <AuthShell
-                icon={<MailCheck size={22} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={MailValidation01Icon} size={22} aria-hidden="true" />}
                 title="E-Mail wird bestätigt …"
                 description="Bitte habe einen Augenblick Geduld."
             >
@@ -97,7 +98,7 @@ function VerifyEmailContent() {
 
     return (
         <AuthShell
-            icon={<Unlink size={22} aria-hidden="true" />}
+            icon={<HugeiconsIcon icon={Unlink01Icon} size={22} aria-hidden="true" />}
             title="Bestätigung fehlgeschlagen"
             footer={<AuthLink href="/login">Zurück zum Login</AuthLink>}
         >

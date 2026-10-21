@@ -1,33 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, AddCircleIcon, AlertCircleIcon, Building03Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, CircleIcon, Coins01Icon, EuroCircleIcon, LockIcon, Mail01Icon, Message01Icon, Mortarboard01Icon, PencilEdit02Icon, PencilIcon, SearchMinusIcon, ShieldCheckIcon, SquareUnlock01Icon, TaskDone01Icon, Tick01Icon, UserCircleIcon, UserRemove01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  Plus,
-  Calendar,
-  Check,
-  Pencil,
-  PencilLine,
-  SearchX,
-  CircleEuro,
-  CircleAlert,
-  CircleCheck,
-  CircleDashed,
-  CirclePlus,
-  GraduationCap,
-  HandCoins,
-  Landmark,
-  ListChecks,
-  Lock,
-  LockOpen,
-  Mail,
-  MessageSquareText,
-  ShieldCheck,
-  UserRound,
-  UserX,
-  X,
-} from "lucide-react";
 import { cn } from "@/lib/cn";
 import {
   EmailComposerDialog,
@@ -182,9 +159,9 @@ function SepaMark({ directDebit }: { directDebit: boolean }) {
       className={`shrink-0 ${directDebit ? "text-physics" : "text-faint"}`}
     >
       {directDebit ? (
-        <Landmark size={14} aria-hidden="true" />
+        <HugeiconsIcon icon={Building03Icon} size={14} aria-hidden="true" />
       ) : (
-        <HandCoins size={14} aria-hidden="true" />
+        <HugeiconsIcon icon={Coins01Icon} size={14} aria-hidden="true" />
       )}
       <span className="sr-only">{label}</span>
     </span>
@@ -380,12 +357,12 @@ export function UserPaymentHistoryDialog({
       <p className="text-sm text-muted">{user.email}</p>
 
       <p className="mt-3 flex items-center gap-2 text-sm">
-        <Calendar size={16} className="text-faint" aria-hidden="true" />
+        <HugeiconsIcon icon={Calendar01Icon} size={16} className="text-faint" aria-hidden="true" />
         Mitglied seit <span className="font-medium">{formatDate(user.joinedAt)}</span>
       </p>
 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-        <GraduationCap size={16} className="text-faint" aria-hidden="true" />
+        <HugeiconsIcon icon={Mortarboard01Icon} size={16} className="text-faint" aria-hidden="true" />
         Sonderstatus erklärt für:
         {user.studentYears.length === 0 ? (
           <span className="font-medium">—</span>
@@ -399,7 +376,7 @@ export function UserPaymentHistoryDialog({
       </div>
 
       <p className="mt-1 flex items-center gap-2 text-sm text-muted">
-        <CircleEuro size={16} className="text-faint" aria-hidden="true" />
+        <HugeiconsIcon icon={EuroCircleIcon} size={16} className="text-faint" aria-hidden="true" />
         {user.directDebit
           ? "Lastschrifteinzug erteilt"
           : "Kein Lastschriftmandat — Beiträge mit 10 % Aufschlag (§ 5 Abs. 5)"}
@@ -416,10 +393,10 @@ export function UserPaymentHistoryDialog({
               <tr className="bg-raised/60">
                 <Th>Jahr</Th>
                 <Th className="text-center">
-                  <IconHeader icon={<GraduationCap size={16} />} label="Student" />
+                  <IconHeader icon={<HugeiconsIcon icon={Mortarboard01Icon} size={16} />} label="Student" />
                 </Th>
                 <Th className="text-center">
-                  <IconHeader icon={<CircleEuro size={16} />} label="Bezahlt" />
+                  <IconHeader icon={<HugeiconsIcon icon={EuroCircleIcon} size={16} />} label="Bezahlt" />
                 </Th>
                 <Th className="text-right">Betrag</Th>
               </tr>
@@ -458,7 +435,7 @@ export function UserPaymentHistoryDialog({
           Schließen
         </Button>
         <ButtonLink href={`/dashboard/users/${user.id}`} variant="soft">
-          <Pencil size={15} aria-hidden="true" />
+          <HugeiconsIcon icon={PencilIcon} size={15} aria-hidden="true" />
           Profil bearbeiten
         </ButtonLink>
       </DialogFooter>
@@ -624,7 +601,7 @@ export function DirectoryTable({
             Mauszeiger, der den Schalter gerade bedient hat. */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Calendar size={16} className="text-faint" aria-hidden="true" />
+            <HugeiconsIcon icon={Calendar01Icon} size={16} className="text-faint" aria-hidden="true" />
             <label htmlFor="fees-year" className="text-sm font-medium">
               Beitragsjahr
             </label>
@@ -678,7 +655,7 @@ export function DirectoryTable({
                   size="sm"
                   aria-label="Jahr für alle Mitglieder anlegen"
                 >
-                  <Plus size={16} aria-hidden="true" />
+                  <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
                 </IconButton>
               </fieldset>
             </form>
@@ -701,7 +678,7 @@ export function DirectoryTable({
                   editing ? "text-physics" : "text-muted",
                 )}
               >
-                {editing ? <LockOpen size={14} /> : <Lock size={14} />}
+                {editing ? <HugeiconsIcon icon={SquareUnlock01Icon} size={14} /> : <HugeiconsIcon icon={LockIcon} size={14} />}
                 Bearbeiten
               </span>
             </div>
@@ -713,11 +690,11 @@ export function DirectoryTable({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={selectedUsers.length > 0 ? "info" : "neutral"}>
-              <ListChecks size={13} aria-hidden="true" />
+              <HugeiconsIcon icon={TaskDone01Icon} size={13} aria-hidden="true" />
               {selectedUsers.length} ausgewählt
             </Badge>
             <Button size="sm" variant="outline" color="neutral" type="button" onClick={selectAllWithOpenFees}>
-              <CircleAlert size={15} aria-hidden="true" />
+              <HugeiconsIcon icon={AlertCircleIcon} size={15} aria-hidden="true" />
               Alle offenen
             </Button>
             {selectedUsers.length > 0 && (
@@ -740,7 +717,7 @@ export function DirectoryTable({
               disabled={selectedUsers.length === 0}
               onClick={() => setSepaOpen(true)}
             >
-              <Landmark size={15} aria-hidden="true" />
+              <HugeiconsIcon icon={Building03Icon} size={15} aria-hidden="true" />
               SEPA-Lastschrift
             </Button>
             <Button
@@ -749,7 +726,7 @@ export function DirectoryTable({
               disabled={selectedUsers.length === 0}
               onClick={() => setMailUsers(selectedUsers)}
             >
-              <Mail size={15} aria-hidden="true" />
+              <HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />
               E-Mail an Auswahl
             </Button>
           </div>
@@ -757,7 +734,7 @@ export function DirectoryTable({
       </div>
 
       {missing > 0 && (
-        <Callout tone="info" className="mb-3" icon={<CircleDashed size={16} aria-hidden="true" />}>
+        <Callout tone="info" className="mb-3" icon={<HugeiconsIcon icon={CircleIcon} size={16} aria-hidden="true" />}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-pretty">
               <strong className="font-semibold">
@@ -782,7 +759,7 @@ export function DirectoryTable({
                 disabled={!editing}
                 title={editing ? undefined : "Erst „Bearbeiten“ freischalten"}
               >
-                <CirclePlus size={15} aria-hidden="true" />
+                <HugeiconsIcon icon={AddCircleIcon} size={15} aria-hidden="true" />
                 Einträge für {selectedYear} anlegen
               </Button>
             </form>
@@ -818,7 +795,7 @@ export function DirectoryTable({
               <SortableTh
                 sortKey="student"
                 label="Tarif"
-                icon={<GraduationCap size={15} />}
+                icon={<HugeiconsIcon icon={Mortarboard01Icon} size={15} />}
                 align="center"
                 sort={sort}
                 onSort={toggleSort}
@@ -827,7 +804,7 @@ export function DirectoryTable({
               <SortableTh
                 sortKey="paid"
                 label="Zahlung"
-                icon={<CircleCheck size={15} />}
+                icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={15} />}
                 align="center"
                 sort={sort}
                 onSort={toggleSort}
@@ -844,7 +821,7 @@ export function DirectoryTable({
             <tbody>
               <tr>
                 <Td colSpan={COLUMNS} className="py-10 text-center text-muted">
-                  <SearchX size={20} aria-hidden="true" className="mx-auto mb-2 text-faint" />
+                  <HugeiconsIcon icon={SearchMinusIcon} size={20} aria-hidden="true" className="mx-auto mb-2 text-faint" />
                   Keine Konten gefunden.
                 </Td>
               </tr>
@@ -907,13 +884,13 @@ export function DirectoryTable({
                             </button>
                             {user.role === "ADMIN" && (
                               <span title="Administrator" className="shrink-0 text-market">
-                                <ShieldCheck size={13} aria-hidden="true" />
+                                <HugeiconsIcon icon={ShieldCheckIcon} size={13} aria-hidden="true" />
                                 <span className="sr-only">Administrator</span>
                               </span>
                             )}
                             {user.loginDisabled && (
                               <span title="Login gesperrt" className="shrink-0 text-negative">
-                                <UserX size={13} aria-hidden="true" />
+                                <HugeiconsIcon icon={UserRemove01Icon} size={13} aria-hidden="true" />
                                 <span className="sr-only">Login gesperrt</span>
                               </span>
                             )}
@@ -941,9 +918,9 @@ export function DirectoryTable({
                             )}
                           >
                             {user.emailVerified ? (
-                              <Check size={12} aria-hidden="true" className="shrink-0" />
+                              <HugeiconsIcon icon={Tick01Icon} size={12} aria-hidden="true" className="shrink-0" />
                             ) : (
-                              <X size={12} aria-hidden="true" className="shrink-0" />
+                              <HugeiconsIcon icon={Cancel01Icon} size={12} aria-hidden="true" className="shrink-0" />
                             )}
                             <span className="truncate">{user.email}</span>
                             <span className="sr-only">
@@ -969,7 +946,7 @@ export function DirectoryTable({
                               <StatusChip
                                 interactive={editing}
                                 tone={isStudent ? "info" : "neutral"}
-                                icon={isStudent ? <GraduationCap size={15} /> : <UserRound size={15} />}
+                                icon={isStudent ? <HugeiconsIcon icon={Mortarboard01Icon} size={15} /> : <HugeiconsIcon icon={UserCircleIcon} size={15} />}
                                 actionLabel={`${name}: ${isStudent ? "Sonderstatus" : "regulärer Beitrag"}${editing ? " — klicken zum Ändern" : ""}`}
                                 title={
                                   fee.angelegt === false && declaredStudent
@@ -1008,7 +985,7 @@ export function DirectoryTable({
                               <StatusChip
                                 interactive={editing}
                                 tone={paid ? "positive" : "negative"}
-                                icon={paid ? <CircleCheck size={15} /> : <CircleAlert size={15} />}
+                                icon={paid ? <HugeiconsIcon icon={CheckmarkCircle01Icon} size={15} /> : <HugeiconsIcon icon={AlertCircleIcon} size={15} />}
                                 actionLabel={`${name}: ${paid ? "bezahlt" : "offen"}${editing ? " — klicken zum Ändern" : ""}`}
                                 title={paid ? "Bezahlt" : "Offen"}
                               />
@@ -1023,7 +1000,7 @@ export function DirectoryTable({
                             <span className="inline-flex items-center justify-end gap-1">
                               {fee.manuell && (
                                 <span title="Betrag abweichend vom Standard festgelegt" className="text-warning max-sm:hidden">
-                                  <PencilLine size={13} aria-hidden="true" />
+                                  <HugeiconsIcon icon={PencilEdit02Icon} size={13} aria-hidden="true" />
                                   <span className="sr-only">Ausnahme:</span>
                                 </span>
                               )}
@@ -1032,7 +1009,7 @@ export function DirectoryTable({
                                   title={`Für ${selectedYear} gibt es noch keinen Beitragseintrag. Der Betrag ist aus den Standardsätzen berechnet.`}
                                   className="text-faint max-sm:hidden"
                                 >
-                                  <CircleDashed size={13} aria-hidden="true" />
+                                  <HugeiconsIcon icon={CircleIcon} size={13} aria-hidden="true" />
                                   <span className="sr-only">Kein Eintrag:</span>
                                 </span>
                               )}
@@ -1076,7 +1053,7 @@ export function DirectoryTable({
                                   : "text-faint",
                               )}
                             >
-                              <MessageSquareText size={15} aria-hidden="true" />
+                              <HugeiconsIcon icon={Message01Icon} size={15} aria-hidden="true" />
                             </IconButton>
                             <IconButtonLink
                               href={`/dashboard/users/${user.id}`}
@@ -1086,7 +1063,7 @@ export function DirectoryTable({
                               color="accent"
                               size="sm"
                             >
-                              <Pencil size={15} aria-hidden="true" />
+                              <HugeiconsIcon icon={PencilIcon} size={15} aria-hidden="true" />
                             </IconButtonLink>
                           </div>
                         </Td>
@@ -1102,16 +1079,16 @@ export function DirectoryTable({
       {/* Legende: die Symbole stehen sonst ohne Erklärung da. */}
       <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-faint">
         {[
-          [<CircleCheck key="i" size={13} className="text-positive" />, "bezahlt"],
-          [<CircleAlert key="i" size={13} className="text-negative" />, "offen"],
-          [<GraduationCap key="i" size={13} className="text-info" />, "Sonderstatus (§ 5)"],
-          [<Landmark key="i" size={13} className="text-physics" />, "SEPA-Lastschrift"],
-          [<HandCoins key="i" size={13} />, "ohne Lastschrift, 10 % Aufschlag"],
-          [<PencilLine key="i" size={13} className="text-warning" />, "Betrag als Ausnahme"],
-          [<CircleDashed key="i" size={13} />, "noch kein Beitragseintrag"],
-          [<MessageSquareText key="i" size={13} className="text-warning" />, "Notiz vorhanden"],
-          [<ShieldCheck key="i" size={13} className="text-market" />, "Admin"],
-          [<UserX key="i" size={13} className="text-negative" />, "Login gesperrt"],
+          [<HugeiconsIcon icon={CheckmarkCircle01Icon} key="i" size={13} className="text-positive" />, "bezahlt"],
+          [<HugeiconsIcon icon={AlertCircleIcon} key="i" size={13} className="text-negative" />, "offen"],
+          [<HugeiconsIcon icon={Mortarboard01Icon} key="i" size={13} className="text-info" />, "Sonderstatus (§ 5)"],
+          [<HugeiconsIcon icon={Building03Icon} key="i" size={13} className="text-physics" />, "SEPA-Lastschrift"],
+          [<HugeiconsIcon icon={Coins01Icon} key="i" size={13} />, "ohne Lastschrift, 10 % Aufschlag"],
+          [<HugeiconsIcon icon={PencilEdit02Icon} key="i" size={13} className="text-warning" />, "Betrag als Ausnahme"],
+          [<HugeiconsIcon icon={CircleIcon} key="i" size={13} />, "noch kein Beitragseintrag"],
+          [<HugeiconsIcon icon={Message01Icon} key="i" size={13} className="text-warning" />, "Notiz vorhanden"],
+          [<HugeiconsIcon icon={ShieldCheckIcon} key="i" size={13} className="text-market" />, "Admin"],
+          [<HugeiconsIcon icon={UserRemove01Icon} key="i" size={13} className="text-negative" />, "Login gesperrt"],
         ].map(([icon, text]) => (
           <span key={String(text)} className="flex items-center gap-1.5">
             <span aria-hidden="true">{icon}</span>

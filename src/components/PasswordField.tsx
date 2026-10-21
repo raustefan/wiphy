@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Tick01Icon, ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { Check, Eye, EyeOff, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { controlClasses, Field } from "@/components/ui";
 import {
@@ -40,7 +41,7 @@ export function PasswordInput({
                 aria-pressed={visible}
                 className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-[3px] text-faint transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
             >
-                {visible ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                {visible ? <HugeiconsIcon icon={ViewOffIcon} size={16} aria-hidden="true" /> : <HugeiconsIcon icon={ViewIcon} size={16} aria-hidden="true" />}
             </button>
         </div>
     );
@@ -108,9 +109,9 @@ export function PasswordStrengthMeter({
                         )}
                     >
                         {criterion.met ? (
-                            <Check size={13} aria-hidden="true" className="shrink-0" />
+                            <HugeiconsIcon icon={Tick01Icon} size={13} aria-hidden="true" className="shrink-0" />
                         ) : (
-                            <X size={13} aria-hidden="true" className="shrink-0" />
+                            <HugeiconsIcon icon={Cancel01Icon} size={13} aria-hidden="true" className="shrink-0" />
                         )}
                         <span>{criterion.label}</span>
                         <span className="sr-only">{criterion.met ? " — erfüllt" : " — offen"}</span>
@@ -207,7 +208,7 @@ export function NewPasswordFields({
                     aria-live="polite"
                     className="-mt-2 flex items-center gap-1.5 text-xs font-medium text-positive"
                 >
-                    <Check size={13} aria-hidden="true" />
+                    <HugeiconsIcon icon={Tick01Icon} size={13} aria-hidden="true" />
                     Die Passwörter stimmen überein.
                 </p>
             )}

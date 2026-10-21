@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, CalendarAdd01Icon, Megaphone01Icon, NewsIcon, PencilIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CalendarPlus, Megaphone, Newspaper, Pencil, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminEvents } from "@/lib/server/services/eventService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -44,7 +45,7 @@ export default async function AdminEventsPage() {
             >
                 <form action={createEventDraft} className="w-full sm:w-auto">
                     <Button type="submit" className="w-full sm:w-auto">
-                        <Plus size={16} aria-hidden="true" /> Neuer Termin
+                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" /> Neuer Termin
                     </Button>
                 </form>
             </DashboardPageHeader>
@@ -93,11 +94,7 @@ export default async function AdminEventsPage() {
                                         <Td className="text-muted">
                                             {event._count.posts > 0 ? (
                                                 <span className="inline-flex items-center gap-1.5 text-sm">
-                                                    <Newspaper
-                                                        size={14}
-                                                        aria-hidden="true"
-                                                        className="text-market"
-                                                    />
+                                                    <HugeiconsIcon icon={NewsIcon} size={14} aria-hidden="true" className="text-market" />
                                                     {event._count.posts}
                                                 </span>
                                             ) : (
@@ -116,7 +113,7 @@ export default async function AdminEventsPage() {
                                                         variant="soft"
                                                         color="market"
                                                     >
-                                                        <Megaphone size={16} aria-hidden="true" />{" "}
+                                                        <HugeiconsIcon icon={Megaphone01Icon} size={16} aria-hidden="true" />{" "}
                                                         Ankündigen
                                                     </ButtonLink>
                                                 )}
@@ -125,7 +122,7 @@ export default async function AdminEventsPage() {
                                                     size="sm"
                                                     variant="soft"
                                                 >
-                                                    <Pencil size={16} aria-hidden="true" />{" "}
+                                                    <HugeiconsIcon icon={PencilIcon} size={16} aria-hidden="true" />{" "}
                                                     Bearbeiten
                                                 </ButtonLink>
                                                 <DeleteEventButton
@@ -143,13 +140,13 @@ export default async function AdminEventsPage() {
                                 <tr>
                                     <Td colSpan={5} className="p-0">
                                         <EmptyState
-                                            icon={<CalendarPlus size={22} />}
+                                            icon={<HugeiconsIcon icon={CalendarAdd01Icon} size={22} />}
                                             title="Noch keine Termine"
                                             description="Angelegte Termine bleiben Entwürfe, bis du sie veröffentlichst."
                                             action={
                                                 <form action={createEventDraft}>
                                                     <Button type="submit" variant="soft">
-                                                        <Plus size={16} aria-hidden="true" />
+                                                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
                                                         Ersten Termin anlegen
                                                     </Button>
                                                 </form>

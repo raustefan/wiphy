@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { InformationCircleIcon, MailOpen01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
-import { Info, MailOpen } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getContactRequests } from "@/lib/server/services/contactService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
@@ -30,7 +31,7 @@ export default async function ContactRequestsPage() {
             />
 
             {!storageEnabled && (
-                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-4">
                     Die Speicherung neuer Anfragen ist deaktiviert. Diese Liste zeigt nur noch
                     ältere Einträge — neue Anfragen werden{" "}
                     {mailEnabled ? "ausschließlich per Mail zugestellt" : "nicht angenommen"}.
@@ -38,7 +39,7 @@ export default async function ContactRequestsPage() {
             )}
 
             {!mailEnabled && storageEnabled && (
-                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-4">
                     Der Mailversand für Kontaktanfragen ist deaktiviert. Neue Anfragen landen nur
                     hier — bitte regelmäßig prüfen.
                 </Callout>
@@ -47,7 +48,7 @@ export default async function ContactRequestsPage() {
             {requests.length === 0 ? (
                 <Card>
                     <EmptyState
-                        icon={<MailOpen size={22} />}
+                        icon={<HugeiconsIcon icon={MailOpen01Icon} size={22} />}
                         title="Noch keine Kontaktanfragen"
                         description="Nachrichten über das öffentliche Kontaktformular erscheinen hier."
                     />

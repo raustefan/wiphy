@@ -1,6 +1,6 @@
 "use client";
-
-import { Info } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { IconButton } from "@/components/ui";
 
 /**
@@ -33,7 +33,7 @@ export function InfoTooltip({
             onFocus={onShow}
             onBlur={onHide}
         >
-            <Info size={14} aria-hidden="true" />
+            <HugeiconsIcon icon={InformationCircleIcon} size={14} aria-hidden="true" />
         </IconButton>
     );
 }

@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, BookOpen01Icon, Image02Icon, PencilIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getAdminPosts } from "@/lib/server/services/blogService";
-import { BookOpen, Images, Pencil, Plus } from "lucide-react";
 import { createDraft, deletePost } from "./actions";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -44,7 +45,7 @@ export default async function AdminBlogPage() {
                     an der Bilder hängen können. */}
                 <form action={createDraft} className="w-full sm:w-auto">
                     <Button type="submit" className="w-full sm:w-auto">
-                        <Plus size={16} aria-hidden="true" /> Neuer Beitrag
+                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" /> Neuer Beitrag
                     </Button>
                 </form>
             </DashboardPageHeader>
@@ -79,7 +80,7 @@ export default async function AdminBlogPage() {
                                                 className="grid size-12 place-items-center rounded-[3px] border border-dashed border-line text-faint"
                                                 title="Kein Titelbild"
                                             >
-                                                <Images size={16} aria-hidden="true" />
+                                                <HugeiconsIcon icon={Image02Icon} size={16} aria-hidden="true" />
                                             </span>
                                         )}
                                     </Td>
@@ -106,7 +107,7 @@ export default async function AdminBlogPage() {
                                                 size="sm"
                                                 variant="soft"
                                             >
-                                                <Pencil size={16} aria-hidden="true" /> Bearbeiten
+                                                <HugeiconsIcon icon={PencilIcon} size={16} aria-hidden="true" /> Bearbeiten
                                             </ButtonLink>
                                             <DeletePostButton
                                                 postId={post.id}
@@ -121,13 +122,13 @@ export default async function AdminBlogPage() {
                                 <tr>
                                     <Td colSpan={5} className="p-0">
                                         <EmptyState
-                                            icon={<BookOpen size={22} />}
+                                            icon={<HugeiconsIcon icon={BookOpen01Icon} size={22} />}
                                             title="Noch keine Beiträge"
                                             description="Lege einen Entwurf an, schreib ihn fertig und veröffentliche ihn — bis dahin sieht ihn niemand außer dir."
                                             action={
                                                 <form action={createDraft}>
                                                     <Button type="submit" variant="soft">
-                                                        <Plus size={16} aria-hidden="true" />
+                                                        <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
                                                         Ersten Beitrag anlegen
                                                     </Button>
                                                 </form>

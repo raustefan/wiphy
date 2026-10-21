@@ -1,21 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight01Icon, BookOpen01Icon, Building03Icon, FileAttachmentIcon, InformationCircleIcon, Money01Icon, Mortarboard01Icon, SentIcon, Tick01Icon, UserCircleIcon, Wallet01Icon } from "@hugeicons/core-free-icons";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-    ArrowLeft,
-    ArrowRight,
-    Banknote,
-    BookOpen,
-    Check,
-    FileText,
-    GraduationCap,
-    Info,
-    Landmark,
-    Send,
-    UserRound,
-    Wallet,
-} from "lucide-react";
 import {
     Badge,
     Button,
@@ -54,7 +42,7 @@ import { submitMembershipApplication } from "./actions";
 
 type InitialValues = Record<string, string>;
 
-const STEP_ICONS = [FileText, UserRound, GraduationCap, Wallet, Banknote, Check];
+const STEP_ICONS = [FileAttachmentIcon, UserCircleIcon, Mortarboard01Icon, Wallet01Icon, Money01Icon, Tick01Icon];
 
 /**
  * Die Schemas, gegen die ein Schritt geprüft wird, bevor es weitergeht. Rein
@@ -336,7 +324,7 @@ export function ApplicationWizard({
                             value="lastschrift"
                             checked={zahlungsweise === "lastschrift"}
                             onSelect={setZahlungsweise}
-                            icon={<Landmark size={18} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={Building03Icon} size={18} aria-hidden="true" />}
                             title="SEPA-Lastschrift"
                             badge="Empfohlen"
                             price={`${formatEuro(annualFee(rates.regular))} im Jahr`}
@@ -350,7 +338,7 @@ export function ApplicationWizard({
                             value="ueberweisung"
                             checked={zahlungsweise === "ueberweisung"}
                             onSelect={setZahlungsweise}
-                            icon={<Wallet size={18} aria-hidden="true" />}
+                            icon={<HugeiconsIcon icon={Wallet01Icon} size={18} aria-hidden="true" />}
                             title="Überweisung"
                             price={`${formatEuro(withSurcharge(annualFee(rates.regular)))} im Jahr`}
                             priceTone="negative"
@@ -366,7 +354,7 @@ export function ApplicationWizard({
                         das Absenden liest die FormData, nicht den State. */}
                     <input type="hidden" name="zahlungsweise" value={zahlungsweise} />
 
-                    <Callout tone="info" icon={<Info size={16} />}>
+                    <Callout tone="info" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                         Der Aufschlag deckt den Mehraufwand, den Einzelüberweisungen dem
                         ehrenamtlich geführten Verein machen. Er ist keine Strafe — die
                         Lastschrift ist schlicht der günstigere Weg für beide Seiten.
@@ -419,7 +407,7 @@ export function ApplicationWizard({
                             {/* Ohne Mandat zieht der Verein nichts ein und hat für
                                 Kontodaten keine Verwendung — dann werden sie auch
                                 nicht erhoben. */}
-                            <Callout tone="warning" icon={<Info size={16} />} title="Was das bedeutet">
+                            <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} title="Was das bedeutet">
                                 <ul className="mt-1 grid list-disc gap-1 pl-4 text-pretty">
                                     <li>
                                         Dein Jahresbeitrag beträgt{" "}
@@ -566,7 +554,7 @@ export function ApplicationWizard({
             </Card>
 
             {error && (
-                <Callout tone="danger" icon={<Info size={16} />}>
+                <Callout tone="danger" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                     {error}
                 </Callout>
             )}
@@ -586,7 +574,7 @@ export function ApplicationWizard({
                     onClick={() => goToStep(step - 1)}
                     disabled={step === 0 || isPending}
                 >
-                    <ArrowLeft size={16} aria-hidden="true" />
+                    <HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />
                     Zurück
                 </Button>
 
@@ -599,13 +587,13 @@ export function ApplicationWizard({
 
                 {isLast ? (
                     <Button onClick={submit} loading={isPending}>
-                        <Send size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={SentIcon} size={16} aria-hidden="true" />
                         Antrag absenden
                     </Button>
                 ) : (
                     <Button onClick={() => goToStep(step + 1)}>
                         Weiter
-                        <ArrowRight size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
                     </Button>
                 )}
             </div>
@@ -660,9 +648,9 @@ function StepIndicator({ step, onSelect }: { step: number; onSelect: (index: num
                             }`}
                         >
                             {isDone ? (
-                                <Check size={16} aria-hidden="true" />
+                                <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" />
                             ) : (
-                                <Icon size={16} aria-hidden="true" />
+                                <HugeiconsIcon icon={Icon} size={16} aria-hidden="true" />
                             )}
                             <span className="min-w-0 truncate">{entry.label}</span>
                         </button>
@@ -695,7 +683,7 @@ function IntroStep() {
                 Telefon unvermeidlich, auf dem Bildschirm aber verschenkte Höhe. */}
             <ul className="grid gap-3 text-sm sm:grid-cols-2">
                 <li className="flex gap-3">
-                    <BookOpen size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
+                    <HugeiconsIcon icon={BookOpen01Icon} size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
                     <span className="text-pretty">
                         <strong>Der Antrag ist noch kein Beitritt.</strong> Über die Aufnahme
                         entscheidet der Vorstand. Erst mit diesem Beschluss beginnt die
@@ -703,7 +691,7 @@ function IntroStep() {
                     </span>
                 </li>
                 <li className="flex gap-3">
-                    <Banknote size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
+                    <HugeiconsIcon icon={Money01Icon} size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
                     <span className="text-pretty">
                         <strong>Jahresbeitrag per Lastschrift.</strong> Der Beitrag wird einmal
                         jährlich eingezogen; für Studierende gilt ein ermäßigter Satz. Die genaue
@@ -711,7 +699,7 @@ function IntroStep() {
                     </span>
                 </li>
                 <li className="flex gap-3">
-                    <UserRound size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
+                    <HugeiconsIcon icon={UserCircleIcon} size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
                     <span className="text-pretty">
                         <strong>Deine Daten.</strong> Wir verarbeiten sie ausschließlich zur
                         Mitgliederverwaltung. Du kannst sie jederzeit in der
@@ -719,7 +707,7 @@ function IntroStep() {
                     </span>
                 </li>
                 <li className="flex gap-3">
-                    <FileText size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
+                    <HugeiconsIcon icon={FileAttachmentIcon} size={16} className="mt-0.5 shrink-0 text-physics" aria-hidden="true" />
                     <span className="text-pretty">
                         <strong>Kündigung.</strong> Die Mitgliedschaft kann nach den Regeln der
                         Satzung zum Ende eines Geschäftsjahres gekündigt werden.
@@ -727,7 +715,7 @@ function IntroStep() {
                 </li>
             </ul>
 
-            <Callout tone="info" icon={<Info size={16} />}>
+            <Callout tone="info" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                 Alle Einzelheiten regelt die{" "}
                 <a href={SATZUNG_URL} className="font-semibold text-physics underline">
                     Vereinssatzung

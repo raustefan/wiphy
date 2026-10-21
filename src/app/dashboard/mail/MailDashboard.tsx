@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, Megaphone01Icon } from "@hugeicons/core-free-icons";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { AlertTriangle, CalendarDays, CheckCircle2, Megaphone, X } from "lucide-react";
 import { MailForm, type MailUserOption } from "./MailForm";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ButtonLink, Callout, Card, Container, Table, TableWrap, Td, Th } from "@/components/ui";
@@ -86,7 +87,7 @@ function AnnouncePicker({ events }: { events: MailEventOption[] }) {
     return (
         <Card className="mb-5 grid gap-3 p-4 sm:p-5">
             <div className="flex items-center gap-2">
-                <Megaphone size={16} aria-hidden="true" className="text-market" />
+                <HugeiconsIcon icon={Megaphone01Icon} size={16} aria-hidden="true" className="text-market" />
                 <p className="text-sm font-semibold">Termin ankündigen</p>
             </div>
             <p className="text-sm text-muted">
@@ -174,7 +175,7 @@ export function MailDashboard({
         return (
             <Container size="2" className="py-8 sm:py-12">
                 <Card className="grid justify-items-center gap-3 p-6 text-center sm:p-8">
-                    <CheckCircle2 size={48} className="text-positive" aria-hidden="true" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} size={48} className="text-positive" aria-hidden="true" />
                     <h1 className="text-2xl font-bold tracking-tight">E-Mail gesendet</h1>
                     <p className="text-sm text-muted">
                         Die Nachricht wurde an {sentCount}{" "}
@@ -207,7 +208,7 @@ export function MailDashboard({
             {announcement && (
                 <div className="mb-5 grid gap-3">
                     {announcement.published ? (
-                        <Callout tone="info" icon={<CalendarDays size={16} />} title="Vorlage geladen">
+                        <Callout tone="info" icon={<HugeiconsIcon icon={Calendar01Icon} size={16} />} title="Vorlage geladen">
                             <span className="grid gap-1">
                                 <span>
                                     Die Mail kündigt{" "}
@@ -221,14 +222,14 @@ export function MailDashboard({
                                     href="/dashboard/mail"
                                     className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-physics underline-offset-4 hover:underline"
                                 >
-                                    <X size={14} aria-hidden="true" /> Vorlage entfernen
+                                    <HugeiconsIcon icon={Cancel01Icon} size={14} aria-hidden="true" /> Vorlage entfernen
                                 </Link>
                             </span>
                         </Callout>
                     ) : (
                         <Callout
                             tone="warning"
-                            icon={<AlertTriangle size={16} />}
+                            icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}
                             title="Termin ist noch ein Entwurf"
                         >
                             <span className="grid gap-1">

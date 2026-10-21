@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Search01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
 import Link from "next/link";
 import { Cta, Frame, PageHead } from "@/components/Site";
 import { getPublishedPostPage } from "@/lib/server/services/blogService";
@@ -195,7 +196,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
                     className="flex flex-wrap items-end gap-x-4 gap-y-3 border-b border-line-strong pb-2 focus-within:border-physics focus-within:shadow-[0_1px_0_var(--physics)]"
                 >
                     <label className="flex min-w-0 flex-1 items-center gap-3">
-                        <Search size={20} aria-hidden="true" className="shrink-0 text-muted" />
+                        <HugeiconsIcon icon={Search01Icon} size={20} aria-hidden="true" className="shrink-0 text-muted" />
                         <span className="sr-only">Beiträge durchsuchen</span>
                         <input
                             type="search"

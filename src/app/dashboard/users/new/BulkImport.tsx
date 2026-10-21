@@ -1,16 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, ArrowDown01Icon, CheckmarkCircle01Icon, Delete02Icon, Download01Icon, FileScriptIcon, PencilIcon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { Fragment, useState, useTransition } from "react";
-import {
-    AlertTriangle,
-    CheckCircle2,
-    ChevronDown,
-    Download,
-    FileJson,
-    Pencil,
-    Trash2,
-    Upload,
-} from "lucide-react";
 import {
     Badge,
     Button,
@@ -146,12 +138,12 @@ export function BulkImport() {
                         dragging ? "border-physics bg-physics/5" : "border-line-strong",
                     )}
                 >
-                    <Upload size={20} aria-hidden="true" className="shrink-0 text-physics" />
+                    <HugeiconsIcon icon={Upload01Icon} size={20} aria-hidden="true" className="shrink-0 text-physics" />
                     <span className="grid min-w-0 text-sm">
                         <span className="font-semibold">
                             {fileName ? (
                                 <span className="flex items-center gap-1.5 truncate">
-                                    <FileJson size={15} aria-hidden="true" /> {fileName}
+                                    <HugeiconsIcon icon={FileScriptIcon} size={15} aria-hidden="true" /> {fileName}
                                 </span>
                             ) : (
                                 "JSON-Datei hierher ziehen oder auswählen"
@@ -173,7 +165,7 @@ export function BulkImport() {
                     />
                 </label>
                 <Button type="button" variant="soft" color="neutral" className="h-auto" onClick={downloadTemplate}>
-                    <Download size={16} aria-hidden="true" /> Vorlage herunterladen
+                    <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" /> Vorlage herunterladen
                 </Button>
             </div>
 
@@ -249,7 +241,7 @@ export function BulkImport() {
                             Erneut prüfen
                         </Button>
                         <Button type="button" disabled={pending || ready === 0 || unchecked > 0} onClick={() => setConfirming(true)}>
-                            <CheckCircle2 size={16} aria-hidden="true" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={16} aria-hidden="true" />
                             {ready} {ready === 1 ? "Konto" : "Konten"} anlegen
                         </Button>
                     </div>
@@ -300,7 +292,7 @@ function FieldReference() {
         <details className="group rounded-[3px] border border-line">
             <summary className="flex cursor-pointer items-center justify-between gap-2 px-4 py-3 text-sm font-semibold">
                 Welche Felder gibt es?
-                <ChevronDown size={16} aria-hidden="true" className="text-muted transition-transform group-open:rotate-180" />
+                <HugeiconsIcon icon={ArrowDown01Icon} size={16} aria-hidden="true" className="text-muted transition-transform group-open:rotate-180" />
             </summary>
             <div className="grid gap-5 border-t border-line px-4 py-4">
                 {[
@@ -389,11 +381,11 @@ function EntryRow({
                     <span className="text-muted">…</span>
                 ) : issueCount ? (
                     <Badge tone="negative">
-                        <AlertTriangle size={12} aria-hidden="true" /> {issueCount} Fehler
+                        <HugeiconsIcon icon={Alert01Icon} size={12} aria-hidden="true" /> {issueCount} Fehler
                     </Badge>
                 ) : (
                     <Badge tone="positive">
-                        <CheckCircle2 size={12} aria-hidden="true" /> Bereit
+                        <HugeiconsIcon icon={CheckmarkCircle01Icon} size={12} aria-hidden="true" /> Bereit
                     </Badge>
                 )}
             </Td>
@@ -409,7 +401,7 @@ function EntryRow({
                     }}
                     className="rounded-[3px] p-1 text-muted hover:text-foreground"
                 >
-                    <ChevronDown size={18} aria-hidden="true" className={cn("transition-transform", open && "rotate-180")} />
+                    <HugeiconsIcon icon={ArrowDown01Icon} size={18} aria-hidden="true" className={cn("transition-transform", open && "rotate-180")} />
                 </button>
             </Td>
         </tr>
@@ -500,7 +492,7 @@ function EntryDetails({
                                             {display(field.key, entry[field.key])}
                                             {fieldIssues.map((issue, i) => (
                                                 <span key={i} className="mt-0.5 flex items-start gap-1 text-xs font-normal">
-                                                    <AlertTriangle size={12} aria-hidden="true" className="mt-0.5 shrink-0" />
+                                                    <HugeiconsIcon icon={Alert01Icon} size={12} aria-hidden="true" className="mt-0.5 shrink-0" />
                                                     {issue.message}
                                                 </span>
                                             ))}
@@ -517,7 +509,7 @@ function EntryDetails({
                 <h4 className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Beiträge</h4>
                 {issueFor("allPaid").map((issue, i) => (
                     <p key={i} className="mb-2 flex items-start gap-1 text-sm font-semibold text-negative">
-                        <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+                        <HugeiconsIcon icon={Alert01Icon} size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
                         {issue.message}
                     </p>
                 ))}
@@ -575,10 +567,10 @@ function EntryDetails({
                         setDraft(JSON.stringify(entry, null, 2));
                     }}
                 >
-                    <Pencil size={14} aria-hidden="true" /> Als JSON bearbeiten
+                    <HugeiconsIcon icon={PencilIcon} size={14} aria-hidden="true" /> Als JSON bearbeiten
                 </Button>
                 <Button type="button" size="sm" variant="soft" color="danger" onClick={() => onReplace(null)}>
-                    <Trash2 size={14} aria-hidden="true" /> Aus dem Import entfernen
+                    <HugeiconsIcon icon={Delete02Icon} size={14} aria-hidden="true" /> Aus dem Import entfernen
                 </Button>
             </div>
         </div>

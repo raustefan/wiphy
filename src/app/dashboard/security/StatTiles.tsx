@@ -1,4 +1,5 @@
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDownRight01Icon, ArrowUpRight01Icon, MinusSignIcon } from "@hugeicons/core-free-icons";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -62,7 +63,7 @@ function Delta({
   }
 
   const change = Math.round(((value - previous) / previous) * 100);
-  const Icon = change > 0 ? ArrowUpRight : change < 0 ? ArrowDownRight : Minus;
+  const Icon = change > 0 ? ArrowUpRight01Icon : change < 0 ? ArrowDownRight01Icon : MinusSignIcon;
   const worse = moreIsWorse ? change > 0 : change < 0;
   const better = moreIsWorse ? change < 0 : change > 0;
 
@@ -75,7 +76,7 @@ function Delta({
         worse && "text-negative",
       )}
     >
-      <Icon size={13} aria-hidden="true" />
+      <HugeiconsIcon icon={Icon} size={13} aria-hidden="true" />
       {change > 0 ? "+" : ""}
       {formatNumber(change)} % ggü. Vorzeitraum
     </p>

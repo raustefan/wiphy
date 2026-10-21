@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Eyebrow } from "@/components/ui";
 
@@ -38,7 +39,7 @@ export function DashboardPageHeader({
     );
     const backContent = (
         <>
-            <ArrowLeft size={15} aria-hidden="true" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={15} aria-hidden="true" />
             {backLabel}
         </>
     );

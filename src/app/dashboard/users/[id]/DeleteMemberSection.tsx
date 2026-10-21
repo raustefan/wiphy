@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { useId, useState } from "react";
-import { AlertTriangle, Trash2 } from "lucide-react";
 import {
     Button,
     Callout,
@@ -53,7 +54,7 @@ export function DeleteMemberSection({
         <Card className="mt-8 border-negative/30 bg-negative/5 p-5 sm:p-6">
             <div className="grid justify-items-center gap-3 py-2 text-center">
                 <p className="flex items-center gap-2 font-bold text-negative">
-                    <AlertTriangle size={18} aria-hidden="true" />
+                    <HugeiconsIcon icon={Alert01Icon} size={18} aria-hidden="true" />
                     Gefahrenzone
                 </p>
                 <p className="max-w-prose text-sm text-muted text-pretty">
@@ -66,7 +67,7 @@ export function DeleteMemberSection({
                     onClick={openStep1}
                     className="w-full max-w-xs"
                 >
-                    <Trash2 size={16} aria-hidden="true" /> Mitglied löschen
+                    <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Mitglied löschen
                 </Button>
             </div>
 
@@ -76,7 +77,7 @@ export function DeleteMemberSection({
                 onClose={closeAll}
                 title="Mitglied unwiderruflich löschen?"
             >
-                <Callout tone="danger" icon={<AlertTriangle size={16} />}>
+                <Callout tone="danger" icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}>
                     <span className="font-bold text-foreground">Achtung:</span> Das Konto von{" "}
                     <span className="font-bold text-foreground">{displayName}</span> ({email})
                     wird mit allen Daten{" "}
@@ -125,7 +126,7 @@ export function DeleteMemberSection({
                             Abbrechen
                         </Button>
                         <Button color="danger" type="submit" disabled={!canDelete}>
-                            <Trash2 size={16} aria-hidden="true" /> Endgültig löschen
+                            <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Endgültig löschen
                         </Button>
                     </DialogFooter>
                 </form>

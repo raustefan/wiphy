@@ -1,4 +1,5 @@
-import { ArrowDown, Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { formatNumber } from "@/lib/format";
 import type { RegistrationFunnel as FunnelData } from "@/lib/server/services/securityEventService";
 
@@ -76,7 +77,7 @@ export function RegistrationFunnel({ data, days }: { data: FunnelData; days: num
                   liest man denselben Verlust mehrfach. */}
               {index > 0 && (
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 py-2 pl-1 text-xs text-muted">
-                  <ArrowDown size={13} className="shrink-0 text-faint" aria-hidden="true" />
+                  <HugeiconsIcon icon={ArrowDown01Icon} size={13} className="shrink-0 text-faint" aria-hidden="true" />
                   {step === null ? (
                     <span className="text-faint">keine Grundlage im Zeitraum</span>
                   ) : step > 100 ? (
@@ -133,7 +134,7 @@ export function RegistrationFunnel({ data, days }: { data: FunnelData; days: num
       <figcaption className="mt-5 grid gap-3 border-t border-line pt-4 text-xs leading-relaxed text-muted">
         {data.expired > 0 && (
           <p className="flex items-start gap-2">
-            <Trash2 size={13} className="mt-0.5 shrink-0 text-faint" aria-hidden="true" />
+            <HugeiconsIcon icon={Delete02Icon} size={13} className="mt-0.5 shrink-0 text-faint" aria-hidden="true" />
             <span>
               Zusätzlich wurden{" "}
               <span className="font-semibold tabular-nums text-foreground">

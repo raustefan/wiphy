@@ -1,4 +1,5 @@
-import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CancelCircleIcon, CheckmarkCircle01Icon, ShieldCheckIcon } from "@hugeicons/core-free-icons";
 import { formatNumber } from "@/lib/format";
 import type { DayBucket } from "@/lib/server/services/securityEventService";
 import { columnPath, labelStride, longDayLabel, niceScale, shortDayLabel } from "./chartGeometry";
@@ -144,9 +145,9 @@ export function OutcomeTimeline({ daily }: { daily: DayBucket[] }) {
       </svg>
 
       <figcaption className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-        <LegendItem color="var(--chart-success)" icon={<CheckCircle2 size={14} aria-hidden="true" />} label="Erfolgreich" />
-        <LegendItem color="var(--chart-blocked)" icon={<ShieldCheck size={14} aria-hidden="true" />} label="Abgewehrt" />
-        <LegendItem color="var(--chart-failure)" icon={<XCircle size={14} aria-hidden="true" />} label="Fehlgeschlagen" />
+        <LegendItem color="var(--chart-success)" icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} aria-hidden="true" />} label="Erfolgreich" />
+        <LegendItem color="var(--chart-blocked)" icon={<HugeiconsIcon icon={ShieldCheckIcon} size={14} aria-hidden="true" />} label="Abgewehrt" />
+        <LegendItem color="var(--chart-failure)" icon={<HugeiconsIcon icon={CancelCircleIcon} size={14} aria-hidden="true" />} label="Fehlgeschlagen" />
       </figcaption>
     </figure>
   );

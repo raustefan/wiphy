@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Bug01Icon, Clock01Icon, Flag01Icon, GitCommitIcon, PowerIcon, ShieldCheckIcon, Timer01Icon, ViewIcon } from "@hugeicons/core-free-icons";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import Link from "next/link";
-import { Bug, Clock, Eye, Flag, GitCommit, Power, ShieldCheck, Timer } from "lucide-react";
 import { getSession, isDebugMode, isViewingAsMember } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
 import { ADMIN_SESSION_MAX_MS } from "@/lib/server/sessionPolicy";
@@ -80,7 +81,7 @@ export async function DebugBar() {
 
                     <div className="flex min-w-0 flex-1 items-stretch overflow-x-auto overscroll-x-contain [scrollbar-width:none]">
                     <span className="flex shrink-0 items-center gap-2 px-3">
-                        <Bug size={13} className="text-amber-400/70" aria-hidden="true" />
+                        <HugeiconsIcon icon={Bug01Icon} size={13} className="text-amber-400/70" aria-hidden="true" />
                         <span className="text-zinc-100">{user.email}</span>
                         {asMember ? (
                             <span
@@ -96,12 +97,12 @@ export async function DebugBar() {
                         )}
                     </span>
 
-                    <Segment icon={<Timer size={13} />} title="Ende der Admin-Sitzung (12 h ab Login)">
+                    <Segment icon={<HugeiconsIcon icon={Timer01Icon} size={13} />} title="Ende der Admin-Sitzung (12 h ab Login)">
                         Sitzung bis {sessionEnd ? TIME.format(sessionEnd).slice(0, 5) : "?"}
                     </Segment>
 
                     <Segment
-                        icon={<Flag size={13} />}
+                        icon={<HugeiconsIcon icon={Flag01Icon} size={13} />}
                         title={off.length ? `Aus: ${off.map((f) => f.label).join(", ")}` : "Alle Funktionen aktiv"}
                     >
                         <span className={off.length ? "text-red-400" : "text-emerald-400"}>
@@ -114,12 +115,12 @@ export async function DebugBar() {
                         )}
                     </Segment>
 
-                    <Segment icon={<GitCommit size={13} />} title="Laufender Commit · NODE_ENV">
+                    <Segment icon={<HugeiconsIcon icon={GitCommitIcon} size={13} />} title="Laufender Commit · NODE_ENV">
                         <span className="text-zinc-100">{sha}</span>
                         <span className="text-zinc-500">{process.env.NODE_ENV}</span>
                     </Segment>
 
-                    <Segment icon={<Clock size={13} />} title="Zeitpunkt, an dem der Server dieses Layout gerendert hat">
+                    <Segment icon={<HugeiconsIcon icon={Clock01Icon} size={13} />} title="Zeitpunkt, an dem der Server dieses Layout gerendert hat">
                         {TIME.format(new Date())}
                     </Segment>
 
@@ -152,7 +153,7 @@ export async function DebugBar() {
                                         : "ml-1 flex items-center gap-1 rounded border border-sky-400/40 px-2 py-1 text-sky-300 transition-colors hover:bg-sky-400 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-sky-400"
                                 }
                             >
-                                {asMember ? <ShieldCheck size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}
+                                {asMember ? <HugeiconsIcon icon={ShieldCheckIcon} size={12} aria-hidden="true" /> : <HugeiconsIcon icon={ViewIcon} size={12} aria-hidden="true" />}
                                 <span className="hidden sm:inline">{asMember ? "Admin-Ansicht" : "Als Mitglied"}</span>
                             </button>
                         </form>
@@ -162,7 +163,7 @@ export async function DebugBar() {
                                 title="Debug-Modus beenden"
                                 className="ml-1 flex items-center gap-1 rounded border border-amber-400/40 px-2 py-1 text-amber-300 transition-colors hover:bg-amber-400 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-amber-400"
                             >
-                                <Power size={12} aria-hidden="true" />
+                                <HugeiconsIcon icon={PowerIcon} size={12} aria-hidden="true" />
                                 <span className="hidden sm:inline">Beenden</span>
                             </button>
                         </form>

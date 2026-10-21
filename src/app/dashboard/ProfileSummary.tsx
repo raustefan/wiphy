@@ -1,4 +1,5 @@
-import { User, UserCircle, CheckCircle2, Clock, Mail, Check, X } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, CheckmarkCircle01Icon, Clock01Icon, Mail01Icon, Tick01Icon, UserCircleIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 import type { MemberStatus } from "@prisma/client";
 import { Badge } from "@/components/ui";
@@ -7,10 +8,10 @@ function getStatusIcon(status?: MemberStatus | string) {
     switch (status) {
         case "HONORARY_MEMBER":
         case "REGULAR_MEMBER":
-            return <CheckCircle2 size={14} />;
+            return <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} />;
         case "NON_MEMBER":
         default:
-            return <Clock size={14} />;
+            return <HugeiconsIcon icon={Clock01Icon} size={14} />;
     }
 }
 
@@ -36,12 +37,12 @@ export function ProfileSummary({ user }: { user: ProfileSummaryUser }) {
     return (
         <dl className="grid gap-3 sm:grid-cols-2">
             <ProfileRow
-                icon={<User size={15} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={UserIcon} size={15} aria-hidden="true" />}
                 label="Name"
                 value={[user.firstName, user.lastName].filter(Boolean).join(" ") || "—"}
             />
             <ProfileRow
-                icon={<Mail size={15} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />}
                 label="E-Mail"
                 value={
                     <span
@@ -49,13 +50,13 @@ export function ProfileSummary({ user }: { user: ProfileSummaryUser }) {
                             user.emailVerified ? "text-positive" : "text-negative"
                         }`}
                     >
-                        {user.emailVerified ? <Check size={15} /> : <X size={15} />}
+                        {user.emailVerified ? <HugeiconsIcon icon={Tick01Icon} size={15} /> : <HugeiconsIcon icon={Cancel01Icon} size={15} />}
                         {user.email}
                     </span>
                 }
             />
             <ProfileRow
-                icon={<UserCircle size={15} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
                 label="Rolle"
                 value={
                     <Badge tone={user.role === "ADMIN" ? "market" : "info"}>
@@ -64,7 +65,7 @@ export function ProfileSummary({ user }: { user: ProfileSummaryUser }) {
                 }
             />
             <ProfileRow
-                icon={<CheckCircle2 size={15} aria-hidden="true" />}
+                icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={15} aria-hidden="true" />}
                 label="Mitgliedschaft"
                 value={
                     <span className="flex flex-wrap gap-1.5">

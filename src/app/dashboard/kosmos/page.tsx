@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/server/authz";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import {
@@ -89,7 +90,7 @@ function JoinStage({ count }: { count: number }) {
                 href="/dashboard"
                 className="absolute top-4 left-5 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium opacity-75 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-physics sm:top-6 sm:left-8"
             >
-                <ArrowLeft size={14} aria-hidden="true" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} size={14} aria-hidden="true" />
                 Dashboard
             </Link>
             <div className="k-card grid max-w-xl gap-4 rounded-[10px] border p-5 backdrop-blur-md sm:p-7">

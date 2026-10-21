@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AtIcon, SentIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AtSign, Send } from "lucide-react";
 import { Button, Callout, Field, Input } from "@/components/ui";
 import { PasswordInput } from "@/components/PasswordField";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -33,7 +34,7 @@ export function PasswordChangeButton({ enabled }: { enabled: boolean }) {
                 </Callout>
             )}
             <Button onClick={() => void form.run()} loading={form.pending} className="w-full sm:w-auto sm:justify-self-start">
-                <Send size={16} aria-hidden="true" />
+                <HugeiconsIcon icon={SentIcon} size={16} aria-hidden="true" />
                 {sentTo ? "Link erneut senden" : "Link zum Ändern senden"}
             </Button>
         </div>
@@ -81,18 +82,14 @@ export function EmailChangeForm({ enabled }: { enabled: boolean }) {
             <Field label="Neue E-Mail-Adresse" htmlFor="new-email" required>
                 <div className="relative">
                     <Input id="new-email" name="email" type="email" autoComplete="email" required className="pl-10" />
-                    <AtSign
-                        size={15}
-                        aria-hidden="true"
-                        className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint"
-                    />
+                    <HugeiconsIcon icon={AtIcon} size={15} aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint" />
                 </div>
             </Field>
             <Field label="Aktuelles Passwort" htmlFor="current-password" hint="Damit niemand über eine offene Sitzung deine Adresse übernehmen kann." required>
                 <PasswordInput id="current-password" name="currentPassword" autoComplete="current-password" required />
             </Field>
             <Button type="submit" loading={form.pending} className="w-full sm:w-auto sm:justify-self-start">
-                <Send size={16} aria-hidden="true" />
+                <HugeiconsIcon icon={SentIcon} size={16} aria-hidden="true" />
                 Bestätigungslink senden
             </Button>
         </form>

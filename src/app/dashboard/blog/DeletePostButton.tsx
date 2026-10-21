@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon } from "@hugeicons/core-free-icons";
 import { useRef, useState } from "react";
-import { Trash2 } from "lucide-react";
 import { Button, Dialog, DialogFooter } from "@/components/ui";
 
 export function DeletePostButton({
@@ -28,7 +29,7 @@ export function DeletePostButton({
                 type="button"
                 onClick={() => setOpen(true)}
             >
-                <Trash2 size={16} aria-hidden="true" /> Löschen
+                <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Löschen
             </Button>
 
             <Dialog
@@ -59,7 +60,7 @@ export function DeletePostButton({
                             formRef.current?.requestSubmit();
                         }}
                     >
-                        <Trash2 size={16} aria-hidden="true" /> Endgültig löschen
+                        <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Endgültig löschen
                     </Button>
                 </DialogFooter>
             </Dialog>

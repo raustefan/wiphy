@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon, ImageAdd01Icon, Upload01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Trash2, Upload, Users } from "lucide-react";
 import { Button, Callout, Card, Dialog, DialogFooter } from "@/components/ui";
 import { FeatureDisabledDialog } from "@/components/FeatureDisabledDialog";
 import {
@@ -125,7 +126,7 @@ export function BoardPhotoUploader({
                     />
                 ) : (
                     <span className="grid size-24 shrink-0 place-items-center rounded-[3px] border border-dashed border-line text-faint">
-                        <Users size={28} aria-hidden="true" />
+                        <HugeiconsIcon icon={UserGroupIcon} size={28} aria-hidden="true" />
                     </span>
                 )}
 
@@ -145,7 +146,7 @@ export function BoardPhotoUploader({
                             event.target.value = "";
                         }}
                     />
-                    <Upload size={20} aria-hidden="true" className="mx-auto text-faint" />
+                    <HugeiconsIcon icon={Upload01Icon} size={20} aria-hidden="true" className="mx-auto text-faint" />
                     <p className="text-sm text-muted">
                         Foto hierher ziehen oder auswählen — bis zu {formatBytes(
                             MAX_BOARD_PHOTO_UPLOAD_BYTES,
@@ -159,7 +160,7 @@ export function BoardPhotoUploader({
                             loading={uploading}
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <ImagePlus size={16} aria-hidden="true" />
+                            <HugeiconsIcon icon={ImageAdd01Icon} size={16} aria-hidden="true" />
                             {photo ? "Foto ersetzen" : "Foto auswählen"}
                         </Button>
                         {photo && (
@@ -171,7 +172,7 @@ export function BoardPhotoUploader({
                                 loading={deleting}
                                 onClick={() => setConfirmDelete(true)}
                             >
-                                <Trash2 size={16} aria-hidden="true" /> Foto entfernen
+                                <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Foto entfernen
                             </Button>
                         )}
                     </div>
@@ -215,7 +216,7 @@ export function BoardPhotoUploader({
                         Abbrechen
                     </Button>
                     <Button size="sm" color="danger" type="button" onClick={() => void handleDelete()}>
-                        <Trash2 size={16} aria-hidden="true" /> Endgültig entfernen
+                        <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Endgültig entfernen
                     </Button>
                 </DialogFooter>
             </Dialog>

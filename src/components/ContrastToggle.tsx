@@ -1,6 +1,7 @@
 "use client";
 
-import { Contrast } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ContrastIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
 
 /** Gleicher Mechanismus wie die Erscheinung: localStorage + Attribut an <html>, gesetzt vom Inline-Skript im Layout. */
@@ -30,7 +31,7 @@ export default function ContrastToggle() {
       title="Animationen und Hintergrundmuster aus- oder einblenden"
       className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-sm px-2 text-[13px] text-muted transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-physics aria-pressed:text-physics"
     >
-      <Contrast size={11} aria-hidden="true" />
+      <HugeiconsIcon icon={ContrastIcon} size={11} aria-hidden="true" />
       <span>Hoher Kontrast</span>
     </button>
   );

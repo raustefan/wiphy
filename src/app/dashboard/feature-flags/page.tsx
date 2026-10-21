@@ -1,8 +1,9 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireDebugAdmin } from "@/lib/server/authz";
 import { getAllFeatureFlags } from "@/lib/server/services/featureFlagService";
 import { FEATURE_FLAG_CATEGORIES } from "@/lib/featureFlags";
-import { AlertTriangle } from "lucide-react";
 import { Badge, Callout, Card, Container } from "@/components/ui";
 import { FeatureFlagToggle } from "./FeatureFlagToggle";
 import { DashboardPageHeader } from "../DashboardPageHeader";
@@ -24,7 +25,7 @@ export default async function FeatureFlagsPage() {
 
             <Callout
                 tone="warning"
-                icon={<AlertTriangle size={16} />}
+                icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}
                 title="Vorsicht bei Änderungen"
                 className="mb-6"
             >

@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { useState, useTransition } from "react";
-import { Plus, Trash2 } from "lucide-react";
 import {
     Button,
     Field,
@@ -109,7 +110,7 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
                                                 run(deleteFeeDefaultYear, fd);
                                             }}
                                         >
-                                            <Trash2 size={14} />
+                                            <HugeiconsIcon icon={Delete02Icon} size={14} />
                                         </IconButton>
                                     </Td>
                                 </tr>
@@ -147,7 +148,7 @@ export function FeeDefaultsCard({ defaults }: { defaults: FeeDefaultRow[] }) {
                     />
                 </Field>
                 <Button onClick={save} loading={isPending}>
-                    <Plus size={16} aria-hidden="true" />
+                    <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
                     Speichern
                 </Button>
             </div>

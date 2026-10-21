@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -71,12 +72,7 @@ export function CtaCard({
                 )}
             >
                 {action}
-                <ArrowRight
-                    size={16}
-                    aria-hidden="true"
-                    // Dieselbe Feder wie die Pfeile der öffentlichen Seiten.
-                    className="cta-arrow group-hover:translate-x-[5px]"
-                />
+                <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" className="cta-arrow group-hover:translate-x-[5px]" />
             </span>
         </Link>
     );

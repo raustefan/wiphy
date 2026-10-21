@@ -1,3 +1,5 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { UserRemove01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { assertCanEditUser, requireUser } from "@/lib/server/authz";
@@ -12,7 +14,6 @@ import { userUpdateSchema } from "@/lib/server/validation/schemas";
 import { requireFeatureEnabledOrRedirect } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
-import { UserX } from "lucide-react";
 import { ButtonLink, Callout, Card, Container, EmptyState } from "@/components/ui";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
@@ -167,7 +168,7 @@ export default async function EditUserPage({
         return (
             <Container size="2" className="py-12">
                 <EmptyState
-                    icon={<UserX size={22} />}
+                    icon={<HugeiconsIcon icon={UserRemove01Icon} size={22} />}
                     title="Benutzer nicht gefunden"
                     description="Dieses Konto gibt es nicht (mehr). Möglicherweise wurde es gelöscht."
                     action={

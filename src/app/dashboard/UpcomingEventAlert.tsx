@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, Location01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
 import { Badge, Card } from "@/components/ui";
 import { EventDateCube } from "@/components/EventCard";
 import {
@@ -67,7 +68,7 @@ export function UpcomingEventAlert({ event }: { event: DashboardEvent }) {
                         <p className="font-mono text-xs text-faint">{formatEventClock(event)}</p>
                         {place && (
                             <p className="flex items-center gap-1.5 text-xs text-faint">
-                                <MapPin size={13} aria-hidden="true" className="shrink-0" />
+                                <HugeiconsIcon icon={Location01Icon} size={13} aria-hidden="true" className="shrink-0" />
                                 <span className="truncate">{place}</span>
                             </p>
                         )}
@@ -92,11 +93,7 @@ export function UpcomingEventAlert({ event }: { event: DashboardEvent }) {
                         {" "}
                         am {formatEventDay(event.start)}: {event.title}
                     </span>
-                    <ArrowRight
-                        size={16}
-                        aria-hidden="true"
-                        className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
-                    />
+                    <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
                 </Link>
             </div>
         </Card>

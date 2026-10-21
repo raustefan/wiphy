@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckmarkCircle01Icon, Clock01Icon, DashboardCircleIcon, InformationCircleIcon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
-import { CheckCircle2, Clock, Info, LayoutDashboard } from "lucide-react";
 import { createAltchaChallenge } from "@/lib/server/altcha";
 import { getOptionalUser } from "@/lib/server/authz";
 import { getEditableUser } from "@/lib/server/services/userService";
@@ -122,7 +123,7 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                     <Panel className="grid gap-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <Badge tone="warning">
-                                <Clock size={14} aria-hidden="true" />
+                                <HugeiconsIcon icon={Clock01Icon} size={14} aria-hidden="true" />
                                 In Bearbeitung
                             </Badge>
                             <span className="text-sm text-muted">
@@ -137,7 +138,7 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                         </p>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                             <ButtonLink href="/dashboard" variant="soft" color="neutral">
-                                <LayoutDashboard size={15} aria-hidden="true" />
+                                <HugeiconsIcon icon={DashboardCircleIcon} size={15} aria-hidden="true" />
                                 Zum Mitgliederbereich
                             </ButtonLink>
                             <WithdrawApplicationButton applicationId={openApplication.id} />
@@ -148,7 +149,7 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                 {stage === "mitglied" && (
                     <Panel className="grid gap-3">
                         <Badge tone="positive" className="justify-self-start">
-                            <CheckCircle2 size={14} aria-hidden="true" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} aria-hidden="true" />
                             Mitgliedschaft aktiv
                         </Badge>
                         <p className="max-w-prose text-sm text-muted text-pretty">
@@ -156,7 +157,7 @@ export default async function MitgliedWerdenPage({ searchParams }: Props) {
                             nichts mehr zu tun. Deine Daten pflegst du im Mitgliederbereich.
                         </p>
                         <ButtonLink href="/dashboard" className="justify-self-start">
-                            <LayoutDashboard size={15} aria-hidden="true" />
+                            <HugeiconsIcon icon={DashboardCircleIcon} size={15} aria-hidden="true" />
                             Zum Mitgliederbereich
                         </ButtonLink>
                     </Panel>
@@ -201,7 +202,7 @@ async function ApplicationStage({
 
     if (!featureEnabled) {
         return (
-            <Callout tone="warning" icon={<Info size={16} />}>
+            <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                 Die Online-Antragstellung ist derzeit deaktiviert. Bitte wende dich für eine
                 Mitgliedschaft direkt an den Vorstand.
             </Callout>

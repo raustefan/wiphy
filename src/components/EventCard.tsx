@@ -1,12 +1,6 @@
-/**
- * Die Bausteine, aus denen Terminliste, Startseite und Detailseite bestehen.
- *
- * Alle drei zeigen denselben Termin in unterschiedlicher Größe — der
- * Datumswürfel, die Eckdaten und die Beschriftung stehen deshalb einmal hier
- * und nicht dreimal fast gleich im Markup.
- */
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Calendar01Icon, Link02Icon, Location01Icon, NewsIcon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { CalendarClock, Link2, MapPin, Newspaper } from "lucide-react";
 import { Cta, Frame } from "@/components/Site";
 import { cn } from "@/lib/cn";
 import {
@@ -79,7 +73,7 @@ export function EventFacts({
     <dl className={cn("grid gap-3", className)}>
       <div className="flex items-start gap-3">
         <dt className="mt-0.5 shrink-0 text-muted">
-          <CalendarClock size={17} aria-hidden="true" />
+          <HugeiconsIcon icon={Calendar01Icon} size={17} aria-hidden="true" />
           <span className="sr-only">Wann</span>
         </dt>
         <dd className="min-w-0 text-sm font-semibold text-pretty sm:text-[0.95rem]">
@@ -90,7 +84,7 @@ export function EventFacts({
       {place && (
         <div className="flex items-start gap-3">
           <dt className="mt-0.5 shrink-0 text-muted">
-            <MapPin size={17} aria-hidden="true" />
+            <HugeiconsIcon icon={Location01Icon} size={17} aria-hidden="true" />
             <span className="sr-only">Wo</span>
           </dt>
           <dd className="min-w-0 text-sm text-muted text-pretty">
@@ -113,7 +107,7 @@ export function EventFacts({
       {event.onlineUrl && (
         <div className="flex items-start gap-3">
           <dt className="mt-0.5 shrink-0 text-muted">
-            <Link2 size={17} aria-hidden="true" />
+            <HugeiconsIcon icon={Link02Icon} size={17} aria-hidden="true" />
             <span className="sr-only">Online</span>
           </dt>
           <dd className="min-w-0 text-sm break-all text-muted">
@@ -174,7 +168,7 @@ export function EventCard({
           {formatEventRange(event)}
           {place && (
             <span className="mt-0.5 flex items-center gap-1.5 text-muted">
-              <MapPin size={13} aria-hidden="true" className="shrink-0" />
+              <HugeiconsIcon icon={Location01Icon} size={13} aria-hidden="true" className="shrink-0" />
               <span className="truncate">{place}</span>
             </span>
           )}
@@ -191,7 +185,7 @@ export function EventCard({
           {countdown && <span className="text-physics">{countdown}</span>}
           {postCount > 0 && (
             <span className="inline-flex items-center gap-1.5 text-market">
-              <Newspaper size={14} aria-hidden="true" />
+              <HugeiconsIcon icon={NewsIcon} size={14} aria-hidden="true" />
               {postCount === 1 ? "mit Rückblick" : `${postCount} Rückblicke`}
             </span>
           )}

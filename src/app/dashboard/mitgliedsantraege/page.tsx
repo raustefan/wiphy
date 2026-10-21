@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Door01Icon, FileAttachmentIcon, InformationCircleIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
-import { DoorOpen, FileText, Info } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getApplications, getMaxMemberNumber } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
@@ -133,7 +134,7 @@ export default async function MembershipApplicationsPage() {
             />
 
             {!applicationEnabled && (
-                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-4">
                     Die Online-Antragstellung ist deaktiviert. Neue Anträge können derzeit nicht
                     gestellt werden — bereits eingegangene Anträge lassen sich hier weiterhin
                     bearbeiten.
@@ -141,14 +142,14 @@ export default async function MembershipApplicationsPage() {
             )}
 
             {!mailEnabled && applicationEnabled && (
-                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-4">
                     Die Mail-Benachrichtigung für neue Anträge ist deaktiviert. Neue Anträge
                     landen nur hier — bitte regelmäßig prüfen.
                 </Callout>
             )}
 
             {feeDefaults.length === 0 && (
-                <Callout tone="warning" icon={<Info size={16} />} className="mb-4">
+                <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-4">
                     Es sind noch keine Standard-Beitragssätze hinterlegt. Antragstellern wird
                     deshalb 0 € angezeigt, und eine Annahme legt Beiträge in Höhe von 0 € an.
                     Bitte zuerst unter „Beiträge“ die Sätze pflegen.
@@ -158,7 +159,7 @@ export default async function MembershipApplicationsPage() {
             {items.length === 0 ? (
                 <Card>
                     <EmptyState
-                        icon={<FileText size={22} />}
+                        icon={<HugeiconsIcon icon={FileAttachmentIcon} size={22} />}
                         title="Noch keine Mitgliedsanträge"
                         description="Anträge aus dem Mitgliederbereich landen hier zur Entscheidung durch den Vorstand."
                     />
@@ -169,26 +170,26 @@ export default async function MembershipApplicationsPage() {
 
             <div className="mt-10 grid gap-4">
                 <SectionHeader
-                    icon={<DoorOpen size={16} />}
+                    icon={<HugeiconsIcon icon={Door01Icon} size={16} />}
                     eyebrow="Kündigungen"
                     title="Austritte"
                     description="Austrittserklärungen aus dem Mitgliederbereich. Nach der Bestätigung wird der Status am Tag nach dem Austrittsdatum automatisch auf „Kein Mitglied“ gesetzt."
                 />
                 {!terminationEnabled && (
-                    <Callout tone="warning" icon={<Info size={16} />}>
+                    <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                         Die Online-Kündigung ist deaktiviert. Mitglieder werden auf Kontaktformular
                         und E-Mail an den Vorstand verwiesen — solche Kündigungen erscheinen nicht
                         hier und müssen von Hand erfasst werden (Status im Profil).
                     </Callout>
                 )}
                 {terminationEnabled && !terminationMailEnabled && (
-                    <Callout tone="warning" icon={<Info size={16} />}>
+                    <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                         Die Mail-Benachrichtigung für Kündigungen ist deaktiviert. Neue Kündigungen
                         landen nur hier — bitte regelmäßig prüfen, die Frist läuft ab Eingang.
                     </Callout>
                 )}
                 {!terminationConfirmationMailEnabled && (
-                    <Callout tone="warning" icon={<Info size={16} />}>
+                    <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                         Die Mails an Mitglieder zur Kündigung sind deaktiviert. Eine Bestätigung
                         verschickt dann keine Mail — bitte den Austritt anderweitig schriftlich
                         bestätigen.
@@ -197,7 +198,7 @@ export default async function MembershipApplicationsPage() {
                 {terminationItems.length === 0 ? (
                     <Card>
                         <EmptyState
-                            icon={<DoorOpen size={22} />}
+                            icon={<HugeiconsIcon icon={Door01Icon} size={22} />}
                             title="Keine Austritte"
                             description="Kündigungen von Mitgliedern erscheinen hier zur Bestätigung."
                         />

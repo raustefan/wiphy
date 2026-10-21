@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -87,7 +88,7 @@ export function EmailComposerDialog({
     return (
       <Dialog open onClose={closeDialog} size="sm">
         <div className="grid justify-items-center gap-3 py-2 text-center">
-          <CheckCircle2 size={48} className="text-positive" aria-hidden="true" />
+          <HugeiconsIcon icon={CheckmarkCircle01Icon} size={48} className="text-positive" aria-hidden="true" />
           <h2 className="text-lg font-bold tracking-tight">E-Mail gesendet</h2>
           <p className="text-sm text-muted">
             Die Nachricht wurde an {recipients.length}{" "}

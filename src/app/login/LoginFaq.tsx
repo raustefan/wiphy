@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 type FaqItem = {
@@ -135,11 +136,7 @@ export function LoginFaq() {
                                 <details key={item.question} name="login-faq" className="group">
                                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3.5 text-sm font-medium transition-colors hover:text-physics [&::-webkit-details-marker]:hidden">
                                         <span>{item.question}</span>
-                                        <ChevronDown
-                                            size={18}
-                                            aria-hidden="true"
-                                            className="shrink-0 text-faint transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
-                                        />
+                                        <HugeiconsIcon icon={ArrowDown01Icon} size={18} aria-hidden="true" className="shrink-0 text-faint transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none" />
                                     </summary>
                                     <div className="pb-4 text-sm leading-relaxed text-muted">
                                         {item.answer}

@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Megaphone01Icon, Tick01Icon, ViewIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { Check, Eye, Megaphone, X } from "lucide-react";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { parseBerlinLocalInput, toBerlinDateInput, toBerlinLocalInput } from "@/lib/berlinTime";
@@ -224,7 +225,7 @@ export function EventForm({ event }: { event: EventFormData }) {
 
                 <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <Button size="lg" type="submit" loading={form.pending}>
-                        <Check size={16} aria-hidden="true" />{" "}
+                        <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" />{" "}
                         {form.pending ? "Wird gespeichert…" : "Speichern"}
                     </Button>
                     <ButtonLink
@@ -233,7 +234,7 @@ export function EventForm({ event }: { event: EventFormData }) {
                         variant="soft"
                         color="neutral"
                     >
-                        <X size={16} aria-hidden="true" /> Abbrechen
+                        <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                     </ButtonLink>
 
                     {event.published && (
@@ -244,7 +245,7 @@ export function EventForm({ event }: { event: EventFormData }) {
                                 variant="soft"
                                 color="market"
                             >
-                                <Megaphone size={16} aria-hidden="true" /> Termin ankündigen
+                                <HugeiconsIcon icon={Megaphone01Icon} size={16} aria-hidden="true" /> Termin ankündigen
                             </ButtonLink>
                             <ButtonLink
                                 href={eventPath(event)}
@@ -253,7 +254,7 @@ export function EventForm({ event }: { event: EventFormData }) {
                                 color="neutral"
                                 target="_blank"
                             >
-                                <Eye size={16} aria-hidden="true" /> Öffentliche Seite
+                                <HugeiconsIcon icon={ViewIcon} size={16} aria-hidden="true" /> Öffentliche Seite
                             </ButtonLink>
                         </>
                     )}

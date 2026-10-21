@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useState, useTransition } from "react";
-import { X } from "lucide-react";
 import { removeRateLimitEntry } from "./actions";
 import { describeRateLimit } from "@/lib/rateLimits";
 import { InfoTooltip } from "./InfoTooltip";
@@ -73,7 +74,7 @@ export function RateLimitTable({ summary, entries }: RateLimitTableProps) {
                                 title=""
                                 onClick={hideInfo}
                             >
-                                <X size={14} aria-hidden="true" />
+                                <HugeiconsIcon icon={Cancel01Icon} size={14} aria-hidden="true" />
                             </IconButton>
                         </div>
                         <p className="leading-relaxed text-muted">{activeInfo.text}</p>

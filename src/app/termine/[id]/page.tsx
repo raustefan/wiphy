@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, CalendarAdd01Icon, MessageQuestionIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarPlus, MessageCircleQuestion } from "lucide-react";
 import { Cta, Frame } from "@/components/Site";
 import { EventFacts } from "@/components/EventCard";
 import MarkdownViewer from "@/components/MarkdownViewer";
@@ -77,7 +78,7 @@ export default async function EventDetailPage({ params }: Props) {
             href={past ? "/termine?zeige=vergangen" : "/termine"}
             className="inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
           >
-            <ArrowLeft size={16} aria-hidden="true" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />
             {past ? "Vergangene Termine" : "Alle Termine"}
           </Link>
 
@@ -110,10 +111,10 @@ export default async function EventDetailPage({ params }: Props) {
                 {/* Der Download ist auch für vergangene Termine erreichbar: wer sie
                     im eigenen Kalender nachhalten will, soll das können. */}
                 <Cta href={eventIcsPath(event.id)} prefetch={false} className="w-full">
-                  <CalendarPlus size={17} aria-hidden="true" /> In meinen Kalender
+                  <HugeiconsIcon icon={CalendarAdd01Icon} size={17} aria-hidden="true" /> In meinen Kalender
                 </Cta>
                 <Cta href={eventContactPath(event.title)} variant="line" className="w-full">
-                  <MessageCircleQuestion size={17} aria-hidden="true" /> Frage zum Termin
+                  <HugeiconsIcon icon={MessageQuestionIcon} size={17} aria-hidden="true" /> Frage zum Termin
                 </Cta>
                 <ShareButton title={event.title} className="w-full" />
               </div>

@@ -1,5 +1,6 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { cloneElement, isValidElement } from "react";
-import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /* Die Fehlerdarstellung hängt am `aria-invalid` des Feldes selbst, nicht an
@@ -173,11 +174,7 @@ export function Select({
       >
         {children}
       </select>
-      <ChevronDown
-        size={16}
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-faint"
-      />
+      <HugeiconsIcon icon={ArrowDown01Icon} size={16} aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-faint" />
     </div>
   );
 }

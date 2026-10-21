@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { useState, useTransition } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import type { MembershipApplicationStatus } from "@prisma/client";
 import {
     Badge,
@@ -304,9 +305,9 @@ export function ApplicationList({
                                                             }
                                                         >
                                                             {ibanVisible ? (
-                                                                <EyeOff size={14} />
+                                                                <HugeiconsIcon icon={ViewOffIcon} size={14} />
                                                             ) : (
-                                                                <Eye size={14} />
+                                                                <HugeiconsIcon icon={ViewIcon} size={14} />
                                                             )}
                                                         </IconButton>
                                                     </span>

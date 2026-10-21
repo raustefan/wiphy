@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Building03Icon, Cancel01Icon, InformationCircleIcon, PencilIcon, Tick01Icon, Wallet01Icon } from "@hugeicons/core-free-icons";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Landmark, Pencil, Wallet, X } from "lucide-react";
 import { Badge, Button, Callout, Checkbox, Field, Input } from "@/components/ui";
 import { maskIban } from "@/lib/iban";
 import { PaymentOption } from "@/components/PaymentOption";
@@ -97,7 +98,7 @@ export function BankDetailsForm({
                         )}
                     </dl>
                 ) : (
-                    <Callout tone="info" icon={<Info size={16} />}>
+                    <Callout tone="info" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                         Es ist keine Bankverbindung hinterlegt — dein Beitrag läuft per
                         Überweisung.
                     </Callout>
@@ -109,7 +110,7 @@ export function BankDetailsForm({
                     className="h-auto justify-self-start py-2.5"
                     onClick={() => setEditing(true)}
                 >
-                    <Pencil size={16} aria-hidden="true" className="shrink-0" />
+                    <HugeiconsIcon icon={PencilIcon} size={16} aria-hidden="true" className="shrink-0" />
                     {/* Der Umbruch steht am Text, nicht am Knopf: `cn` führt
                         Tailwind-Klassen nicht zusammen, ein `whitespace-normal`
                         am Knopf träfe also auf dessen `whitespace-nowrap` und
@@ -134,7 +135,7 @@ export function BankDetailsForm({
                     value="lastschrift"
                     checked={zahlungsweise === "lastschrift"}
                     onSelect={setZahlungsweise}
-                    icon={<Landmark size={18} aria-hidden="true" />}
+                    icon={<HugeiconsIcon icon={Building03Icon} size={18} aria-hidden="true" />}
                     title="SEPA-Lastschrift"
                     badge="Empfohlen"
                     price={`${formatEuro(annualFee(rates.regular))} im Jahr`}
@@ -148,7 +149,7 @@ export function BankDetailsForm({
                     value="ueberweisung"
                     checked={zahlungsweise === "ueberweisung"}
                     onSelect={setZahlungsweise}
-                    icon={<Wallet size={18} aria-hidden="true" />}
+                    icon={<HugeiconsIcon icon={Wallet01Icon} size={18} aria-hidden="true" />}
                     title="Überweisung"
                     price={`${formatEuro(withSurcharge(annualFee(rates.regular)))} im Jahr`}
                     priceTone="negative"
@@ -164,7 +165,7 @@ export function BankDetailsForm({
                 das Absenden liest die FormData, nicht den State. */}
             <input type="hidden" name="zahlungsweise" value={zahlungsweise} />
 
-            <Callout tone="info" icon={<Info size={16} />}>
+            <Callout tone="info" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                 Der Aufschlag deckt den Mehraufwand, den Einzelüberweisungen dem
                 ehrenamtlich geführten Verein machen. Er ist keine Strafe — die
                 Lastschrift ist schlicht der günstigere Weg für beide Seiten.
@@ -214,7 +215,7 @@ export function BankDetailsForm({
                 <>
                     {/* Ohne Mandat zieht der Verein nichts ein und hat für
                         Kontodaten keine Verwendung — dann werden sie verworfen. */}
-                    <Callout tone="warning" icon={<Info size={16} />} title="Was das bedeutet">
+                    <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} title="Was das bedeutet">
                         <ul className="mt-1 grid list-disc gap-1 pl-4 text-pretty">
                             <li>
                                 Dein Jahresbeitrag beträgt{" "}
@@ -241,7 +242,7 @@ export function BankDetailsForm({
             )}
 
             {error && (
-                <Callout tone="danger" icon={<Info size={16} />}>
+                <Callout tone="danger" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
                     {error}
                 </Callout>
             )}
@@ -257,17 +258,17 @@ export function BankDetailsForm({
                     }}
                     disabled={isPending}
                 >
-                    <X size={16} aria-hidden="true" />
+                    <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" />
                     Abbrechen
                 </Button>
                 {zahlungsweise === "lastschrift" ? (
                     <Button type="button" onClick={submit} loading={isPending}>
-                        <Check size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" />
                         Neues Mandat bestätigen &amp; speichern
                     </Button>
                 ) : (
                     <Button type="button" onClick={submit} loading={isPending}>
-                        <Check size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" />
                         Auf Überweisung umstellen
                     </Button>
                 )}

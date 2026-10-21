@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useId, useRef } from "react";
-import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 
@@ -92,7 +93,7 @@ export function Dialog({
           aria-label="Dialog schließen"
           className="-mt-1 -mr-1 grid size-9 shrink-0 cursor-pointer place-items-center rounded-[3px] text-muted transition-colors hover:bg-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
         >
-          <X size={18} />
+          <HugeiconsIcon icon={Cancel01Icon} size={18} />
         </button>
       </div>
       <div className="px-5 py-4 sm:px-6">{children}</div>

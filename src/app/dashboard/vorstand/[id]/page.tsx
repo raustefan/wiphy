@@ -1,7 +1,8 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
 import { getMemberForEdit } from "@/lib/server/services/boardService";
-import { Check, X } from "lucide-react";
 import { saveMember } from "../actions";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
 import { BoardPhotoUploader } from "./BoardPhotoUploader";
@@ -90,7 +91,7 @@ export default async function EditBoardMemberPage({
 
                     <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                         <Button size="lg" type="submit">
-                            <Check size={16} aria-hidden="true" /> Speichern
+                            <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> Speichern
                         </Button>
                         <ButtonLink
                             href="/dashboard/vorstand"
@@ -98,7 +99,7 @@ export default async function EditBoardMemberPage({
                             variant="soft"
                             color="neutral"
                         >
-                            <X size={16} aria-hidden="true" /> Abbrechen
+                            <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                         </ButtonLink>
                     </div>
                 </form>

@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { NewsIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Newspaper } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import { getEventForEdit } from "@/lib/server/services/eventService";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
@@ -44,7 +45,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
             {event._count.posts > 0 && (
                 <Card className="flex items-start gap-3 p-5 text-sm text-muted">
-                    <Newspaper size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-market" />
+                    <HugeiconsIcon icon={NewsIcon} size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-market" />
                     <p className="leading-relaxed">
                         {event._count.posts === 1
                             ? "Ein Blogbeitrag ist mit diesem Termin verknüpft"

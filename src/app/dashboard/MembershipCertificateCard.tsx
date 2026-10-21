@@ -1,4 +1,5 @@
-import { Award, Download } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Award01Icon, Download01Icon } from "@hugeicons/core-free-icons";
 import { Card, buttonClasses } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { formatMembershipDuration, type CertificateFacts } from "@/lib/membershipCertificate";
@@ -28,7 +29,7 @@ export function MembershipCertificateCard({ facts, downloadable }: { facts: Cert
   return (
     <Card className="p-5 sm:p-6">
       <SectionHeader
-        icon={<Award size={16} />}
+        icon={<HugeiconsIcon icon={Award01Icon} size={16} />}
         eyebrow="Nachweis"
         title="Mitgliedschaftszertifikat"
         description="Eine Urkunde mit deinen Mitgliedsdaten, dem Aufnahmedatum und dem Zeitraum, für den deine Beiträge entrichtet sind — zum Vorzeigen als PDF."
@@ -38,7 +39,7 @@ export function MembershipCertificateCard({ facts, downloadable }: { facts: Cert
               href="/api/dashboard/zertifikat/pdf"
               className={buttonClasses({ size: "sm", className: "self-start" })}
             >
-              <Download size={15} aria-hidden="true" />
+              <HugeiconsIcon icon={Download01Icon} size={15} aria-hidden="true" />
               Herunterladen
             </a>
           )

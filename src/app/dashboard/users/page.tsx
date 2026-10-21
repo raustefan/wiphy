@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArchiveIcon, PercentIcon, UserAdd01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Archive, Percent, UserPlus } from "lucide-react";
 import { requireAdmin } from "@/lib/server/authz";
 import {
   getAccountsWithFees,
@@ -156,7 +157,7 @@ export default async function UserManagementPage({
         <div className="flex flex-wrap gap-2">
           <DialogButton
             label="Beitragssätze"
-            icon={<Percent size={16} aria-hidden="true" />}
+            icon={<HugeiconsIcon icon={PercentIcon} size={16} aria-hidden="true" />}
             title="Beitragssätze"
             description="Monatliche Standardsätze je Jahr. Sie gelten für alle Beiträge, die nicht als Ausnahme festgelegt sind."
           >
@@ -172,7 +173,7 @@ export default async function UserManagementPage({
           {archivedFees.length > 0 && (
             <DialogButton
               label={`Archiv (${archivedFees.length})`}
-              icon={<Archive size={16} aria-hidden="true" />}
+              icon={<HugeiconsIcon icon={ArchiveIcon} size={16} aria-hidden="true" />}
               title="Archiv gelöschter Konten"
               description="Beitragszeilen gelöschter Konten. Sie bleiben wegen der steuerlichen Aufbewahrungspflicht zehn Jahre nach dem Beitragsjahr gesperrt erhalten und werden danach automatisch gelöscht."
             >
@@ -220,7 +221,7 @@ export default async function UserManagementPage({
             </DialogButton>
           )}
           <ButtonLink href="/dashboard/users/new">
-            <UserPlus size={16} aria-hidden="true" />
+            <HugeiconsIcon icon={UserAdd01Icon} size={16} aria-hidden="true" />
             Neues Konto
           </ButtonLink>
         </div>

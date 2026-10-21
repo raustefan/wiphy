@@ -1,10 +1,11 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/server/authz";
 import { getPostForEdit } from "@/lib/server/services/blogService";
 import { getEventOptions } from "@/lib/server/services/eventService";
 import { formatEventShort } from "@/lib/events";
-import { Check, X } from "lucide-react";
 import { savePost } from "../actions";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
@@ -129,7 +130,7 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
 
                     <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                         <Button size="lg" type="submit">
-                            <Check size={16} aria-hidden="true" /> Speichern
+                            <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> Speichern
                         </Button>
                         <ButtonLink
                             href="/dashboard/blog"
@@ -137,7 +138,7 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
                             variant="soft"
                             color="neutral"
                         >
-                            <X size={16} aria-hidden="true" /> Abbrechen
+                            <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                         </ButtonLink>
                     </div>
                 </form>

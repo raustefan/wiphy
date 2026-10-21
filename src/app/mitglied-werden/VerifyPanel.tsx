@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MailValidation01Icon, SentIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { MailCheck, Send } from "lucide-react";
 import { resendVerificationEmail } from "@/app/login/actions";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { Button, ButtonLink, Callout, Field, Input } from "@/components/ui";
@@ -26,7 +27,7 @@ export function VerifyPanel({ email }: { email?: string | null }) {
 
     return (
         <div className="grid gap-4">
-            <Callout tone="success" icon={<MailCheck size={16} />} title="E-Mail ist unterwegs">
+            <Callout tone="success" icon={<HugeiconsIcon icon={MailValidation01Icon} size={16} />} title="E-Mail ist unterwegs">
                 {email ? (
                     <>
                         Wir haben den Bestätigungslink an{" "}
@@ -96,7 +97,7 @@ export function VerifyPanel({ email }: { email?: string | null }) {
                                 loading={resend.pending}
                                 className="justify-self-start"
                             >
-                                <Send size={15} aria-hidden="true" />
+                                <HugeiconsIcon icon={SentIcon} size={15} aria-hidden="true" />
                                 Link erneut senden
                             </Button>
                         </>

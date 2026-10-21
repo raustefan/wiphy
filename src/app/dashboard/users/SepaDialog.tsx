@@ -1,6 +1,6 @@
 "use client";
-
-import { Download } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download01Icon } from "@hugeicons/core-free-icons";
 import type { SepaCandidate } from "@/lib/server/services/feeService";
 import { SEPA_CREDITOR_ID } from "@/lib/membership";
 import { CREDITOR_ID_PATTERN, MANDATE_ID_PATTERN, isoDate } from "@/lib/sepa";
@@ -224,7 +224,7 @@ export function SepaDialog({
             Schließen
           </Button>
           <Button type="submit" disabled={ready.length === 0}>
-            <Download size={16} aria-hidden="true" />
+            <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
             SEPA-Datei herunterladen
           </Button>
         </DialogFooter>

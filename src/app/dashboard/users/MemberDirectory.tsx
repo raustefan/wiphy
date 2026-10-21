@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { RotateLeft01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { RotateCcw, Search } from "lucide-react";
 import {
   EMPTY_FILTERS,
   filtersFromParams,
@@ -92,11 +93,7 @@ export function MemberDirectory({
   return (
     <Card className="grid grid-cols-1 gap-3 p-3 sm:p-5">
       <div className="relative">
-        <Search
-          size={14}
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint"
-        />
+        <HugeiconsIcon icon={Search01Icon} size={14} aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-faint" />
         <Input
           type="search"
           placeholder="Name, E-Mail oder Mitgliedsnummer…"
@@ -178,7 +175,7 @@ export function MemberDirectory({
             type="button"
             onClick={() => setFilters(EMPTY_FILTERS)}
           >
-            <RotateCcw size={14} aria-hidden="true" />
+            <HugeiconsIcon icon={RotateLeft01Icon} size={14} aria-hidden="true" />
             Filter zurücksetzen
           </Button>
         </div>

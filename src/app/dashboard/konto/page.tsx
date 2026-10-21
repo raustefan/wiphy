@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AtIcon, Clock01Icon, InformationCircleIcon, Key02Icon, Login01Icon, MailValidation01Icon, ShieldCheckIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AtSign, Clock, KeyRound, Info, LogIn, MailCheck, ShieldCheck } from "lucide-react";
 import { requireUser } from "@/lib/server/authz";
 import { getEditableUser, getPendingEmailChange } from "@/lib/server/services/userService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
@@ -66,16 +67,16 @@ export default async function KontoPage() {
             <div className="grid gap-6">
                 <Card className="overflow-hidden">
                     <dl className="grid grid-cols-1 divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                        <Fact icon={<AtSign size={17} />} label="E-Mail-Adresse">
+                        <Fact icon={<HugeiconsIcon icon={AtIcon} size={17} />} label="E-Mail-Adresse">
                             <span className="block truncate">{user.email}</span>
                             <Badge tone={user.emailVerified ? "positive" : "warning"} className="mt-1">
                                 {user.emailVerified ? "Bestätigt" : "Unbestätigt"}
                             </Badge>
                         </Fact>
-                        <Fact icon={<KeyRound size={17} />} label="Passwort geändert">
+                        <Fact icon={<HugeiconsIcon icon={Key02Icon} size={17} />} label="Passwort geändert">
                             {formatDateTime(user.passwordChangedAt)}
                         </Fact>
-                        <Fact icon={<LogIn size={17} />} label="Letzte Anmeldung">
+                        <Fact icon={<HugeiconsIcon icon={Login01Icon} size={17} />} label="Letzte Anmeldung">
                             {formatDateTime(user.lastLoginAt)}
                         </Fact>
                     </dl>
@@ -90,7 +91,7 @@ export default async function KontoPage() {
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
                     <Card className="grid gap-5 p-5 sm:p-6">
                         <SectionHeader
-                            icon={<ShieldCheck size={16} />}
+                            icon={<HugeiconsIcon icon={ShieldCheckIcon} size={16} />}
                             eyebrow="Zugang"
                             title="Passwort ändern"
                             description="Wir schicken dir einen Link an deine aktuelle Adresse. Dort legst du das neue Passwort fest."
@@ -107,7 +108,7 @@ export default async function KontoPage() {
 
                     <Card className="grid gap-5 p-5 sm:p-6">
                         <SectionHeader
-                            icon={<MailCheck size={16} />}
+                            icon={<HugeiconsIcon icon={MailValidation01Icon} size={16} />}
                             eyebrow="Kontakt & Login"
                             title="E-Mail-Adresse ändern"
                             description="Die neue Adresse gilt erst, wenn du sie über den Link bestätigt hast. Bis dahin bleibt alles beim Alten."
@@ -115,7 +116,7 @@ export default async function KontoPage() {
                         {pending && (
                             <Callout tone="warning" title="Änderung ausstehend">
                                 <span className="flex items-start gap-2">
-                                    <Clock size={15} aria-hidden="true" className="mt-0.5 shrink-0" />
+                                    <HugeiconsIcon icon={Clock01Icon} size={15} aria-hidden="true" className="mt-0.5 shrink-0" />
                                     <span>
                                         Bestätigungslink an <strong className="break-all">{pending.email}</strong>{" "}
                                         gesendet, gültig bis {formatDateTime(pending.expires)}. Eine neue
@@ -126,7 +127,7 @@ export default async function KontoPage() {
                         )}
                         <EmailChangeForm enabled={emailChangeEnabled} />
                         <p className="flex items-start gap-2 text-xs text-faint">
-                            <Info size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+                            <HugeiconsIcon icon={InformationCircleIcon} size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
                             Deine bisherige Adresse erhält nach der Änderung einen Hinweis.
                         </p>
                     </Card>

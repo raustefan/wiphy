@@ -1,18 +1,11 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Calendar01Icon, Cancel01Icon, DashboardCircleIcon, Home01Icon, Login01Icon, Menu01Icon, NewsIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  CalendarDays,
-  House,
-  LayoutDashboard,
-  LogIn,
-  Menu,
-  Newspaper,
-  X,
-} from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -140,16 +133,16 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
   /* Daumenleiste (Telefon): die häufigsten Ziele direkt, alles Weitere im
      Bottom Sheet hinter „Mehr“. */
   const tabs = [
-    { href: "/", label: "Start", icon: House },
-    { href: "/termine", label: "Termine", icon: CalendarDays },
-    { href: "/blog", label: "Blog", icon: Newspaper },
+    { href: "/", label: "Start", icon: Home01Icon },
+    { href: "/termine", label: "Termine", icon: Calendar01Icon },
+    { href: "/blog", label: "Blog", icon: NewsIcon },
     signedIn
       ? {
           href: signedInAction.href,
           label: signedInAction.label,
-          icon: LayoutDashboard,
+          icon: DashboardCircleIcon,
         }
-      : { href: "/login", label: "Anmelden", icon: LogIn },
+      : { href: "/login", label: "Anmelden", icon: Login01Icon },
   ];
 
   return (
@@ -294,7 +287,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                     : "text-muted",
                 )}
               >
-                <Icon size={22} aria-hidden="true" />
+                <HugeiconsIcon icon={Icon} size={22} aria-hidden="true" />
                 {label}
               </Link>
             );
@@ -311,7 +304,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
               menuOpen ? "text-physics" : "text-muted",
             )}
           >
-            <Menu size={22} aria-hidden="true" />
+            <HugeiconsIcon icon={Menu01Icon} size={22} aria-hidden="true" />
             Mehr
           </button>
         </div>
@@ -363,7 +356,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
                 onClick={() => setMenuOpen(false)}
                 className="grid size-10 cursor-pointer place-items-center rounded-full text-foreground transition-colors hover:bg-raised focus-visible:outline-2 focus-visible:outline-physics"
               >
-                <X size={20} />
+                <HugeiconsIcon icon={Cancel01Icon} size={20} />
               </button>
             </div>
           </div>

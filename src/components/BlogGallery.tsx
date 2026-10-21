@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowExpand01Icon, ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { blogImageSrcSet, blogImageUrl, type BlogImageMeta } from "@/lib/blogImages";
 
 /**
@@ -77,7 +78,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                     className="aspect-[4/3] w-full bg-raised object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:aspect-[16/9]"
                 />
                 <span className="pointer-events-none absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                    <Expand size={13} aria-hidden="true" />
+                    <HugeiconsIcon icon={ArrowExpand01Icon} size={13} aria-hidden="true" />
                     {images.length > 1 ? `1 / ${images.length}` : "Vergrößern"}
                 </span>
             </button>
@@ -148,7 +149,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                                 aria-label="Galerie schließen"
                                 className="grid size-11 cursor-pointer place-items-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white"
                             >
-                                <X size={20} aria-hidden="true" />
+                                <HugeiconsIcon icon={Cancel01Icon} size={20} aria-hidden="true" />
                             </button>
                         </div>
 
@@ -176,7 +177,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                                         aria-label="Vorheriges Bild"
                                         className="grid size-12 cursor-pointer place-items-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white"
                                     >
-                                        <ChevronLeft size={22} aria-hidden="true" />
+                                        <HugeiconsIcon icon={ArrowLeft01Icon} size={22} aria-hidden="true" />
                                     </button>
                                     <button
                                         type="button"
@@ -184,7 +185,7 @@ export function BlogGallery({ images }: { images: BlogImageMeta[] }) {
                                         aria-label="Nächstes Bild"
                                         className="grid size-12 cursor-pointer place-items-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white"
                                     >
-                                        <ChevronRight size={22} aria-hidden="true" />
+                                        <HugeiconsIcon icon={ArrowRight01Icon} size={22} aria-hidden="true" />
                                     </button>
                                 </div>
                             )}

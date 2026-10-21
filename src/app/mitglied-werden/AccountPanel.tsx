@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, ArrowRight01Icon, Login01Icon, ShieldCheckIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, LogIn, ShieldCheck, Sparkles } from "lucide-react";
 import { registerUser } from "./registerAction";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { AltchaField } from "@/components/AltchaField";
@@ -117,7 +118,7 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                         href={MEMBERSHIP_LOGIN_PATH}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-physics underline-offset-4 hover:underline"
                     >
-                        <LogIn size={15} aria-hidden="true" />
+                        <HugeiconsIcon icon={Login01Icon} size={15} aria-hidden="true" />
                         Ich habe schon ein Konto
                     </Link>
                 )}
@@ -263,12 +264,12 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
             {half === 0 ? (
                 <Button type="button" size="lg" onClick={goToSecondHalf} className="w-full">
                     Weiter
-                    <ArrowRight size={16} aria-hidden="true" />
+                    <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" />
                 </Button>
             ) : (
                 <div className="grid gap-3">
                     <Button type="submit" size="lg" loading={form.pending} className="w-full">
-                        <Sparkles size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={SparklesIcon} size={16} aria-hidden="true" />
                         Konto erstellen
                     </Button>
                     <Button
@@ -279,14 +280,14 @@ export function AccountPanel({ challengeJson }: { challengeJson: string }) {
                         disabled={form.pending}
                         className="justify-self-center"
                     >
-                        <ArrowLeft size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />
                         Zurück zu Name und E-Mail
                     </Button>
                 </div>
             )}
 
             <p className="flex items-start gap-2 text-xs leading-relaxed text-faint">
-                <ShieldCheck size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+                <HugeiconsIcon icon={ShieldCheckIcon} size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
                 <span>
                     Wir speichern nur, was für dein Konto nötig ist. Details in unserer{" "}
                     <Link

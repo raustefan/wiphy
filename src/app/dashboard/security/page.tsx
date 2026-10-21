@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Activity01Icon, Alert01Icon, FilterIcon, InformationCircleIcon, Shield01Icon, UserRemove01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Activity, AlertTriangle, Filter, Info, ShieldAlert, UserX } from "lucide-react";
 import { requireDebugAdmin } from "@/lib/server/authz";
 import {
     getActivityHeatmap,
@@ -128,7 +129,7 @@ export default async function SecurityPage({
             </div>
 
             {overview.totals.total === 0 && (
-                <Callout tone="info" icon={<Info size={16} />} className="mb-6">
+                <Callout tone="info" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />} className="mb-6">
                     Für diesen Zeitraum liegen noch keine Einträge vor. Das Protokoll füllt sich ab
                     dem ersten Anmelde- oder Formularvorgang von selbst.
                 </Callout>
@@ -172,7 +173,7 @@ export default async function SecurityPage({
             <Card className="mb-6 p-5 sm:p-6">
                 <SectionTitle>
                     <span className="inline-flex items-center gap-2">
-                        <Filter size={20} aria-hidden="true" />
+                        <HugeiconsIcon icon={FilterIcon} size={20} aria-hidden="true" />
                         Vom Formular zur Mitgliedschaft
                     </span>
                 </SectionTitle>
@@ -188,7 +189,7 @@ export default async function SecurityPage({
             <Card className="mb-6 p-5 sm:p-6">
                 <SectionTitle>
                     <span className="inline-flex items-center gap-2">
-                        <UserX size={20} aria-hidden="true" />
+                        <HugeiconsIcon icon={UserRemove01Icon} size={20} aria-hidden="true" />
                         Unbestätigte Registrierungen
                     </span>
                 </SectionTitle>
@@ -223,7 +224,7 @@ export default async function SecurityPage({
                     </div>
                 </div>
                 {!pendingRegistrations.enabled && (
-                    <Callout tone="warning" icon={<AlertTriangle size={16} />} className="mt-5">
+                    <Callout tone="warning" icon={<HugeiconsIcon icon={Alert01Icon} size={16} />} className="mt-5">
                         Das automatische Löschen ist über die Funktionsschalter abgeschaltet.
                         Unbestätigte Konten bleiben bis auf Weiteres stehen.
                     </Callout>
@@ -398,7 +399,7 @@ export default async function SecurityPage({
             <section className="mb-6">
                 <SectionTitle>
                     <span className="inline-flex items-center gap-2">
-                        <ShieldAlert size={20} aria-hidden="true" />
+                        <HugeiconsIcon icon={Shield01Icon} size={20} aria-hidden="true" />
                         Rate Limits
                     </span>
                 </SectionTitle>
@@ -421,7 +422,7 @@ export default async function SecurityPage({
                 )}
             </section>
 
-            <Callout tone="info" icon={<Activity size={16} />} title="Was hier gespeichert ist">
+            <Callout tone="info" icon={<HugeiconsIcon icon={Activity01Icon} size={16} />} title="Was hier gespeichert ist">
                 <p className="leading-relaxed">
                     Das Protokoll enthält weder Passwörter noch Nachrichteninhalte oder Links.
                     E-Mail- und IP-Adressen stehen ausschließlich als nicht rückrechenbares

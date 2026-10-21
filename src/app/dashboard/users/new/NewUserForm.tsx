@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, DiceIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useState, useTransition } from "react";
-import { Check, Dices, X } from "lucide-react";
 import { PasswordInput } from "@/components/PasswordField";
 import { IbanInput } from "@/components/IbanInput";
 import { CountryOptions } from "@/components/CountryOptions";
@@ -106,7 +107,7 @@ export function NewUserForm() {
                         color="neutral"
                         onClick={() => setPassword(generatePassword())}
                     >
-                        <Dices size={16} aria-hidden="true" /> Generieren
+                        <HugeiconsIcon icon={DiceIcon} size={16} aria-hidden="true" /> Generieren
                     </Button>
                 </div>
             </Field>
@@ -260,10 +261,10 @@ export function NewUserForm() {
 
             <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" type="submit" disabled={pending}>
-                    <Check size={16} aria-hidden="true" /> Hinzufügen
+                    <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> Hinzufügen
                 </Button>
                 <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
-                    <X size={16} aria-hidden="true" /> Abbrechen
+                    <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                 </ButtonLink>
             </div>
         </form>

@@ -1,8 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, ArrowUp01Icon, Delete02Icon, ImageAdd01Icon, StarIcon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, ImagePlus, Star, Trash2, Upload } from "lucide-react";
 import {
     Badge,
     Button,
@@ -182,7 +183,7 @@ export function BlogImageManager({
                         event.target.value = "";
                     }}
                 />
-                <Upload size={20} aria-hidden="true" className="mx-auto text-faint" />
+                <HugeiconsIcon icon={Upload01Icon} size={20} aria-hidden="true" className="mx-auto text-faint" />
                 <p className="text-sm text-muted">
                     {isFull
                         ? "Die Galerie ist voll. Lösche ein Bild, um Platz zu schaffen."
@@ -198,7 +199,7 @@ export function BlogImageManager({
                     loading={uploadProgress !== null}
                     onClick={() => fileInputRef.current?.click()}
                 >
-                    <ImagePlus size={16} aria-hidden="true" />
+                    <HugeiconsIcon icon={ImageAdd01Icon} size={16} aria-hidden="true" />
                     {uploadProgress ?? "Bilder auswählen"}
                 </Button>
                 <p className="text-xs text-faint">
@@ -231,7 +232,7 @@ export function BlogImageManager({
                                 />
                                 {image.isCover && (
                                     <Badge tone="physics" className="absolute top-2 left-2 shadow">
-                                        <Star size={12} aria-hidden="true" /> Titelbild
+                                        <HugeiconsIcon icon={StarIcon} size={12} aria-hidden="true" /> Titelbild
                                     </Badge>
                                 )}
                             </div>
@@ -278,7 +279,7 @@ export function BlogImageManager({
                                             )
                                         }
                                     >
-                                        <Star size={14} aria-hidden="true" /> Als Titelbild
+                                        <HugeiconsIcon icon={StarIcon} size={14} aria-hidden="true" /> Als Titelbild
                                     </Button>
                                 )}
 
@@ -297,7 +298,7 @@ export function BlogImageManager({
                                                 )
                                             }
                                         >
-                                            <ArrowUp size={15} aria-hidden="true" />
+                                            <HugeiconsIcon icon={ArrowUp01Icon} size={15} aria-hidden="true" />
                                         </IconButton>
                                         <IconButton
                                             size="sm"
@@ -312,7 +313,7 @@ export function BlogImageManager({
                                                 )
                                             }
                                         >
-                                            <ArrowDown size={15} aria-hidden="true" />
+                                            <HugeiconsIcon icon={ArrowDown01Icon} size={15} aria-hidden="true" />
                                         </IconButton>
                                     </>
                                 )}
@@ -326,7 +327,7 @@ export function BlogImageManager({
                                     disabled={busy}
                                     onClick={() => setPendingDelete(image)}
                                 >
-                                    <Trash2 size={15} aria-hidden="true" />
+                                    <HugeiconsIcon icon={Delete02Icon} size={15} aria-hidden="true" />
                                 </IconButton>
                             </div>
 
@@ -372,7 +373,7 @@ export function BlogImageManager({
                             }
                         }}
                     >
-                        <Trash2 size={16} aria-hidden="true" /> Endgültig löschen
+                        <HugeiconsIcon icon={Delete02Icon} size={16} aria-hidden="true" /> Endgültig löschen
                     </Button>
                 </DialogFooter>
             </Dialog>

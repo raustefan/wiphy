@@ -1,14 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, RotateLeft01Icon, SparklesIcon, VolumeHighIcon, VolumeMute01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import {
-  RotateCcw,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-} from "lucide-react";
 import { cn } from "@/lib/cn";
 import { distanceToBody, massFromArea, stepBodies, wake, type Body, type Field } from "@/lib/gravityPhysics";
 
@@ -686,7 +681,7 @@ export default function GravityEasterEgg() {
         aria-label="Gravitation wiederherstellen und schließen"
         className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-full border border-line bg-surface/95 px-3.5 py-2 text-xs font-semibold text-foreground shadow-2xl backdrop-blur-md transition-all hover:bg-raised hover:scale-105 active:scale-95 cursor-pointer"
       >
-        <X size={16} className="text-physics" />
+        <HugeiconsIcon icon={Cancel01Icon} size={16} className="text-physics" />
         <span className="hidden sm:inline">Schließen</span>
         <kbd className="hidden sm:inline rounded bg-raised px-1.5 py-0.5 font-mono text-[10px] text-muted border border-line">
           ESC
@@ -710,7 +705,7 @@ export default function GravityEasterEgg() {
         <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-line bg-surface/90 px-2 py-2 shadow-2xl backdrop-blur-lg sm:max-w-4xl sm:justify-between sm:gap-3 sm:px-6 sm:py-2.5">
           <div className="hidden items-center gap-2.5 sm:flex">
             <span className="grid size-8 place-items-center rounded-lg bg-physics/10 text-physics">
-              <Sparkles size={17} />
+              <HugeiconsIcon icon={SparklesIcon} size={17} />
             </span>
             <div className="grid leading-tight">
               <span className="text-xs font-bold tracking-wide uppercase text-foreground">
@@ -751,7 +746,7 @@ export default function GravityEasterEgg() {
               aria-label={soundEnabled ? "Audio stumm" : "Audio an"}
               className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-muted transition-colors hover:text-foreground"
             >
-              {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+              {soundEnabled ? <HugeiconsIcon icon={VolumeHighIcon} size={15} /> : <HugeiconsIcon icon={VolumeMute01Icon} size={15} />}
             </button>
 
             {/* Auf dem Handy reicht das × oben — für einen dritten 48-px-Knopf ist die Leiste zu schmal */}
@@ -760,7 +755,7 @@ export default function GravityEasterEgg() {
               onClick={restoreOrder}
               className="hidden h-8 items-center gap-1.5 rounded-lg bg-physics px-3 text-xs font-semibold text-on-physics shadow-md transition-all hover:bg-physics-strong hover:shadow-lg active:scale-95 sm:inline-flex"
             >
-              <RotateCcw size={14} aria-hidden="true" />
+              <HugeiconsIcon icon={RotateLeft01Icon} size={14} aria-hidden="true" />
               <span>2. Hauptsatz: Entropie umkehren</span>
             </button>
           </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, TerminalIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState } from "react";
-import { Terminal, X } from "lucide-react";
 import type { AppLogs } from "@/lib/server/serverStatus";
 
 const POLL_MS = 2000;
@@ -70,7 +71,7 @@ export function DebugConsole() {
                         : "flex items-center gap-1 rounded border border-white/20 px-2 py-1 text-zinc-200 transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-zinc-100"
                 }
             >
-                <Terminal size={12} aria-hidden="true" />
+                <HugeiconsIcon icon={TerminalIcon} size={12} aria-hidden="true" />
                 <span className="hidden sm:inline">Konsole</span>
             </button>
 
@@ -112,7 +113,7 @@ export function DebugConsole() {
                             aria-label="Konsole schließen"
                             className="ml-auto rounded p-1.5 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400"
                         >
-                            <X size={14} aria-hidden="true" />
+                            <HugeiconsIcon icon={Cancel01Icon} size={14} aria-hidden="true" />
                         </button>
                     </div>
                     <pre

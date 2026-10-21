@@ -1,33 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, Award01Icon, Briefcase01Icon, Building01Icon, Building03Icon, Calendar01Icon, Call02Icon, CreditCardIcon, Flag01Icon, GlobeIcon, HashtagIcon, Home01Icon, InformationCircleIcon, Key02Icon, Location01Icon, Mail01Icon, Money01Icon, Mortarboard01Icon, PencilIcon, ShieldCheckIcon, StickyNote01Icon, Tick01Icon, UserIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-    ArrowLeft,
-    Award,
-    Banknote,
-    Briefcase,
-    Building,
-    Calendar,
-    Check,
-    CreditCard,
-    Flag,
-    Globe,
-    GraduationCap,
-    Hash,
-    Home,
-    Info,
-    KeyRound,
-    Landmark,
-    Mail,
-    MapPin,
-    Pencil,
-    Phone,
-    ShieldCheck,
-    StickyNote,
-    User,
-} from "lucide-react";
 import {
     Badge,
     Button,
@@ -332,29 +309,29 @@ export function EditUserForm({
                     {/* Zur besseren Orientierung getrennte Gruppen: jede(r) darf
                         seine Angaben pflegen, Admins sehen darunter zusätzlich
                         ihren Bereich mit Beitrags- und Verwaltungsfeldern. */}
-                    <GroupLabel icon={<User size={15} />} title="Mitgliederbereich" />
+                    <GroupLabel icon={<HugeiconsIcon icon={UserIcon} size={15} />} title="Mitgliederbereich" />
 
                     {/* Persönliche Daten */}
                     <Section
-                        icon={<User size={16} />}
+                        icon={<HugeiconsIcon icon={UserIcon} size={16} />}
                         title="Persönliche Daten"
                         description="Wie du angesprochen werden möchtest."
                     >
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Vorname">
-                                <IconInput icon={<User size={15} />} name="firstName" defaultValue={initialValues.firstName} />
+                                <IconInput icon={<HugeiconsIcon icon={UserIcon} size={15} />} name="firstName" defaultValue={initialValues.firstName} />
                             </Field>
                             <Field label="Name" required>
-                                <IconInput icon={<User size={15} />} name="lastName" defaultValue={initialValues.lastName} required />
+                                <IconInput icon={<HugeiconsIcon icon={UserIcon} size={15} />} name="lastName" defaultValue={initialValues.lastName} required />
                             </Field>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Titel">
-                                <IconInput icon={<Award size={15} />} name="title" defaultValue={initialValues.title} />
+                                <IconInput icon={<HugeiconsIcon icon={Award01Icon} size={15} />} name="title" defaultValue={initialValues.title} />
                             </Field>
                             <Field label="Geburtsdatum">
                                 <IconInput
-                                    icon={<Calendar size={15} />}
+                                    icon={<HugeiconsIcon icon={Calendar01Icon} size={15} />}
                                     name="birthDate"
                                     type="date"
                                     defaultValue={initialValues.birthDate}
@@ -366,7 +343,7 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Kontakt */}
-                    <Section icon={<Mail size={16} />} title="Kontakt" description="Wie wir dich erreichen können.">
+                    <Section icon={<HugeiconsIcon icon={Mail01Icon} size={16} />} title="Kontakt" description="Wie wir dich erreichen können.">
                         <Field
                             label="E-Mail"
                             required
@@ -378,7 +355,7 @@ export function EditUserForm({
                             <div className="flex items-center gap-2">
                                 <div className="min-w-0 flex-1">
                                     <IconInput
-                                        icon={<Mail size={15} />}
+                                        icon={<HugeiconsIcon icon={Mail01Icon} size={15} />}
                                         name="email"
                                         type="email"
                                         defaultValue={initialValues.email}
@@ -390,7 +367,7 @@ export function EditUserForm({
                                 </div>
                                 {isSelf && (
                                     <a href="/dashboard/konto" className={buttonClasses({ variant: "soft", color: "neutral", size: "sm" })}>
-                                        <Pencil size={14} aria-hidden="true" />
+                                        <HugeiconsIcon icon={PencilIcon} size={14} aria-hidden="true" />
                                         Ändern
                                     </a>
                                 )}
@@ -398,11 +375,11 @@ export function EditUserForm({
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Telefon">
-                                <IconInput icon={<Phone size={15} />} name="phone" defaultValue={initialValues.phone} />
+                                <IconInput icon={<HugeiconsIcon icon={Call02Icon} size={15} />} name="phone" defaultValue={initialValues.phone} />
                             </Field>
                             <Field label="LinkedIn">
                                 <IconInput
-                                    icon={<Globe size={15} />}
+                                    icon={<HugeiconsIcon icon={GlobeIcon} size={15} />}
                                     name="linkedinUrl"
                                     type="url"
                                     placeholder="https://www.linkedin.com/in/…"
@@ -415,28 +392,28 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Adresse */}
-                    <Section icon={<MapPin size={16} />} title="Adresse">
+                    <Section icon={<HugeiconsIcon icon={Location01Icon} size={16} />} title="Adresse">
                         <Field label="Land">
                             <Select name="countryCode" defaultValue={initialValues.countryCode} autoComplete="country">
                                 <CountryOptions current={initialValues.countryCode} allowEmpty />
                             </Select>
                         </Field>
                         <Field label="Straße und Hausnummer">
-                            <IconInput icon={<Home size={15} />} name="addressLine1" defaultValue={initialValues.addressLine1} />
+                            <IconInput icon={<HugeiconsIcon icon={Home01Icon} size={15} />} name="addressLine1" defaultValue={initialValues.addressLine1} />
                         </Field>
                         <Field label="Adresszusatz" hint="c/o, Apartment, Postfach …">
-                            <IconInput icon={<Home size={15} />} name="addressLine2" defaultValue={initialValues.addressLine2} />
+                            <IconInput icon={<HugeiconsIcon icon={Home01Icon} size={15} />} name="addressLine2" defaultValue={initialValues.addressLine2} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-3">
                             <Field label="PLZ">
-                                <IconInput icon={<MapPin size={15} />} name="postalCode" defaultValue={initialValues.postalCode} />
+                                <IconInput icon={<HugeiconsIcon icon={Location01Icon} size={15} />} name="postalCode" defaultValue={initialValues.postalCode} />
                             </Field>
                             <Field label="Ort">
-                                <IconInput icon={<Building size={15} />} name="city" defaultValue={initialValues.city} />
+                                <IconInput icon={<HugeiconsIcon icon={Building01Icon} size={15} />} name="city" defaultValue={initialValues.city} />
                             </Field>
                             <Field label="Region">
                                 <IconInput
-                                    icon={<Flag size={15} />}
+                                    icon={<HugeiconsIcon icon={Flag01Icon} size={15} />}
                                     name="region"
                                     placeholder="Bundesstaat, Provinz …"
                                     defaultValue={initialValues.region}
@@ -448,14 +425,14 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Studium */}
-                    <Section icon={<GraduationCap size={16} />} title="Studium">
+                    <Section icon={<HugeiconsIcon icon={Mortarboard01Icon} size={16} />} title="Studium">
                         <Field label="Studiengang">
-                            <IconInput icon={<GraduationCap size={15} />} name="degreeProgram" defaultValue={initialValues.degreeProgram} />
+                            <IconInput icon={<HugeiconsIcon icon={Mortarboard01Icon} size={15} />} name="degreeProgram" defaultValue={initialValues.degreeProgram} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Studienbeginn">
                                 <IconInput
-                                    icon={<Calendar size={15} />}
+                                    icon={<HugeiconsIcon icon={Calendar01Icon} size={15} />}
                                     name="studyStart"
                                     type="date"
                                     defaultValue={initialValues.studyStart}
@@ -463,7 +440,7 @@ export function EditUserForm({
                             </Field>
                             <Field label="Studienende">
                                 <IconInput
-                                    icon={<Calendar size={15} />}
+                                    icon={<HugeiconsIcon icon={Calendar01Icon} size={15} />}
                                     name="studyEnd"
                                     type="date"
                                     defaultValue={initialValues.studyEnd}
@@ -475,20 +452,20 @@ export function EditUserForm({
                     <Separator />
 
                     {/* Beruf */}
-                    <Section icon={<Briefcase size={16} />} title="Beruf">
+                    <Section icon={<HugeiconsIcon icon={Briefcase01Icon} size={16} />} title="Beruf">
                         <Field label="Arbeitgeber">
-                            <IconInput icon={<Briefcase size={15} />} name="employer" defaultValue={initialValues.employer} />
+                            <IconInput icon={<HugeiconsIcon icon={Briefcase01Icon} size={15} />} name="employer" defaultValue={initialValues.employer} />
                         </Field>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Field label="Berufsstand">
-                                <IconInput icon={<Award size={15} />} name="employmentStatus" defaultValue={initialValues.employmentStatus} />
+                                <IconInput icon={<HugeiconsIcon icon={Award01Icon} size={15} />} name="employmentStatus" defaultValue={initialValues.employmentStatus} />
                             </Field>
                             <Field label="Berufszweig">
-                                <IconInput icon={<Briefcase size={15} />} name="industry" defaultValue={initialValues.industry} />
+                                <IconInput icon={<HugeiconsIcon icon={Briefcase01Icon} size={15} />} name="industry" defaultValue={initialValues.industry} />
                             </Field>
                         </div>
                         <Field label="Position">
-                            <IconInput icon={<Briefcase size={15} />} name="jobTitle" defaultValue={initialValues.jobTitle} />
+                            <IconInput icon={<HugeiconsIcon icon={Briefcase01Icon} size={15} />} name="jobTitle" defaultValue={initialValues.jobTitle} />
                         </Field>
                     </Section>
 
@@ -496,8 +473,8 @@ export function EditUserForm({
                         <>
                             <Separator />
 
-                            <Section icon={<Landmark size={16} />} title="Zahlungsdaten">
-                                <Callout tone="info" icon={<Banknote size={16} />}>
+                            <Section icon={<HugeiconsIcon icon={Building03Icon} size={16} />} title="Zahlungsdaten">
+                                <Callout tone="info" icon={<HugeiconsIcon icon={Money01Icon} size={16} />}>
                                     Deine Bankverbindung und dein SEPA-Mandat änderst du in der{" "}
                                     <Link
                                         href="/dashboard/zahlungen"
@@ -516,14 +493,14 @@ export function EditUserForm({
                             <Separator />
 
                             <GroupLabel
-                                icon={<ShieldCheck size={15} />}
+                                icon={<HugeiconsIcon icon={ShieldCheckIcon} size={15} />}
                                 title="Adminbereich"
                                 adminOnly
                             />
 
                             {/* Zahlungsdaten */}
                             <Section
-                                icon={<Landmark size={16} />}
+                                icon={<HugeiconsIcon icon={Building03Icon} size={16} />}
                                 title="Zahlungsdaten"
                                 description="Bankverbindung des Mitglieds für den Mitgliedsbeitrag."
                             >
@@ -533,14 +510,14 @@ export function EditUserForm({
                                     defaultChecked={user.directDebit}
                                 />
                                 <Field label="Kontoinhaber:in">
-                                    <IconInput icon={<User size={15} />} name="accountHolder" defaultValue={initialValues.accountHolder} />
+                                    <IconInput icon={<HugeiconsIcon icon={UserIcon} size={15} />} name="accountHolder" defaultValue={initialValues.accountHolder} />
                                 </Field>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <Field label="IBAN">
                                         <IbanInput name="iban" defaultValue={initialValues.iban} />
                                     </Field>
                                     <Field label="BIC" hint="Pflicht für Konten außerhalb des EWR (CH, GB …).">
-                                        <IconInput icon={<CreditCard size={15} />} name="bic" defaultValue={initialValues.bic} />
+                                        <IconInput icon={<HugeiconsIcon icon={CreditCardIcon} size={15} />} name="bic" defaultValue={initialValues.bic} />
                                     </Field>
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2">
@@ -549,7 +526,7 @@ export function EditUserForm({
                                         hint={`Leer = ${defaultMandateId(user.memberNumber) || "aus der Mitglieds-ID"}`}
                                     >
                                         <IconInput
-                                            icon={<Hash size={15} />}
+                                            icon={<HugeiconsIcon icon={HashtagIcon} size={15} />}
                                             name="mandateReference"
                                             defaultValue={initialValues.mandateReference}
                                             pattern={MANDATE_ID_PATTERN}
@@ -557,7 +534,7 @@ export function EditUserForm({
                                     </Field>
                                     <Field label="Mandat erteilt am">
                                         <IconInput
-                                            icon={<Calendar size={15} />}
+                                            icon={<HugeiconsIcon icon={Calendar01Icon} size={15} />}
                                             name="mandateSignedAt"
                                             type="date"
                                             defaultValue={initialValues.mandateSignedAt}
@@ -570,14 +547,14 @@ export function EditUserForm({
 
                             {/* Mitgliedschaft & Rolle */}
                             <Section
-                                icon={<ShieldCheck size={16} />}
+                                icon={<HugeiconsIcon icon={ShieldCheckIcon} size={16} />}
                                 title="Mitgliedschaft & Rolle"
                                 description="Nur für Administratoren sichtbar."
                             >
                                 <div className="grid gap-3 sm:grid-cols-3">
                                     <Field label="Mitglieds-ID">
                                         <IconInput
-                                            icon={<KeyRound size={15} />}
+                                            icon={<HugeiconsIcon icon={Key02Icon} size={15} />}
                                             name="memberNumber"
                                             type="number"
                                             defaultValue={initialValues.memberNumber}
@@ -634,7 +611,7 @@ export function EditUserForm({
 
                             {/* Admin-interne Vermerke */}
                             <Section
-                                icon={<StickyNote size={16} />}
+                                icon={<HugeiconsIcon icon={StickyNote01Icon} size={16} />}
                                 title="Interner Vermerk"
                                 description="Nur für Administratoren sichtbar — etwa zu Zahlungen, Mahnungen oder Absprachen."
                             >
@@ -647,7 +624,7 @@ export function EditUserForm({
 
                     <div className="mt-2 flex flex-col flex-wrap gap-3 sm:flex-row sm:items-center">
                         <Button size="lg" type="submit">
-                            <Check size={16} aria-hidden="true" /> Speichern
+                            <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> Speichern
                         </Button>
                         <Button
                             size="lg"
@@ -656,11 +633,11 @@ export function EditUserForm({
                             type="button"
                             onClick={() => guardNavigate("/dashboard")}
                         >
-                            <ArrowLeft size={16} aria-hidden="true" /> Abbrechen
+                            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" /> Abbrechen
                         </Button>
                         {isDirty && (
                             <p className="flex items-center gap-2 text-xs text-warning">
-                                <Info size={14} aria-hidden="true" />
+                                <HugeiconsIcon icon={InformationCircleIcon} size={14} aria-hidden="true" />
                                 Ungespeicherte Änderungen
                             </p>
                         )}
@@ -701,7 +678,7 @@ export function EditUserForm({
                         Abbrechen
                     </Button>
                     <Button type="button" onClick={confirmAndSubmit}>
-                        <Check size={16} aria-hidden="true" /> Ja, Änderungen speichern
+                        <HugeiconsIcon icon={Tick01Icon} size={16} aria-hidden="true" /> Ja, Änderungen speichern
                     </Button>
                 </DialogFooter>
             </Dialog>
@@ -795,7 +772,7 @@ function GroupLabel({
             <h2 className="text-sm font-bold tracking-wide">{title}</h2>
             {adminOnly && (
                 <Badge tone="warning">
-                    <ShieldCheck size={12} aria-hidden="true" /> Nur für Admins
+                    <HugeiconsIcon icon={ShieldCheckIcon} size={12} aria-hidden="true" /> Nur für Admins
                 </Badge>
             )}
         </div>

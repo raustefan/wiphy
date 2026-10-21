@@ -1,12 +1,6 @@
-/**
- * Bausteine der öffentlichen Seiten („Lehrbuch und Labor“).
- *
- * Das Dashboard benutzt weiter `components/ui` — die Seiten hier haben ihre
- * eigene, breitere Satzspiegel-Breite, eckige Handlungsaufforderungen und
- * eine Randspalte für Notizen.
- */
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /** Satzspiegel: breiter als `Container`, damit die Randspalte Platz hat. */
@@ -26,7 +20,7 @@ export function Cta({ variant = "solid", arrow = false, className, children, ...
   return (
     <Link className={cn("cta", `cta-${variant}`, className)} {...props}>
       {children}
-      {arrow && <ArrowRight size={17} aria-hidden="true" className="cta-arrow shrink-0" />}
+      {arrow && <HugeiconsIcon icon={ArrowRight01Icon} size={17} aria-hidden="true" className="cta-arrow shrink-0" />}
     </Link>
   );
 }
@@ -66,7 +60,7 @@ export function PageHead({
   );
 }
 
-/** LinkedIn-Zeichen — lucide führt seit v1 keine Marken-Icons mehr. */
+/** LinkedIn-Zeichen, gefüllt — Hugeicons free hat Marken-Icons nur als Umriss. */
 export function LinkedInGlyph({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

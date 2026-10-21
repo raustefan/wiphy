@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, CancelCircleIcon, CheckmarkCircle01Icon, Download01Icon, Loading02Icon, Mail01Icon, RocketIcon, WifiOff01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Download, Loader2, Mail, Rocket, WifiOff, XCircle } from "lucide-react";
 import { PasswordInput } from "@/components/PasswordField";
 import { Badge, Button, Callout, Card, Dialog, DialogFooter, Field, SectionTitle } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
@@ -84,7 +85,7 @@ export function ServerDashboard() {
   return (
     <div className="grid gap-8">
       {offline && (
-        <Callout tone="warning" icon={<WifiOff size={16} />} title="Server nicht erreichbar">
+        <Callout tone="warning" icon={<HugeiconsIcon icon={WifiOff01Icon} size={16} />} title="Server nicht erreichbar">
           Während eines Deploys startet der Server kurz neu. Die Seite versucht es weiter
           automatisch.
         </Callout>
@@ -250,7 +251,7 @@ function DeploySection({ deploy, onStarted }: { deploy: DeployStatus | null; onS
           loading={running}
           onClick={() => setConfirming(true)}
         >
-          <Rocket size={16} aria-hidden="true" />
+          <HugeiconsIcon icon={RocketIcon} size={16} aria-hidden="true" />
           {running ? "Deploy läuft …" : "Deploy starten"}
         </Button>
 
@@ -271,7 +272,7 @@ function DeploySection({ deploy, onStarted }: { deploy: DeployStatus | null; onS
         description="Die Website wird neu gebaut und neu gestartet."
       >
         <div className="grid gap-3 text-sm">
-          <Callout tone="warning" icon={<AlertTriangle size={16} />}>
+          <Callout tone="warning" icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}>
             Während des Builds ist die Website für einige Minuten langsam und beim Neustart kurz
             nicht erreichbar. Schlägt der Build fehl, kann sie ausfallen, bis jemand auf dem
             Server nachsieht.
@@ -324,7 +325,7 @@ function BackupSection() {
         </p>
 
         {sentTo && (
-          <Callout tone="success" icon={<Mail size={16} />} title="Link verschickt">
+          <Callout tone="success" icon={<HugeiconsIcon icon={Mail01Icon} size={16} />} title="Link verschickt">
             Der Download-Link ist unterwegs an {sentTo}. Öffne ihn in diesem Browser, solange du
             angemeldet bist.
           </Callout>
@@ -336,7 +337,7 @@ function BackupSection() {
           className="justify-self-start"
           onClick={() => setConfirming(true)}
         >
-          <Download size={16} aria-hidden="true" />
+          <HugeiconsIcon icon={Download01Icon} size={16} aria-hidden="true" />
           Backup anfordern
         </Button>
       </Card>
@@ -349,7 +350,7 @@ function BackupSection() {
       >
         <form action={form.submit}>
           <div className="grid gap-3 text-sm">
-            <Callout tone="warning" icon={<AlertTriangle size={16} />} title="Datenschutz (DSGVO)">
+            <Callout tone="warning" icon={<HugeiconsIcon icon={Alert01Icon} size={16} />} title="Datenschutz (DSGVO)">
               Die Datei enthält alle personenbezogenen Daten des Vereins. Speichere sie nur
               verschlüsselt, gib sie nicht weiter und lösche sie, sobald du sie nicht mehr brauchst
               — spätestens nach 14 Tagen. Wer im Verein gelöscht wird, steckt sonst weiter in deiner
@@ -385,21 +386,21 @@ function DeployBadge({ deploy }: { deploy: DeployStatus | null }) {
   if (deploy.running) {
     return (
       <Badge tone="info">
-        <Loader2 size={12} className="animate-spin" aria-hidden="true" /> Läuft
+        <HugeiconsIcon icon={Loading02Icon} size={12} className="animate-spin" aria-hidden="true" /> Läuft
       </Badge>
     );
   }
   if (deploy.exitCode === 0) {
     return (
       <Badge tone="positive">
-        <CheckCircle2 size={12} aria-hidden="true" /> Letzter Deploy erfolgreich
+        <HugeiconsIcon icon={CheckmarkCircle01Icon} size={12} aria-hidden="true" /> Letzter Deploy erfolgreich
       </Badge>
     );
   }
   if (deploy.exitCode !== null) {
     return (
       <Badge tone="negative">
-        <XCircle size={12} aria-hidden="true" /> Letzter Deploy fehlgeschlagen (Code {deploy.exitCode})
+        <HugeiconsIcon icon={CancelCircleIcon} size={12} aria-hidden="true" /> Letzter Deploy fehlgeschlagen (Code {deploy.exitCode})
       </Badge>
     );
   }

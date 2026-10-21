@@ -1,6 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Cta, Frame } from "@/components/Site";
 import { eventPath, formatEventShort } from "@/lib/events";
@@ -90,7 +91,7 @@ export default async function PublicBlogPost({ params }: Props) {
                         href="/blog"
                         className="inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-physics"
                     >
-                        <ArrowLeft size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} aria-hidden="true" />
                         Alle Beiträge
                     </Link>
                     <div className="mt-8 max-w-4xl">

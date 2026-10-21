@@ -1,7 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Logout01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogFooter } from "@/components/ui/Dialog";
@@ -17,7 +18,7 @@ export default function LogoutButton() {
     return (
         <>
             <Button color="danger" variant="soft" onClick={() => setOpen(true)}>
-                <LogOut size={16} aria-hidden="true" />
+                <HugeiconsIcon icon={Logout01Icon} size={16} aria-hidden="true" />
                 Logout
             </Button>
 
@@ -30,7 +31,7 @@ export default function LogoutButton() {
                         Abbrechen
                     </Button>
                     <Button color="danger" onClick={handleLogout}>
-                        <LogOut size={16} aria-hidden="true" />
+                        <HugeiconsIcon icon={Logout01Icon} size={16} aria-hidden="true" />
                         Ja, abmelden
                     </Button>
                 </DialogFooter>
