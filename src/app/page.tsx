@@ -258,6 +258,8 @@ export default async function HomePage() {
       )}
 
       {/* ═══════════════════ Die Physik dahinter ═══════════════════ */}
+      {/* Monte-Carlo-Simulation vorerst ausgeblendet — zum Reaktivieren `false &&` entfernen. */}
+      {false && (
       <section aria-labelledby="physics-title" className="overflow-hidden">
         <Frame className="py-20 sm:py-28">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-end lg:gap-14">
@@ -305,6 +307,7 @@ export default async function HomePage() {
 
         </Frame>
       </section>
+      )}
 
       {/* ═══════════════════ Aus dem Blog ═══════════════════ */}
       {latestPost && (
