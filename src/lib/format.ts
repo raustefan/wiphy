@@ -30,6 +30,12 @@ export function formatNumber(value: number): string {
   return NUMBER.format(value);
 }
 
+/** `1,4 GB` bzw. `312 MB` — Speicher- und Dateigrößen. */
+export function formatBytes(bytes: number): string {
+  const gb = bytes / 1024 ** 3;
+  return gb >= 1 ? `${formatNumber(Math.round(gb * 10) / 10)} GB` : `${formatNumber(Math.round(bytes / 1024 ** 2))} MB`;
+}
+
 const LONG_DATE = new Intl.DateTimeFormat("de-DE", {
   year: "numeric",
   month: "long",

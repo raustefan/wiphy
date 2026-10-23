@@ -26,7 +26,7 @@ Domain `wiphy.de` (+ `www.wiphy.de`). Zugang nur per SSH-Schlüssel als `root`
 | nginx-Logs           | `/var/log/nginx/access.log`, `error.log`            | —                                            |
 | TLS-Zertifikat       | `/etc/letsencrypt/live/wiphy.de/` (certbot, `certbot.timer` erneuert automatisch) | `certbot renew --dry-run` zum Testen |
 | Datenbank            | PostgreSQL 18 lokal (`127.0.0.1:5432`), DB `wiphy`  | `sudo -u postgres psql wiphy`                |
-| Backup               | `/dashboard/server` → „Backup anfordern“            | README „Backup & Wiederherstellung“          |
+| Backup               | täglich 3:30 UTC nach `/var/backups/wiphy/` (14 Tage), Skript `/usr/local/sbin/wiphy-backup`, Cron `/etc/cron.d/wiphy-backup`; manuell: `/dashboard/server` → „Backup anfordern“ | README „Backup & Wiederherstellung“ |
 | OS-Updates           | `unattended-upgrades` (Sicherheitsupdates automatisch) | `apt upgrade`, danach ggf. `reboot`       |
 
 ## Checkliste
@@ -51,6 +51,7 @@ Jeweils: Befehl → was rauskommen soll. Vorher `cd /var/www/wiphy/wiphy`.
 - [ ] `pnpm exec prisma migrate status` → „Database schema is up to date!“
 - [ ] `pg_dump --version` → vorhanden (sonst schlägt „Backup anfordern“ fehl)
 - [ ] `ss -tlnp | grep :5432` → nur `127.0.0.1` / `[::1]`
+- [ ] `tail -3 /var/backups/wiphy/backup.log` → jüngste Zeile `ok` und nicht älter als ein Tag (auch im Dashboard unter „Automatische Backups“)
 
 **nginx / HTTPS** (die `curl`-Zeilen gehen auch vom eigenen Rechner)
 - [ ] `nginx -t` → „syntax is ok“ / „test is successful“

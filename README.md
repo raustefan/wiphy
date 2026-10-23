@@ -617,6 +617,23 @@ Gesendet-Ordner des Absenderkontos.
 > **DSGVO:** Die Datei enthält alle personenbezogenen Daten. Nur verschlüsselt
 > aufbewahren, nicht weitergeben und spätestens nach 14 Tagen löschen.
 
+**Automatisch:** Jede Nacht um 3:30 Uhr UTC legt `scripts/backup.sh` per Cron
+einen Dump im selben Format unter `/var/backups/wiphy/` ab und löscht Dumps,
+die älter als 14 Tage sind (erst nachdem ein neues Backup gelungen ist). Jeder
+Lauf landet in `/var/backups/wiphy/backup.log`, und `/dashboard/server` zeigt
+das Protokoll unter „Automatische Backups“ an. Das Skript läuft bewusst nicht
+aus dem Git-Checkout, damit ein kaputter Deploy die Backups nicht mitreißt.
+Nach Änderungen daran neu installieren:
+
+```bash
+install -m 755 scripts/backup.sh /usr/local/sbin/wiphy-backup
+echo '30 3 * * * root /usr/local/sbin/wiphy-backup' > /etc/cron.d/wiphy-backup
+/usr/local/sbin/wiphy-backup   # einmal von Hand, Ergebnis im Dashboard
+```
+
+Diese Dumps liegen auf demselben Server. Gegen den Verlust des ganzen Servers
+helfen nur die Hetzner-Backups (Cloud Console → Server → Backups).
+
 Wiederherstellen auf der Konsole — **überschreibt** alle Tabellen der
 Zieldatenbank. `?schema=public` aus der `DATABASE_URL` weglassen, `pg_restore`
 kennt den Parameter nicht:
@@ -625,11 +642,13 @@ kennt den Parameter nicht:
 pm2 stop wiphy
 pg_restore --clean --if-exists --no-owner --no-privileges \
   -d "postgresql://wiphy_admin:PASSWORT@localhost:5432/wiphy" \
-  wiphy-backup-2026-10-18-12-00.dump
+  wiphy-backup-2026-10-18-12-00.dump   # oder /var/backups/wiphy/wiphy-backup-….dump
 pnpm exec prisma migrate deploy   # nur nötig, wenn der Code neuer als das Backup ist
 pm2 start wiphy
 ```
 
 `pg_restore` muss mindestens die Version von `pg_dump` haben, mit der das
-Backup erstellt wurde. Inhalt prüfen ohne Wiederherstellen:
+Backup erstellt wurde. Als Nutzer der App wiederherstellen (wie oben), nicht
+als `postgres` — sonst gehören die Tabellen danach `postgres`, und die App
+kommt nicht mehr an sie heran. Inhalt prüfen ohne Wiederherstellen:
 `pg_restore --list wiphy-backup-….dump`.

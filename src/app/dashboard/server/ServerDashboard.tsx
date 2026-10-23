@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PasswordInput } from "@/components/PasswordField";
 import { Badge, Button, Callout, Card, Dialog, DialogFooter, Field, SectionTitle } from "@/components/ui";
 import { useActionForm } from "@/lib/client/useActionForm";
-import { formatNumber } from "@/lib/format";
+import { formatBytes, formatNumber } from "@/lib/format";
 import type { AppLogs, DeployStatus, SystemStats } from "@/lib/server/serverStatus";
 import { requestBackupLink, triggerDeploy } from "./actions";
 import { UsageChart, type UsagePoint } from "./UsageChart";
@@ -18,11 +18,6 @@ const DEPLOY_INTERVAL_SECONDS = 1;
 const SLOTS = 120;
 
 type Sample = { at: number; cpu: number; mem: number; stats: SystemStats };
-
-function formatBytes(bytes: number) {
-  const gb = bytes / 1024 ** 3;
-  return gb >= 1 ? `${formatNumber(Math.round(gb * 10) / 10)} GB` : `${formatNumber(Math.round(bytes / 1024 ** 2))} MB`;
-}
 
 function formatUptime(seconds: number) {
   const days = Math.floor(seconds / 86_400);

@@ -3,15 +3,16 @@ import { Alert01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireDebugAdmin } from "@/lib/server/authz";
 import { Badge, Callout, Card, Container, SectionTitle } from "@/components/ui";
-import { getVersions } from "@/lib/server/serverStatus";
+import { getBackupStatus, getVersions } from "@/lib/server/serverStatus";
 import { DashboardPageHeader } from "../DashboardPageHeader";
+import { BackupHistory } from "./BackupHistory";
 import { ServerDashboard } from "./ServerDashboard";
 
 export const metadata: Metadata = { title: "Server" };
 
 export default async function ServerPage() {
     await requireDebugAdmin();
-    const versions = await getVersions();
+    const [versions, backups] = await Promise.all([getVersions(), getBackupStatus()]);
 
     return (
         <Container size="3" className="py-8 sm:py-12">
@@ -33,6 +34,8 @@ export default async function ServerPage() {
             </Callout>
 
             <ServerDashboard />
+
+            <BackupHistory status={backups} />
 
             {/* Stand des laufenden Prozesses — ändert sich erst mit dem nächsten Deploy. */}
             <section className="mt-10 grid gap-4">

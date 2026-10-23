@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { execFile, spawn } from "node:child_process";
-import { open, readFile, stat, unlink, writeFile } from "node:fs/promises";
+import { open, readdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { AppError } from "@/lib/server/errors";
 
 /**
@@ -373,4 +373,56 @@ export function dumpDatabase(databaseUrl: string): Promise<Buffer> {
       },
     );
   });
+}
+
+/* ------------------------------------------------------------------ *
+ * Automatische Backups                                                *
+ * ------------------------------------------------------------------ */
+
+/** Hier legt `scripts/backup.sh` (Cron, täglich) die Dumps und sein Protokoll ab. */
+const BACKUP_DIR = "/var/backups/wiphy";
+/** Ein Lauf pro Tag — ohne Erfolg seit gut einem Tag läuft der Cron nicht oder scheitert. */
+const BACKUP_MAX_AGE_MS = 26 * 3600_000;
+const BACKUP_RUNS_SHOWN = 30;
+
+export type BackupRun =
+  /** `kept`: die Datei liegt noch auf dem Server (nach 14 Tagen gelöscht). */
+  | { at: string; ok: true; file: string; bytes: number; kept: boolean }
+  | { at: string; ok: false; error: string };
+
+/** Zeilen aus `backup.log`, neueste zuerst. Format steht in `scripts/backup.sh`. */
+export function parseBackupLog(text: string, keptFiles: ReadonlySet<string> = new Set()): BackupRun[] {
+  return text
+    .split("\n")
+    .flatMap((line): BackupRun[] => {
+      const [at, status, detail = "", bytes = ""] = line.split("\t");
+      if (status === "ok") return [{ at, ok: true, file: detail, bytes: Number(bytes), kept: keptFiles.has(detail) }];
+      if (status === "fail") return [{ at, ok: false, error: detail }];
+      return [];
+    })
+    .reverse();
+}
+
+export type BackupStatus = {
+  /** false, wenn auf diesem Rechner keine automatischen Backups eingerichtet sind (z. B. lokal). */
+  available: boolean;
+  runs: BackupRun[];
+  lastSuccessAt: string | null;
+  /** Seit über einem Tag kein erfolgreiches Backup. */
+  overdue: boolean;
+};
+
+export async function getBackupStatus(now = Date.now()): Promise<BackupStatus> {
+  const [log, files] = await Promise.all([
+    readTail(path.join(BACKUP_DIR, "backup.log"), 16 * 1024).catch(() => null),
+    readdir(BACKUP_DIR).catch(() => [] as string[]),
+  ]);
+  const runs = parseBackupLog(log ?? "", new Set(files));
+  const lastSuccessAt = runs.find((run) => run.ok)?.at ?? null;
+  return {
+    available: log !== null,
+    runs: runs.slice(0, BACKUP_RUNS_SHOWN),
+    lastSuccessAt,
+    overdue: !lastSuccessAt || now - Date.parse(lastSuccessAt) > BACKUP_MAX_AGE_MS,
+  };
 }
