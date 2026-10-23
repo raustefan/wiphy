@@ -24,6 +24,13 @@ import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 import { bulkCreateUsersAction, type ImportIssue, type ImportRowResult } from "./actions";
 import { EXAMPLE, FEE_FIELDS, FEES_EXAMPLE, IMPORT_SECTIONS, PAYMENT_FIELDS, type ImportEntry } from "./importFormat";
 
+const IMPORT_BATCH_SIZE = 20;
+
+type ImportReport = {
+    created: { name: string; email: string; mailFailed: boolean }[];
+    notCreated: { name: string; email: string; issues: ImportIssue[] }[];
+};
+
 /**
  * JSON-Massenimport für die Übernahme bestehender Alumni. Nach dem Laden wird
  * sofort geprüft; die Vorschau zeigt je Person das Wesentliche in einer Zeile
@@ -39,6 +46,8 @@ export function BulkImport() {
     const [onlyErrors, setOnlyErrors] = useState(false);
     const [dragging, setDragging] = useState(false);
     const [confirming, setConfirming] = useState(false);
+    const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+    const [report, setReport] = useState<ImportReport | null>(null);
     const [pending, startTransition] = useTransition();
 
     const ready = entries.filter((_, i) => results[i]?.issues.length === 0).length;
@@ -62,6 +71,7 @@ export function BulkImport() {
         setFileName(file.name);
         setOpen(null);
         setResults([]);
+        setReport(null);
         try {
             const data: unknown = JSON.parse(await file.text());
             const list = Array.isArray(data) ? data : [data];
@@ -84,24 +94,62 @@ export function BulkImport() {
         else setResults([]);
     }
 
+    /**
+     * Legt in Blöcken an: jedes Konto kostet einen bcrypt-Hash und ggf. eine
+     * Mail, ein einziger Aufruf für Hunderte Einträge liefe in den
+     * Proxy-Timeout (nginx: 60 s). Feste Mitgliedsnummern zuerst über alle
+     * Blöcke, sonst könnte eine automatisch vergebene Nummer (max + 1) einer
+     * späteren festen in die Quere kommen.
+     */
     function create() {
         setConfirming(false);
+        setOpen(null);
+        setReport(null);
+        const order = entries
+            .map((_, i) => i)
+            .filter((i) => results[i]?.issues.length === 0)
+            .sort((a, b) => Number(typeof entries[a].memberNumber !== "number") - Number(typeof entries[b].memberNumber !== "number"));
         startTransition(async () => {
-            const res = await bulkCreateUsersAction(entries, notify, false);
-            const created = res.filter((r) => r.created).length;
-            const mailFailed = res.filter((r) => r.mailFailed).length;
+            const res = [...results] as ImportRowResult[];
+            for (let start = 0; start < order.length; start += IMPORT_BATCH_SIZE) {
+                setProgress({ done: start, total: order.length });
+                const batch = order.slice(start, start + IMPORT_BATCH_SIZE);
+                try {
+                    const out = await bulkCreateUsersAction(batch.map((i) => entries[i]), notify, false);
+                    batch.forEach((i, k) => (res[i] = out[k]));
+                } catch (error) {
+                    console.error("Import batch failed:", error);
+                    // Der Server kann trotzdem angelegt haben — „Erneut prüfen“ meldet die dann als vorhanden.
+                    const issues = [{ field: "", message: "Keine Antwort vom Server, Konto evtl. trotzdem angelegt. Bitte erneut prüfen." }];
+                    batch.forEach((i) => (res[i] = { issues, created: false }));
+                }
+            }
+            setProgress(null);
+
+            const person = (i: number) => ({
+                name: [entries[i].firstName, entries[i].lastName].filter(Boolean).join(" ") || "—",
+                email: String(entries[i].email ?? "—"),
+            });
+            const created = order.filter((i) => res[i].created).map((i) => ({ ...person(i), mailFailed: !!res[i].mailFailed }));
+            const notCreated = entries
+                .map((_, i) => i)
+                .filter((i) => !res[i].created)
+                .map((i) => ({ ...person(i), issues: res[i].issues }));
+            setReport({ created, notCreated });
+
             // Angelegte Einträge verschwinden, fehlerhafte bleiben zum Korrigieren.
             setEntries(entries.filter((_, i) => !res[i].created));
             setResults(res.filter((r) => !r.created));
-            setOpen(null);
+            const mailFailed = created.filter((c) => c.mailFailed).length;
             setNotice({
-                tone: created === res.length ? "success" : "warning",
+                tone: notCreated.length || mailFailed ? "warning" : "success",
                 text:
-                    `${created} ${created === 1 ? "Konto" : "Konten"} angelegt.` +
-                    (res.length > created
-                        ? ` ${res.length - created} ${res.length - created === 1 ? "Eintrag bleibt" : "Einträge bleiben"} wegen Fehlern stehen.`
+                    `${created.length} ${created.length === 1 ? "Konto" : "Konten"} angelegt.` +
+                    (notCreated.length
+                        ? ` ${notCreated.length} ${notCreated.length === 1 ? "Eintrag bleibt" : "Einträge bleiben"} wegen Fehlern stehen.`
                         : "") +
-                    (mailFailed ? ` ${mailFailed} E-Mails konnten nicht verschickt werden.` : ""),
+                    (mailFailed ? ` ${mailFailed} E-Mails konnten nicht verschickt werden.` : "") +
+                    " Einzelheiten im Ergebnis unten.",
             });
         });
     }
@@ -169,7 +217,15 @@ export function BulkImport() {
                 </Button>
             </div>
 
-            {notice && <Callout tone={notice.tone}>{notice.text}</Callout>}
+            {progress ? (
+                <Callout tone="info">
+                    Lege Konten an … {progress.done} von {progress.total} erledigt. Seite bitte nicht schließen.
+                </Callout>
+            ) : (
+                notice && <Callout tone={notice.tone}>{notice.text}</Callout>
+            )}
+
+            {report && !progress && <ImportReportView report={report} />}
 
             {entries.length > 0 && (
                 <>
@@ -284,6 +340,49 @@ function downloadTemplate() {
     a.download = "alumni-import-vorlage.json";
     a.click();
     URL.revokeObjectURL(a.href);
+}
+
+/** Ergebnis des letzten Imports: wer angelegt wurde und wer nicht, mit Grund. */
+function ImportReportView({ report }: { report: ImportReport }) {
+    return (
+        <div className="grid gap-3 sm:grid-cols-2">
+            <section className="rounded-[3px] border border-line p-4">
+                <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <Badge tone="positive">{report.created.length}</Badge> angelegt
+                </h4>
+                <ul className="grid max-h-96 gap-1.5 overflow-y-auto text-sm">
+                    {report.created.map((c) => (
+                        <li key={c.email}>
+                            <span className="font-semibold">{c.name}</span>{" "}
+                            <span className="break-all text-muted">{c.email}</span>
+                            {c.mailFailed && <span className="block text-xs text-negative">E-Mail nicht verschickt</span>}
+                        </li>
+                    ))}
+                    {report.created.length === 0 && <li className="text-muted">Keine.</li>}
+                </ul>
+            </section>
+            <section className="rounded-[3px] border border-line p-4">
+                <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <Badge tone="negative">{report.notCreated.length}</Badge> nicht angelegt
+                </h4>
+                <ul className="grid max-h-96 gap-1.5 overflow-y-auto text-sm">
+                    {report.notCreated.map((c, i) => (
+                        <li key={i}>
+                            <span className="font-semibold">{c.name}</span>{" "}
+                            <span className="break-all text-muted">{c.email}</span>
+                            {c.issues.map((issue, k) => (
+                                <span key={k} className="block text-xs text-negative">
+                                    {issue.field && <code className="font-mono">{issue.field}: </code>}
+                                    {issue.message}
+                                </span>
+                            ))}
+                        </li>
+                    ))}
+                    {report.notCreated.length === 0 && <li className="text-muted">Keine.</li>}
+                </ul>
+            </section>
+        </div>
+    );
 }
 
 /** Aufklappbare Liste aller Felder mit Bedeutung und Format. */
