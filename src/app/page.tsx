@@ -205,36 +205,6 @@ export default async function HomePage() {
         </Frame>
       </section>
 
-      {/* ═══════════════════ Was der Verein tut ═══════════════════ */}
-      <section aria-labelledby="levels-title">
-        <Frame className="grid gap-10 py-20 sm:py-28 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <h2 id="levels-title" className="headline text-4xl sm:text-5xl">
-              Was im Hörsaal beginnt, hört dort nicht auf.
-            </h2>
-            <p className="mt-5 max-w-sm leading-relaxed text-muted text-pretty">
-              Der Verein hält die Verbindung zwischen Studium, Forschung und Beruf offen — in
-              beide Richtungen.
-            </p>
-          </div>
-
-          <div className="relative">
-            <ul className="grid gap-14 sm:gap-16">
-              {levels.map((level, i) => (
-                <li
-                  key={level.title}
-                  className={`relative border-t-2 pt-5 ${i % 2 ? "border-market" : "border-physics"}`}
-                  style={{ marginLeft: `calc(${i} * min(12%, 6rem))` }}
-                >
-                  <h3 className="headline text-2xl sm:text-3xl">{level.title}</h3>
-                  <p className="mt-3 max-w-lg leading-relaxed text-muted text-pretty">{level.body}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Frame>
-      </section>
-
       {/* ═══════════════════ Nächster Termin ═══════════════════ */}
       {featured && (
         <EventFeature
@@ -308,6 +278,35 @@ export default async function HomePage() {
         </Frame>
       </section>
       )}
+
+      {/* ═══════════════════ Was der Verein tut ═══════════════════ */}
+      <section aria-labelledby="levels-title">
+        <Frame className="py-20 sm:py-28">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
+            <h2 id="levels-title" className="headline text-4xl sm:text-5xl">
+              Was im Hörsaal beginnt, hört dort nicht auf.
+            </h2>
+            <p className="max-w-sm leading-relaxed text-muted text-pretty">
+              Der Verein hält die Verbindung zwischen Studium, Forschung und Beruf offen — in
+              beide Richtungen.
+            </p>
+          </div>
+
+          {/* Bis lg nach rechts versetzt untereinander, ab lg nebeneinander und nach unten versetzt. */}
+          <ul className="mt-14 grid gap-14 sm:gap-16 lg:grid-cols-3 lg:items-start lg:gap-10">
+            {levels.map((level, i) => (
+              <li
+                key={level.title}
+                className={`relative border-t-2 pt-5 ml-[calc(var(--i)*min(12%,6rem))] lg:ml-0 lg:mt-[calc(var(--i)*3rem)] ${i % 2 ? "border-market" : "border-physics"}`}
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <h3 className="headline text-2xl sm:text-3xl">{level.title}</h3>
+                <p className="mt-3 max-w-lg leading-relaxed text-muted text-pretty">{level.body}</p>
+              </li>
+            ))}
+          </ul>
+        </Frame>
+      </section>
 
       {/* ═══════════════════ Aus dem Blog ═══════════════════ */}
       {latestPost && (
