@@ -21496,7 +21496,7 @@
       "node_kind": "heading",
       "norm_label": "befunde vom 2026-10-20",
       "source_file": "BETRIEB.md",
-      "source_location": "L114"
+      "source_location": "L116"
     },
     {
       "id": "betrieb_bekannte_log_meldungen",
@@ -21508,7 +21508,7 @@
       "node_kind": "heading",
       "norm_label": "bekannte log-meldungen",
       "source_file": "BETRIEB.md",
-      "source_location": "L79"
+      "source_location": "L81"
     },
     {
       "id": "betrieb_betrieb_checkliste_f\u00fcr_den_produktionsserver",
@@ -21568,7 +21568,7 @@
       "node_kind": "heading",
       "norm_label": "zugang fur eine neue person",
       "source_file": "BETRIEB.md",
-      "source_location": "L96"
+      "source_location": "L98"
     },
     {
       "id": "readme",
@@ -21616,7 +21616,7 @@
       "node_kind": "heading",
       "norm_label": "automatische updates bei jedem git push (github actions)",
       "source_file": "README.md",
-      "source_location": "L572"
+      "source_location": "L585"
     },
     {
       "id": "readme_backup_wiederherstellung",
@@ -21628,7 +21628,7 @@
       "node_kind": "heading",
       "norm_label": "backup & wiederherstellung",
       "source_file": "README.md",
-      "source_location": "L604"
+      "source_location": "L617"
     },
     {
       "id": "readme_datenbankmodell",
@@ -21664,7 +21664,7 @@
       "node_kind": "heading",
       "norm_label": "deployment & updates via ssh (`deploy.sh`)",
       "source_file": "README.md",
-      "source_location": "L544"
+      "source_location": "L557"
     },
     {
       "id": "readme_einmalige_einrichtung_auf_dem_server",
@@ -21748,7 +21748,7 @@
       "node_kind": "heading",
       "norm_label": "option 1: automatischer einzeiler uber deinen lokalen rechner (empfohlen)",
       "source_file": "README.md",
-      "source_location": "L548"
+      "source_location": "L561"
     },
     {
       "id": "readme_option_2_manuelles_ausf\u00fchren_auf_dem_server",
@@ -21760,7 +21760,7 @@
       "node_kind": "heading",
       "norm_label": "option 2: manuelles ausfuhren auf dem server",
       "source_file": "README.md",
-      "source_location": "L555"
+      "source_location": "L568"
     },
     {
       "id": "readme_projektstruktur",
@@ -86326,7 +86326,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "BETRIEB.md",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -86353,17 +86353,6 @@
     },
     {
       "source": "betrieb_betrieb_checkliste_f\u00fcr_den_produktionsserver",
-      "target": "betrieb_bekannte_log_meldungen",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "BETRIEB.md",
-      "source_location": "L79",
-      "weight": 1.0
-    },
-    {
-      "source": "betrieb_betrieb_checkliste_f\u00fcr_den_produktionsserver",
       "target": "betrieb_der_server",
       "relation": "contains",
       "_origin": "ast",
@@ -86375,13 +86364,24 @@
     },
     {
       "source": "betrieb_betrieb_checkliste_f\u00fcr_den_produktionsserver",
+      "target": "betrieb_bekannte_log_meldungen",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "BETRIEB.md",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "betrieb_betrieb_checkliste_f\u00fcr_den_produktionsserver",
       "target": "betrieb_zugang_f\u00fcr_eine_neue_person",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "BETRIEB.md",
-      "source_location": "L96",
+      "source_location": "L98",
       "weight": 1.0
     },
     {
@@ -87107,7 +87107,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L544",
+      "source_location": "L557",
       "weight": 1.0
     },
     {
@@ -87118,7 +87118,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L572",
+      "source_location": "L585",
       "weight": 1.0
     },
     {
@@ -87129,7 +87129,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L548",
+      "source_location": "L561",
       "weight": 1.0
     },
     {
@@ -87140,7 +87140,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L555",
+      "source_location": "L568",
       "weight": 1.0
     },
     {
@@ -87305,7 +87305,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "README.md",
-      "source_location": "L604",
+      "source_location": "L617",
       "weight": 1.0
     },
     {
@@ -104690,7 +104690,7 @@
       "confidence_score": 0.95,
       "context": "siteUrl()",
       "source_file": "BETRIEB.md",
-      "source_location": "L125",
+      "source_location": "L128",
       "weight": 1.0
     },
     {
@@ -104728,5 +104728,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "363bf63d1372deacb58237f6556e8200d7cff270"
+  "built_at_commit": "48517a17a0fff56c32d907d0bfb85de9cbb6b842"
 }

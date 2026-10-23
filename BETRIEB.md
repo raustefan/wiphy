@@ -67,6 +67,8 @@ Jeweils: Befehl → was rauskommen soll. Vorher `cd /var/www/wiphy/wiphy`.
 - [ ] `apt list --upgradable 2>/dev/null | wc -l` → klein; `systemctl is-active unattended-upgrades` → `active`
 - [ ] `[ -f /var/run/reboot-required ] && echo REBOOT` → nichts (sonst Neustart einplanen)
 - [ ] `sshd -T | grep -E '^(passwordauthentication|permitrootlogin) '` → `no` / `prohibit-password`
+- [ ] `swapon --show` → `/swapfile` mit 2 GB
+- [ ] `curl -sI https://www.wiphy.de | head -1` → `301`, und `curl -sI https://wiphy.de | grep -iE '^(server|x-powered-by)'` → nur `server: nginx` ohne Version
 - [ ] `cat /root/.ssh/authorized_keys | awk '{print $3}'` → nur Schlüssel von Leuten, die aktuell Zugang haben sollen
 - [ ] Hetzner Cloud Console → Firewall: nur 22, 80, 443 eingehend (`ufw` ist auf dem Server aus)
 
@@ -113,8 +115,9 @@ Nicht harmlos:
 
 ## Befunde vom 2026-10-20
 
-Ergebnis der ersten Prüfung, noch nichts davon behoben. Nach dem Beheben
-abhaken oder den Abschnitt löschen.
+Ergebnis der ersten Prüfung, am 2026-10-23 größtenteils behoben. Offen ist
+nur noch, was in der Hetzner Console passieren muss. Nach dem Beheben abhaken
+oder den Abschnitt löschen.
 
 **Behebt etwas, das kaputt ist**
 - [x] **Blogbild-Uploads > 1 MB scheitern.** *Behoben 2026-10-20, Sicherung der alten Datei: `/root/nginx-wiphy.bak-2026-10-20`.* In `/etc/nginx/sites-available/wiphy`
@@ -130,13 +133,18 @@ abhaken oder den Abschnitt löschen.
   festgelegt) und Neustart — also einfach `bash deploy.sh` nach der Änderung.
 
 **Sicherheit**
-- [ ] `PasswordAuthentication yes` in der SSH-Konfiguration. Root darf sich
+- [x] *Behoben 2026-10-23: `/etc/ssh/sshd_config.d/00-wiphy.conf` (Passwort- und Tastatur-Login aus, `X11Forwarding no`), Sicherung: `/root/sshd_config.bak-2026-10-23`.* `PasswordAuthentication yes` in der SSH-Konfiguration. Root darf sich
   zwar nicht per Passwort anmelden (`prohibit-password`), trotzdem auf `no`
   stellen, weil nur Schlüssel benutzt werden.
+- [ ] **Hetzner Console:** Server → Backups einschalten. Die täglichen Dumps
+  in `/var/backups/wiphy` liegen auf derselben Platte und überstehen den
+  Verlust des Servers nicht.
+- [x] *Behoben 2026-10-23: Kommentar `stefan-rau`.* Der einzige Schlüssel in
+  `/root/.ssh/authorized_keys` hatte keinen Kommentar.
 - [ ] Keine Firewall auf dem Server (`ufw` inaktiv). Nach außen offen sind nur
   22, 80, 443 — das ist korrekt. Prüfen, ob in der Hetzner Console eine
   Cloud-Firewall hängt; wenn nicht, dort eine anlegen (22/80/443).
-- [ ] `.env` hat Rechte `644` statt `600`. Einziger Login-Nutzer ist `root`,
+- [x] *Behoben 2026-10-23, ebenso die `.env`-Sicherung in `/root`.* `.env` hat Rechte `644` statt `600`. Einziger Login-Nutzer ist `root`,
   daher geringes Risiko, aber ein Einzeiler: `chmod 600 .env`.
 - [x] *Neustart am 2026-10-20 erledigt (Kernel 7.0.0-34, alles kam von selbst wieder hoch, Seite ca. 30 s weg). Danach `apt upgrade` (66 Pakete, u. a. OpenSSL; Configs behalten) und zweiter Neustart auf Kernel 7.0.0-38. Zwei Pakete (`software-properties`) hält Ubuntu per Phased Update bewusst zurück — normal.* — 45 Pakete warten auf Update, **Neustart überfällig** (`reboot-required`
   verlangt neue Kernel und `libc6`; Server läuft seit 90 Tagen). Neustart
@@ -146,17 +154,17 @@ abhaken oder den Abschnitt löschen.
 
 **Aufräumen / klein**
 - [x] Server ist 2 Commits hinter `origin/main` → *beim Deploy am 2026-10-20 mitgezogen.*
-- [ ] `www.wiphy.de` liefert die Seite direkt aus statt auf `wiphy.de`
+- [x] *Behoben 2026-10-23 (301 auf `https://wiphy.de`), Sicherung: `/root/nginx-wiphy.bak-2026-10-23`.* `www.wiphy.de` liefert die Seite direkt aus statt auf `wiphy.de`
   umzuleiten (doppelte Inhalte für Suchmaschinen).
-- [ ] `SECURITY_LOG_PEPPER` und `NEXT_PUBLIC_SITE_URL` fehlen in `.env`
+- [ ] *`SECURITY_LOG_PEPPER` ist inzwischen gesetzt.* `SECURITY_LOG_PEPPER` und `NEXT_PUBLIC_SITE_URL` fehlen in `.env`
   (optional, Fallbacks greifen).
-- [ ] `server_tokens build;` in `/etc/nginx/nginx.conf` verrät die
+- [x] *Behoben 2026-10-23, zusätzlich `proxy_hide_header X-Powered-By;`. Sicherung: `/root/nginx.conf.bak-2026-10-23`.* `server_tokens build;` in `/etc/nginx/nginx.conf` verrät die
   nginx-Version → `server_tokens off;`.
-- [ ] Alte Logs `/root/.pm2/logs/wiphy-app-*.log` vom 2026-07-31 (früherer
+- [x] *Gelöscht 2026-10-23.* Alte Logs `/root/.pm2/logs/wiphy-app-*.log` vom 2026-07-31 (früherer
   Prozessname) können weg.
-- [ ] HTTPS läuft nur mit HTTP/1.1: `listen 443 ssl http2;` bzw.
+- [x] *Behoben 2026-10-23 (`http2 on;`).* HTTPS läuft nur mit HTTP/1.1: `listen 443 ssl http2;` bzw.
   `http2 on;` im Server-Block.
-- [ ] Kein Swap bei 3,7 GB RAM. `pnpm build` läuft auf demselben Server; bisher
+- [x] *Behoben 2026-10-23: `/swapfile`, 2 GB, in `/etc/fstab`.* Kein Swap bei 3,7 GB RAM. `pnpm build` läuft auf demselben Server; bisher
   kein OOM in den Kernel-Logs, aber ein 2-GB-Swapfile wäre billige
   Absicherung.
 

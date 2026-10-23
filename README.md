@@ -515,6 +515,9 @@ location / {
     proxy_set_header X-Forwarded-Proto $scheme;
 
     proxy_cache_bypass $http_upgrade;
+    # Verrät sonst das Framework; nginx selbst schweigt mit `server_tokens off;`
+    # in /etc/nginx/nginx.conf.
+    proxy_hide_header X-Powered-By;
 
     # Blog-Bilder dürfen bis 2 MB groß sein; nginx bricht sonst schon bei 1 MB
     # mit „413 Request Entity Too Large“ ab, bevor die Anwendung das Bild
@@ -523,7 +526,17 @@ location / {
 }
 ```
 
-Übernehmen mit `nginx -t && systemctl reload nginx`.
+Im selben `server`-Block (Port 443) außerdem `http2 on;` und die Umleitung
+von `www`, damit Suchmaschinen nur eine Adresse sehen:
+
+```nginx
+if ($host = www.wiphy.de) {
+    return 301 https://wiphy.de$request_uri;
+}
+```
+
+Im Port-80-Block von Certbot leitet `www.wiphy.de` ebenso direkt auf
+`https://wiphy.de$request_uri` weiter. Übernehmen mit `nginx -t && systemctl reload nginx`.
 
 Die Anwendung wertet in dieser Reihenfolge aus (`src/lib/server/clientIp.ts`):
 `X-Real-IP` zuerst, sonst der **letzte** Eintrag aus `X-Forwarded-For` — der

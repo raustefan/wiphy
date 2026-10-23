@@ -1,7 +1,7 @@
 # Graph Report - wiphy  (2026-10-23)
 
 ## Corpus Check
-- 361 files · ~173,311 words
+- 361 files · ~173,499 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 2, .example 1, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `363bf63d`
+- Built from commit: `48517a17`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -463,7 +463,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `allowBuilds (prisma, esbuild, sharp, unrs-resolver)` and `ignoredBuiltDependencies (sharp, unrs-resolver)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `next` connect `next` to `sepa.ts`, `cn`, `mitglied-werden/page.tsx`, `useActionForm`, `authz.ts`, `AppError`, `serverStatus.ts`, `mitgliedsantraege/actions.ts`, `blogService.ts`, `app/kontakt/page.tsx`, `events.ts`, `react`, `MarketDiffusion.tsx`, `package.json`, `boardService.ts`, `Button`, `app/layout.tsx`, `MemberDirectory.tsx`, `rateLimit.ts`, `gravityPhysics.ts`, `users/page.tsx`, `MailDashboard.tsx`, `KosmosTimeline.tsx`, `feature-flags/page.tsx`, `getOptionalUser`, `users/[id]/page.tsx`, `prisma.ts`, `Callout`, `ApplicationWizard.tsx`, `messages.ts`, `executeAction`, `security/page.tsx`, `EditUserForm.tsx`, `EventForm.tsx`, `isFeatureEnabled`, `Site.tsx`, `registerAction.ts`, `index.ts`, `formatDate`, `eventService.ts`, `feeService.ts`, `mitgliedsantraege/page.tsx`, `dashboard/page.tsx`?**
-  _High betweenness centrality (0.193) - this node is a cross-community bridge._
+  _High betweenness centrality (0.195) - this node is a cross-community bridge._
 - **Why does `react` connect `react` to `cn`, `useActionForm`, `authz.ts`, `blogService.ts`, `MarketDiffusion.tsx`, `package.json`, `ServerDashboard.tsx`, `Button`, `app/layout.tsx`, `MemberDirectory.tsx`, `gravityPhysics.ts`, `users/page.tsx`, `iban.ts`, `MailDashboard.tsx`, `KosmosTimeline.tsx`, `feature-flags/page.tsx`, `users/[id]/page.tsx`, `BulkImport.tsx`, `NewUserForm.tsx`, `Callout`, `ApplicationWizard.tsx`, `EmailComposerDialog.tsx`, `ApplicationList.tsx`, `EditUserForm.tsx`, `EventForm.tsx`, `MailForm.tsx`, `Site.tsx`, `index.ts`, `formatDate`, `eventService.ts`, `feeService.ts`, `altcha.d.ts`, `dashboard/page.tsx`?**
   _High betweenness centrality (0.092) - this node is a cross-community bridge._
 - **Why does `@hugeicons/core-free-icons` connect `index.ts` to `cn`, `mitglied-werden/page.tsx`, `useActionForm`, `authz.ts`, `serverStatus.ts`, `blogService.ts`, `events.ts`, `react`, `MarketDiffusion.tsx`, `package.json`, `ServerDashboard.tsx`, `Button`, `app/layout.tsx`, `MemberDirectory.tsx`, `securityEventService.ts`, `gravityPhysics.ts`, `users/page.tsx`, `MailDashboard.tsx`, `KosmosTimeline.tsx`, `feature-flags/page.tsx`, `users/[id]/page.tsx`, `BulkImport.tsx`, `NewUserForm.tsx`, `Callout`, `ApplicationWizard.tsx`, `security/page.tsx`, `EmailComposerDialog.tsx`, `ApplicationList.tsx`, `EditUserForm.tsx`, `EventForm.tsx`, `MailForm.tsx`, `Site.tsx`, `formatDate`, `mitgliedsantraege/page.tsx`, `dashboard/page.tsx`?**
