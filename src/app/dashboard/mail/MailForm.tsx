@@ -360,6 +360,16 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                 Kontaktformular. Der Block entsteht beim Versand aus dem
                                 gespeicherten Termin und lässt sich hier nicht verändern.
                             </p>
+                            <label htmlFor="mail-attach-ics" className="flex cursor-pointer items-center gap-2 pt-1">
+                                <Checkbox
+                                    className="size-5"
+                                    id="mail-attach-ics"
+                                    name="attachIcs"
+                                    value="on"
+                                    defaultChecked
+                                />
+                                <span className="text-sm">Kalenderdatei (.ics) anhängen</span>
+                            </label>
                         </div>
                     </>
                 )}

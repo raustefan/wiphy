@@ -6,7 +6,7 @@
  * Briefpapier, dieselbe Signatur und eine aus demselben Inhalt erzeugte
  * Textfassung. Aufrufstellen beschreiben nur noch *was* drinsteht.
  */
-import nodemailer, { type Transporter } from "nodemailer";
+import nodemailer, { type SendMailOptions, type Transporter } from "nodemailer";
 import { getSmtpConfig } from "@/lib/server/env";
 import type { EmailMessage } from "@/lib/email/blocks";
 import { getSignatureBoardLine } from "@/lib/server/services/boardService";
@@ -40,7 +40,9 @@ function normalize(value: string | string[] | undefined): string | undefined {
   return list.length > 0 ? [...new Set(list)].join(",") : undefined;
 }
 
-export async function sendEmail(input: Recipients & { message: EmailMessage }): Promise<void> {
+export async function sendEmail(
+  input: Recipients & { message: EmailMessage; attachments?: SendMailOptions["attachments"] },
+): Promise<void> {
   const to = normalize(input.to);
   const bcc = normalize(input.bcc);
   // Ohne Empfänger gibt es nichts zu tun — etwa wenn keine Admin-Adresse
@@ -61,6 +63,7 @@ export async function sendEmail(input: Recipients & { message: EmailMessage }): 
     subject: input.message.subject,
     text: renderEmailText(input.message, boardLine),
     html: renderEmailHtml(input.message, boardLine),
+    attachments: input.attachments,
     encoding: "utf-8",
   });
 }

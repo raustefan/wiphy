@@ -10,8 +10,9 @@ import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { escapeHtml } from "@/lib/email/escapeHtml";
 import type { EmailBlock, EmailMessage } from "@/lib/email/blocks";
-import { eventContactPath, eventPath, formatEventRange, type EventTiming } from "@/lib/events";
+import { eventContactPath, eventPath, formatEventRange } from "@/lib/events";
 import { siteUrl } from "@/lib/server/siteUrl";
+import { buildEventIcs, icsFileName, type IcsEvent } from "@/lib/server/ics";
 import { sanitizeEmailHtml } from "./sanitizeHtml";
 import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
@@ -107,14 +108,16 @@ function replacePlaceholders(
  * andere Systemmail — und der Absender kann ihn nicht versehentlich
  * zerschreiben.
  */
-export type AnnouncedEvent = EventTiming & {
-  id: string;
-  title: string;
-  summary: string;
-  location: string;
-  address: string;
-  onlineUrl: string;
-};
+export type AnnouncedEvent = IcsEvent;
+
+/** Dieselbe Datei, die `/termine/<id>/kalender.ics` öffentlich ausliefert. */
+function icsAttachment(event: AnnouncedEvent) {
+  return {
+    filename: icsFileName(event.title),
+    content: buildEventIcs(event),
+    contentType: "text/calendar; charset=utf-8",
+  };
+}
 
 function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
   const place = [event.location.trim(), event.address.trim()].filter(Boolean).join(", ");
@@ -163,6 +166,8 @@ export async function sendMailToUsers(input: {
   users: Recipient[];
   /** Gesetzt bei einer Terminankündigung — hängt den Terminblock an. */
   event?: AnnouncedEvent;
+  /** Nur mit `event`: die Kalenderdatei des Termins als Anhang. */
+  attachIcs?: boolean;
   /** Empfängergruppe fürs Versandprotokoll; weggelassen bei ausgewählten Empfängern. */
   recipientGroup?: string | null;
 }) {
@@ -177,6 +182,7 @@ export async function sendMailToUsers(input: {
   // Einzelversand statt BCC, damit die Anrede pro Empfänger stimmt.
   // Protokolliert wird, was tatsächlich rausging — auch wenn der Versand
   // mittendrin abbricht.
+  const attachments = input.event && input.attachIcs ? [icsAttachment(input.event)] : undefined;
   const sent: Recipient[] = [];
   try {
     for (const user of input.users) {
@@ -187,6 +193,7 @@ export async function sendMailToUsers(input: {
           replacePlaceholders(template, user, { escape: true }),
           input.event,
         ),
+        attachments,
       });
       sent.push(user);
     }
@@ -211,6 +218,7 @@ export async function sendMailToUsers(input: {
     await sendEmail({
       to: selfEmail,
       message: composeMessage(`${input.subject} (Kopie)`, template, input.event),
+      attachments,
     });
   }
 }
@@ -223,6 +231,7 @@ export async function sendMailForTarget(input: {
   bccToSelf: boolean;
   adminEmail?: string | null;
   event?: AnnouncedEvent;
+  attachIcs?: boolean;
 }) {
   const users = await resolveRecipientEmails({
     target: input.target,
@@ -235,6 +244,7 @@ export async function sendMailForTarget(input: {
     adminEmail: input.adminEmail,
     users,
     event: input.event,
+    attachIcs: input.attachIcs,
     recipientGroup: input.target === "SELECTED" ? null : input.target,
   });
 }

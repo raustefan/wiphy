@@ -498,6 +498,8 @@ export const mailSendSchema = z
      * Editor bleibt davon unberührt.
      */
     eventId: optionalEventId,
+    /** Checkbox „Kalenderdatei anhängen“ — wirkt nur zusammen mit `eventId`. */
+    attachIcs: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (data.target === "SELECTED" && data.selectedUserIds.length === 0) {
