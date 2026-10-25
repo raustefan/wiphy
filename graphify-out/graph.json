@@ -1847,7 +1847,7 @@
       "file_type": "code",
       "norm_label": "recipients",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L24"
+      "source_location": "L32"
     },
     {
       "id": "src_app_dashboard_profilesummary_profilesummaryuser",
@@ -11713,7 +11713,7 @@
       "file_type": "code",
       "norm_label": "getmailtransporter()",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L19"
+      "source_location": "L23"
     },
     {
       "id": "src_lib_server_email_mailer_normalize",
@@ -11725,7 +11725,7 @@
       "file_type": "code",
       "norm_label": "normalize()",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L36"
+      "source_location": "L44"
     },
     {
       "id": "src_lib_server_email_mailer_sendemail",
@@ -11737,7 +11737,7 @@
       "file_type": "code",
       "norm_label": "sendemail()",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L43"
+      "source_location": "L51"
     },
     {
       "id": "src_lib_server_env_getsmtpconfig",
@@ -38076,7 +38076,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L20",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -38088,7 +38088,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L46",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -38100,7 +38100,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L53",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -38112,7 +38112,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L55",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -38124,7 +38124,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L56",
+      "source_location": "L64",
       "weight": 1.0
     },
     {
@@ -38136,7 +38136,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L58",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -38148,7 +38148,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L64",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -38160,7 +38160,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L65",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -99631,7 +99631,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L19",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -99642,7 +99642,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L24",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -99653,7 +99653,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L36",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -99664,7 +99664,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/server/email/mailer.ts",
-      "source_location": "L43",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
@@ -105768,5 +105768,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "8fb90fa882c7a30d243e067ca9cf97b0a4a7c023"
+  "built_at_commit": "2a2dbd6f7db283943335a481c3bb38d50d8167bf"
 }

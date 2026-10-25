@@ -15,9 +15,17 @@ import { renderEmailHtml, renderEmailText } from "./layout";
 
 let cachedTransporter: Transporter | null = null;
 
-/** Wiederverwendet die SMTP-Verbindung; `getSmtpConfig()` prüft die Konfiguration. */
+/**
+ * Wiederverwendet die SMTP-Verbindung; `getSmtpConfig()` prüft die Konfiguration.
+ * Ohne `pool` meldet sich nodemailer für jede Mail neu an — bei einer Rundmail
+ * an 100+ Empfänger sperrt Gmail dann mit „454 Too many login attempts“.
+ */
 export function getMailTransporter(): Transporter {
-  cachedTransporter ??= nodemailer.createTransport(getSmtpConfig().transport);
+  cachedTransporter ??= nodemailer.createTransport({
+    ...getSmtpConfig().transport,
+    pool: true,
+    maxConnections: 1,
+  });
   return cachedTransporter;
 }
 

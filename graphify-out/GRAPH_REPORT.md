@@ -1,7 +1,7 @@
 # Graph Report - wiphy  (2026-10-25)
 
 ## Corpus Check
-- 367 files · ~175,013 words
+- 367 files · ~175,048 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 2, .example 1, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8fb90fa8`
+- Built from commit: `2a2dbd6f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -517,7 +517,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `react` connect `@hugeicons/core-free-icons` to `index.ts`, `LegalPage.tsx`, `blogService.ts`, `MarketDiffusion.tsx`, `package.json`, `format.ts`, `app/layout.tsx`, `MemberDirectory.tsx`, `gravityPhysics.ts`, `authz.ts`, `KosmosTimeline.tsx`, `next`, `ServerDashboard.tsx`, `ApplicationWizard.tsx`, `iban.ts`, `cn`, `featureFlagService.ts`, `Footer.tsx`, `Site.tsx`, `BulkImport.tsx`, `MailForm.tsx`, `app/blog/page.tsx`, `eventService.ts`, `EditUserForm.tsx`, `altcha.d.ts`, `PhysicsTimeline.tsx`, `EventForm.tsx`?**
   _High betweenness centrality (0.114) - this node is a cross-community bridge._
 - **Why does `AppError` connect `AppError` to `prisma.ts`, `sendEmail`, `mitgliedsantraege/page.tsx`, `requireAdmin`, `userService.ts`, `next`, `serverStatus.ts`, `blogService.ts`, `eventService.ts`, `mitglied-werden/actions.ts`, `messages.ts`, `mailService.ts`, `executeAction`, `isFeatureEnabled`, `login/actions.ts`, `featureFlagService.ts`, `blog/actions.ts`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **What connects `deploy.sh script`, `eslintConfig`, `nextConfig` to the rest of the system?**
   _468 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `index.ts` be split into smaller, more focused modules?**
