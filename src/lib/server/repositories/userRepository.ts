@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { anonymizeSecurityEventsForUser } from "@/lib/server/securityLog";
-import { archiveFeesOfUser } from "./feeRepository";
 
 export function findUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });
@@ -44,9 +43,6 @@ export async function deleteUserById(id: string) {
         data: { recipientEmail: null },
       });
     }
-    // Beitragszeilen bleiben als Aufzeichnung stehen; der Fremdschlüssel wird
-    // beim Löschen auf NULL gesetzt.
-    await archiveFeesOfUser(tx, id);
     return tx.user.delete({ where: { id } });
   });
 }

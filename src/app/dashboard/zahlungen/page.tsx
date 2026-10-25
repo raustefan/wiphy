@@ -31,20 +31,23 @@ export default async function ZahlungenPage() {
         isFeatureEnabled("PDF_DOCUMENTS"),
     ]);
 
+    const myRecord = feeUsers.find((u) => u.id === currentUser.id);
+    const fees = (myRecord?.fees ?? []).filter((f) => f.year <= currentYear + 1).sort((a, b) => b.year - a.year);
+
     /*
      * Beitragshistorie und SEPA-Mandat setzen eine Mitgliedschaft voraus: Wer
      * nur ein Konto hat, schuldet keinen Beitrag und erteilt dem Verein auch
-     * kein Mandat. Die Seite gibt es für ihn deshalb gar nicht.
+     * kein Mandat. Die Seite gibt es für ihn deshalb nicht — außer nach einem
+     * Austritt mit offenen Beiträgen: die bleiben geschuldet und bezahlbar.
      *
      * Der Status kommt aus der Datenbank, nicht aus der Session: Im Token steht
      * er seit der Anmeldung fest, ein frisch aufgenommenes Mitglied wäre sonst
      * bis zum nächsten Login ausgesperrt.
      */
     const status = profile?.status ?? currentUser.status ?? "NON_MEMBER";
-    if (status === "NON_MEMBER") redirect("/dashboard");
-
-    const myRecord = feeUsers.find((u) => u.id === currentUser.id);
-    const fees = (myRecord?.fees ?? []).slice().sort((a, b) => b.year - a.year);
+    // Nur angelegte Zeilen: das laufende Jahr wird oben für jedes Konto berechnet ergänzt.
+    const owesFees = fees.some((f) => f.angelegt && !f.paid && f.amount > 0);
+    if (status === "NON_MEMBER" && !owesFees) redirect("/dashboard");
 
     return (
         <Container size="3" className="py-8 sm:py-12">

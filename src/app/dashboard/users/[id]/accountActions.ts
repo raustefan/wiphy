@@ -12,27 +12,16 @@ import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { sendEmail } from "@/lib/server/email/mailer";
 import type { EmailMessage } from "@/lib/email/blocks";
-import {
-  accountDeletedMessage,
-  loginDisabledMessage,
-  terminationNoticeMessage,
-  terminationReceivedMessage,
-} from "@/lib/email/messages";
-import { getAdminNotificationEmails } from "@/lib/server/services/contactService";
+import { accountDeletedMessage, loginDisabledMessage } from "@/lib/email/messages";
 import {
   deleteAccountWithoutMembership,
   disableOwnLogin,
   verifyPasswordForAccountAction,
 } from "@/lib/server/services/accountService";
-import { submitTermination, withdrawTermination } from "@/lib/server/services/terminationService";
-import { siteUrl } from "@/lib/server/siteUrl";
+import { resignMembership, sendExitMails } from "@/lib/server/services/terminationService";
 import { MEMBERSHIP_ADMIN_PATH } from "@/lib/membership";
 
 const passwordSchema = z.object({ password: z.string().min(1, "Bitte gib dein Passwort ein.") });
-
-const terminateSchema = passwordSchema.extend({
-  keepAccount: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
-});
 
 /**
  * Mails dürfen den bereits gespeicherten Vorgang nie kippen. Jede hängt an
@@ -55,58 +44,28 @@ function mailLater(
 }
 
 /**
- * Austrittserklärung. Gespeichert wird zuerst — der Zugang zählt, nicht die
- * Mail. Ist die Online-Kündigung abgeschaltet, bleibt der Weg über
- * Kontaktformular oder E-Mail an den Vorstand (Hinweis im Profil).
+ * Sofortiger Austritt. Ohne offene Beiträge ist das Konto danach gelöscht und
+ * die Sitzung endet; sonst bleibt es bis zur Zahlung bestehen. Ist die
+ * Online-Kündigung abgeschaltet, bleibt der Weg über den Vorstand (Hinweis im
+ * Profil).
  */
 export async function terminateMembership(formData: FormData) {
   return executeAction(async () => {
     const currentUser = await requireUser();
     await requireFeatureEnabled("MEMBERSHIP_TERMINATION");
-    const { password, keepAccount } = parseFormData(terminateSchema, formData);
+    // Wie beim Löschen: sonst verschwindet im Zweifel der letzte Admin-Zugang.
+    if (currentUser.role === "ADMIN") {
+      throw new AppError("FORBIDDEN", "Administratoren müssen vor dem Austritt ihre Adminrolle abgeben.");
+    }
+    const { password } = parseFormData(passwordSchema, formData);
     await verifyPasswordForAccountAction(currentUser.id, password);
 
-    const { termination, user } = await submitTermination(currentUser.id, keepAccount);
-
-    mailLater(
-      "MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL",
-      { to: user.email },
-      terminationReceivedMessage({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        submittedAt: termination.submittedAt,
-        effectiveAt: termination.effectiveAt,
-        keepAccount,
-      }),
-    );
-    mailLater(
-      "MEMBERSHIP_TERMINATION_MAIL",
-      // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
-      { bcc: await getAdminNotificationEmails() },
-      terminationNoticeMessage({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        memberNumber: user.memberNumber,
-        submittedAt: termination.submittedAt,
-        effectiveAt: termination.effectiveAt,
-        // Nie aus dem Host-Header: der ist vom Client steuerbar.
-        dashboardUrl: siteUrl(MEMBERSHIP_ADMIN_PATH),
-      }),
-    );
-
-    revalidatePath(`/dashboard/users/${currentUser.id}`);
+    const { user, openFees } = await resignMembership(currentUser.id);
+    after(() => sendExitMails(user, openFees));
     revalidatePath(MEMBERSHIP_ADMIN_PATH);
-  });
-}
 
-export async function withdrawMembershipTermination(formData: FormData) {
-  return executeAction(async () => {
-    const currentUser = await requireUser();
-    const { id } = parseFormData(z.object({ id: z.string().min(1) }), formData);
-    await withdrawTermination(id, currentUser.id);
+    if (openFees.length === 0) await signOut({ redirectTo: "/login?konto=geloescht" });
     revalidatePath(`/dashboard/users/${currentUser.id}`);
-    revalidatePath(MEMBERSHIP_ADMIN_PATH);
   });
 }
 

@@ -46,6 +46,10 @@ model User {
   /// Studiengang, Studienzeit und auf Klick E-Mail-Adresse für andere
   /// Mitglieder sichtbar zu sein, die ebenfalls eingewilligt haben.
   kosmosVisible Boolean      @default(false)
+  /// Empfängt Rundmails, die der Vorstand als Newsletter kennzeichnet.
+  /// Abbestellen per Link in jeder solchen Mail oder im Mitgliederbereich;
+  /// alle übrigen Mails kommen unabhängig davon an.
+  newsletter    Boolean      @default(true)
   /// Nur für Admins sichtbarer Kommentar zu Zahlungs-/Mitgliedschaftsthemen.
   adminNote     String?
 
@@ -121,11 +125,11 @@ enum MemberStatus {
 }
 
 model MemberFee {
-  id     String  @id @default(cuid())
-  /// NULL nach dem Löschen des Kontos: die Zeile bleibt als Buchhaltungs-
-  /// aufzeichnung stehen (§ 147 AO), siehe `archiveFeesOfUser`.
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId String?
+  id     String @id @default(cuid())
+  /// Mit dem Konto gelöscht: Belege über Beiträge sind die Kontoauszüge, eine
+  /// Zahlungshistorie gelöschter Konten führt der Verein hier nicht.
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
   /// Beitragsjahr (z. B. 2000, 2001, ...).
   year         Int
@@ -138,19 +142,10 @@ model MemberFee {
   /// Solange false, folgt die Zeile automatisch den Standardbeiträgen.
   manualAmount Boolean @default(false)
 
-  /// Beim Löschen des Kontos eingefroren: wem die Zeile gehörte. Mehr als
-  /// Name und Mitgliedsnummer braucht die Aufzeichnung nicht (Datenminimierung).
-  archivedName         String?
-  archivedMemberNumber Int?
-  /// Gesetzt = archiviert und gesperrt (Art. 18 DSGVO): nur noch lesbar, gelöscht
-  /// nach Ablauf der Aufbewahrungsfrist (`pruneArchivedFees`).
-  archivedAt           DateTime?
-
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
   @@unique([userId, year])
-  @@index([archivedAt, year])
 }
 
 model BlogPost {
@@ -554,10 +549,9 @@ model MembershipApplication {
 }
 
 enum MembershipTerminationStatus {
-  /// Eingegangen, Austritt ist damit erklärt; der Vorstand hat noch nicht bestätigt.
-  SUBMITTED
-  /// Vom Vorstand bestätigt. Wirksam wird der Austritt erst zu `effectiveAt`.
+  /// Wirksam zu `effectiveAt`; vollzogen, sobald `completedAt` gesetzt ist.
   CONFIRMED
+  /// Altbestand: vom Mitglied zurückgenommene Kündigung zum Jahresende.
   WITHDRAWN
 }
 
@@ -569,20 +563,21 @@ enum TerminationReason {
   DECEASED
 }
 
-/// Ende einer Mitgliedschaft — meist die Austrittserklärung eines Mitglieds
-/// (§ 6 Satzung: schriftlich, vier Wochen zum Ende des Geschäftsjahres).
+/// Ende einer Mitgliedschaft.
 ///
-/// Der Austritt ist eine einseitige Erklärung und wirkt mit dem Zugang — der
-/// Vorstand „genehmigt“ ihn nicht, er bestätigt den Eingang und hält das
-/// Austrittsdatum fest. Die Zeile ist zugleich der Nachweis, wann die Erklärung
-/// eingegangen ist; sie wird drei Jahre nach dem Austritt gelöscht
-/// (Regelverjährung, siehe `pruneTerminations`).
+/// Tritt ein Mitglied selbst aus, endet die Mitgliedschaft sofort (Zustimmung
+/// des Vorstands zur vorzeitigen Beendigung, abweichend von § 6 Satzung). Ohne
+/// offene Beiträge wird das Konto gleich gelöscht und es entsteht keine Zeile;
+/// sonst hält sie `deleteWhenSettled` fest, bis die Beiträge bezahlt sind.
+///
+/// Austritte durch den Vorstand (Ausschluss, Tod) bleiben als Nachweis stehen
+/// und werden drei Jahre danach gelöscht (Regelverjährung, `processTerminations`).
 model MembershipTermination {
   id     String @id @default(cuid())
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  status MembershipTerminationStatus @default(SUBMITTED)
+  status MembershipTerminationStatus @default(CONFIRMED)
   reason TerminationReason           @default(RESIGNATION)
 
   /// `userId`, solange die Kündigung noch nicht vollzogen ist — gleicher
@@ -602,6 +597,9 @@ model MembershipTermination {
   decisionNote String?
   /// Gesetzt, sobald der Status des Mitglieds auf NON_MEMBER umgestellt wurde.
   completedAt  DateTime?
+  /// Sofortiger Austritt mit offenen Beiträgen: das Konto wird gelöscht,
+  /// sobald keine mehr offen sind (`processTerminations`).
+  deleteWhenSettled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

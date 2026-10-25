@@ -500,6 +500,13 @@ export const mailSendSchema = z
     eventId: optionalEventId,
     /** Checkbox „Kalenderdatei anhängen“ — wirkt nur zusammen mit `eventId`. */
     attachIcs: z.boolean().default(false),
+    /**
+     * Pflichtangabe ohne Vorauswahl: ein Newsletter geht nur an Abonnenten und
+     * trägt einen Abmeldelink, alles andere an alle und ohne.
+     */
+    newsletter: z
+      .enum(["yes", "no"], { message: "Bitte angeben, ob die Mail ein Newsletter ist." })
+      .transform((value) => value === "yes"),
   })
   .superRefine((data, ctx) => {
     if (data.target === "SELECTED" && data.selectedUserIds.length === 0) {

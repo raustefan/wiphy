@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { consumeRateLimit } from "@/lib/server/rateLimit";
 import { deleteUserById } from "@/lib/server/repositories/userRepository";
+import { getOpenFees } from "./feeService";
 
 /**
  * Kündigen, Zugang sperren und Konto löschen verlangen das Passwort erneut:
@@ -67,6 +68,13 @@ export async function deleteAccountWithoutMembership(userId: string) {
     throw new AppError(
       "FORBIDDEN",
       "Solange eine Mitgliedschaft besteht, kann das Konto nicht gelöscht werden.",
+    );
+  }
+  // Mit dem Konto verschwänden auch die Beitragszeilen — und damit die Forderung.
+  if ((await getOpenFees(userId)).length > 0) {
+    throw new AppError(
+      "FORBIDDEN",
+      "Solange Beiträge offen sind, kann das Konto nicht gelöscht werden. Danach geschieht das automatisch.",
     );
   }
   await deleteUserById(userId);

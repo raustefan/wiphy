@@ -70,7 +70,11 @@ function headerHtml(): string {
   ].join("");
 }
 
-function footerHtml(): string {
+function unsubscribeHtml(url: string): string {
+  return `<p style="margin:12px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${C.faint};">Du bekommst diese Mail, weil du den Newsletter des ${escapeHtml(VEREIN.name)} erhältst. <a href="${escapeHtml(url)}" style="color:${C.muted};text-decoration:underline;">Newsletter abbestellen</a></p>`;
+}
+
+function footerHtml(unsubscribeUrl?: string): string {
   const links = FOOTER_LINKS.map(
     (link) =>
       `<a href="${siteUrl(link.path)}" style="color:${C.muted};text-decoration:none;white-space:nowrap;">${escapeHtml(link.label)}</a>`,
@@ -81,12 +85,20 @@ function footerHtml(): string {
     `<p style="margin:0 0 10px;font-family:${FONT};font-size:13px;line-height:2;color:${C.muted};">${links}</p>`,
     `<p style="margin:0 0 6px;font-family:${FONT};font-size:12px;line-height:1.6;color:${C.faint};">${VEREIN.address.map(escapeHtml).join("<br>")}</p>`,
     `<p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${C.faint};">${escapeHtml(VEREIN.register)} · <a href="mailto:${VEREIN.email}" style="color:${C.faint};">${escapeHtml(VEREIN.email)}</a><br>© ${new Date().getFullYear()} ${escapeHtml(VEREIN.name)}</p>`,
+    unsubscribeUrl ? unsubscribeHtml(unsubscribeUrl) : "",
     `</td></tr>`,
   ].join("");
 }
 
-/** Vollständiges HTML-Dokument der Mail. */
-export function renderEmailHtml(message: EmailMessage, boardLine: string = ""): string {
+/**
+ * Vollständiges HTML-Dokument der Mail. `unsubscribeUrl` nur bei
+ * Newsletter-Mails — er steht dann als letzte Zeile ganz unten im Footer.
+ */
+export function renderEmailHtml(
+  message: EmailMessage,
+  boardLine: string = "",
+  unsubscribeUrl?: string,
+): string {
   const signature = message.signature ?? "board";
   const preheader = derivePreheader(message);
 
@@ -110,7 +122,7 @@ ${headerHtml()}
 ${renderBlocksHtml(message.blocks)}
 ${signatureHtml(signature, boardLine)}
 </td></tr>
-${footerHtml()}
+${footerHtml(unsubscribeUrl)}
 </table>
 </td></tr>
 </table>
@@ -119,11 +131,16 @@ ${footerHtml()}
 }
 
 /** Textfassung derselben Mail — identischer Inhalt, ohne Markup. */
-export function renderEmailText(message: EmailMessage, boardLine: string = ""): string {
+export function renderEmailText(
+  message: EmailMessage,
+  boardLine: string = "",
+  unsubscribeUrl?: string,
+): string {
   const signature = signatureText(message.signature ?? "board", boardLine);
   const footer = [VEREIN.name, ...VEREIN.address, VEREIN.email, siteUrl("/")].join("\n");
+  const unsubscribe = unsubscribeUrl ? `Newsletter abbestellen: ${unsubscribeUrl}` : "";
 
-  return [renderBlocksText(message.blocks), signature, `--\n${footer}`]
+  return [renderBlocksText(message.blocks), signature, `--\n${footer}`, unsubscribe]
     .filter((part) => part.length > 0)
     .join("\n\n");
 }

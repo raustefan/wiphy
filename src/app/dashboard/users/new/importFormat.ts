@@ -64,6 +64,7 @@ export const FEES_EXAMPLE = [
  * `User`-Spalten, die der Import bewusst nicht annimmt: die App setzt sie
  * selbst. `kosmosVisible` ist eine Einwilligung — die gibt nur das Mitglied,
  * ebenso die Bestätigung der Datenschutzerklärung (`privacyPolicyVersion`).
+ * `newsletter` startet immer an; abbestellen kann nur das Mitglied selbst.
  */
 export const IMPORT_EXCLUDED_FIELDS = [
     "id",
@@ -77,6 +78,7 @@ export const IMPORT_EXCLUDED_FIELDS = [
     "sessionVersion",
     "kosmosVisible",
     "privacyPolicyVersion",
+    "newsletter",
 ] as const;
 
 export type ImportField = { key: string; label: string; format: string };

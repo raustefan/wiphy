@@ -6,7 +6,6 @@ import {
   upsertFeeAmount,
   clearFeeAmountOverride,
   findExistingFeeYears,
-  findArchivedFees,
   updateFeeComment as updateFeeCommentRepo,
 } from "@/lib/server/repositories/feeRepository";
 import { findFeeDefaults } from "@/lib/server/repositories/feeDefaultRepository";
@@ -15,10 +14,6 @@ import { calculateFee, wasMemberInYear, type FeeBreakdown } from "@/lib/feeCalcu
 import { isSepaIban, isValidBic, isValidIban, normalizeIban, requiresBic } from "@/lib/iban";
 import { isCountryCode } from "@/lib/countries";
 import { defaultMandateId, isoDate, type SepaDebtorAddress } from "@/lib/sepa";
-
-export function getArchivedFees() {
-  return findArchivedFees();
-}
 
 export function getFeeLiableUsers() {
   return findFeeLiableUsers();
@@ -137,6 +132,24 @@ export async function getFeeDashboardData(userId: string, role: Role, ensureYear
       : users;
 
   return visible.map((user) => withResolvedFees(user, defaults, ensureYear));
+}
+
+/**
+ * Was ein Konto bis einschließlich des laufenden Jahres noch schuldet. Der
+ * Beitrag des laufenden Jahres zählt für ordentliche Mitglieder auch ohne
+ * angelegte Zeile (§ 5: am 1. Januar fällig), sofern sie da schon Mitglied
+ * waren. Betrag 0 (erlassen) gilt als beglichen.
+ */
+export async function getOpenFees(userId: string, year = new Date().getFullYear()) {
+  const [[user], defaults] = await Promise.all([
+    findUsersWithFees(userId, "MEMBER"),
+    findFeeDefaults(),
+  ]);
+  if (!user) return [];
+  const liable = user.status === "REGULAR_MEMBER" && wasMemberInYear(year, user.joinedAt);
+  return withResolvedFees(user, defaults, liable ? year : undefined).fees.filter(
+    (fee) => fee.year <= year && !fee.paid && fee.amount > 0,
+  );
 }
 
 /**

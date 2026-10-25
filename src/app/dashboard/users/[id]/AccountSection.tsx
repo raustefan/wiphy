@@ -5,59 +5,45 @@ import { Delete02Icon, Door01Icon, Logout01Icon } from "@hugeicons/core-free-ico
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { MembershipTerminationStatus } from "@prisma/client";
 import {
     Button,
     Callout,
     Card,
-    Checkbox,
     Dialog,
     DialogFooter,
     Field,
     Input,
 } from "@/components/ui";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatEuro } from "@/lib/format";
 import { VEREIN } from "@/lib/email/branding";
-import {
-    deleteOwnAccount,
-    disableOwnAccount,
-    terminateMembership,
-    withdrawMembershipTermination,
-} from "./accountActions";
+import { deleteOwnAccount, disableOwnAccount, terminateMembership } from "./accountActions";
 
-export type OwnTermination = {
-    id: string;
-    status: MembershipTerminationStatus;
-    submittedAt: string;
-    effectiveAt: string;
-    keepAccount: boolean;
-};
-
-type Mode = "terminate" | "disable" | "delete" | "withdraw";
+type Mode = "terminate" | "disable" | "delete";
 
 type ActionResult = { ok: true } | { ok: false; message: string };
 
 /**
- * Selbstverwaltung des eigenen Kontos: Kündigen, Zugang sperren, Löschen.
+ * Selbstverwaltung des eigenen Kontos: Austreten, Zugang sperren, Löschen.
  *
- * Was angeboten wird, hängt an der Mitgliedschaft: Mitglieder können kündigen
- * und ihren Zugang sperren (die Daten braucht der Verein weiter), Konten ohne
- * Mitgliedschaft lassen sich restlos löschen. Alles außer der Rücknahme
+ * Mitglieder treten mit sofortiger Wirkung aus: ohne offene Beiträge ist das
+ * Konto danach gelöscht, sonst bleibt es bis zur Zahlung bestehen. Konten ohne
+ * Mitgliedschaft und ohne offene Beiträge lassen sich restlos löschen. Alles
  * verlangt das Passwort erneut.
  */
 export function AccountSection({
     isMember,
     isAdmin,
-    termination,
-    terminationPreview,
+    exitedAt,
+    openFees,
     terminationEnabled,
     contactFormEnabled,
 }: {
     isMember: boolean;
     isAdmin: boolean;
-    termination: OwnTermination | null;
-    /** Austrittsdatum bei Eingang heute, vom Server berechnet. */
-    terminationPreview: string;
+    /** Austrittsdatum, solange das Konto auf die Begleichung offener Beiträge wartet. */
+    exitedAt: string | null;
+    /** Offene Beiträge bis einschließlich des laufenden Jahres. */
+    openFees: { year: number; amount: number }[];
     /** Feature-Flag MEMBERSHIP_TERMINATION — aus: Hinweis auf den Weg über den Vorstand. */
     terminationEnabled: boolean;
     contactFormEnabled: boolean;
@@ -65,21 +51,20 @@ export function AccountSection({
     const router = useRouter();
     const [mode, setMode] = useState<Mode | null>(null);
     const [password, setPassword] = useState("");
-    const [keepAccount, setKeepAccount] = useState(false);
     const [error, setError] = useState("");
     const [isPending, startTransition] = useTransition();
 
-    const canTerminate = isMember && !termination && terminationEnabled;
-    const terminateOffline = isMember && !termination && !terminationEnabled;
+    const owesFees = openFees.length > 0;
+    const canTerminate = isMember && !isAdmin && terminationEnabled;
+    const terminateOffline = isMember && !isAdmin && !terminationEnabled;
     const canDisable = isMember && !isAdmin;
-    const canDelete = !isMember && !isAdmin;
-    if (!canTerminate && !terminateOffline && !canDisable && !canDelete && !termination) {
+    const canDelete = !isMember && !isAdmin && !owesFees;
+    if (!canTerminate && !terminateOffline && !canDisable && !canDelete && !exitedAt) {
         return null;
     }
 
     function open(next: Mode) {
         setPassword("");
-        setKeepAccount(false);
         setError("");
         setMode(next);
     }
@@ -89,19 +74,16 @@ export function AccountSection({
         fd.set("password", password);
         let action: (fd: FormData) => Promise<ActionResult>;
         if (mode === "terminate") {
-            fd.set("keepAccount", keepAccount ? "on" : "");
             action = terminateMembership;
         } else if (mode === "disable") {
             action = disableOwnAccount;
-        } else if (mode === "delete") {
-            action = deleteOwnAccount;
         } else {
-            fd.set("id", termination?.id ?? "");
-            action = withdrawMembershipTermination;
+            action = deleteOwnAccount;
         }
         setError("");
         startTransition(async () => {
-            // Sperren und Löschen enden mit einer Weiterleitung auf den Login.
+            // Sperren, Löschen und Austritt ohne offene Beiträge enden mit
+            // einer Weiterleitung auf den Login.
             const result = await action(fd);
             if (!result.ok) {
                 setError(result.message);
@@ -112,44 +94,38 @@ export function AccountSection({
         });
     }
 
-    const needsPassword = mode !== "withdraw";
+    const feeList = (
+        <ul className="list-disc pl-5">
+            {openFees.map((fee) => (
+                <li key={fee.year}>
+                    Beitrag {fee.year}: {formatEuro(fee.amount)}
+                </li>
+            ))}
+        </ul>
+    );
 
     return (
         <Card className="mt-8 grid gap-4 p-5 sm:p-6">
             <div className="grid gap-1">
                 <p className="font-semibold">Mitgliedschaft & Konto</p>
                 <p className="text-sm text-muted text-pretty">
-                    Kündigen, Zugang sperren oder Konto löschen.
+                    Austreten, Zugang sperren oder Konto löschen.
                 </p>
             </div>
 
-            {termination?.status === "SUBMITTED" && (
-                <Callout tone="info" title="Deine Kündigung ist eingegangen">
-                    Eingegangen am {formatDateTime(termination.submittedAt)}. Du bleibst Mitglied
-                    bis einschließlich {formatDate(termination.effectiveAt)}. Der Vorstand
-                    bestätigt den Austritt in Kürze; bis dahin kannst du die Kündigung
-                    zurücknehmen.
-                    <div className="mt-3">
-                        <Button
-                            size="sm"
-                            variant="soft"
-                            color="neutral"
-                            onClick={() => open("withdraw")}
-                        >
-                            Kündigung zurücknehmen
-                        </Button>
-                    </div>
-                </Callout>
-            )}
-
-            {termination?.status === "CONFIRMED" && (
-                <Callout tone="info" title="Austritt bestätigt">
-                    Deine Mitgliedschaft endet mit Ablauf des{" "}
-                    {formatDate(termination.effectiveAt)}.{" "}
-                    {termination.keepAccount
-                        ? "Dein Konto bleibt danach ohne Mitgliedschaft bestehen."
-                        : "Danach wird dein Login gesperrt."}{" "}
-                    Möchtest du doch bleiben, wende dich bitte an den Vorstand.
+            {exitedAt && (
+                <Callout tone="info" title="Du bist ausgetreten">
+                    Deine Mitgliedschaft endete am {formatDate(exitedAt)}.{" "}
+                    {owesFees ? (
+                        <>
+                            Die Zahlungspflicht für diese Beiträge besteht weiter:
+                            {feeList}
+                            Bis sie beglichen sind, bleiben dein Konto und deine Zahlungsdaten
+                            bestehen. Danach löschen wir dein Konto automatisch.
+                        </>
+                    ) : (
+                        "Deine Beiträge sind beglichen; dein Konto wird in Kürze automatisch gelöscht."
+                    )}
                 </Callout>
             )}
 
@@ -172,15 +148,14 @@ export function AccountSection({
                     >
                         {VEREIN.email}
                     </a>{" "}
-                    beenden. Nach § 6 der Satzung ist das mit vier Wochen Frist zum Jahresende
-                    möglich; maßgeblich ist der Eingang beim Vorstand.
+                    beenden.
                 </Callout>
             )}
 
             <div className="flex flex-wrap gap-2">
                 {canTerminate && (
                     <Button variant="soft" color="danger" onClick={() => open("terminate")}>
-                        <HugeiconsIcon icon={Door01Icon} size={16} aria-hidden="true" /> Mitgliedschaft kündigen
+                        <HugeiconsIcon icon={Door01Icon} size={16} aria-hidden="true" /> Austreten
                     </Button>
                 )}
                 {canDisable && (
@@ -200,38 +175,37 @@ export function AccountSection({
                 onClose={() => setMode(null)}
                 title={
                     mode === "terminate"
-                        ? "Mitgliedschaft kündigen"
+                        ? "Aus dem Verein austreten"
                         : mode === "disable"
                           ? "Zugang deaktivieren"
-                          : mode === "delete"
-                            ? "Konto endgültig löschen"
-                            : "Kündigung zurücknehmen?"
+                          : "Konto endgültig löschen"
                 }
             >
                 <div className="grid gap-4 text-sm leading-relaxed text-muted text-pretty">
-                    {mode === "terminate" && (
-                        <>
+                    {mode === "terminate" &&
+                        (owesFees ? (
+                            <>
+                                <p>
+                                    Deine Mitgliedschaft endet{" "}
+                                    <span className="font-semibold text-foreground">sofort</span>.
+                                    Bei uns sind aber noch Beiträge offen:
+                                </p>
+                                {feeList}
+                                <p>
+                                    Die Zahlungspflicht dafür besteht weiter. Deshalb bleiben dein
+                                    Konto und deine Zahlungsdaten bestehen, bis die Beiträge
+                                    beglichen sind; danach löschen wir dein Konto automatisch und
+                                    vollständig.
+                                </p>
+                            </>
+                        ) : (
                             <p>
-                                Nach § 6 der Satzung ist ein Austritt mit einer Frist von vier
-                                Wochen zum Ende des Geschäftsjahres möglich. Geht deine Kündigung
-                                heute ein, bist du Mitglied bis einschließlich{" "}
-                                <span className="font-semibold text-foreground">
-                                    {formatDate(terminationPreview)}
-                                </span>
-                                . Bis dahin bleiben Rechte und Beitragspflicht bestehen.
+                                Deine Mitgliedschaft endet{" "}
+                                <span className="font-semibold text-foreground">sofort</span>, und
+                                dein Konto wird mit allen zugehörigen Daten unwiderruflich gelöscht.
+                                Bereits gezahlte Beiträge werden nicht erstattet.
                             </p>
-                            <label className="flex cursor-pointer items-start gap-2">
-                                <Checkbox
-                                    checked={keepAccount}
-                                    onChange={(event) => setKeepAccount(event.target.checked)}
-                                />
-                                <span className="text-foreground">
-                                    Konto nach dem Austritt behalten (ohne Mitgliedschaft). Sonst
-                                    wird der Login zum Austrittsdatum gesperrt.
-                                </span>
-                            </label>
-                        </>
-                    )}
+                        ))}
                     {mode === "disable" && (
                         <p>
                             Du kannst dich danach nicht mehr anmelden, alle Sitzungen werden
@@ -241,7 +215,7 @@ export function AccountSection({
                             </span>{" "}
                             — der Verein behält deshalb deine Daten und erreicht dich per E-Mail
                             oder Post. Zum Reaktivieren genügt eine Nachricht an den Vorstand.
-                            Wenn du austreten möchtest, kündige bitte zusätzlich.
+                            Wenn du austreten möchtest, nutze stattdessen „Austreten“.
                         </p>
                     )}
                     {mode === "delete" && (
@@ -250,25 +224,17 @@ export function AccountSection({
                             <span className="font-semibold text-foreground">
                                 sofort und unwiderruflich
                             </span>{" "}
-                            gelöscht, einschließlich eventueller Anträge. Hast du früher Beiträge
-                            gezahlt, bewahren wir nur diese Buchungen mit Name und Mitgliedsnummer
-                            wegen der steuerlichen Aufbewahrungspflicht gesperrt auf.
+                            gelöscht, einschließlich eventueller Anträge und Beitragsdaten.
                         </p>
                     )}
-                    {mode === "withdraw" && (
-                        <p>Deine Mitgliedschaft läuft dann unverändert weiter.</p>
-                    )}
-
-                    {needsPassword && (
-                        <Field label="Passwort zur Bestätigung">
-                            <Input
-                                type="password"
-                                autoComplete="current-password"
-                                value={password}
-                                onChange={(event) => setPassword(event.target.value)}
-                            />
-                        </Field>
-                    )}
+                    <Field label="Passwort zur Bestätigung">
+                        <Input
+                            type="password"
+                            autoComplete="current-password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                        />
+                    </Field>
 
                     {error && (
                         <p role="alert" className="text-negative">
@@ -286,18 +252,18 @@ export function AccountSection({
                         Abbrechen
                     </Button>
                     <Button
-                        color={mode === "withdraw" ? "accent" : "danger"}
+                        color="danger"
                         onClick={submit}
                         loading={isPending}
-                        disabled={needsPassword && !password}
+                        disabled={!password}
                     >
                         {mode === "terminate"
-                            ? "Verbindlich kündigen"
+                            ? owesFees
+                                ? "Verbindlich austreten"
+                                : "Austreten und Konto löschen"
                             : mode === "disable"
                               ? "Zugang deaktivieren"
-                              : mode === "delete"
-                                ? "Endgültig löschen"
-                                : "Zurücknehmen"}
+                              : "Endgültig löschen"}
                     </Button>
                 </DialogFooter>
             </Dialog>

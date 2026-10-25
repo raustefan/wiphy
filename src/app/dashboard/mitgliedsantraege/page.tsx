@@ -12,7 +12,6 @@ import { ApplicationList } from "./ApplicationList";
 import { TerminationList } from "./TerminationList";
 import { SectionHeader } from "../SectionHeader";
 import { getTerminations, processTerminations } from "@/lib/server/services/terminationService";
-import { isTerminationDue } from "@/lib/membershipTermination";
 
 export const metadata: Metadata = { title: "Anträge & Austritte" };
 
@@ -32,7 +31,6 @@ export default async function MembershipApplicationsPage() {
         terminations,
         terminationEnabled,
         terminationMailEnabled,
-        terminationConfirmationMailEnabled,
     ] = await Promise.all([
             getApplications(),
             getFeeDefaults(),
@@ -42,7 +40,6 @@ export default async function MembershipApplicationsPage() {
             getTerminations(),
             isFeatureEnabled("MEMBERSHIP_TERMINATION"),
             isFeatureEnabled("MEMBERSHIP_TERMINATION_MAIL"),
-            isFeatureEnabled("MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL"),
         ]);
     // Vorschau der ID, die eine Annahme vergeben würde (nächste freie ID).
     const nextMemberNumber = maxMemberNumber + 1;
@@ -104,12 +101,10 @@ export default async function MembershipApplicationsPage() {
     const terminationItems = terminations.map((t) => ({
         id: t.id,
         status: t.status,
-        submittedAt: t.submittedAt.toISOString(),
         effectiveAt: t.effectiveAt.toISOString(),
-        keepAccount: t.keepAccount,
         decisionNote: t.decisionNote,
         completedAt: t.completedAt?.toISOString() ?? null,
-        overdue: t.status === "SUBMITTED" && isTerminationDue(t.effectiveAt, today),
+        deleteWhenSettled: t.deleteWhenSettled,
         member: {
             id: t.user.id,
             email: t.user.email,
@@ -173,7 +168,7 @@ export default async function MembershipApplicationsPage() {
                     icon={<HugeiconsIcon icon={Door01Icon} size={16} />}
                     eyebrow="Kündigungen"
                     title="Austritte"
-                    description="Austrittserklärungen aus dem Mitgliederbereich. Nach der Bestätigung wird der Status am Tag nach dem Austrittsdatum automatisch auf „Kein Mitglied“ gesetzt."
+                    description="Mitglieder treten mit sofortiger Wirkung aus. Ohne offene Beiträge wird das Konto sofort gelöscht und erscheint hier nicht; sonst bleibt es, bis die Beiträge als bezahlt markiert sind."
                 />
                 {!terminationEnabled && (
                     <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
@@ -184,15 +179,9 @@ export default async function MembershipApplicationsPage() {
                 )}
                 {terminationEnabled && !terminationMailEnabled && (
                     <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
-                        Die Mail-Benachrichtigung für Kündigungen ist deaktiviert. Neue Kündigungen
-                        landen nur hier — bitte regelmäßig prüfen, die Frist läuft ab Eingang.
-                    </Callout>
-                )}
-                {!terminationConfirmationMailEnabled && (
-                    <Callout tone="warning" icon={<HugeiconsIcon icon={InformationCircleIcon} size={16} />}>
-                        Die Mails an Mitglieder zur Kündigung sind deaktiviert. Eine Bestätigung
-                        verschickt dann keine Mail — bitte den Austritt anderweitig schriftlich
-                        bestätigen.
+                        Die Mail-Benachrichtigung für Austritte ist deaktiviert. Austritte ohne
+                        offene Beiträge löschen das Konto sofort und sind dann nirgends mehr zu
+                        sehen — der Vorstand erfährt davon nichts.
                     </Callout>
                 )}
                 {terminationItems.length === 0 ? (
@@ -200,14 +189,11 @@ export default async function MembershipApplicationsPage() {
                         <EmptyState
                             icon={<HugeiconsIcon icon={Door01Icon} size={22} />}
                             title="Keine Austritte"
-                            description="Kündigungen von Mitgliedern erscheinen hier zur Bestätigung."
+                            description="Ausgetretene mit offenen Beiträgen erscheinen hier, bis ihr Konto gelöscht ist."
                         />
                     </Card>
                 ) : (
-                    <TerminationList
-                        terminations={terminationItems}
-                        mailEnabled={terminationConfirmationMailEnabled}
-                    />
+                    <TerminationList terminations={terminationItems} />
                 )}
             </div>
         </Container>

@@ -24,6 +24,7 @@ function parseMailForm(formData: FormData) {
         bccToSelf: formData.get("bccToSelf") === "on",
         eventId: String(formData.get("eventId") ?? ""),
         attachIcs: formData.get("attachIcs") === "on",
+        newsletter: String(formData.get("newsletter") ?? ""),
     };
 
     // Ein ZodError wird in `executeAction` zur ersten Zod-Meldung.
@@ -34,7 +35,7 @@ export async function sendEmailAction(formData: FormData) {
     return executeAction(async () => {
         const admin = await enforceAdminMailRateLimit();
         await requireFeatureEnabled("MAIL_SERVICES");
-        const { target, subject, message, selectedUserIds, bccToSelf, eventId, attachIcs } =
+        const { target, subject, message, selectedUserIds, bccToSelf, eventId, attachIcs, newsletter } =
             parseMailForm(formData);
 
         // Der Terminblock entsteht serverseitig aus dem gespeicherten Termin —
@@ -50,6 +51,7 @@ export async function sendEmailAction(formData: FormData) {
             adminEmail: admin.email,
             event,
             attachIcs,
+            newsletter,
         });
     });
 }

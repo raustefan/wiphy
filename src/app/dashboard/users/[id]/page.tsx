@@ -20,9 +20,10 @@ import { Suspense } from "react";
 import { EditUserForm } from "./EditUserForm";
 import { DeleteMemberSection } from "./DeleteMemberSection";
 import { AccountSection } from "./AccountSection";
-import { getOpenTermination } from "@/lib/server/services/terminationService";
-import { terminationDate } from "@/lib/membershipTermination";
+import { getPendingExit } from "@/lib/server/services/terminationService";
+import { getOpenFees } from "@/lib/server/services/feeService";
 import { DashboardPageHeader } from "../../DashboardPageHeader";
+import { NewsletterSection } from "../../NewsletterSettings";
 
 export const metadata: Metadata = { title: "Mitgliedsdaten" };
 
@@ -184,13 +185,14 @@ export default async function EditUserPage({
     const isSelf = currentUser.id === user.id;
     const isMember = user.status !== "NON_MEMBER";
     const canDelete = isAdmin && !isSelf;
-    const [ownTermination, terminationEnabled, contactFormEnabled] = isSelf
+    const [pendingExit, openFees, terminationEnabled, contactFormEnabled] = isSelf
         ? await Promise.all([
-              getOpenTermination(user.id),
+              getPendingExit(user.id),
+              getOpenFees(user.id),
               isFeatureEnabled("MEMBERSHIP_TERMINATION"),
               isFeatureEnabled("CONTACT_FORM"),
           ])
-        : [null, false, false];
+        : [null, [], false, false];
     const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
     const formErrors: { title: string; detail: string }[] = [];
@@ -242,20 +244,14 @@ export default async function EditUserPage({
                 />
             </Card>
 
+            <NewsletterSection initial={user.newsletter} editable={isSelf} />
+
             {isSelf && (
                 <AccountSection
                     isMember={isMember}
                     isAdmin={isAdmin}
-                    termination={
-                        ownTermination && {
-                            id: ownTermination.id,
-                            status: ownTermination.status,
-                            submittedAt: ownTermination.submittedAt.toISOString(),
-                            effectiveAt: ownTermination.effectiveAt.toISOString(),
-                            keepAccount: ownTermination.keepAccount,
-                        }
-                    }
-                    terminationPreview={terminationDate(new Date()).toISOString()}
+                    exitedAt={pendingExit?.effectiveAt.toISOString() ?? null}
+                    openFees={openFees.map((fee) => ({ year: fee.year, amount: fee.amount }))}
                     terminationEnabled={terminationEnabled}
                     contactFormEnabled={contactFormEnabled}
                 />

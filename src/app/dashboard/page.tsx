@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, PencilIcon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -29,15 +29,13 @@ import { countOpenApplications, getOpenApplication } from "@/lib/server/services
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { getDashboardEvent } from "@/lib/server/services/eventService";
 import { UpcomingEventAlert } from "./UpcomingEventAlert";
-import {
-    countOpenTerminations,
-    processTerminations,
-} from "@/lib/server/services/terminationService";
+import { NewsletterRow } from "./NewsletterSettings";
+import { processTerminations } from "@/lib/server/services/terminationService";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
 const ADMIN_ACTIONS = [
     { href: "/dashboard/users", label: "Benutzerverwaltung", description: "Konten, Rollen und Mitgliedsdaten", Icon: ContactIcon },
-    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", description: "Aufnahmen und Kündigungen bearbeiten", Icon: FileAttachmentIcon },
+    { href: MEMBERSHIP_ADMIN_PATH, label: "Anträge & Austritte", description: "Aufnahmen bearbeiten, Austritte einsehen", Icon: FileAttachmentIcon },
     { href: "/dashboard/users/new", label: "Neuer User", description: "Konto anlegen oder importieren", Icon: UserIcon },
     { href: "/dashboard/mail", label: "Rundmail", description: "Nachricht an Mitglieder senden", Icon: SentIcon },
     { href: "/dashboard/termine", label: "Termine", description: "Veranstaltungen planen", Icon: Calendar01Icon },
@@ -78,6 +76,22 @@ function HeaderMeta({
     );
 }
 
+/** Zeile der Konto-Karte: Icon, Bezeichnung, Pfeil. */
+function AccountLink({ href, Icon, label }: { href: string; Icon: typeof Key02Icon; label: string }) {
+    return (
+        <li>
+            <Link
+                href={href}
+                className="group flex items-center gap-3 py-3 font-medium transition-colors hover:text-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+            >
+                <HugeiconsIcon icon={Icon} size={18} aria-hidden="true" className="shrink-0 text-physics" />
+                <span className="min-w-0 flex-1">{label}</span>
+                <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" className="shrink-0 text-faint transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+            </Link>
+        </li>
+    );
+}
+
 export default async function DashboardPage() {
     const currentUser = await requireUser();
     const isAdmin = currentUser.role === "ADMIN";
@@ -105,6 +119,8 @@ export default async function DashboardPage() {
 
     // Der Antrags-CTA ist nur für Konten ohne Mitgliedschaft relevant.
     const isNonMember = userStatus === "NON_MEMBER";
+    // Nach einem Austritt mit offenen Beiträgen: die bleiben sichtbar und bezahlbar.
+    const owesFees = myFees.some((f) => !f.paid && f.amount > 0);
 
     /*
      * Das Zertifikat gibt es für ordentliche Mitglieder und Ehrenmitglieder —
@@ -120,19 +136,17 @@ export default async function DashboardPage() {
               issuedAt: new Date(),
           })
         : null;
-    const [openApplication, applicationEnabled, openApplicationCount, openTerminationCount, upcomingEvent, debugMode, kosmosEnabled, pdfEnabled] =
+    const [openApplication, applicationEnabled, openApplicationCount, upcomingEvent, debugMode, kosmosEnabled, pdfEnabled] =
         await Promise.all([
             isNonMember ? getOpenApplication(currentUser.id) : null,
             isNonMember ? isFeatureEnabled("MEMBERSHIP_APPLICATION") : false,
             isAdmin ? countOpenApplications() : 0,
-            isAdmin ? countOpenTerminations() : 0,
             getDashboardEvent(),
             isAdmin ? isDebugMode() : false,
             isNonMember ? false : isFeatureEnabled("KOSMOS"),
             certificate ? isFeatureEnabled("PDF_DOCUMENTS") : false,
         ]);
-    const openMembershipTasks = openApplicationCount + openTerminationCount;
-    const showApplicationCta = isNonMember && (applicationEnabled || openApplication != null);
+    const showApplicationCta = isNonMember && !owesFees && (applicationEnabled || openApplication != null);
 
 
     return (
@@ -211,7 +225,7 @@ export default async function DashboardPage() {
                         <ul className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
                             {ADMIN_ACTIONS.filter((a) => debugMode || !("debug" in a)).map(({ href, label, description, Icon, ...a }) => {
                                 const isDebug = "debug" in a;
-                                const count = href === MEMBERSHIP_ADMIN_PATH ? openMembershipTasks : 0;
+                                const count = href === MEMBERSHIP_ADMIN_PATH ? openApplicationCount : 0;
                                 return (
                                     <li key={href} className="min-w-0">
                                         <Link
@@ -296,44 +310,64 @@ export default async function DashboardPage() {
                     <div className="grid grid-cols-1 gap-6 lg:order-2">
                         {upcomingEvent && <UpcomingEventAlert event={upcomingEvent} />}
 
-                        <CtaCard
-                            href={`/dashboard/users/${currentUser.id}`}
-                            tone="accent"
-                            icon={<HugeiconsIcon icon={UserSettings01Icon} size={18} aria-hidden="true" />}
-                            eyebrow="Mitgliederselbstverwaltung"
-                            title="Verwalte deine Mitgliedsdaten"
-                            description="Persönliche Daten, Kontakt, Studium und Beruf jederzeit selbst einsehen und aktualisieren."
-                            action="Zu meinem Profil"
-                        />
-
-                        <CtaCard
-                            href="/dashboard/konto"
-                            icon={<HugeiconsIcon icon={Key02Icon} size={18} aria-hidden="true" />}
-                            eyebrow="Login & Sicherheit"
-                            title="Passwort & E-Mail-Adresse"
-                            description="Ändere dein Passwort oder deine Login-Adresse — bestätigt per Link in deinem Postfach."
-                            action="Zugang verwalten"
-                        />
-
                         {kosmosEnabled && (
                             <CtaCard
                                 href="/dashboard/kosmos"
+                                tone="accent"
                                 icon={<HugeiconsIcon icon={SparklesIcon} size={18} aria-hidden="true" />}
                                 eyebrow="Alumni-Kosmos"
                                 title="Wer war wann an der Uni?"
-                                description="Finde ehemalige Kommilitoninnen und Kommilitonen auf dem Zeitstrahl und schreib ihnen."
+                                description="Finde ehemalige Kommilitoninnen und Kommilitonen und nimm Kontakt auf."
                                 action="Kosmos öffnen"
                             />
                         )}
+
+                        {/* ---------- Mein Konto ----------
+                          Eine Karte mit Zeilen statt vier großer Kacheln: die
+                          Einstiege werden selten gebraucht und drängten den
+                          Termin und die Beiträge aus dem Blick. */}
+                        <Card className="p-5 sm:p-6">
+                            <SectionHeader
+                                icon={<HugeiconsIcon icon={UserSettings01Icon} size={16} />}
+                                eyebrow="Einstellungen"
+                                title="Mein Konto"
+                            />
+                            <ul className="mt-3 grid grid-cols-1 divide-y divide-line">
+                                <AccountLink href="/dashboard/konto" Icon={Key02Icon} label="Passwort & E-Mail-Adresse" />
+                                <NewsletterRow
+                                    initial={profile?.newsletter ?? true}
+                                    profileHref={`/dashboard/users/${currentUser.id}#newsletter`}
+                                />
+                            </ul>
+                        </Card>
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 lg:order-1">
+                        {/* ---------- Mein Profil ----------
+                          Für Admins dasselbe wie für alle anderen: die
+                          Übersicht aller Konten steht in der
+                          Benutzerverwaltung. */}
+                        {profile && (
+                            <Card className="p-5 sm:p-6">
+                                <SectionHeader
+                                    icon={<HugeiconsIcon icon={BookOpen01Icon} size={16} />}
+                                    eyebrow="Deine hinterlegten Daten"
+                                    title="Mein Profil"
+                                />
+
+                                <Separator className="my-4" />
+
+                                <ProfileSummary user={profile} editHref={`/dashboard/users/${currentUser.id}`} />
+                            </Card>
+                        )}
+
                         {/* ---------- Beiträge ----------
-                          Nur für Mitglieder: wer keine Mitgliedschaft hat,
+                          Nur für Mitglieder und Ausgetretene mit offenen
+                          Beiträgen: wer sonst keine Mitgliedschaft hat,
                           schuldet auch keinen Beitrag — die Zahlungshistorie
                           wäre für dieses Konto grundsätzlich leer und suggeriert
                           eine Beitragspflicht, die es nicht gibt. */}
-                        {!isNonMember && (
+                        {(!isNonMember || owesFees) && (
                             <Card className="p-5 sm:p-6">
                                 <SectionHeader
                                     icon={<HugeiconsIcon icon={IdCardIcon} size={16} />}
@@ -395,36 +429,6 @@ export default async function DashboardPage() {
 
                         {/* ---------- Mitgliedschaftszertifikat ---------- */}
                         {certificate && <MembershipCertificateCard facts={certificate} downloadable={pdfEnabled} />}
-
-                        {/* ---------- Mein Profil ----------
-                          Für Admins dasselbe wie für alle anderen: die
-                          Übersicht aller Konten steht in der
-                          Benutzerverwaltung. */}
-                        {profile && (
-                            <Card className="p-5 sm:p-6">
-                                <SectionHeader
-                                    icon={<HugeiconsIcon icon={BookOpen01Icon} size={16} />}
-                                    eyebrow="Deine hinterlegten Daten"
-                                    title="Mein Profil"
-                                    aside={
-                                        <ButtonLink
-                                            href={`/dashboard/users/${currentUser.id}`}
-                                            variant="soft"
-                                            color="neutral"
-                                            size="sm"
-                                            className="self-start"
-                                        >
-                                            <HugeiconsIcon icon={PencilIcon} size={15} aria-hidden="true" />
-                                            Bearbeiten
-                                        </ButtonLink>
-                                    }
-                                />
-
-                                <Separator className="my-4" />
-
-                                <ProfileSummary user={profile} />
-                            </Card>
-                        )}
                     </div>
                 </div>
             </div>

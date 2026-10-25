@@ -32,7 +32,11 @@ export function MembershipCertificateCard({ facts, downloadable }: { facts: Cert
         icon={<HugeiconsIcon icon={Award01Icon} size={16} />}
         eyebrow="Nachweis"
         title="Mitgliedschaftszertifikat"
-        description="Eine Urkunde mit deinen Mitgliedsdaten, dem Aufnahmedatum und dem Zeitraum, für den deine Beiträge entrichtet sind — zum Vorzeigen als PDF."
+        description={
+          downloadable
+            ? "Eine Urkunde mit deinen Mitgliedsdaten, dem Aufnahmedatum und dem Zeitraum, für den deine Beiträge entrichtet sind — zum Vorzeigen als PDF."
+            : "Deine Mitgliedsdaten, das Aufnahmedatum und der Zeitraum, für den deine Beiträge entrichtet sind."
+        }
         aside={
           downloadable && (
             <a

@@ -49,7 +49,12 @@ function normalize(value: string | string[] | undefined): string | undefined {
 }
 
 export async function sendEmail(
-  input: Recipients & { message: EmailMessage; attachments?: SendMailOptions["attachments"] },
+  input: Recipients & {
+    message: EmailMessage;
+    attachments?: SendMailOptions["attachments"];
+    /** Nur bei Newsletter-Mails: Abmeldelink im Footer und im Mailkopf. */
+    unsubscribe?: { page: string; oneClick: string };
+  },
 ): Promise<void> {
   const to = normalize(input.to);
   const bcc = normalize(input.bcc);
@@ -69,9 +74,13 @@ export async function sendEmail(
     bcc,
     replyTo: input.replyTo,
     subject: input.message.subject,
-    text: renderEmailText(input.message, boardLine),
-    html: renderEmailHtml(input.message, boardLine),
+    text: renderEmailText(input.message, boardLine, input.unsubscribe?.page),
+    html: renderEmailHtml(input.message, boardLine, input.unsubscribe?.page),
     attachments: input.attachments,
+    headers: input.unsubscribe && {
+      "List-Unsubscribe": `<${input.unsubscribe.oneClick}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
     encoding: "utf-8",
   });
 }

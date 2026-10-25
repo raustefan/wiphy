@@ -150,6 +150,16 @@ export async function requestEmailChange(userId: string, email: string, currentP
   return { ok: true as const };
 }
 
+/**
+ * Newsletter an- oder abbestellen. Betrifft nur Rundmails, die als Newsletter
+ * gekennzeichnet sind. `false`, wenn es das Konto nicht (mehr) gibt.
+ */
+export async function setNewsletter(userId: string, subscribed: boolean): Promise<boolean> {
+  const { prisma } = await import("@/lib/prisma");
+  const { count } = await prisma.user.updateMany({ where: { id: userId }, data: { newsletter: subscribed } });
+  return count > 0;
+}
+
 /** Die noch nicht bestätigte neue Adresse, falls eine Änderung läuft. */
 export async function getPendingEmailChange(userId: string) {
   const { prisma } = await import("@/lib/prisma");

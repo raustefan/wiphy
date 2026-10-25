@@ -18,11 +18,26 @@ import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
 import { logSentMail } from "./mailHistory";
 import { describeSendError, sendEach, type MailSendReport } from "./sendReport";
+import { newsletterUnsubscribeUrls } from "@/lib/server/newsletterToken";
 
 type StatusTarget = "HONORARY_MEMBER" | "REGULAR_MEMBER" | "NON_MEMBER";
 export type MailTarget = "ALL" | StatusTarget | "SELECTED";
 
-type Recipient = { email: string; firstName: string | null; lastName: string | null };
+type Recipient = {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  newsletter: boolean;
+};
+
+const RECIPIENT_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  newsletter: true,
+} as const;
 
 export async function resolveUsersByIds(userIds: string[]) {
   const uniqueIds = [...new Set(userIds)];
@@ -32,7 +47,7 @@ export async function resolveUsersByIds(userIds: string[]) {
 
   const found = await prisma.user.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true, email: true, firstName: true, lastName: true },
+    select: RECIPIENT_SELECT,
   });
 
   if (found.length !== uniqueIds.length) {
@@ -47,11 +62,11 @@ export async function resolveUsersByIds(userIds: string[]) {
 
 export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
   if (target === "ALL") {
-    return prisma.user.findMany({ select: { email: true, firstName: true, lastName: true } });
+    return prisma.user.findMany({ select: RECIPIENT_SELECT });
   }
   return prisma.user.findMany({
     where: { status: target },
-    select: { email: true, firstName: true, lastName: true },
+    select: RECIPIENT_SELECT,
   });
 }
 
@@ -171,13 +186,25 @@ export async function sendMailToUsers(input: {
   attachIcs?: boolean;
   /** Empfängergruppe fürs Versandprotokoll; weggelassen bei ausgewählten Empfängern. */
   recipientGroup?: string | null;
+  /**
+   * Als Newsletter gekennzeichnet: geht nur an Abonnenten, jede Mail trägt den
+   * persönlichen Abmeldelink. Alle anderen Mails erreichen jeden — das
+   * Abbestellen betrifft nur Newsletter.
+   */
+  newsletter?: boolean;
 }) {
   // Einmal zentral sanitisieren: entfernt Skripte, Event-Handler und unsichere
   // Link-Schemata, unabhängig davon, was der Editor clientseitig zugelassen hat.
   const template = sanitizeEmailHtml(input.html);
 
-  if (input.users.length === 0) {
-    throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
+  const users = input.newsletter ? input.users.filter((user) => user.newsletter) : input.users;
+  if (users.length === 0) {
+    throw new AppError(
+      "NOT_FOUND",
+      input.users.length > 0
+        ? "Alle ausgewählten Empfänger haben den Newsletter abbestellt."
+        : "Keine Empfänger gefunden.",
+    );
   }
 
   // Vor dem Versand prüfen: ein Fehler danach sähe aus wie ein gescheiterter
@@ -194,7 +221,7 @@ export async function sendMailToUsers(input: {
   // Protokolliert wird, was tatsächlich rausging — auch wenn der Versand
   // mittendrin abbricht.
   const attachments = input.event && input.attachIcs ? [icsAttachment(input.event)] : undefined;
-  const { sent, failed, error } = await sendEach(input.users, (user) =>
+  const { sent, failed, error } = await sendEach(users, (user) =>
     sendEmail({
       to: user.email,
       message: composeMessage(
@@ -203,6 +230,7 @@ export async function sendMailToUsers(input: {
         input.event,
       ),
       attachments,
+      unsubscribe: input.newsletter ? newsletterUnsubscribeUrls(user.id) : undefined,
     }),
   );
 
@@ -252,6 +280,7 @@ export async function sendMailForTarget(input: {
   adminEmail?: string | null;
   event?: AnnouncedEvent;
   attachIcs?: boolean;
+  newsletter: boolean;
 }) {
   const users = await resolveRecipientEmails({
     target: input.target,
@@ -266,5 +295,6 @@ export async function sendMailForTarget(input: {
     event: input.event,
     attachIcs: input.attachIcs,
     recipientGroup: input.target === "SELECTED" ? null : input.target,
+    newsletter: input.newsletter,
   });
 }

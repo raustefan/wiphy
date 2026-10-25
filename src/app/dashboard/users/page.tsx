@@ -1,23 +1,19 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArchiveIcon, PercentIcon, UserAdd01Icon } from "@hugeicons/core-free-icons";
+import { PercentIcon, UserAdd01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/server/authz";
 import {
   getAccountsWithFees,
-  getArchivedFees,
   getExistingFeeYears,
   toSepaCandidates,
 } from "@/lib/server/services/feeService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
-import {
-  countCompletedTerminationsSince,
-  processTerminations,
-} from "@/lib/server/services/terminationService";
+import { processTerminations } from "@/lib/server/services/terminationService";
 import { directoryStats } from "@/lib/memberDirectory";
-import { formatDate, formatEuro } from "@/lib/format";
+import { formatEuro } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import { Badge, ButtonLink, Card, Container } from "@/components/ui";
+import { ButtonLink, Card, Container } from "@/components/ui";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { FeeDefaultsCard } from "./FeeDefaultsCard";
@@ -26,8 +22,6 @@ import { MemberDirectory } from "./MemberDirectory";
 import type { DirectoryAccount } from "./DirectoryTable";
 
 export const metadata: Metadata = { title: "Benutzerverwaltung" };
-
-const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 function StatTile({
   label,
@@ -82,11 +76,9 @@ export default async function UserManagementPage({
     : [...yearOptions, year].sort((a, b) => a - b);
 
   const now = new Date();
-  const [users, feeDefaults, archivedFees, exits] = await Promise.all([
+  const [users, feeDefaults] = await Promise.all([
     getAccountsWithFees(admin.id, year),
     getFeeDefaults(),
-    getArchivedFees(),
-    countCompletedTerminationsSince(new Date(now.getTime() - YEAR_MS)),
   ]);
 
   const sepaCandidates = toSepaCandidates(
@@ -130,16 +122,6 @@ export default async function UserManagementPage({
 
   const stats = directoryStats(accounts, year, now);
 
-  // Archivzeilen je gelöschtem Konto bündeln — mehr als Name und Nummer ist
-  // davon nicht übrig (Datenminimierung), also sind beide zusammen der Schlüssel.
-  const archiveGroups = [
-    ...Map.groupBy(archivedFees, (fee) => `${fee.archivedName ?? ""}\u0000${fee.archivedMemberNumber ?? ""}`),
-  ].map(([key, fees]) => ({
-    key,
-    name: fees[0].archivedName,
-    memberNumber: fees[0].archivedMemberNumber,
-    fees: fees.toSorted((a, b) => b.year - a.year),
-  }));
   const paidShare = stats.feeDue > 0 ? Math.round((stats.feePaid / stats.feeDue) * 100) : 0;
 
   return (
@@ -169,57 +151,6 @@ export default async function UserManagementPage({
               }))}
             />
           </DialogButton>
-          {/* Gesperrte Aufzeichnungen (Art. 18 DSGVO, § 147 AO): nur lesen. */}
-          {archivedFees.length > 0 && (
-            <DialogButton
-              label={`Archiv (${archivedFees.length})`}
-              icon={<HugeiconsIcon icon={ArchiveIcon} size={16} aria-hidden="true" />}
-              title="Archiv gelöschter Konten"
-              description="Beitragszeilen gelöschter Konten. Sie bleiben wegen der steuerlichen Aufbewahrungspflicht zehn Jahre nach dem Beitragsjahr gesperrt erhalten und werden danach automatisch gelöscht."
-            >
-              <div className="grid max-h-96 gap-2 overflow-auto">
-                {archiveGroups.map((group) => {
-                  const open = group.fees.filter((fee) => !fee.paid).length;
-                  return (
-                    <details key={group.key} className="rounded-[3px] border border-line">
-                      <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm">
-                        <span className="min-w-0 flex-1 truncate font-medium">{group.name ?? "—"}</span>
-                        <span className="font-mono text-muted tabular-nums">
-                          Nr. {group.memberNumber ?? "—"}
-                        </span>
-                        <Badge>
-                          {group.fees.length} {group.fees.length === 1 ? "Eintrag" : "Einträge"}
-                        </Badge>
-                        {open > 0 && <Badge tone="negative">{open} offen</Badge>}
-                      </summary>
-                      <table className="w-full text-sm">
-                        <thead className="text-left text-muted">
-                          <tr>
-                            <th className="py-1 pr-3 pl-3 font-medium">Jahr</th>
-                            <th className="py-1 pr-3 text-right font-medium">Beitrag</th>
-                            <th className="py-1 pr-3 font-medium">Status</th>
-                            <th className="py-1 pr-3 font-medium">Archiviert</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-line">
-                          {group.fees.map((fee) => (
-                            <tr key={fee.id}>
-                              <td className="py-1.5 pr-3 pl-3 tabular-nums">{fee.year}</td>
-                              <td className="py-1.5 pr-3 text-right tabular-nums">
-                                {formatEuro(fee.amount)}
-                              </td>
-                              <td className="py-1.5 pr-3">{fee.paid ? "Bezahlt" : "Offen"}</td>
-                              <td className="py-1.5 pr-3">{formatDate(fee.archivedAt)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </details>
-                  );
-                })}
-              </div>
-            </DialogButton>
-          )}
           <ButtonLink href="/dashboard/users/new">
             <HugeiconsIcon icon={UserAdd01Icon} size={16} aria-hidden="true" />
             Neues Konto
@@ -241,9 +172,9 @@ export default async function UserManagementPage({
         <StatTile label={`Sonderstatus ${year}`} value={stats.students}>
           Studierende u. a. nach § 5
         </StatTile>
-        <StatTile label="Letzte 365 Tage" value={`+${stats.joined} / −${exits}`}>
-          {stats.joined} {stats.joined === 1 ? "Eintritt" : "Eintritte"} · {exits}{" "}
-          {exits === 1 ? "Austritt" : "Austritte"}
+        {/* Keine Austritte: wer austritt, verschwindet samt Konto und zählt nicht mehr. */}
+        <StatTile label="Letzte 365 Tage" value={`+${stats.joined}`}>
+          {stats.joined === 1 ? "Eintritt" : "Eintritte"}
         </StatTile>
         <StatTile
           label={`Beiträge ${year}`}

@@ -75,9 +75,9 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   MEMBERSHIP_APPLICATION: "Mitgliedsantrag",
   MEMBERSHIP_APPLICATION_MAIL: "Mitgliedsantrag: Benachrichtigung an Admins",
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL: "Mitgliedsantrag: Eingangsbestätigung",
-  MEMBERSHIP_TERMINATION: "Mitgliedschaft kündigen",
-  MEMBERSHIP_TERMINATION_MAIL: "Kündigung: Benachrichtigung an Admins",
-  MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL: "Kündigung: Mails an das Mitglied",
+  MEMBERSHIP_TERMINATION: "Austritt im Mitgliederbereich",
+  MEMBERSHIP_TERMINATION_MAIL: "Austritt: Benachrichtigung an Admins",
+  MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL: "Austritt: Mails an das Mitglied",
   ACCOUNT_NOTICE_MAIL: "Konto: Mail bei Sperrung oder Löschung",
   REGISTRATION_CLEANUP: "Registrierung: unbestätigte Konten löschen",
   EVENT_MANAGEMENT: "Termin-Verwaltung",
@@ -118,11 +118,11 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
   MEMBERSHIP_APPLICATION_CONFIRMATION_MAIL:
     "Schickt dem Antragsteller eine Eingangsbestätigung sowie eine Mail bei Annahme oder Ablehnung.",
   MEMBERSHIP_TERMINATION:
-    "Erlaubt Mitgliedern, ihre Mitgliedschaft im Mitgliederbereich zu kündigen. Aus: Mitglieder sehen stattdessen den Hinweis, per Kontaktformular oder E-Mail an den Vorstand zu kündigen; bereits eingegangene Kündigungen bleiben im Dashboard bearbeitbar.",
+    "Erlaubt Mitgliedern, im Mitgliederbereich mit sofortiger Wirkung auszutreten — ohne offene Beiträge samt Löschung des Kontos. Aus: Mitglieder sehen stattdessen den Hinweis, sich per Kontaktformular oder E-Mail an den Vorstand zu wenden.",
   MEMBERSHIP_TERMINATION_MAIL:
-    "Benachrichtigt alle Admins per Mail über eine neue Kündigung. Aus: Kündigungen landen nur im Dashboard unter „Anträge & Austritte“ — bitte regelmäßig prüfen, die Frist läuft ab Eingang.",
+    "Benachrichtigt alle Admins mit Name und letzter E-Mail-Adresse über einen Austritt und über die spätere Löschung nach Zahlung offener Beiträge. Aus: Austritte ohne offene Beiträge hinterlassen keine Spur — der Vorstand erfährt nichts davon.",
   MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL:
-    "Schickt dem Mitglied eine Eingangsbestätigung der Kündigung und die Bestätigung des Austritts durch den Vorstand. Aus: Der Austritt muss dem Mitglied anderweitig schriftlich bestätigt werden.",
+    "Bestätigt dem Mitglied den Austritt (mit offenen Beiträgen, falls vorhanden) und später die Löschung des Kontos. Aus: Das Mitglied sieht den Austritt nur im Mitgliederbereich.",
   ACCOUNT_NOTICE_MAIL:
     "Informiert Nutzer per Mail, wenn sie ihren Zugang deaktiviert oder ihr Konto gelöscht haben — auch als Warnung, falls das jemand anderes war.",
   REGISTRATION_CLEANUP:

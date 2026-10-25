@@ -1,8 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma, Role } from "@prisma/client";
-import { calculateFeeAmount } from "@/lib/feeCalculation";
-import { resolveFeeDefault } from "@/lib/feeDefaults";
-import { feeRetentionCutoffYear } from "@/lib/membershipTermination";
+import type { Role } from "@prisma/client";
 
 /**
  * Konten samt Beitragszeilen.
@@ -151,8 +148,6 @@ export function clearFeeAmountOverride(userId: string, year: number) {
  */
 export async function findExistingFeeYears(): Promise<number[]> {
   const rows = await prisma.memberFee.findMany({
-    // Archivzeilen gelöschter Konten eröffnen kein Beitragsjahr.
-    where: { archivedAt: null },
     distinct: ["year"],
     select: { year: true },
     orderBy: { year: "asc" },
@@ -164,71 +159,5 @@ export function updateFeeComment(userId: string, comment: string | null) {
   return prisma.user.update({
     where: { id: userId },
     data: { adminNote: comment },
-  });
-}
-
-/**
- * Löst die Beitragszeilen vom Konto, bevor es gelöscht wird. Sie sind
- * Aufzeichnungen im Sinne von § 147 AO und müssen die Löschung überdauern.
- *
- * Eingefroren werden der tatsächlich fällige Betrag — im Regelfall wird er aus
- * den Standardsätzen und Kontodaten *berechnet*, die es danach nicht mehr gibt —
- * sowie Name und Mitgliedsnummer als Zuordnung. Alles andere am Konto fällt weg.
- * Läuft in der Transaktion der Löschung, damit kein halb archivierter Stand
- * einen noch lebenden Beitrag einfriert.
- */
-export async function archiveFeesOfUser(tx: Prisma.TransactionClient, userId: string) {
-  const user = await tx.user.findUnique({
-    where: { id: userId },
-    select: {
-      firstName: true,
-      lastName: true,
-      memberNumber: true,
-      directDebit: true,
-      joinedAt: true,
-      fees: true,
-    },
-  });
-  if (!user || user.fees.length === 0) return;
-
-  const defaults = await tx.feeDefault.findMany();
-  const archivedAt = new Date();
-  for (const fee of user.fees) {
-    const rates = resolveFeeDefault(defaults, fee.year);
-    const amount = fee.manualAmount
-      ? fee.amount
-      : calculateFeeAmount({
-          monthlyRegular: rates.regular,
-          monthlyStudent: rates.student,
-          isStudent: fee.isStudent,
-          directDebit: user.directDebit,
-          year: fee.year,
-          joinedAt: user.joinedAt,
-        });
-    await tx.memberFee.update({
-      where: { id: fee.id },
-      data: {
-        amount,
-        manualAmount: true,
-        archivedName: `${user.firstName} ${user.lastName}`.trim(),
-        archivedMemberNumber: user.memberNumber,
-        archivedAt,
-      },
-    });
-  }
-}
-
-/** Archivzeilen gelöschter Konten, nur lesend für Admins. */
-export function findArchivedFees() {
-  return prisma.memberFee.findMany({
-    where: { archivedAt: { not: null } },
-    orderBy: [{ archivedName: "asc" }, { year: "asc" }],
-  });
-}
-
-/** Löscht Archivzeilen nach Ablauf der Aufbewahrungsfrist. */
-export function pruneArchivedFees(now: Date = new Date()) {
-  return prisma.memberFee.deleteMany({
-    where: { archivedAt: { not: null }, year: { lt: feeRetentionCutoffYear(now) } },
   });
 }

@@ -1,7 +1,15 @@
 "use client";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Calendar01Icon, Cancel01Icon, ListIcon, SentIcon } from "@hugeicons/core-free-icons";
+import {
+    Calendar01Icon,
+    Cancel01Icon,
+    CheckmarkCircle02Icon,
+    ListIcon,
+    Megaphone01Icon,
+    News01Icon,
+    SentIcon,
+} from "@hugeicons/core-free-icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
     Badge,
@@ -29,6 +37,8 @@ export type MailUserOption = {
     email: string;
     role: string;
     status: string;
+    /** `false`: hat den Newsletter abbestellt. */
+    newsletter: boolean;
 };
 
 type MailFormProps = {
@@ -54,6 +64,81 @@ const TARGET_OPTIONS: { value: string; label: string }[] = [
     { value: "SELECTED", label: "Ausgewählte Nutzer" },
 ];
 
+type MailKind = "yes" | "no";
+
+/** Die Pflichtfrage „Newsletter oder nicht“ — bewusst ohne Vorauswahl. */
+const MAIL_KINDS: { value: MailKind; title: string; description: string; icon: typeof News01Icon }[] = [
+    {
+        value: "yes",
+        title: "Newsletter",
+        description:
+            "Allgemeine Neuigkeiten aus dem Verein. Geht nur an Abonnenten und bekommt ganz unten einen Abmeldelink.",
+        icon: News01Icon,
+    },
+    {
+        value: "no",
+        title: "Mitteilung an alle",
+        description:
+            "Zur Mitgliedschaft, etwa Einladung zur Mitgliederversammlung oder Beitragsfragen. Geht an alle Empfänger, ohne Abmeldelink.",
+        icon: Megaphone01Icon,
+    },
+];
+
+function MailKindChoice({ value, onChange }: { value: MailKind | null; onChange: (kind: MailKind) => void }) {
+    return (
+        <fieldset className="grid gap-1.5">
+            <legend className="mb-1.5 text-sm font-semibold text-foreground">
+                Art der Mail
+                <span aria-hidden="true" className="text-negative">
+                    {" *"}
+                </span>
+                <span className="sr-only"> (erforderlich)</span>
+            </legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+                {MAIL_KINDS.map((kind) => (
+                    <label
+                        key={kind.value}
+                        className="group relative flex cursor-pointer items-start gap-3 rounded-[3px] border border-line-strong bg-surface p-4 transition-colors hover:border-physics has-checked:border-physics has-checked:bg-physics/8 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-physics"
+                    >
+                        {/* Natives Radio: `required` lässt den Browser das Absenden
+                            ohne Auswahl verhindern, Pfeiltasten wechseln die Wahl. */}
+                        <input
+                            type="radio"
+                            name="newsletter"
+                            value={kind.value}
+                            required
+                            checked={value === kind.value}
+                            onChange={() => onChange(kind.value)}
+                            className="sr-only"
+                        />
+                        <span
+                            aria-hidden="true"
+                            className="grid size-9 shrink-0 place-items-center rounded-[3px] border border-physics/40 text-physics transition-colors group-has-checked:bg-physics group-has-checked:text-on-physics"
+                        >
+                            <HugeiconsIcon icon={kind.icon} size={17} />
+                        </span>
+                        <span className="grid min-w-0 gap-1 pr-6">
+                            <span className="font-semibold text-foreground">{kind.title}</span>
+                            <span className="text-sm text-pretty text-muted">{kind.description}</span>
+                        </span>
+                        <HugeiconsIcon
+                            icon={CheckmarkCircle02Icon}
+                            size={18}
+                            aria-hidden="true"
+                            className="absolute top-3 right-3 text-physics opacity-0 transition-opacity group-has-checked:opacity-100"
+                        />
+                    </label>
+                ))}
+            </div>
+            {value === null && (
+                <p className="text-sm text-faint">
+                    Pflichtangabe: entscheidet, wer die Mail bekommt und ob sie einen Abmeldelink trägt.
+                </p>
+            )}
+        </fieldset>
+    );
+}
+
 function byStatusThenName(a: MailUserOption, b: MailUserOption) {
     const rankA = STATUS_RANK[a.status] ?? STATUS_ORDER.length;
     const rankB = STATUS_RANK[b.status] ?? STATUS_ORDER.length;
@@ -66,6 +151,8 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
     const [showRecipients, setShowRecipients] = useState(false);
+    const [kind, setKind] = useState<MailKind | null>(null);
+    const isNewsletter = kind === "yes";
 
     const editor = useEmailEditor({ minHeight: 250, content: announcement?.html ?? "" });
 
@@ -78,7 +165,9 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
             .sort(byStatusThenName);
     }, [selectedIds, userById]);
 
-    const recipients = useMemo(() => {
+    // Dieselbe Auswahl trifft der Server noch einmal selbst — die Liste hier
+    // zeigt nur vorab, wer die Mail bekommt.
+    const { recipients, optedOut } = useMemo(() => {
         let list: MailUserOption[];
         if (target === "ALL") {
             list = users;
@@ -87,8 +176,13 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
         } else {
             list = users.filter((u) => u.status === target);
         }
-        return [...list].sort(byStatusThenName);
-    }, [target, users, selectedUsers]);
+        const kept = isNewsletter ? list.filter((u) => u.newsletter) : list;
+        return { recipients: [...kept].sort(byStatusThenName), optedOut: list.length - kept.length };
+    }, [target, users, selectedUsers, isNewsletter]);
+    const optedOutNote =
+        optedOut > 0
+            ? `${optedOut} ${optedOut === 1 ? "Person hat" : "Personen haben"} den Newsletter abbestellt und ${optedOut === 1 ? "wird" : "werden"} ausgelassen.`
+            : "";
 
     const form = useActionForm(sendEmailAction, {
         featureLabel: "Mail-Versand",
@@ -160,15 +254,15 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
             <div className="grid gap-5">
                 {form.feedback}
 
+                <MailKindChoice value={kind} onChange={setKind} />
+
                 {/* Empfängergruppe */}
                 <Field
                     label="Empfänger"
                     htmlFor="mail-target"
                     hint={
                         target !== "SELECTED"
-                            ? `${recipients.length} ${
-                                  recipients.length === 1 ? "Empfänger" : "Empfänger"
-                              } in dieser Gruppe.`
+                            ? `${recipients.length} Empfänger in dieser Gruppe.${optedOutNote ? ` ${optedOutNote}` : ""}`
                             : undefined
                     }
                 >
@@ -194,6 +288,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
 
                         <div className="grid gap-2">
                             <p className="text-xs font-medium text-faint">Ausgewählt</p>
+                            {optedOutNote && <p className="text-sm text-warning">{optedOutNote}</p>}
                             {selectedUsers.length === 0 ? (
                                 <p className="text-sm text-muted">
                                     Noch niemand ausgewählt. Suche unten und setze Häkchen bei den
@@ -214,6 +309,9 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                                     {u.email}
                                                 </p>
                                             </div>
+                                            {isNewsletter && !u.newsletter && (
+                                                <Badge tone="warning">Kein Newsletter</Badge>
+                                            )}
                                             <Badge tone={getStatusTone(u.status)}>
                                                 {formatStatus(u.status)}
                                             </Badge>
@@ -322,6 +420,9 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                                                 {u.email}
                                                             </span>
                                                         </span>
+                                                        {isNewsletter && !u.newsletter && (
+                                                            <Badge tone="warning">Kein Newsletter</Badge>
+                                                        )}
                                                         <Badge tone={getStatusTone(u.status)}>
                                                             {formatStatus(u.status)}
                                                         </Badge>
@@ -459,7 +560,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                             <HugeiconsIcon icon={SentIcon} size={16} aria-hidden="true" />{" "}
                             {form.pending
                                 ? "Wird gesendet…"
-                                : `An ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
+                                : `${isNewsletter ? "Newsletter an" : "An"} ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
                         </Button>
                         <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
                             <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen

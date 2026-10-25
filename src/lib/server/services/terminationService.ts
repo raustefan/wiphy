@@ -2,13 +2,22 @@ import type { Prisma, TerminationReason } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { toBerlinDateInput } from "@/lib/berlinTime";
-import { pruneArchivedFees } from "@/lib/server/repositories/feeRepository";
-import {
-  TERMINATION_RECORD_RETENTION_YEARS,
-  terminationDate,
-} from "@/lib/membershipTermination";
+import { deleteUserById } from "@/lib/server/repositories/userRepository";
+import { sendEmail } from "@/lib/server/email/mailer";
+import { accountDeletedMessage, exitMessage, exitNoticeMessage } from "@/lib/email/messages";
+import { getAdminNotificationEmails } from "./contactService";
+import { getOpenFees } from "./feeService";
+import { isFeatureEnabled } from "./featureFlagService";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Wie lange der Nachweis eines Austritts aufbewahrt wird (Regelverjährung, § 195 BGB). */
+const TERMINATION_RECORD_RETENTION_YEARS = 3;
+
+/** Heute als reines Datum, 00:00 UTC — wie `effectiveAt` überall. */
+function berlinToday(now: Date): Date {
+  return new Date(`${toBerlinDateInput(now)}T00:00:00Z`);
+}
 
 const userSelect = {
   id: true,
@@ -20,9 +29,9 @@ const userSelect = {
   loginDisabled: true,
 } as const;
 
-/** Die noch nicht vollzogene Kündigung eines Mitglieds, falls es eine gibt. */
-export function getOpenTermination(userId: string) {
-  return prisma.membershipTermination.findUnique({ where: { openForUserId: userId } });
+/** Sofortiger Austritt mit offenen Beiträgen, der noch auf die Löschung wartet. */
+export function getPendingExit(userId: string) {
+  return prisma.membershipTermination.findFirst({ where: { userId, deleteWhenSettled: true } });
 }
 
 export function getTerminations(limit = 200) {
@@ -33,84 +42,89 @@ export function getTerminations(limit = 200) {
   });
 }
 
-export function getTermination(id: string) {
-  return prisma.membershipTermination.findUnique({
-    where: { id },
-    include: { user: { select: userSelect } },
-  });
-}
-
-export function countOpenTerminations() {
-  return prisma.membershipTermination.count({ where: { status: "SUBMITTED" } });
-}
-
 /**
- * Nimmt die Austrittserklärung entgegen. Das Austrittsdatum ergibt sich aus
- * dem Eingangszeitpunkt (§ 6 Satzung) und wird sofort festgehalten — der
- * Zugang ist der rechtlich entscheidende Moment, nicht die spätere Bestätigung.
+ * Sofortiger Austritt durch das Mitglied. § 6 Satzung sieht nur die Kündigung
+ * zum Jahresende vor; der Vorstand stimmt der vorzeitigen Beendigung pauschal
+ * zu. Der Jahresbeitrag bleibt geschuldet (§ 5: am 1. Januar fällig).
+ *
+ * Ohne offene Beiträge wird das Konto sofort restlos gelöscht. Sonst endet nur
+ * die Mitgliedschaft; Konto und Zahlungsdaten bleiben, bis
+ * `processTerminations` alles bezahlt sieht und das Konto löscht.
  */
-export async function submitTermination(userId: string, keepAccount: boolean) {
+export async function resignMembership(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: userSelect });
   if (!user) throw new AppError("NOT_FOUND", "Benutzerkonto nicht gefunden.");
   if (user.status === "NON_MEMBER") {
     throw new AppError("FORBIDDEN", "Für dieses Konto besteht keine Mitgliedschaft.");
   }
 
-  const submittedAt = new Date();
-  try {
-    const termination = await prisma.membershipTermination.create({
+  const openFees = await getOpenFees(userId);
+  if (openFees.length === 0) {
+    await deleteUserById(userId);
+    return { user, openFees };
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    // Nur berechnete Beiträge festschreiben: ohne Zeile fiele das Jahr mit
+    // NON_MEMBER aus der Beitragsliste (`isInFeeYear`).
+    for (const fee of openFees.filter((f) => !f.angelegt)) {
+      await tx.memberFee.create({ data: { userId, year: fee.year, isStudent: fee.isStudent } });
+    }
+    // Künftige Jahre schuldet niemand, der heute austritt.
+    await tx.memberFee.deleteMany({
+      where: { userId, paid: false, year: { gt: now.getFullYear() } },
+    });
+    // Eine laufende Kündigung zum Jahresende (Altbestand) geht hierin auf.
+    await tx.membershipTermination.deleteMany({ where: { openForUserId: userId } });
+    await tx.membershipTermination.create({
       data: {
         userId,
-        openForUserId: userId,
-        submittedAt,
-        effectiveAt: terminationDate(submittedAt),
-        keepAccount,
+        submittedAt: now,
+        effectiveAt: berlinToday(now),
+        decidedAt: now,
+        completedAt: now,
+        deleteWhenSettled: true,
       },
     });
-    return { termination, user };
-  } catch (error) {
-    // Unique auf `openForUserId`: es liegt bereits eine Kündigung vor.
-    if ((error as { code?: string }).code === "P2002") {
-      throw new AppError("CONFLICT", "Deine Kündigung liegt uns bereits vor.");
-    }
-    throw error;
-  }
+    await tx.user.update({
+      where: { id: userId },
+      data: { status: "NON_MEMBER", newsletter: false, kosmosVisible: false },
+    });
+  });
+  return { user, openFees };
 }
 
 /**
- * Rücknahme durch das Mitglied. Nach dem Zugang bräuchte sie rechtlich die
- * Zustimmung des Vereins — die gilt als erteilt, solange der Vorstand die
- * Kündigung noch nicht bestätigt hat. Danach nur noch über den Vorstand.
+ * Mails zum Austritt: an das Mitglied und an den Vorstand. Dürfen den
+ * vollzogenen Austritt nie kippen; jede hängt an ihrem Feature-Flag.
+ * `settled`: die offenen Beiträge sind bezahlt, das Konto wurde gerade gelöscht.
  */
-export async function withdrawTermination(id: string, userId: string) {
-  const { count } = await prisma.membershipTermination.updateMany({
-    where: { id, userId, status: "SUBMITTED" },
-    data: { status: "WITHDRAWN", openForUserId: null, decidedAt: new Date() },
-  });
-  if (count === 0) {
-    throw new AppError("CONFLICT", "Diese Kündigung kann nicht mehr zurückgenommen werden.");
+export async function sendExitMails(
+  user: { firstName: string; lastName: string; email: string },
+  openFees: { year: number; amount: number }[],
+  settled = false,
+) {
+  try {
+    if (await isFeatureEnabled("MEMBERSHIP_TERMINATION_CONFIRMATION_MAIL")) {
+      await sendEmail({
+        to: user.email,
+        message: settled ? accountDeletedMessage(user) : exitMessage({ ...user, openFees }),
+      });
+    }
+  } catch (error) {
+    console.error("Failed to send exit mail:", error);
   }
-}
-
-/** Eingangsbestätigung durch den Vorstand, optional mit korrigiertem Austrittsdatum. */
-export async function confirmTermination(params: {
-  id: string;
-  adminId: string;
-  effectiveAt: Date;
-  note: string | null;
-}) {
-  const { count } = await prisma.membershipTermination.updateMany({
-    where: { id: params.id, status: "SUBMITTED" },
-    data: {
-      status: "CONFIRMED",
-      effectiveAt: params.effectiveAt,
-      decidedAt: new Date(),
-      decidedById: params.adminId,
-      decisionNote: params.note,
-    },
-  });
-  if (count === 0) {
-    throw new AppError("CONFLICT", "Diese Kündigung wurde bereits bearbeitet.");
+  try {
+    if (await isFeatureEnabled("MEMBERSHIP_TERMINATION_MAIL")) {
+      // BCC hält die Admin-Verteilerliste aus den sichtbaren Headern heraus.
+      await sendEmail({
+        bcc: await getAdminNotificationEmails(),
+        message: exitNoticeMessage({ ...user, openFees, settled }),
+      });
+    }
+  } catch (error) {
+    console.error("Failed to send exit notice:", error);
   }
 }
 
@@ -128,8 +142,7 @@ export async function removeMembershipByAdmin(params: {
   userData: Prisma.UserUpdateInput;
 }) {
   const now = new Date();
-  // Reines Datum, 00:00 UTC — wie `effectiveAt` überall.
-  const today = new Date(`${toBerlinDateInput(now)}T00:00:00Z`);
+  const today = berlinToday(now);
 
   await prisma.$transaction(async (tx) => {
     const open = await tx.membershipTermination.findUnique({
@@ -169,24 +182,17 @@ export async function removeMembershipByAdmin(params: {
   });
 }
 
-/** Vollzogene Austritte seit `since` — für die Kennzahlen der Benutzerverwaltung. */
-export function countCompletedTerminationsSince(since: Date) {
-  return prisma.membershipTermination.count({ where: { completedAt: { gte: since } } });
-}
-
 /** Höchstens alle 15 Minuten — häufiger wäre reine DB-Last. */
 const RUN_INTERVAL_MS = 15 * 60 * 1000;
 let lastRunAt = 0;
 
 /**
- * Vollzieht bestätigte Kündigungen, deren Austrittstag vorbei ist: Status auf
- * NON_MEMBER, und ohne Wunsch nach Weiterführung wird der Login gesperrt.
- * Die Daten bleiben für den Vorstand stehen (offene Beiträge, Buchhaltung) —
- * endgültig löschen kann er das Konto danach, weil keine Mitgliedschaft mehr
- * besteht.
+ * Löscht die Konten Ausgetretener, sobald ihre offenen Beiträge bezahlt sind,
+ * und benachrichtigt Mitglied und Vorstand.
  *
- * Außerdem verschwinden Kündigungsnachweise und archivierte Beitragszeilen
- * gelöschter Konten nach Ablauf ihrer Aufbewahrungsfristen.
+ * Außerdem: Kündigungen zum Jahresende aus der Zeit vor dem sofortigen
+ * Austritt werden am Tag nach dem Austrittsdatum vollzogen, und
+ * Kündigungsnachweise verschwinden nach Ablauf ihrer Aufbewahrungsfrist.
  *
  * Läuft huckepack auf Dashboard-Aufrufen (gleiches Muster wie
  * `pruneUnverifiedRegistrations`), Fehler werden geschluckt.
@@ -197,6 +203,17 @@ export async function processTerminations(force = false): Promise<void> {
   lastRunAt = now;
 
   try {
+    const pending = await prisma.membershipTermination.findMany({
+      where: { deleteWhenSettled: true },
+      select: { user: { select: { id: true, email: true, firstName: true, lastName: true } } },
+      take: 100,
+    });
+    for (const { user } of pending) {
+      if ((await getOpenFees(user.id)).length > 0) continue;
+      await deleteUserById(user.id);
+      await sendExitMails(user, [], true);
+    }
+
     const due = await prisma.membershipTermination.findMany({
       where: {
         status: "CONFIRMED",
@@ -233,7 +250,6 @@ export async function processTerminations(force = false): Promise<void> {
         ],
       },
     });
-    await pruneArchivedFees(new Date(now));
   } catch (error) {
     console.error("Failed to process membership terminations:", error);
   }

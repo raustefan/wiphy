@@ -8,7 +8,7 @@
  */
 import type { EmailBlock, EmailMessage } from "./blocks";
 import { VEREIN } from "./branding";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatEuro } from "@/lib/format";
 
 type Person = { firstName?: string | null; lastName?: string | null };
 
@@ -305,84 +305,78 @@ export function feeReminderMessage(params: Person & { year: number }): EmailMess
   };
 }
 
+type OpenFee = { year: number; amount: number };
+
+const openFeeFacts = (openFees: OpenFee[]): EmailBlock => ({
+  type: "facts",
+  items: openFees.map((fee) => ({ label: `Beitrag ${fee.year}`, value: formatEuro(fee.amount) })),
+});
+
 /**
- * Eingangsbestätigung der Austrittserklärung. Dokumentiert den Zugang, auf den
- * es für die Frist ankommt — und ist zugleich der Hinweis, falls jemand anderes
- * die Kündigung abgeschickt hat.
+ * Bestätigung des sofortigen Austritts an das Mitglied — zugleich der Hinweis,
+ * falls jemand anderes ihn abgeschickt hat.
  */
-export function terminationReceivedMessage(params: Person & {
-  submittedAt: Date;
-  effectiveAt: Date;
-  keepAccount: boolean;
-}): EmailMessage {
+export function exitMessage(params: Person & { openFees: OpenFee[] }): EmailMessage {
+  const settled = params.openFees.length === 0;
   return {
-    subject: "Deine Kündigung ist eingegangen",
-    preheader: `Austritt zum ${formatDate(params.effectiveAt)}.`,
+    subject: "Bestätigung deines Austritts",
+    preheader: "Deine Mitgliedschaft endet mit sofortiger Wirkung.",
     blocks: [
       greeting(params),
-      { type: "text", content: `deine Austrittserklärung aus dem ${VEREIN.name} ist bei uns eingegangen.` },
-      {
-        type: "facts",
-        items: [
-          { label: "Eingegangen am", value: formatDateTime(params.submittedAt) },
-          { label: "Mitglied bis einschließlich", value: formatDate(params.effectiveAt) },
-          { label: "Konto danach", value: params.keepAccount ? "bleibt ohne Mitgliedschaft bestehen" : "Login wird gesperrt" },
-        ],
-      },
-      { type: "text", content: "Der Vorstand bestätigt den Austritt in Kürze. Bis zum Austrittsdatum bleibst du Mitglied mit allen Rechten und Pflichten." },
-      { type: "note", content: `Hast du nicht gekündigt? Dann melde dich bitte umgehend bei uns unter ${VEREIN.email}.` },
+      { type: "text", content: `hiermit bestätigen wir deinen Austritt aus dem ${VEREIN.name}. Deine Mitgliedschaft endet mit sofortiger Wirkung.` },
+      ...(settled
+        ? [{ type: "text", content: "Dein Konto haben wir samt allen zugehörigen Daten gelöscht. Diese E-Mail ist die letzte, die du von uns erhältst." } as const]
+        : [
+            { type: "text", content: "Folgende Beiträge sind bei uns noch offen:" } as const,
+            openFeeFacts(params.openFees),
+            { type: "text", content: "Die Zahlungspflicht für diese Beiträge besteht trotz des Austritts weiter. Deshalb bleiben dein Konto und deine Zahlungsdaten bestehen, bis sie beglichen sind. Danach löschen wir dein Konto automatisch und vollständig." } as const,
+          ]),
+      { type: "text", content: "Danke, dass du dabei warst!" },
+      { type: "note", content: `Bist du nicht ausgetreten? Dann melde dich bitte umgehend bei uns unter ${VEREIN.email}.` },
     ],
   };
 }
 
-export function terminationNoticeMessage(params: {
+/** Benachrichtigung des Vorstands über einen Austritt oder die Löschung danach. */
+export function exitNoticeMessage(params: {
   firstName: string;
   lastName: string;
   email: string;
-  memberNumber: number | null;
-  submittedAt: Date;
-  effectiveAt: Date;
-  dashboardUrl: string;
+  openFees: OpenFee[];
+  /** Offene Beiträge sind bezahlt, das Konto wurde gerade gelöscht. */
+  settled: boolean;
 }): EmailMessage {
+  const name = `${params.firstName} ${params.lastName}`.trim();
+  const pending = params.openFees.length > 0;
   return {
-    subject: `Austrittserklärung: ${params.firstName} ${params.lastName}`,
-    preheader: "Ein Mitglied hat die Mitgliedschaft gekündigt.",
+    subject: params.settled ? `Konto nach Austritt gelöscht: ${name}` : `Austritt: ${name}`,
+    preheader: params.settled
+      ? "Die offenen Beiträge sind bezahlt, das Konto ist gelöscht."
+      : "Ein Mitglied ist mit sofortiger Wirkung ausgetreten.",
     blocks: [
       { type: "text", content: "Hallo," },
-      { type: "text", content: "ein Mitglied hat den Austritt aus dem Verein erklärt:" },
+      {
+        type: "text",
+        content: params.settled
+          ? "die offenen Beiträge eines ausgetretenen Mitglieds sind bezahlt. Das Konto wurde samt allen Daten gelöscht:"
+          : "ein Mitglied ist mit sofortiger Wirkung ausgetreten:",
+      },
       {
         type: "facts",
         items: [
-          { label: "Name", value: `${params.firstName} ${params.lastName}` },
-          { label: "E-Mail", value: params.email },
-          { label: "Mitgliedsnummer", value: params.memberNumber != null ? String(params.memberNumber) : "—" },
-          { label: "Eingegangen am", value: formatDateTime(params.submittedAt) },
-          { label: "Austritt zum", value: formatDate(params.effectiveAt) },
+          { label: "Name", value: name },
+          { label: "Letzte E-Mail", value: params.email },
         ],
       },
-      { type: "text", content: "Bitte bestätige den Austritt im Dashboard:" },
-      { type: "button", label: "Austritte im Dashboard öffnen", url: params.dashboardUrl },
-    ],
-  };
-}
-
-export function terminationConfirmedMessage(params: Person & {
-  effectiveAt: Date;
-  keepAccount: boolean;
-}): EmailMessage {
-  return {
-    subject: "Bestätigung deines Austritts",
-    preheader: `Deine Mitgliedschaft endet mit Ablauf des ${formatDate(params.effectiveAt)}.`,
-    blocks: [
-      greeting(params),
-      { type: "text", content: `hiermit bestätigen wir deinen Austritt aus dem ${VEREIN.name}. Deine Mitgliedschaft endet mit Ablauf des ${formatDate(params.effectiveAt)}.` },
-      {
-        type: "text",
-        content: params.keepAccount
-          ? "Dein Konto bleibt danach als Konto ohne Mitgliedschaft bestehen. Du kannst es jederzeit selbst vollständig löschen."
-          : "Danach wird dein Login gesperrt. Deine Daten bewahren wir nur so lange auf, wie es für die Abwicklung offener Beiträge und gesetzliche Aufbewahrungspflichten nötig ist.",
-      },
-      { type: "text", content: "Danke, dass du dabei warst!" },
+      ...(pending
+        ? [
+            { type: "text", content: "Folgende Beiträge sind noch offen und bleiben geschuldet:" } as const,
+            openFeeFacts(params.openFees),
+            { type: "text", content: "Das Konto bleibt bis dahin ohne Mitgliedschaft bestehen. Sobald die Beiträge in der Benutzerverwaltung als bezahlt markiert sind, wird es automatisch gelöscht." } as const,
+          ]
+        : params.settled
+          ? []
+          : [{ type: "text", content: "Es waren keine Beiträge offen. Das Konto wurde samt allen Daten sofort gelöscht." } as const]),
     ],
   };
 }
@@ -406,7 +400,7 @@ export function accountDeletedMessage(params: Person): EmailMessage {
     preheader: "Dein Konto und alle zugehörigen Daten wurden entfernt.",
     blocks: [
       greeting(params),
-      { type: "text", content: `dein Konto beim ${VEREIN.name} wurde samt allen zugehörigen Daten gelöscht. Nur eventuelle Beitragsbuchungen bewahren wir wegen der steuerlichen Aufbewahrungspflicht gesperrt auf. Diese E-Mail ist die letzte, die du von uns zu diesem Konto erhältst.` },
+      { type: "text", content: `dein Konto beim ${VEREIN.name} wurde samt allen zugehörigen Daten gelöscht. Diese E-Mail ist die letzte, die du von uns zu diesem Konto erhältst.` },
       { type: "note", content: `Warst du das nicht? Dann melde dich bitte bei uns unter ${VEREIN.email}.` },
     ],
   };
