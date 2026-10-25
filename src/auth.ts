@@ -230,6 +230,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         role: true,
                         status: true,
                         loginDisabled: true,
+                        privacyPolicyVersion: true,
                     },
                 });
                 if (
@@ -245,9 +246,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     delete token.pwdChangedAt;
                     delete token.loginAt;
                     delete token.sessionVersion;
+                    delete token.privacyPolicyVersion;
                 } else {
                     token.role = dbUser.role;
                     token.status = dbUser.status;
+                    token.privacyPolicyVersion = dbUser.privacyPolicyVersion;
                 }
             }
 
@@ -268,6 +271,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 ) {
                     (session.user as { status?: string }).status = token.status;
                 }
+                (session.user as { privacyPolicyVersion?: unknown }).privacyPolicyVersion =
+                    token.privacyPolicyVersion;
                 // Für die Debug-Leiste: wann die 12-h-Grenze der Admin-Sitzung greift.
                 if (typeof token.loginAt === "number") {
                     (session.user as { loginAt?: number }).loginAt = token.loginAt;

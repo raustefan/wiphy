@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1792917314.3387601,
-    "seen": 1792917337.5417678,
-    "ast_hash": "43e932ec318fc7dc0ce8f502d3f3f795",
+    "mtime": 1792947450.3477192,
+    "seen": 1792947486.517913,
+    "ast_hash": "866c1b5e49b374bef5e964e4111f40f9",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -642,9 +642,9 @@
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/page.tsx": {
-    "mtime": 1792573109.627425,
-    "seen": 1792743435.488938,
-    "ast_hash": "4d5aa6579f6b752e4200031d10765b39",
+    "mtime": 1792947450.3478463,
+    "seen": 1792947486.5182772,
+    "ast_hash": "d5da7ae883ad711e73e70c7f557ec428",
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/registerAction.ts": {
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "src/auth.ts": {
-    "mtime": 1792573109.521107,
-    "seen": 1792743435.489215,
-    "ast_hash": "4e8831f3e9002b72520016adc6b4b418",
+    "mtime": 1792947450.3479755,
+    "seen": 1792947486.518534,
+    "ast_hash": "9c0300cc47a7b9f7482c4184e30cc777",
     "semantic_hash": ""
   },
   "src/components/AltchaField.tsx": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": "0c88233a23c17b8bb4cb43e31fda9a4a"
   },
   "src/lib/server/authz.ts": {
-    "mtime": 1792501017.0722768,
-    "seen": 1792502133.34329,
-    "ast_hash": "5864bf7b01ff75167cc8a9d478ed5ff4",
+    "mtime": 1792947450.3481038,
+    "seen": 1792947486.5196679,
+    "ast_hash": "0136580b6ce84997ea092598ec966279",
     "semantic_hash": ""
   },
   "src/lib/server/clientIp.ts": {
@@ -1884,9 +1884,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/importFormat.ts": {
-    "mtime": 1792573109.517985,
-    "seen": 1792743435.488572,
-    "ast_hash": "c52f211d4d765e11e24cea2fed60ae5f",
+    "mtime": 1792947464.8101513,
+    "seen": 1792947486.517751,
+    "ast_hash": "2cf7a1582ad47d368efb1844b31d2713",
     "semantic_hash": ""
   },
   "tests/userImport.test.ts": {
@@ -2151,6 +2151,18 @@
     "mtime": 1792947118.3909414,
     "seen": 1792947146.354812,
     "ast_hash": "a664b17afdb4010dcf09b10aa3820e9e",
+    "semantic_hash": ""
+  },
+  "src/app/datenschutz/bestaetigen/actions.ts": {
+    "mtime": 1792947450.3575723,
+    "seen": 1792947486.5179121,
+    "ast_hash": "1bc5e57f828fc67dd87dd82d9393420a",
+    "semantic_hash": ""
+  },
+  "src/app/datenschutz/bestaetigen/page.tsx": {
+    "mtime": 1792947450.3576646,
+    "seen": 1792947486.517913,
+    "ast_hash": "0e1ec94ff0a1c20d373425720b15db71",
     "semantic_hash": ""
   }
 }

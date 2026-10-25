@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import type { Role } from "@prisma/client";
 import { cache } from "react";
+import { DATENSCHUTZ_VERSION } from "@/app/datenschutz/datenschutztext";
 
 export type UserContext = {
   id: string;
@@ -11,6 +12,7 @@ export type UserContext = {
   email?: string | null;
   name?: string | null;
   status?: string | null;
+  privacyPolicyVersion?: string | null;
 };
 
 function normalizeRole(value: unknown): Role {
@@ -28,7 +30,14 @@ export const getSession = cache(() => auth());
 async function sessionUser(): Promise<UserContext | null> {
   const session = await getSession();
   const user = session?.user as
-    | { id?: string; role?: string; email?: string | null; name?: string | null; status?: string }
+    | {
+        id?: string;
+        role?: string;
+        email?: string | null;
+        name?: string | null;
+        status?: string;
+        privacyPolicyVersion?: string | null;
+      }
     | undefined;
 
   if (!user?.id) {
@@ -41,6 +50,7 @@ async function sessionUser(): Promise<UserContext | null> {
     email: user.email ?? null,
     name: user.name ?? null,
     status: user.status ?? null,
+    privacyPolicyVersion: user.privacyPolicyVersion ?? null,
   };
 }
 
@@ -90,10 +100,26 @@ export async function getOptionalUser(): Promise<UserContext | null> {
   return withViewOverride(await sessionUser());
 }
 
+/** Hierhin, solange die aktuelle Datenschutzerklärung nicht bestätigt ist. */
+export const PRIVACY_CONSENT_PATH = "/datenschutz/bestaetigen";
+
+/**
+ * Auch die Hürde zur Datenschutzerklärung sitzt hier: Seiten *und* Server
+ * Actions des Mitgliederbereichs gehen durch `requireUser`, damit kommt an der
+ * Bestätigung niemand vorbei. API-Routen (`getOptionalUser`) bleiben offen —
+ * sie werden nur aus dem Mitgliederbereich heraus aufgerufen.
+ */
+export function needsPrivacyConsent(user: UserContext): boolean {
+  return user.privacyPolicyVersion !== DATENSCHUTZ_VERSION;
+}
+
 export async function requireUser(): Promise<UserContext> {
   const user = await getOptionalUser();
   if (!user) {
     redirect("/login");
+  }
+  if (needsPrivacyConsent(user)) {
+    redirect(PRIVACY_CONSENT_PATH);
   }
   return user;
 }

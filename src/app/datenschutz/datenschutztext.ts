@@ -6,10 +6,16 @@
  *
  * Jede Frist hier muss im Code durchgesetzt sein (oder ausdrücklich als
  * manuelle Prüfung formuliert). Bei inhaltlichen Änderungen `CONSENT_VERSION`
- * in `src/lib/membership.ts` hochzählen.
+ * in `src/lib/membership.ts` und `DATENSCHUTZ_VERSION` hier hochzählen.
  */
 
 import type { LegalDocument } from "@/lib/legal";
+
+/**
+ * Fassung dieser Erklärung. Hochzählen heißt: jedes Konto muss sie beim
+ * nächsten Login erneut bestätigen, bevor es weiterkommt.
+ */
+export const DATENSCHUTZ_VERSION = "2026-10";
 
 export const DATENSCHUTZ: LegalDocument = [
   {
@@ -104,7 +110,7 @@ export const DATENSCHUTZ: LegalDocument = [
   {
     title: "Nutzerkonto und Registrierung",
     blocks: [
-      "Sie können ein Nutzerkonto anlegen, um einen Aufnahmeantrag zu stellen oder als Mitglied den Mitgliederbereich zu nutzen. Dafür verarbeiten wir Vorname, Name, E-Mail-Adresse, Passwort und Geburtsdatum (Art. 6 Abs. 1 lit. b DSGVO). Das Geburtsdatum brauchen wir, weil eine Mitgliedschaft über das Online-Formular erst ab 18 Jahren möglich ist; es wird in einen späteren Aufnahmeantrag übernommen. Das Passwort speichern wir nur als nicht umkehrbaren Hash. Zusätzlich speichern wir den Zeitpunkt der letzten Anmeldung.",
+      "Sie können ein Nutzerkonto anlegen, um einen Aufnahmeantrag zu stellen oder als Mitglied den Mitgliederbereich zu nutzen. Dafür verarbeiten wir Vorname, Name, E-Mail-Adresse, Passwort und Geburtsdatum (Art. 6 Abs. 1 lit. b DSGVO). Das Geburtsdatum brauchen wir, weil eine Mitgliedschaft über das Online-Formular erst ab 18 Jahren möglich ist; es wird in einen späteren Aufnahmeantrag übernommen. Das Passwort speichern wir nur als nicht umkehrbaren Hash. Zusätzlich speichern wir den Zeitpunkt der letzten Anmeldung und die Fassung dieser Datenschutzerklärung, deren Kenntnisnahme Sie zuletzt bestätigt haben.",
       "Die E-Mail-Adresse müssen Sie über einen zugesandten Link bestätigen. Wird eine Registrierung über das öffentliche Formular nicht innerhalb von 24 Stunden bestätigt, löschen wir das Konto mit allen Angaben automatisch und vollständig. So verhindern wir Konten mit fremden oder erfundenen Adressen und Datenbestände ohne Zweck (Art. 5 Abs. 1 lit. c und e DSGVO). Der Vorstand wird über eine neue Registrierung erst nach der Bestätigung informiert. Von Administratoren angelegte Konten sind von der automatischen Löschung ausgenommen.",
       "Links zum Bestätigen der E-Mail-Adresse und zum Zurücksetzen des Passworts sind nur befristet gültig und werden danach gelöscht.",
       "Über Änderungen, die Ihr Nutzerkonto betreffen (z. B. geänderte Zugangsdaten), informieren wir Sie per E-Mail.",
@@ -225,7 +231,7 @@ export const DATENSCHUTZ: LegalDocument = [
   {
     title: "Änderungen",
     blocks: [
-      "Wir passen diese Datenschutzerklärung an, wenn sich die Website, unsere Verarbeitungen oder die Rechtslage ändern. Es gilt die jeweils hier veröffentlichte Fassung; über wesentliche Änderungen, die Mitglieder betreffen, informieren wir per E-Mail.",
+      "Wir passen diese Datenschutzerklärung an, wenn sich die Website, unsere Verarbeitungen oder die Rechtslage ändern. Es gilt die jeweils hier veröffentlichte Fassung; über wesentliche Änderungen, die Mitglieder betreffen, informieren wir per E-Mail. Nach einer Änderung bitten wir Sie bei der nächsten Anmeldung, die neue Fassung zur Kenntnis zu nehmen.",
     ],
   },
 ];

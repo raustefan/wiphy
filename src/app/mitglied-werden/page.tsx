@@ -3,7 +3,8 @@ import { CheckmarkCircle01Icon, Clock01Icon, DashboardCircleIcon, InformationCir
 import Link from "next/link";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { createAltchaChallenge } from "@/lib/server/altcha";
-import { getOptionalUser } from "@/lib/server/authz";
+import { redirect } from "next/navigation";
+import { getOptionalUser, needsPrivacyConsent, PRIVACY_CONSENT_PATH } from "@/lib/server/authz";
 import { getEditableUser } from "@/lib/server/services/userService";
 import { getOpenApplication } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
@@ -44,6 +45,12 @@ function toDateInput(value: Date | null | undefined) {
 
 export default async function MitgliedWerdenPage({ searchParams }: Props) {
     const [{ konto }, currentUser] = await Promise.all([searchParams, getOptionalUser()]);
+    // Die Seite selbst ist öffentlich, ihre Actions verlangen aber die
+    // Bestätigung (`requireUser`) — ohne diese Umleitung ginge ein ausgefüllter
+    // Antrag beim Absenden verloren.
+    if (currentUser && needsPrivacyConsent(currentUser)) {
+        redirect(`${PRIVACY_CONSENT_PATH}?next=/mitglied-werden`);
+    }
 
     const profile = currentUser ? await getEditableUser(currentUser.id) : null;
     const status = profile?.status ?? currentUser?.status ?? "NON_MEMBER";

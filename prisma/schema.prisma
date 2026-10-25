@@ -99,6 +99,10 @@ model User {
   /// Zugang, ohne dass die Mitgliedschaft (und damit die Daten, die der Verein
   /// für sie braucht) endet. Admins heben die Sperre im Adminbereich auf.
   loginDisabled            Boolean                 @default(false)
+  /// Fassung der Datenschutzerklärung (`DATENSCHUTZ_VERSION`), die das Konto
+  /// zuletzt bestätigt hat. Weicht sie von der aktuellen ab (oder fehlt), muss
+  /// sie nach dem Login erst bestätigt werden (`requireUser`).
+  privacyPolicyVersion     String?
   terminations             MembershipTermination[]
   backupToken              BackupToken?
 
