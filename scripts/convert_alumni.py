@@ -18,7 +18,7 @@ from datetime import date
 THIS_YEAR = date.today().year
 # Wer heute Student ist, gilt auch so viele Jahre nach dem laufenden noch als Student
 # (Formular erlaubt bis zu STUDENT_YEAR_LOOKAHEAD = 5, src/lib/membership.ts)
-STUDENT_EXTRA_YEARS = 2
+STUDENT_EXTRA_YEARS = 5
 PHONE = re.compile(r"^\+?[\d\s()/.-]{5,30}$")  # wie isValidPhone in src/lib/inputRules.ts
 COUNTRY_ALIASES = {"USA": "US"}  # Rest löst toCountryCode() serverseitig auf
 
@@ -54,28 +54,13 @@ def admin_note(row):
     return "\n".join(line for line in lines if line)
 
 
-def fees(row, years, student_years):
-    """Vergangene Jahre bezahlt; das laufende Jahr laut „Gezahlt“."""
-    if row["Gezahlt"] == "ja":
-        return {"allPaid": True, "fees": None}
-    return {
-        "allPaid": False,
-        "fees": [
-            {"year": y, "paid": y < THIS_YEAR, "isStudent": y in student_years, "amount": None, "manualAmount": False}
-            # künftige Studienjahre bekommen schon jetzt eine (offene) Zeile, wie im Beitragsplan der App
-            for y in student_years or years
-        ],
-    }
-
-
 def convert(row):
     regular = row["Status"] == "Ordentliches Mitglied"
     status = "REGULAR_MEMBER" if regular else "HONORARY_MEMBER" if row["Status"] == "Ehrenmitglied" else "NON_MEMBER"
     joined = day(row["Aufnahme"])
-    years = range(int(joined[:4]), THIS_YEAR + 1) if joined else []
     # Altsystem kennt nur den heutigen Berufsstand: wer Student ist, war es die ganze Mitgliedschaft
     student = joined and row["Berufsstand"] == "Student"
-    student_years = list(range(years.start, THIS_YEAR + 1 + STUDENT_EXTRA_YEARS)) if student else []
+    student_years = list(range(int(joined[:4]), THIS_YEAR + 1 + STUDENT_EXTRA_YEARS)) if student else []
     debit = row["Bankeinzug"] == "ja" and bool(text(row["IBAN"]))
     start, end = text(row["Studienbeginn"]), text(row["Studienende"])
     land = text(row["Land"])
@@ -120,11 +105,12 @@ def convert(row):
         "mandateReference": f"ID{row['ID']}-Mandat{row['MandatCounter']}" if debit else None,
         "mandateSignedAt": day(row["Mandatserteilung"]) if debit else None,
         "loginDisabled": row["Ausschluss"] == "ja",
-        "allPaid": False,
+        # Zahlstand manuell geprüft: alles bis einschließlich laufendes Jahr bezahlt.
+        # Künftige Studienjahre legt die App aus studentYears offen an.
+        # Schema erlaubt allPaid nur für ordentliche Mitglieder mit Beitritt.
+        "allPaid": bool(regular and joined),
         "fees": None,
     }
-    if regular and joined:
-        entry.update(fees(row, years, student_years))
     return entry
 
 
