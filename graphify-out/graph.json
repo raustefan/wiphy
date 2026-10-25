@@ -12541,7 +12541,7 @@
       "file_type": "code",
       "norm_label": "profilerow()",
       "source_file": "src/app/dashboard/ProfileSummary.tsx",
-      "source_location": "L88"
+      "source_location": "L86"
     },
     {
       "id": "src_app_dashboard_profilesummary_profilesummary",
@@ -27984,7 +27984,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L178",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -27996,7 +27996,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L385",
+      "source_location": "L387",
       "weight": 1.0
     },
     {
@@ -28056,7 +28056,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/ProfileSummary.tsx",
-      "source_location": "L72",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -28068,7 +28068,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/ProfileSummary.tsx",
-      "source_location": "L73",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -28080,7 +28080,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/ProfileSummary.tsx",
-      "source_location": "L74",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -89849,7 +89849,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/dashboard/ProfileSummary.tsx",
-      "source_location": "L88",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -105578,5 +105578,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3af9c09b5030caae0b15bac953987d2bcb3077bd"
+  "built_at_commit": "0021bf40c6f4c883bdcc5a54d344907e56a12b43"
 }

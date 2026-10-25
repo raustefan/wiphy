@@ -55,15 +55,13 @@ export function ProfileSummary({ user }: { user: ProfileSummaryUser }) {
                     </span>
                 }
             />
-            <ProfileRow
-                icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
-                label="Rolle"
-                value={
-                    <Badge tone={user.role === "ADMIN" ? "market" : "info"}>
-                        {user.role === "ADMIN" ? "Admin" : "Member"}
-                    </Badge>
-                }
-            />
+            {user.role === "ADMIN" && (
+                <ProfileRow
+                    icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
+                    label="Rolle"
+                    value={<Badge tone="market">Admin</Badge>}
+                />
+            )}
             <ProfileRow
                 icon={<HugeiconsIcon icon={CheckmarkCircle01Icon} size={15} aria-hidden="true" />}
                 label="Mitgliedschaft"

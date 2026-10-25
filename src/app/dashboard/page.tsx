@@ -167,11 +167,13 @@ export default async function DashboardPage() {
                             label="Mitgliedschaft"
                             value={formatStatus(userStatus)}
                         />
-                        <HeaderMeta
-                            icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
-                            label="Rolle"
-                            value={isAdmin ? "Administrator" : "Mitglied"}
-                        />
+                        {isAdmin && (
+                            <HeaderMeta
+                                icon={<HugeiconsIcon icon={UserCircleIcon} size={15} aria-hidden="true" />}
+                                label="Rolle"
+                                value="Administrator"
+                            />
+                        )}
                         <HeaderMeta
                             icon={<HugeiconsIcon icon={Calendar01Icon} size={15} aria-hidden="true" />}
                             label="Account seit"

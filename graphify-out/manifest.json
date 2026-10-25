@@ -294,9 +294,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1792573109.6187654,
-    "seen": 1792743435.488389,
-    "ast_hash": "7d5d3dbd6fcb6680f83437ea3033a88d",
+    "mtime": 1792948077.4128232,
+    "seen": 1792948089.2075148,
+    "ast_hash": "2dad35955f42c3c238bfbec6f2069c65",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {
@@ -1818,9 +1818,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/ProfileSummary.tsx": {
-    "mtime": 1792573109.6145868,
-    "seen": 1792743435.488111,
-    "ast_hash": "2dfd0a09c9bd4ae90570626637bf26fc",
+    "mtime": 1792948077.4130201,
+    "seen": 1792948089.2070642,
+    "ast_hash": "ad03b2b74228f59c93aeb681c3b2ccce",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/DialogButton.tsx": {

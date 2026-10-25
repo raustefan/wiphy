@@ -1,7 +1,7 @@
 # Graph Report - wiphy  (2026-10-25)
 
 ## Corpus Check
-- 366 files · ~174,791 words
+- 366 files · ~174,781 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 2, .example 1, .toml 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3af9c09b`
+- Built from commit: `0021bf40`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -508,11 +508,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `allowBuilds (prisma, esbuild, sharp, unrs-resolver)` and `ignoredBuiltDependencies (sharp, unrs-resolver)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `next` connect `next` to `forgot-password/layout.tsx`, `feeService.ts`, `index.ts`, `mitglied-werden/page.tsx`, `boardService.ts`, `getOptionalUser`, `AppError`, `format.ts`, `zertifikat/pdf/route.ts`, `app/termine/[id]/page.tsx`, `ics.ts`, `MarketDiffusion.tsx`, `bestaetigen/page.tsx`, `package.json`, `executeAction`, `server/actions.ts`, `dashboard/page.tsx`, `app/layout.tsx`, `gravityPhysics.ts`, `@hugeicons/core-free-icons`, `authz.ts`, `blog/actions.ts`, `KosmosTimeline.tsx`, `DirectoryTable.tsx`, `messages.ts`, `server/route.ts`, `mailer.ts`, `mail/page.tsx`, `Callout`, `ApplicationWizard.tsx`, `mitgliedsantraege/actions.ts`, `EditUserForm.tsx`, `security/page.tsx`, `prisma.ts`, `altcha.ts`, `featureFlagService.ts`, `Footer.tsx`, `Site.tsx`, `rateLimit.ts`, `MailForm.tsx`, `app/blog/[id]/page.tsx`, `satzung/page.tsx`, `app/kontakt/actions.ts`, `mitgliedsantraege/page.tsx`, `dashboard/kontakt/actions.ts`, `app/page.tsx`, `login/layout.tsx`, `reset-password/layout.tsx`, `verify-email/layout.tsx`, `MarkdownEditor.tsx`?**
-  _High betweenness centrality (0.172) - this node is a cross-community bridge._
+  _High betweenness centrality (0.171) - this node is a cross-community bridge._
 - **Why does `react` connect `@hugeicons/core-free-icons` to `index.ts`, `serverStatus.ts`, `format.ts`, `blogService.ts`, `zertifikat/pdf/route.ts`, `MarketDiffusion.tsx`, `package.json`, `dashboard/page.tsx`, `app/layout.tsx`, `gravityPhysics.ts`, `authz.ts`, `KosmosTimeline.tsx`, `DirectoryTable.tsx`, `next`, `Callout`, `ApplicationWizard.tsx`, `iban.ts`, `EditUserForm.tsx`, `featureFlagService.ts`, `Footer.tsx`, `Site.tsx`, `BulkImport.tsx`, `MailForm.tsx`, `app/blog/[id]/page.tsx`, `eventService.ts`, `altcha.d.ts`, `app/page.tsx`, `MarkdownEditor.tsx`?**
   _High betweenness centrality (0.108) - this node is a cross-community bridge._
 - **Why does `AppError` connect `AppError` to `boardService.ts`, `serverStatus.ts`, `blogService.ts`, `executeAction`, `server/actions.ts`, `messages.ts`, `next`, `mailer.ts`, `mailService.ts`, `mitgliedsantraege/actions.ts`, `prisma.ts`, `blogImages.ts`, `featureFlagService.ts`, `userService.ts`, `rateLimit.ts`, `eventService.ts`, `app/kontakt/actions.ts`, `auth.ts`, `mitgliedsantraege/page.tsx`, `dashboard/kontakt/actions.ts`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **What connects `deploy.sh script`, `eslintConfig`, `nextConfig` to the rest of the system?**
   _469 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `index.ts` be split into smaller, more focused modules?**
