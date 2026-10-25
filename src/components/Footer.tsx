@@ -4,6 +4,7 @@ import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import GravityTrigger from "@/components/GravityTrigger";
 import ContrastToggle from "@/components/ContrastToggle";
 import PluckedString from "@/components/PluckedString";
+import { getDisabledPages } from "@/lib/server/services/featureFlagService";
 
 const legalLinks = [
   { href: "/impressum", label: "Impressum" },
@@ -36,8 +37,9 @@ const columns: Array<{ heading: string; links: Array<{ href: string; label: stri
   },
 ];
 
-export default function Footer() {
+export default async function Footer() {
   const year = new Date().getFullYear();
+  const hiddenPaths = await getDisabledPages();
 
   return (
     <footer className="mt-auto">
@@ -85,7 +87,7 @@ export default function Footer() {
           {columns.map((column) => (
             <nav key={column.heading} aria-label={column.heading} className="grid content-start gap-1">
               <p className="mb-2 font-serif text-sm text-muted italic">{column.heading}</p>
-              {column.links.map((link) => (
+              {column.links.filter((link) => !hiddenPaths.includes(link.href)).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

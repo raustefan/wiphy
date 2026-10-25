@@ -8,7 +8,8 @@ alles läuft**. Jeder Befehl in der Checkliste ist nur lesend.
 ## Der Server
 
 Hetzner Cloud, Ubuntu 26.04 LTS, 2 vCPU / 3,7 GB RAM / 38 GB Platte, kein Swap.
-Domain `wiphy.de` (+ `www.wiphy.de`). Zugang nur per SSH-Schlüssel als `root`
+Domain `wiphy.de` (+ `www.wiphy.de`); `wirtschaftsphysik.de` (+ `www.`) leitet per 301 dorthin
+um, beide Domains und DNS bei Hetzner. Zugang nur per SSH-Schlüssel als `root`
 (siehe [Zugang](#zugang-für-eine-neue-person)).
 
 ## Wo liegt was
@@ -22,9 +23,9 @@ Domain `wiphy.de` (+ `www.wiphy.de`). Zugang nur per SSH-Schlüssel als `root`
 | Autostart nach Reboot| systemd-Unit `pm2-root` lädt `/root/.pm2/dump.pm2`  | nach Änderungen an PM2-Prozessen: `pm2 save` |
 | App-Logs             | `/root/.pm2/logs/wiphy-out.log`, `wiphy-error.log`; täglich rotiert durch Modul `pm2-logrotate` (10 MB, 6 Stück, gzip) | `pm2 logs wiphy` |
 | Deploy-Protokoll     | `/var/www/wiphy/wiphy/.deploy.log` (nur Deploys per Knopf) | —                                     |
-| Reverse Proxy / HTTPS| `/etc/nginx/sites-available/wiphy` (verlinkt in `sites-enabled`) | `nginx -t && systemctl reload nginx` |
+| Reverse Proxy / HTTPS| `/etc/nginx/sites-available/wiphy` (verlinkt in `sites-enabled`); Umleitung `wirtschaftsphysik.de` → `wiphy.de` in eigener Datei `/etc/nginx/sites-available/wirtschaftsphysik` | `nginx -t && systemctl reload nginx` |
 | nginx-Logs           | `/var/log/nginx/access.log`, `error.log`            | —                                            |
-| TLS-Zertifikat       | `/etc/letsencrypt/live/wiphy.de/` (certbot, `certbot.timer` erneuert automatisch) | `certbot renew --dry-run` zum Testen |
+| TLS-Zertifikat       | `/etc/letsencrypt/live/wiphy.de/` und `/etc/letsencrypt/live/wirtschaftsphysik.de/` (certbot, `certbot.timer` erneuert automatisch) | `certbot renew --dry-run` zum Testen |
 | Datenbank            | PostgreSQL 18 lokal (`127.0.0.1:5432`), DB `wiphy`  | `sudo -u postgres psql wiphy`                |
 | Backup               | täglich 3:30 UTC nach `/var/backups/wiphy/` (14 Tage), Skript `/usr/local/sbin/wiphy-backup`, Cron `/etc/cron.d/wiphy-backup`; manuell: `/dashboard/server` → „Backup anfordern“ | README „Backup & Wiederherstellung“ |
 | OS-Updates           | `unattended-upgrades` (Sicherheitsupdates automatisch) | `apt upgrade`, danach ggf. `reboot`       |
@@ -58,7 +59,8 @@ Jeweils: Befehl → was rauskommen soll. Vorher `cd /var/www/wiphy/wiphy`.
 - [ ] `curl -sI https://wiphy.de | head -1` → `200`
 - [ ] `curl -sI http://wiphy.de | head -1` → `301`
 - [ ] `curl -s https://wiphy.de/robots.txt | grep Sitemap` → `https://…`
-- [ ] `certbot certificates` → mehr als 30 Tage gültig
+- [ ] `curl -sI https://wirtschaftsphysik.de/blog | grep -i location` → `https://wiphy.de/blog`
+- [ ] `certbot certificates` → beide mehr als 30 Tage gültig
 - [ ] `grep -E 'X-Real-IP|client_max_body_size' /etc/nginx/sites-available/wiphy` → beide vorhanden (siehe README)
 
 **System & Sicherheit**

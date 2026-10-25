@@ -13,6 +13,7 @@ import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 import { JOURNEY_STEPS } from "@/lib/membershipJourney";
 import { blogPostPath } from "@/lib/slug";
 import { events as milestones } from "@/app/geschichte/milestones";
+import { getDisabledPages } from "@/lib/server/services/featureFlagService";
 
 /** Was der Verein tut — drei Stufen, versetzt übereinander. */
 const levels = [
@@ -52,11 +53,13 @@ const tone = (category: string) =>
 
 export default async function HomePage() {
   // Der nächste Termin — und wenn keiner ansteht, der zuletzt vergangene.
-  const [session, [latestPost = null], featured] = await Promise.all([
+  const [session, [latestPost = null], featured, hiddenPaths] = await Promise.all([
     auth(),
     getPublishedPosts(1),
     getFeaturedEvent(),
+    getDisabledPages(),
   ]);
+  const shows = (path: string) => !hiddenPaths.includes(path);
 
   const stripTo = new Date().getFullYear();
   const strip = STRIP_IDS.flatMap((id) => milestones.filter((m) => m.id === id));
@@ -99,9 +102,11 @@ export default async function HomePage() {
                   Mitglied werden
                 </Cta>
               )}
-              <Cta href="/termine" variant="line">
-                Nächste Termine
-              </Cta>
+              {shows("/termine") && (
+                <Cta href="/termine" variant="line">
+                  Nächste Termine
+                </Cta>
+              )}
             </div>
           </div>
 
@@ -130,83 +135,85 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════ Zeitstrahl ═══════════════════ */}
-      <section aria-labelledby="strip-title" className="border-y border-line bg-surface">
-        <Frame className="py-10 sm:py-12">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-            <h2 id="strip-title" className="headline text-2xl sm:text-3xl">
-              Von {STRIP_FROM} bis heute
-            </h2>
-            <Link href="/geschichte" className="link text-sm font-medium">
-              Die ganze Geschichte
-            </Link>
-          </div>
+      {shows("/geschichte") && (
+        <section aria-labelledby="strip-title" className="border-y border-line bg-surface">
+          <Frame className="py-10 sm:py-12">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <h2 id="strip-title" className="headline text-2xl sm:text-3xl">
+                Von {STRIP_FROM} bis heute
+              </h2>
+              <Link href="/geschichte" className="link text-sm font-medium">
+                Die ganze Geschichte
+              </Link>
+            </div>
 
-          {/* Telefon: senkrechte Liste. */}
-          <ol className="mt-8 grid gap-5 border-l border-line-strong pl-5 md:hidden">
-            {strip.map((m) => (
-              <li key={m.id} className="relative">
-                <span aria-hidden="true" className={`absolute top-2 -left-[24.5px] size-2 rounded-full ${tone(m.category).bg}`} />
-                <Link href={`/geschichte#${m.id}`} className="grid rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics">
-                  <span className={`font-serif text-lg italic ${tone(m.category).text}`}>{m.year}</span>
-                  <span className="text-sm text-muted">{m.title}</span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-
-          {/* Ab md: maßstäblicher Zeitstrahl, Beschriftung abwechselnd oben und unten. */}
-          <div className="relative mt-10 hidden h-48 md:block">
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 top-1/2 h-2 -translate-y-full border-b border-line-strong"
-              style={{
-                backgroundImage: "linear-gradient(90deg, var(--line-strong) 1px, transparent 1px)",
-                backgroundSize: `calc(100% / ${stripTo - STRIP_FROM}) 100%`,
-              }}
-            />
-            {decades.map((year) => (
-              <span
-                key={year}
-                aria-hidden="true"
-                className="absolute top-1/2 -translate-x-1/2 pt-2 text-xs text-muted tabular-nums"
-                style={{ left: pos(year) }}
-              >
-                <span className="absolute -top-4 left-1/2 h-4 w-px bg-line-strong" />
-                {year}
-              </span>
-            ))}
-            <ol>
-              {strip.map((m, i) => {
-                const above = i % 2 === 0;
-                const right = m.year - STRIP_FROM > (stripTo - STRIP_FROM) * 0.82;
-                return (
-                  <li key={m.id} className="absolute top-1/2" style={{ left: pos(m.year) }}>
-                    <span aria-hidden="true" className={`absolute -top-1.5 -left-1.5 size-3 rounded-full ring-4 ring-surface ${tone(m.category).bg}`} />
-                    <span
-                      aria-hidden="true"
-                      className={`absolute left-0 w-px ${tone(m.category).bg} ${above ? "-top-14 h-12" : "top-3 h-10"}`}
-                    />
-                    <Link
-                      href={`/geschichte#${m.id}`}
-                      className={`group absolute grid w-44 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics ${
-                        above ? "bottom-14" : "top-14"
-                      } ${right ? "right-0 justify-items-end text-right" : "-left-px border-l border-transparent pl-2"}`}
-                    >
-                      <span className={`font-serif text-xl leading-tight italic ${tone(m.category).text}`}>
-                        {m.year}
-                      </span>
-                      <span className="text-sm leading-snug text-foreground group-hover:underline">{m.title}</span>
-                    </Link>
-                  </li>
-                );
-              })}
+            {/* Telefon: senkrechte Liste. */}
+            <ol className="mt-8 grid gap-5 border-l border-line-strong pl-5 md:hidden">
+              {strip.map((m) => (
+                <li key={m.id} className="relative">
+                  <span aria-hidden="true" className={`absolute top-2 -left-[24.5px] size-2 rounded-full ${tone(m.category).bg}`} />
+                  <Link href={`/geschichte#${m.id}`} className="grid rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics">
+                    <span className={`font-serif text-lg italic ${tone(m.category).text}`}>{m.year}</span>
+                    <span className="text-sm text-muted">{m.title}</span>
+                  </Link>
+                </li>
+              ))}
             </ol>
-          </div>
-        </Frame>
-      </section>
+
+            {/* Ab md: maßstäblicher Zeitstrahl, Beschriftung abwechselnd oben und unten. */}
+            <div className="relative mt-10 hidden h-48 md:block">
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 top-1/2 h-2 -translate-y-full border-b border-line-strong"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, var(--line-strong) 1px, transparent 1px)",
+                  backgroundSize: `calc(100% / ${stripTo - STRIP_FROM}) 100%`,
+                }}
+              />
+              {decades.map((year) => (
+                <span
+                  key={year}
+                  aria-hidden="true"
+                  className="absolute top-1/2 -translate-x-1/2 pt-2 text-xs text-muted tabular-nums"
+                  style={{ left: pos(year) }}
+                >
+                  <span className="absolute -top-4 left-1/2 h-4 w-px bg-line-strong" />
+                  {year}
+                </span>
+              ))}
+              <ol>
+                {strip.map((m, i) => {
+                  const above = i % 2 === 0;
+                  const right = m.year - STRIP_FROM > (stripTo - STRIP_FROM) * 0.82;
+                  return (
+                    <li key={m.id} className="absolute top-1/2" style={{ left: pos(m.year) }}>
+                      <span aria-hidden="true" className={`absolute -top-1.5 -left-1.5 size-3 rounded-full ring-4 ring-surface ${tone(m.category).bg}`} />
+                      <span
+                        aria-hidden="true"
+                        className={`absolute left-0 w-px ${tone(m.category).bg} ${above ? "-top-14 h-12" : "top-3 h-10"}`}
+                      />
+                      <Link
+                        href={`/geschichte#${m.id}`}
+                        className={`group absolute grid w-44 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics ${
+                          above ? "bottom-14" : "top-14"
+                        } ${right ? "right-0 justify-items-end text-right" : "-left-px border-l border-transparent pl-2"}`}
+                      >
+                        <span className={`font-serif text-xl leading-tight italic ${tone(m.category).text}`}>
+                          {m.year}
+                        </span>
+                        <span className="text-sm leading-snug text-foreground group-hover:underline">{m.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </Frame>
+        </section>
+      )}
 
       {/* ═══════════════════ Nächster Termin ═══════════════════ */}
-      {featured && (
+      {featured && shows("/termine") && (
         <EventFeature
           event={featured.event}
           past={featured.isPast}
@@ -309,7 +316,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════ Aus dem Blog ═══════════════════ */}
-      {latestPost && (
+      {latestPost && shows("/blog") && (
         <section aria-labelledby="blog-title" className="border-t border-line bg-surface">
           <Frame
             className={`grid gap-10 py-20 sm:py-24 lg:gap-16 ${
@@ -402,9 +409,11 @@ export default async function HomePage() {
             <Cta href={MEMBERSHIP_APPLICATION_PATH} variant="invert" arrow className="focus-visible:outline-on-physics">
               Jetzt beginnen
             </Cta>
-            <Cta href="/satzung" variant="invert-line" className="focus-visible:outline-on-physics">
-              Satzung und Beiträge
-            </Cta>
+            {shows("/satzung") && (
+              <Cta href="/satzung" variant="invert-line" className="focus-visible:outline-on-physics">
+                Satzung und Beiträge
+              </Cta>
+            )}
           </div>
         </Frame>
       </section>

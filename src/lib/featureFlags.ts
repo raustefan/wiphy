@@ -31,6 +31,10 @@ export const FEATURE_FLAG_CATEGORIES: { title: string; keys: FeatureFlagKey[] }[
     ],
   },
   {
+    title: "Öffentliche Seiten",
+    keys: ["PAGE_TERMINE", "PAGE_BLOG", "PAGE_GESCHICHTE", "PAGE_VORSTAND", "PAGE_SATZUNG"],
+  },
+  {
     title: "Mitgliederbereich",
     keys: ["KOSMOS", "PDF_DOCUMENTS"],
   },
@@ -81,6 +85,11 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagKey, string> = {
   KOSMOS: "Alumni-Kosmos",
   PDF_DOCUMENTS: "PDF-Dokumente",
   EMAIL_DELIVERY: "Mail-Versand (alle Mails)",
+  PAGE_TERMINE: "Seite: Termine",
+  PAGE_BLOG: "Seite: Blog",
+  PAGE_GESCHICHTE: "Seite: Geschichte",
+  PAGE_VORSTAND: "Seite: Vorstand",
+  PAGE_SATZUNG: "Seite: Satzung",
 };
 
 export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
@@ -128,7 +137,26 @@ export const FEATURE_FLAG_DESCRIPTIONS: Record<FeatureFlagKey, string> = {
     "Schaltet den Alumni-Kosmos im Mitgliederbereich ein oder aus. Aus: Niemand sieht den Zeitstrahl oder kann E-Mail-Adressen aufdecken; Mitglieder können ihre Sichtbarkeit weiterhin ausschalten.",
   PDF_DOCUMENTS:
     "Erlaubt Mitgliedern, ihre Zahlungshistorie und ihr Mitgliedschaftszertifikat als PDF herunterzuladen. Aus: Die Download-Knöpfe verschwinden, die Angaben bleiben im Mitgliederbereich sichtbar.",
+  PAGE_TERMINE:
+    "Blendet /termine samt Termin-Detailseiten und Kalender-Downloads ein oder aus. Aus: Die Adressen liefern 404, Links in Navigation, Footer und auf der Startseite verschwinden. Die Termin-Verwaltung im Dashboard bleibt nutzbar.",
+  PAGE_BLOG:
+    "Blendet /blog samt Beiträgen und RSS-Feed ein oder aus. Aus: Die Adressen liefern 404, Links in Navigation, Footer und auf der Startseite verschwinden. Die Blog-Verwaltung im Dashboard bleibt nutzbar.",
+  PAGE_GESCHICHTE:
+    "Blendet /geschichte ein oder aus. Aus: Die Adresse liefert 404, Links und der Zeitstrahl auf der Startseite verschwinden.",
+  PAGE_VORSTAND:
+    "Blendet /vorstand ein oder aus. Aus: Die Adresse liefert 404, Links verschwinden. Die Vorstands-Verwaltung und die Mail-Signatur sind nicht betroffen.",
+  PAGE_SATZUNG:
+    "Blendet /satzung ein oder aus. Aus: Die Adresse liefert 404, Links verschwinden. Achtung: Andere Seiten (z. B. der Mitgliedsantrag) verweisen womöglich weiterhin auf die Satzung.",
 };
+
+/** Öffentliche Seiten mit eigenem Schalter — aus heißt 404 samt Unterseiten, Links verschwinden. */
+export const PAGE_FLAGS = {
+  "/termine": "PAGE_TERMINE",
+  "/blog": "PAGE_BLOG",
+  "/geschichte": "PAGE_GESCHICHTE",
+  "/vorstand": "PAGE_VORSTAND",
+  "/satzung": "PAGE_SATZUNG",
+} as const satisfies Record<string, FeatureFlagKey>;
 
 export function isFeatureFlagKey(value: string | null): value is FeatureFlagKey {
   return !!value && (FEATURE_FLAG_ORDER as string[]).includes(value);

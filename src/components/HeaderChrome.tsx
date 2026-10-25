@@ -11,7 +11,7 @@ import { useSwipeToClose } from "@/lib/client/useSwipeToClose";
 import ThemeToggle from "@/components/ThemeToggle";
 import { MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
-const links = [
+const allLinks = [
   { href: "/termine", label: "Termine" },
   { href: "/blog", label: "Blog" },
   { href: "/geschichte", label: "Geschichte" },
@@ -20,7 +20,8 @@ const links = [
   { href: "/kontakt", label: "Kontakt" },
 ];
 
-export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
+export default function HeaderChrome({ signedIn, hiddenPaths }: { signedIn: boolean; hiddenPaths: string[] }) {
+  const links = allLinks.filter((link) => !hiddenPaths.includes(link.href));
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -143,7 +144,7 @@ export default function HeaderChrome({ signedIn }: { signedIn: boolean }) {
           icon: DashboardCircleIcon,
         }
       : { href: "/login", label: "Anmelden", icon: Login01Icon },
-  ];
+  ].filter((tab) => !hiddenPaths.includes(tab.href));
 
   return (
     <>
