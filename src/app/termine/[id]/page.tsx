@@ -68,7 +68,6 @@ export default async function EventDetailPage({ params }: Props) {
         allDay={event.allDay}
         location={event.location}
         address={event.address}
-        onlineUrl={event.onlineUrl}
       />
 
       <header className="relative isolate">

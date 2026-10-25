@@ -106,7 +106,9 @@ function blockText(block: EmailBlock): string {
     case "button":
       return `${block.label}:\n${block.url}`;
     case "facts":
-      return block.items.map((item) => `${item.label} ${item.value}`).join("\n");
+      return block.items
+        .map((item) => `${item.label} ${item.value}${item.href && item.href !== item.value ? ` (${item.href})` : ""}`)
+        .join("\n");
     case "quote":
       return block.content
         .split("\n")

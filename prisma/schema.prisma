@@ -203,8 +203,10 @@ model Event {
   /// Anschrift, getrennt vom Namen — sie landet als eigene Zeile in der
   /// Kalenderdatei und im Kartenlink.
   address   String @default("")
-  /// Videokonferenz- oder Streamlink für hybride Termine.
-  onlineUrl String @default("")
+  /// Ein frei wählbarer Link (Anmeldung, Stream, Infoseite …) mit Sichttext.
+  linkUrl   String @default("")
+  /// Sichttext des Links, z. B. „Mehr erfahren“. Leer: siehe `eventLinkLabel()`.
+  linkLabel String @default("")
 
   /// Wie beim Blog: unveröffentlichte Termine sind Entwürfe und öffentlich
   /// unsichtbar, auch wenn ihre ID bekannt ist.

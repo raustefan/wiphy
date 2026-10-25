@@ -142,7 +142,8 @@ export type EventWriteData = {
   allDay: boolean;
   location: string;
   address: string;
-  onlineUrl: string;
+  linkUrl: string;
+  linkLabel: string;
   published: boolean;
 };
 

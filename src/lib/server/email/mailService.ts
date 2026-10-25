@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { escapeHtml } from "@/lib/email/escapeHtml";
 import type { EmailBlock, EmailMessage } from "@/lib/email/blocks";
-import { eventContactPath, eventPath, formatEventRange } from "@/lib/events";
+import { eventContactPath, eventLinkLabel, eventPath, formatEventRange } from "@/lib/events";
 import { siteUrl } from "@/lib/server/siteUrl";
 import { buildEventIcs, icsFileName, type IcsEvent } from "@/lib/server/ics";
 import { sanitizeEmailHtml } from "./sanitizeHtml";
@@ -125,8 +125,8 @@ function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
     { label: "Wann", value: formatEventRange(event) },
   ];
   if (place) facts.push({ label: "Wo", value: place });
-  if (event.onlineUrl.trim()) {
-    facts.push({ label: "Online", value: event.onlineUrl.trim(), href: event.onlineUrl.trim() });
+  if (event.linkUrl.trim()) {
+    facts.push({ label: "Link", value: eventLinkLabel(event), href: event.linkUrl.trim() });
   }
 
   return [

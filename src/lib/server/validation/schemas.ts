@@ -639,7 +639,8 @@ export const eventSaveSchema = z
     allDay: z.boolean().default(false),
     location: z.string().trim().max(200, "Der Ort ist zu lang.").default(""),
     address: z.string().trim().max(300, "Die Anschrift ist zu lang.").default(""),
-    onlineUrl: optionalUrl(500),
+    linkUrl: optionalUrl(500),
+    linkLabel: z.string().trim().max(80, "Der Linktext ist zu lang.").default(""),
     published: z.boolean().default(false),
   })
   // Ganztägige Termine tragen keine Uhrzeit: was im Formular stehen bleibt,

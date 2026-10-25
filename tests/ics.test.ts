@@ -15,7 +15,8 @@ function makeEvent(overrides: Partial<Parameters<typeof buildEventIcs>[0]> = {})
     allDay: false,
     location: "Biergarten",
     address: "Albert-Einstein-Allee 11, 89081 Ulm",
-    onlineUrl: "",
+    linkUrl: "",
+    linkLabel: "",
     updatedAt: new Date("2026-07-01T08:00:00Z"),
     ...overrides,
   };
@@ -108,4 +109,11 @@ test("der Sammelkalender enthält jeden Termin genau einmal", () => {
 test("der Dateiname bleibt auch bei Umlauten und Satzzeichen brauchbar", () => {
   assert.equal(icsFileName("Jubiläumsfeier: 20 Jahre!"), "termin-jubilaeumsfeier-20-jahre.ics");
   assert.equal(icsFileName("???"), "termin-wirtschaftsphysik.ics");
+});
+
+test("der Termin-Link steht mit seinem Sichttext in der Beschreibung", () => {
+  const withLabel = buildEventIcs(makeEvent({ summary: "", linkUrl: "https://x.de/a", linkLabel: "Anmeldung" }), NOW);
+  assert.ok(withLabel.includes("Anmeldung: https://x.de/a"));
+  const fallback = buildEventIcs(makeEvent({ summary: "", linkUrl: "https://x.de/a" }), NOW);
+  assert.ok(fallback.includes("Mehr erfahren: https://x.de/a"));
 });

@@ -191,6 +191,11 @@ export function eventContactPath(title: string): string {
   return `/kontakt?betreff=${encodeURIComponent(`Frage zum Termin: ${title}`)}`;
 }
 
+/** Sichttext des Termin-Links; ohne eigene Angabe ein neutrales „Mehr erfahren“. */
+export function eventLinkLabel(event: { linkLabel: string }): string {
+  return event.linkLabel.trim() || "Mehr erfahren";
+}
+
 /** Kartenlink für die Anschrift — ohne Einbindung eines fremden Kartendienstes. */
 export function eventMapUrl(address: string): string {
   return `https://www.openstreetmap.org/search?query=${encodeURIComponent(address)}`;

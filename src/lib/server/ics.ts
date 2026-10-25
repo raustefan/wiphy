@@ -12,7 +12,7 @@
  * kennt jeder Client, und die Umrechnung in die Ortszeit des Betrachters ist
  * genau das, was ein Kalender ohnehin tut.
  */
-import { eventPath, icsEnd, type EventTiming } from "@/lib/events";
+import { eventLinkLabel, eventPath, icsEnd, type EventTiming } from "@/lib/events";
 import { berlinParts } from "@/lib/berlinTime";
 import { VEREIN } from "@/lib/email/branding";
 import { siteUrl } from "@/lib/server/siteUrl";
@@ -24,7 +24,8 @@ export type IcsEvent = EventTiming & {
   description: string;
   location: string;
   address: string;
-  onlineUrl: string;
+  linkUrl: string;
+  linkLabel: string;
   updatedAt: Date;
 };
 
@@ -99,13 +100,13 @@ function line(name: string, value: string): string {
 }
 
 /**
- * Beschreibungstext des Kalendereintrags: Kurzfassung, Online-Link und die
+ * Beschreibungstext des Kalendereintrags: Kurzfassung, Termin-Link und die
  * Adresse der Terminseite. Die vollständige Markdown-Beschreibung bleibt auf
  * der Website — im Kalender wäre sie eine Wand aus Rohtext.
  */
 function describe(event: IcsEvent): string {
   const parts = [event.summary.trim()];
-  if (event.onlineUrl.trim()) parts.push(`Online: ${event.onlineUrl.trim()}`);
+  if (event.linkUrl.trim()) parts.push(`${eventLinkLabel(event)}: ${event.linkUrl.trim()}`);
   parts.push(`Alle Infos: ${siteUrl(eventPath(event))}`);
   return parts.filter(Boolean).join("\n\n");
 }

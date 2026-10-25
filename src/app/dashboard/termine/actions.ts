@@ -53,7 +53,8 @@ export async function saveEventAction(formData: FormData) {
       allDay: formData.get("allDay") === "on",
       location: String(formData.get("location") ?? ""),
       address: String(formData.get("address") ?? ""),
-      onlineUrl: String(formData.get("onlineUrl") ?? ""),
+      linkUrl: String(formData.get("linkUrl") ?? ""),
+      linkLabel: String(formData.get("linkLabel") ?? ""),
       published: formData.get("published") === "on",
     };
 

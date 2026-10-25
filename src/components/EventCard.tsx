@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import {
   eventDateBadge,
   eventIcsPath,
+  eventLinkLabel,
   eventMapUrl,
   eventPath,
   formatCountdown,
@@ -19,7 +20,8 @@ export type EventCardData = EventTiming & {
   summary: string;
   location: string;
   address: string;
-  onlineUrl: string;
+  linkUrl: string;
+  linkLabel: string;
 };
 
 /** Der Datumswürfel: Wochentag, Tag, Monat, Jahr. */
@@ -104,20 +106,20 @@ export function EventFacts({
         </div>
       )}
 
-      {event.onlineUrl && (
+      {event.linkUrl && (
         <div className="flex items-start gap-3">
           <dt className="mt-0.5 shrink-0 text-muted">
             <HugeiconsIcon icon={Link02Icon} size={17} aria-hidden="true" />
-            <span className="sr-only">Online</span>
+            <span className="sr-only">Link</span>
           </dt>
           <dd className="min-w-0 text-sm break-all text-muted">
             <a
-              href={event.onlineUrl}
+              href={event.linkUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-physics underline-offset-4 hover:underline"
             >
-              Online teilnehmen
+              {eventLinkLabel(event)}
             </a>
           </dd>
         </div>

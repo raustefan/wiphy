@@ -121,7 +121,8 @@ export async function createDraftEvent(now: Date = new Date()): Promise<string> 
     allDay: false,
     location: "",
     address: "",
-    onlineUrl: "",
+    linkUrl: "",
+    linkLabel: "",
     published: false,
   });
   return event.id;

@@ -30,7 +30,8 @@ export type EventFormData = {
     allDay: boolean;
     location: string;
     address: string;
-    onlineUrl: string;
+    linkUrl: string;
+    linkLabel: string;
     published: boolean;
 };
 
@@ -190,20 +191,36 @@ export function EventForm({ event }: { event: EventFormData }) {
                     />
                 </Field>
 
-                <Field
-                    label="Online-Link"
-                    htmlFor="event-online"
-                    hint="Für hybride Termine — Videokonferenz oder Stream."
-                >
-                    <Input
-                        id="event-online"
-                        name="onlineUrl"
-                        type="url"
-                        defaultValue={event.onlineUrl}
-                        maxLength={500}
-                        placeholder="https://…"
-                    />
-                </Field>
+                <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+                    <Field
+                        label="Link"
+                        htmlFor="event-link-url"
+                        hint="Optional — Anmeldung, Videokonferenz, Infoseite …"
+                    >
+                        <Input
+                            id="event-link-url"
+                            name="linkUrl"
+                            type="url"
+                            defaultValue={event.linkUrl}
+                            maxLength={500}
+                            placeholder="https://…"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Linktext"
+                        htmlFor="event-link-label"
+                        hint="Leer: „Mehr erfahren“."
+                    >
+                        <Input
+                            id="event-link-label"
+                            name="linkLabel"
+                            defaultValue={event.linkLabel}
+                            maxLength={80}
+                            placeholder="Mehr erfahren"
+                        />
+                    </Field>
+                </div>
 
                 <div className="grid gap-2">
                     <span className="text-sm font-semibold text-foreground">

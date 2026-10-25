@@ -99,7 +99,6 @@ export function EventJsonLd({
   allDay,
   location,
   address,
-  onlineUrl,
 }: {
   title: string;
   summary: string;
@@ -109,7 +108,6 @@ export function EventJsonLd({
   allDay: boolean;
   location: string;
   address: string;
-  onlineUrl: string;
 }) {
   const date = (d: Date) =>
     allDay ? d.toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" }) : d.toISOString();
@@ -118,7 +116,6 @@ export function EventJsonLd({
     name: location || address,
     address: address || undefined,
   };
-  const online = onlineUrl && { "@type": "VirtualLocation", url: onlineUrl };
 
   return (
     <JsonLd
@@ -131,10 +128,8 @@ export function EventJsonLd({
         startDate: date(start),
         endDate: end ? date(end) : undefined,
         eventStatus: "https://schema.org/EventScheduled",
-        eventAttendanceMode: `https://schema.org/${
-          place && online ? "Mixed" : online ? "Online" : "Offline"
-        }EventAttendanceMode`,
-        location: [place, online].filter(Boolean),
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        location: place || undefined,
         image: [absoluteUrl("/opengraph-image")],
         organizer: { "@id": `${SITE_URL}/#organization` },
       }}
