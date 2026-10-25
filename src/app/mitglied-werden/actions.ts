@@ -7,7 +7,7 @@ import { AppError, executeAction } from "@/lib/server/errors";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { consumeRateLimit, extractClientIp } from "@/lib/server/rateLimit";
-import { hashIp } from "@/lib/server/contactSpam";
+import { pseudonymize } from "@/lib/server/securityLog";
 import { getAdminNotificationEmails } from "@/lib/server/services/contactService";
 import {
   markApplicationMailed,
@@ -59,7 +59,7 @@ export async function submitMembershipApplication(formData: FormData) {
 
     const application = await submitApplication(parsed.data, {
       userId: currentUser.id,
-      ipHash: clientIp === "unknown" ? null : hashIp(clientIp),
+      ipHash: clientIp === "unknown" ? null : pseudonymize(clientIp),
       userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
     });
 

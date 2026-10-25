@@ -16,6 +16,9 @@ import sys
 from datetime import date
 
 THIS_YEAR = date.today().year
+# Wer heute Student ist, gilt auch so viele Jahre nach dem laufenden noch als Student
+# (Formular erlaubt bis zu STUDENT_YEAR_LOOKAHEAD = 5, src/lib/membership.ts)
+STUDENT_EXTRA_YEARS = 2
 PHONE = re.compile(r"^\+?[\d\s()/.-]{5,30}$")  # wie isValidPhone in src/lib/inputRules.ts
 COUNTRY_ALIASES = {"USA": "US"}  # Rest löst toCountryCode() serverseitig auf
 
@@ -59,7 +62,8 @@ def fees(row, years, student_years):
         "allPaid": False,
         "fees": [
             {"year": y, "paid": y < THIS_YEAR, "isStudent": y in student_years, "amount": None, "manualAmount": False}
-            for y in years
+            # künftige Studienjahre bekommen schon jetzt eine (offene) Zeile, wie im Beitragsplan der App
+            for y in student_years or years
         ],
     }
 
@@ -70,7 +74,8 @@ def convert(row):
     joined = day(row["Aufnahme"])
     years = range(int(joined[:4]), THIS_YEAR + 1) if joined else []
     # Altsystem kennt nur den heutigen Berufsstand: wer Student ist, war es die ganze Mitgliedschaft
-    student_years = list(years) if row["Berufsstand"] == "Student" else []
+    student = joined and row["Berufsstand"] == "Student"
+    student_years = list(range(years.start, THIS_YEAR + 1 + STUDENT_EXTRA_YEARS)) if student else []
     debit = row["Bankeinzug"] == "ja" and bool(text(row["IBAN"]))
     start, end = text(row["Studienbeginn"]), text(row["Studienende"])
     land = text(row["Land"])

@@ -10,11 +10,11 @@ import { verifyAltchaPayload } from "@/lib/server/altcha";
 import { parseFormData } from "@/lib/server/validation/parseFormData";
 import { contactSchema } from "@/lib/server/validation/schemas";
 import { MIN_FILL_TIME_MS, SPAM_SCORE_MAIL_THRESHOLD } from "@/lib/contact";
-import { hashIp, scoreSpam } from "@/lib/server/contactSpam";
+import { scoreSpam } from "@/lib/server/contactSpam";
 import { getAdminNotificationEmails } from "@/lib/server/services/contactService";
 import { sendEmail } from "@/lib/server/email/mailer";
 import { contactRequestMessage } from "@/lib/email/messages";
-import { logSecurityEvent, type SecurityEventReason } from "@/lib/server/securityLog";
+import { logSecurityEvent, type SecurityEventReason, pseudonymize } from "@/lib/server/securityLog";
 
 /**
  * Public contact form.
@@ -118,7 +118,7 @@ export async function submitContactRequest(formData: FormData) {
             const created = await prisma.contactRequest.create({
                 data: {
                     ...payload,
-                    ipHash: clientIp === "unknown" ? null : hashIp(clientIp),
+                    ipHash: clientIp === "unknown" ? null : pseudonymize(clientIp),
                     userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
                     spamScore,
                 },

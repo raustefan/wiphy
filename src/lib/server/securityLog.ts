@@ -66,7 +66,7 @@ type SecurityEventInput = {
   userAgent?: string | null;
 };
 
-/** Nach dieser Frist werden IP-Hash und User-Agent genullt (Zusage: 7 Tage). */
+/** Nach dieser Frist werden IP-Hash und User-Agent genullt (Zusage: 7 Tage) — auch bei Kontaktanfragen und Aufnahmeanträgen. */
 export const PSEUDONYM_RETENTION_DAYS = 7;
 
 /**
@@ -88,7 +88,7 @@ let lastPruneAt = 0;
  * HMAC statt blankem SHA-256: der Suchraum einer IP-Adresse oder einer E-Mail
  * ist klein genug, um einen ungesalzenen Hash per Wörterbuch zurückzurechnen.
  */
-function pseudonymize(value: string) {
+export function pseudonymize(value: string) {
   return createHmac("sha256", getSecurityLogPepper()).update(value).digest("hex");
 }
 
@@ -139,11 +139,19 @@ export async function pruneSecurityEvents(force = false) {
     where: { createdAt: { lt: new Date(now - EVENT_RETENTION_DAYS * DAY_MS) } },
   });
 
+  const pseudonymCutoff = new Date(now - PSEUDONYM_RETENTION_DAYS * DAY_MS);
+  const stale = { OR: [{ ipHash: { not: null } }, { userAgent: { not: null } }] };
   await prisma.securityEvent.updateMany({
-    where: {
-      createdAt: { lt: new Date(now - PSEUDONYM_RETENTION_DAYS * DAY_MS) },
-      OR: [{ ipHash: { not: null } }, { userAgent: { not: null } }],
-    },
+    where: { createdAt: { lt: pseudonymCutoff }, ...stale },
+    data: { ipHash: null, userAgent: null },
+  });
+  // Dieselbe Zusage gilt für Kontaktanfragen und Aufnahmeanträge.
+  await prisma.contactRequest.updateMany({
+    where: { createdAt: { lt: pseudonymCutoff }, ...stale },
+    data: { ipHash: null, userAgent: null },
+  });
+  await prisma.membershipApplication.updateMany({
+    where: { submittedAt: { lt: pseudonymCutoff }, ...stale },
     data: { ipHash: null, userAgent: null },
   });
 }

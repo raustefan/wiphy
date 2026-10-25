@@ -1,5 +1,3 @@
-import { createHash } from "crypto";
-
 /**
  * Pure spam-scoring helpers for the public contact form. Deliberately free of
  * Prisma and request context so the heuristics can be unit-tested directly.
@@ -55,7 +53,3 @@ export function scoreSpam(input: ContactInput): number {
   return score;
 }
 
-/** IPs are only ever stored hashed — enough to correlate abuse, not to identify a person. */
-export function hashIp(ip: string): string {
-  return createHash("sha256").update(ip).digest("hex");
-}
