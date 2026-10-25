@@ -32,7 +32,7 @@ export async function sendDirectMailAction(formData: FormData) {
     await requireFeatureEnabled("MAIL_SERVICES");
     const { selectedUserIds, subject, message, bccToSelf } = parseDirectMailForm(formData);
 
-    await sendMailToUsers({
+    return sendMailToUsers({
       subject,
       html: message,
       bccToSelf,

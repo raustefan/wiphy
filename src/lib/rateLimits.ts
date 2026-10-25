@@ -155,7 +155,7 @@ export const RATE_LIMITS = {
     windowMs: HOUR,
     blockMs: HOUR,
     message: "Du hast in kurzer Zeit sehr viele Adressen abgerufen. Bitte versuche es in einer Stunde erneut.",
-    description: "Im Alumni-Kosmos abgerufene E-Mail-Adressen pro Konto — gegen das Absaugen der ganzen Liste.",
+    description: "Im Alumni-Kosmos abgerufene Kontaktdaten pro Konto — gegen das Absaugen der ganzen Liste.",
   },
 } as const satisfies Record<string, RateLimitRule>;
 

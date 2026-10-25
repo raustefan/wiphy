@@ -17,6 +17,7 @@ import { sanitizeEmailHtml } from "./sanitizeHtml";
 import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
 import { logSentMail } from "./mailHistory";
+import { describeSendError, sendEach, type MailSendReport } from "./sendReport";
 
 type StatusTarget = "HONORARY_MEMBER" | "REGULAR_MEMBER" | "NON_MEMBER";
 export type MailTarget = "ALL" | StatusTarget | "SELECTED";
@@ -179,48 +180,67 @@ export async function sendMailToUsers(input: {
     throw new AppError("NOT_FOUND", "Keine Empfänger gefunden.");
   }
 
+  // Vor dem Versand prüfen: ein Fehler danach sähe aus wie ein gescheiterter
+  // Versand und lüde dazu ein, alles noch einmal zu schicken.
+  const selfEmail = input.adminEmail?.trim();
+  if (input.bccToSelf && !selfEmail) {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      "Keine E-Mail in der Session. Bitte neu einloggen oder 'Kopie an mich' deaktivieren.",
+    );
+  }
+
   // Einzelversand statt BCC, damit die Anrede pro Empfänger stimmt.
   // Protokolliert wird, was tatsächlich rausging — auch wenn der Versand
   // mittendrin abbricht.
   const attachments = input.event && input.attachIcs ? [icsAttachment(input.event)] : undefined;
-  const sent: Recipient[] = [];
-  try {
-    for (const user of input.users) {
+  const { sent, failed, error } = await sendEach(input.users, (user) =>
+    sendEmail({
+      to: user.email,
+      message: composeMessage(
+        replacePlaceholders(input.subject, user),
+        replacePlaceholders(template, user, { escape: true }),
+        input.event,
+      ),
+      attachments,
+    }),
+  );
+
+  if (sent.length === 0) {
+    // Ein abgeschaltetes Feature behält seinen Code, damit der Client den Dialog zeigt.
+    if (error instanceof AppError) throw error;
+    throw new AppError("INTERNAL_ERROR", `Es wurde keine E-Mail verschickt. ${describeSendError(error)}`);
+  }
+
+  await logSentMail({
+    subject: input.subject,
+    recipientGroup: input.recipientGroup ?? null,
+    recipients: sent,
+  });
+
+  const report: MailSendReport = {
+    sent: sent.length,
+    failed: failed.map((user) => ({
+      name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      email: user.email,
+    })),
+    reason: failed.length > 0 ? describeSendError(error) : undefined,
+  };
+
+  if (input.bccToSelf && selfEmail) {
+    try {
       await sendEmail({
-        to: user.email,
-        message: composeMessage(
-          replacePlaceholders(input.subject, user),
-          replacePlaceholders(template, user, { escape: true }),
-          input.event,
-        ),
+        to: selfEmail,
+        message: composeMessage(`${input.subject} (Kopie)`, template, input.event),
         attachments,
       });
-      sent.push(user);
-    }
-  } finally {
-    if (sent.length > 0) {
-      await logSentMail({
-        subject: input.subject,
-        recipientGroup: input.recipientGroup ?? null,
-        recipients: sent,
-      });
+    } catch (copyError) {
+      console.error(copyError);
+      report.copyFailed = true;
     }
   }
 
-  if (input.bccToSelf) {
-    const selfEmail = input.adminEmail?.trim();
-    if (!selfEmail) {
-      throw new AppError(
-        "VALIDATION_ERROR",
-        "Keine E-Mail in der Session. Bitte neu einloggen oder 'Kopie an mich' deaktivieren.",
-      );
-    }
-    await sendEmail({
-      to: selfEmail,
-      message: composeMessage(`${input.subject} (Kopie)`, template, input.event),
-      attachments,
-    });
-  }
+  return report;
 }
 
 export async function sendMailForTarget(input: {
@@ -237,7 +257,7 @@ export async function sendMailForTarget(input: {
     target: input.target,
     selectedUserIds: input.selectedUserIds,
   });
-  await sendMailToUsers({
+  return sendMailToUsers({
     subject: input.subject,
     html: input.html,
     bccToSelf: input.bccToSelf,

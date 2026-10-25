@@ -4,9 +4,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, Cancel01Icon, Copy01Icon, Mail01Icon, Maximize02Icon, Minimize02Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
+import { LinkedInGlyph } from "@/components/Site";
 import { Button, Switch } from "@/components/ui";
 import { STAGE_CLASS, endOf, overlaps, packLanes, type KosmosMember } from "@/lib/kosmos";
-import { revealKosmosEmailAction, setKosmosVisibilityAction } from "./actions";
+import { revealKosmosContactAction, setKosmosVisibilityAction } from "./actions";
+
+type Contact = { email: string; linkedinUrl: string | null };
 
 /*
  * Maße in Pixeln. Die Jahre sind breiter als der Bildschirm: man scrollt
@@ -29,130 +32,83 @@ function random(seed: number) {
     return () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 }
 
-function starField(seed: number, count: number, size: [number, number], alpha: [number, number], twinkleEvery = 0) {
+const SKY_W = 1600;
+const SKY_H = 900;
+
+function starField(seed: number, count: number, size: [number, number], alpha: [number, number]) {
     const rnd = random(seed);
-    return Array.from({ length: count }, (_, i) => ({
+    return Array.from({ length: count }, () => ({
         x: (rnd() * SKY_W).toFixed(1),
         y: (rnd() * SKY_H).toFixed(1),
         r: (size[0] + rnd() * (size[1] - size[0])).toFixed(2),
         o: (alpha[0] + rnd() * (alpha[1] - alpha[0])).toFixed(2),
-        twinkle: twinkleEvery > 0 && i % twinkleEvery === 0,
-        delay: `${(rnd() * 4).toFixed(2)}s`,
     }));
 }
 
-function Stars({ stars }: { stars: ReturnType<typeof starField> }) {
-    return stars.map((s, i) => (
-        <circle
-            key={i}
-            cx={s.x}
-            cy={s.y}
-            r={s.r}
-            fill="#fff"
-            opacity={s.o}
-            className={s.twinkle ? "k-twinkle" : undefined}
-            style={s.twinkle ? { animationDelay: s.delay } : undefined}
-        />
-    ));
-}
-
-/* Jede Ebene ist so breit, dass sie auch nach dem Verschieben noch den
-   ganzen Bildschirm deckt; ihre Höhe folgt der Bühne. */
-const SKY_W = 2400;
-const SKY_H = 700;
+const STARS = starField(11, 220, [0.3, 1.4], [0.25, 0.9]);
+/** Wolken: cx, cy, rx, ry — tief am Horizont dichter. */
+const CLOUDS = [
+    [180, 620, 340, 70],
+    [620, 700, 420, 90],
+    [1120, 640, 380, 75],
+    [1480, 720, 300, 80],
+    [420, 300, 260, 34],
+    [1250, 240, 300, 30],
+];
 
 /**
- * Eine Tiefenebene: verschiebt sich beim Scrollen um `depth` × Scrollweite
- * (0 = steht, 1 = läuft mit den Spuren). Eigenes HTML-Element statt einer
- * SVG-Gruppe, damit der Browser die Ebene als fertiges Bild verschiebt,
- * statt Weichzeichner und Wolkenrauschen bei jedem Scrollschritt neu zu
- * rechnen.
- */
-function Layer({ depth, className, children }: { depth: number; className: string; children: React.ReactNode }) {
-    return (
-        <div className={`k-par absolute inset-y-0 left-0 ${className}`} style={{ "--k-depth": depth } as React.CSSProperties}>
-            <svg className="h-full w-auto max-w-none" viewBox={`0 0 ${SKY_W} ${SKY_H}`} preserveAspectRatio="xMinYMid slice">
-                {children}
-            </svg>
-        </div>
-    );
-}
-
-/**
- * Der Hintergrund — je Modus ein eigener Himmel, nicht nur andere Farben:
- * nachts Milchstraße, funkelnde Sterne und ab und zu eine Sternschnuppe,
- * tagsüber ziehende Wolken und Mond. Mehrere Ebenen in verschiedener Tiefe
- * ergeben beim Scrollen eine Parallaxe.
+ * Der Hintergrund — je Modus ein eigener Himmel: nachts Milchstraße und
+ * Sterne, tagsüber Wolken und Mond. Bewusst still und flach: ein einziges
+ * statisches SVG ohne Filter, das der Browser einmal zeichnet und dann nur
+ * noch hinter den Spuren stehen lässt — Parallaxe, Weichzeichner und
+ * Funkeln ließen Telefone beim Scrollen ruckeln.
  */
 export function Sky() {
     return (
-        <div aria-hidden="true" className="k-sky pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-            <svg className="absolute size-0">
-                <defs>
-                    <filter id="k-haze" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="40" />
-                    </filter>
-                    <filter id="k-bokeh" x="-100%" y="-100%" width="300%" height="300%">
-                        <feGaussianBlur stdDeviation="1.6" />
-                    </filter>
-                    <filter id="k-clouds-far">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.016" numOctaves="4" seed="4" />
-                        <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.7 -0.8" />
-                    </filter>
-                    <filter id="k-clouds-near">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.009" numOctaves="4" seed="17" />
-                        <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2.4 -1.25" />
-                    </filter>
-                    <linearGradient id="k-shoot-tail" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="140" y2="0">
-                        <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                        <stop offset="1" stopColor="#fff" />
-                    </linearGradient>
-                    <linearGradient id="k-near-fade" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                        <stop offset="0.55" stopColor="#fff" />
-                    </linearGradient>
-                    <mask id="k-near-mask">
-                        <rect width={SKY_W} height={SKY_H} fill="url(#k-near-fade)" />
-                    </mask>
-                    <mask id="k-moon">
-                        <circle cx="1080" cy="90" r="22" fill="#fff" />
-                        <circle cx="1091" cy="83" r="20" fill="#000" />
-                    </mask>
-                </defs>
-            </svg>
+        <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 size-full"
+            viewBox={`0 0 ${SKY_W} ${SKY_H}`}
+            preserveAspectRatio="xMidYMid slice"
+        >
+            <defs>
+                <radialGradient id="k-band">
+                    <stop offset="0" stopColor="#5a64b0" stopOpacity="0.55" />
+                    <stop offset="0.5" stopColor="#3b4a8a" stopOpacity="0.3" />
+                    <stop offset="1" stopColor="#3b4a8a" stopOpacity="0" />
+                </radialGradient>
+                <radialGradient id="k-band-warm">
+                    <stop offset="0" stopColor="#9a1449" stopOpacity="0.4" />
+                    <stop offset="1" stopColor="#9a1449" stopOpacity="0" />
+                </radialGradient>
+                <radialGradient id="k-puff">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0.85" />
+                    <stop offset="0.6" stopColor="#fff" stopOpacity="0.45" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                </radialGradient>
+                <mask id="k-moon">
+                    <circle cx="1080" cy="120" r="22" fill="#fff" />
+                    <circle cx="1091" cy="113" r="20" fill="#000" />
+                </mask>
+            </defs>
 
-            {/* Nacht: Milchstraße und ferne Sterne → mittlere → nahe, unscharfe Sterne */}
-            <Layer depth={0.06} className="k-night">
-                <g className="k-drift">
-                    <g filter="url(#k-haze)" transform="rotate(-14 1200 350)">
-                        <ellipse cx="1200" cy="350" rx="1500" ry="95" fill="#3b4a8a" opacity="0.55" />
-                        <ellipse cx="900" cy="360" rx="700" ry="36" fill="#c9b6ff" opacity="0.3" />
-                        <ellipse cx="1500" cy="330" rx="420" ry="34" fill="#9a1449" opacity="0.5" />
-                    </g>
-                    <Stars stars={starField(11, 320, [0.2, 0.75], [0.2, 0.6])} />
+            <g className="k-night">
+                <g transform="rotate(-14 800 450)">
+                    <ellipse cx="800" cy="450" rx="1100" ry="190" fill="url(#k-band)" />
+                    <ellipse cx="1050" cy="430" rx="380" ry="90" fill="url(#k-band-warm)" />
                 </g>
-                <g className="k-shoot">
-                    <line x1="0" y1="0" x2="140" y2="0" stroke="url(#k-shoot-tail)" strokeWidth="1.6" strokeLinecap="round" />
-                </g>
-            </Layer>
-            <Layer depth={0.16} className="k-night">
-                <Stars stars={starField(23, 140, [0.6, 1.3], [0.45, 0.95], 5)} />
-            </Layer>
-            <Layer depth={0.38} className="k-night">
-                <g filter="url(#k-bokeh)">
-                    <Stars stars={starField(37, 34, [1.6, 3], [0.25, 0.6], 3)} />
-                </g>
-            </Layer>
+                {STARS.map((s, i) => (
+                    <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff" opacity={s.o} />
+                ))}
+            </g>
 
-            {/* Tag: Mond und hohe Schleierwolken → tiefe, dichte Wolken am Horizont */}
-            <Layer depth={0.04} className="k-day">
+            <g className="k-day">
                 <rect width={SKY_W} height={SKY_H} fill="#fff" opacity="0.9" mask="url(#k-moon)" />
-                <rect className="k-clouds" width={SKY_W} height={SKY_H} filter="url(#k-clouds-far)" opacity="0.7" />
-            </Layer>
-            <Layer depth={0.3} className="k-day">
-                <rect width={SKY_W} height={SKY_H} filter="url(#k-clouds-near)" mask="url(#k-near-mask)" opacity="0.85" />
-            </Layer>
-        </div>
+                {CLOUDS.map(([cx, cy, rx, ry], i) => (
+                    <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} fill="url(#k-puff)" />
+                ))}
+            </g>
+        </svg>
     );
 }
 
@@ -229,7 +185,10 @@ export function KosmosTimeline({
     // Mit der Maus ins Leere greifen und ziehen; Touch scrollt ohnehin selbst.
     const pan = useRef<{ x: number; left: number; moved: boolean } | null>(null);
     const panned = useRef(false);
+    // Namen rücken erst nach, wenn das Scrollen ruht: so bleibt die Zeitleiste
+    // beim Wischen ein fertiges Bild, das der Browser nur verschiebt.
     const [scrollX, setScrollX] = useState(0);
+    const settle = useRef<number>(undefined);
 
     const w = box?.w ?? 1200;
     const h = box?.h ?? 600;
@@ -250,7 +209,7 @@ export function KosmosTimeline({
     const me = members.find((m) => m.id === meId);
     const [year, setYear] = useState(() => Math.min(Math.floor(me?.start ?? now), Y1 - 1));
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [emails, setEmails] = useState<Record<string, string>>({});
+    const [contacts, setContacts] = useState<Record<string, Contact>>({});
     const selected = members.find((m) => m.id === selectedId) ?? null;
 
     const atCursor = (m: KosmosMember) => m.start < year + 1 && endOf(m, now) > year;
@@ -340,8 +299,8 @@ export function KosmosTimeline({
                 onPointerCancel={() => (pan.current = null)}
                 onScroll={(e) => {
                     const left = e.currentTarget.scrollLeft;
-                    setScrollX(left);
-                    stageRef.current?.querySelector<HTMLElement>(".k-sky")?.style.setProperty("--k-x", `${left}px`);
+                    clearTimeout(settle.current);
+                    settle.current = window.setTimeout(() => setScrollX(left), 120);
                 }}
             >
                 <svg
@@ -364,16 +323,6 @@ export function KosmosTimeline({
                             <stop offset="0.8" style={{ stopColor: "var(--k-trail-self)", stopOpacity: 0.95 }} />
                             <stop offset="1" style={{ stopColor: "var(--k-head)" }} />
                         </linearGradient>
-                        <filter id="k-glow" x="-200%" y="-200%" width="500%" height="500%">
-                            <feGaussianBlur stdDeviation="2.5" />
-                            <feMerge>
-                                <feMergeNode />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                        <filter id="k-soft" x="-5%" y="-300%" width="110%" height="700%">
-                            <feGaussianBlur stdDeviation="1.4" />
-                        </filter>
                     </defs>
 
                     {/* Klick ins Leere: Jahr wählen und Auswahl aufheben. */}
@@ -510,14 +459,8 @@ export function KosmosTimeline({
                                     fill={`url(#${isMe ? "k-trail-self" : "k-trail"})`}
                                 />
                                 <g className="k-head">
-                                    <circle
-                                        className="k-night"
-                                        cx={x2}
-                                        cy={cy}
-                                        r={isSelected ? 4.5 : 3}
-                                        fill="var(--k-head)"
-                                        filter="url(#k-glow)"
-                                    />
+                                    <circle className="k-night" cx={x2} cy={cy} r={isSelected ? 9 : 6} fill="var(--k-head)" opacity={0.2} />
+                                    <circle className="k-night" cx={x2} cy={cy} r={isSelected ? 4.5 : 3} fill="var(--k-head)" />
                                     <path className="k-day" d={`M${x2 + 3} ${cy} l-8 -4 2 4 -2 4z`} fill="var(--k-ink)" />
                                     {m.end === null && (
                                         <circle
@@ -527,7 +470,6 @@ export function KosmosTimeline({
                                             fill="none"
                                             stroke="var(--k-ink)"
                                             strokeOpacity={0.45}
-                                            className="k-twinkle"
                                         />
                                     )}
                                     {isSelected && (
@@ -538,7 +480,6 @@ export function KosmosTimeline({
                                             fill="none"
                                             stroke="var(--k-ink)"
                                             strokeDasharray="2 3"
-                                            className="k-spin"
                                         />
                                     )}
                                 </g>
@@ -617,8 +558,8 @@ export function KosmosTimeline({
                     isMe={selected.id === meId}
                     together={me != null && me.id !== selected.id && overlaps(me, selected, now)}
                     contemporaries={members.filter((m) => m.id !== selected.id && overlaps(m, selected, now)).length}
-                    email={emails[selected.id] ?? null}
-                    onEmail={(email) => setEmails((prev) => ({ ...prev, [selected.id]: email }))}
+                    contact={contacts[selected.id] ?? null}
+                    onContact={(contact) => setContacts((prev) => ({ ...prev, [selected.id]: contact }))}
                     onClose={() => setSelectedId(null)}
                 />
             )}
@@ -631,16 +572,16 @@ function MemberCard({
     isMe,
     together,
     contemporaries,
-    email,
-    onEmail,
+    contact,
+    onContact,
     onClose,
 }: {
     member: KosmosMember;
     isMe: boolean;
     together: boolean;
     contemporaries: number;
-    email: string | null;
-    onEmail: (email: string) => void;
+    contact: Contact | null;
+    onContact: (contact: Contact) => void;
     onClose: () => void;
 }) {
     const [pending, startTransition] = useTransition();
@@ -649,8 +590,8 @@ function MemberCard({
 
     const reveal = () =>
         startTransition(async () => {
-            const result = await revealKosmosEmailAction(member.id);
-            if (result.ok && result.data) onEmail(result.data);
+            const result = await revealKosmosContactAction(member.id);
+            if (result.ok && result.data) onContact(result.data);
             else if (!result.ok) setError(result.message);
         });
 
@@ -658,7 +599,7 @@ function MemberCard({
         <div
             role="dialog"
             aria-label={member.name}
-            className="k-card absolute inset-x-3 bottom-3 grid gap-3 rounded-[10px] border p-4 backdrop-blur-md sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-80"
+            className="k-card absolute inset-x-3 bottom-3 grid gap-3 rounded-[10px] border p-4 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-80"
         >
             <button
                 type="button"
@@ -680,16 +621,16 @@ function MemberCard({
             </div>
 
             {!isMe &&
-                (email ? (
+                (contact ? (
                     <div className="flex flex-wrap items-center gap-2">
-                        <a href={`mailto:${email}`} className="k-cta inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold">
+                        <a href={`mailto:${contact.email}`} className="k-cta inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold">
                             <HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />
                             E-Mail schreiben
                         </a>
                         <button
                             type="button"
                             onClick={async () => {
-                                await navigator.clipboard.writeText(email);
+                                await navigator.clipboard.writeText(contact.email);
                                 setCopied(true);
                             }}
                             className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-current/30 px-3 text-sm font-semibold"
@@ -697,12 +638,24 @@ function MemberCard({
                             {copied ? <HugeiconsIcon icon={Tick01Icon} size={15} aria-hidden="true" /> : <HugeiconsIcon icon={Copy01Icon} size={15} aria-hidden="true" />}
                             {copied ? "Kopiert" : "Kopieren"}
                         </button>
-                        <p className="w-full truncate font-mono text-xs opacity-80">{email}</p>
+                        {contact.linkedinUrl && (
+                            <a
+                                href={contact.linkedinUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="LinkedIn-Profil (öffnet in neuem Tab)"
+                                className="inline-flex h-9 items-center gap-2 rounded-full border border-current/30 px-3 text-sm font-semibold"
+                            >
+                                <LinkedInGlyph size={15} />
+                                LinkedIn
+                            </a>
+                        )}
+                        <p className="w-full truncate font-mono text-xs opacity-80">{contact.email}</p>
                     </div>
                 ) : (
                     <Button size="sm" onClick={reveal} loading={pending} className="k-cta w-fit rounded-full">
                         <HugeiconsIcon icon={Mail01Icon} size={15} aria-hidden="true" />
-                        E-Mail-Adresse anzeigen
+                        Kontakt anzeigen
                     </Button>
                 ))}
             {error && (

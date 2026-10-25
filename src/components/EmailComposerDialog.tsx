@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
+import { Alert01Icon, CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
 import { useActionForm } from "@/lib/client/useActionForm";
+import { MailSendNotice } from "@/components/MailSendNotice";
+import type { MailSendReport } from "@/lib/server/email/sendReport";
 import {
   Button,
   Checkbox,
@@ -49,11 +51,12 @@ export function EmailComposerDialog({
 }: EmailComposerDialogProps) {
   const [subject, setSubject] = useState(defaultSubject);
   const [bccToSelf, setBccToSelf] = useState(true);
-  const [success, setSuccess] = useState(false);
+  const [report, setReport] = useState<MailSendReport | null>(null);
+  const success = report !== null;
 
   const form = useActionForm(sendDirectMailAction, {
     featureLabel: "Mailversand",
-    onSuccess: () => setSuccess(true),
+    onSuccess: (result) => result && setReport(result),
   });
 
   const editor = useEmailEditor({ content: defaultMessage });
@@ -84,16 +87,25 @@ export function EmailComposerDialog({
     closeDialog();
   }
 
-  if (success) {
+  if (report) {
+    const partial = report.failed.length > 0;
     return (
       <Dialog open onClose={closeDialog} size="sm">
         <div className="grid justify-items-center gap-3 py-2 text-center">
-          <HugeiconsIcon icon={CheckmarkCircle01Icon} size={48} className="text-positive" aria-hidden="true" />
-          <h2 className="text-lg font-bold tracking-tight">E-Mail gesendet</h2>
+          <HugeiconsIcon
+            icon={partial ? Alert01Icon : CheckmarkCircle01Icon}
+            size={48}
+            className={partial ? "text-warning" : "text-positive"}
+            aria-hidden="true"
+          />
+          <h2 className="text-lg font-bold tracking-tight">
+            {partial ? "E-Mail teilweise gesendet" : "E-Mail gesendet"}
+          </h2>
           <p className="text-sm text-muted">
-            Die Nachricht wurde an {recipients.length}{" "}
-            {recipients.length === 1 ? "Empfänger" : "Empfänger"} versendet.
+            Die Nachricht wurde an {report.sent}{" "}
+            {partial ? `von ${recipients.length} ` : ""}Empfänger versendet.
           </p>
+          <MailSendNotice report={report} />
           <Button className="mt-2" onClick={closeDialog}>
             Schließen
           </Button>

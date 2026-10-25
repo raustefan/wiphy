@@ -41,7 +41,7 @@ export async function sendEmailAction(formData: FormData) {
         // was der Absender im Editor stehen hat, kann ihn nicht verfälschen.
         const event = eventId ? await getAnnouncedEvent(eventId) : undefined;
 
-        await sendMailForTarget({
+        return sendMailForTarget({
             target,
             selectedUserIds,
             subject,
@@ -51,7 +51,5 @@ export async function sendEmailAction(formData: FormData) {
             event,
             attachIcs,
         });
-
-        return { ok: true };
     });
 }

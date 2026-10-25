@@ -6,7 +6,7 @@ import { AppError, executeAction } from "@/lib/server/errors";
 import { consumeRateLimit } from "@/lib/server/rateLimit";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import {
-    getKosmosEmail,
+    getKosmosContact,
     isKosmosParticipant,
     setKosmosVisibility,
 } from "@/lib/server/services/kosmosService";
@@ -22,10 +22,11 @@ export async function setKosmosVisibilityAction(visible: boolean) {
 }
 
 /**
- * Die Adresse kommt erst auf Klick und nur an Mitglieder, die selbst sichtbar
- * sind — so steht keine vollständige Liste im HTML der Seite.
+ * E-Mail-Adresse und LinkedIn-Link kommen erst auf Klick und nur an
+ * Mitglieder, die selbst sichtbar sind — so steht keine vollständige Liste
+ * im HTML der Seite.
  */
-export async function revealKosmosEmailAction(userId: string) {
+export async function revealKosmosContactAction(userId: string) {
     return executeAction(async () => {
         const viewer = await requireUser();
         await requireFeatureEnabled("KOSMOS");
@@ -33,8 +34,8 @@ export async function revealKosmosEmailAction(userId: string) {
             throw new AppError("FORBIDDEN", "Der Kosmos ist nur sichtbar, solange du selbst sichtbar bist.");
         }
         await consumeRateLimit("kosmos-email", [viewer.id]);
-        const email = await getKosmosEmail(String(userId));
-        if (!email) throw new AppError("NOT_FOUND", "Dieses Mitglied ist nicht mehr im Kosmos sichtbar.");
-        return email;
+        const contact = await getKosmosContact(String(userId));
+        if (!contact) throw new AppError("NOT_FOUND", "Dieses Mitglied ist nicht mehr im Kosmos sichtbar.");
+        return contact;
     });
 }

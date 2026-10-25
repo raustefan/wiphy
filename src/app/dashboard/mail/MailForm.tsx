@@ -2,7 +2,7 @@
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Calendar01Icon, Cancel01Icon, ListIcon, SentIcon } from "@hugeicons/core-free-icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     Badge,
     Button,
@@ -14,12 +14,14 @@ import {
     Input,
     Select,
     Separator,
+    Spinner,
 } from "@/components/ui";
 import { sendEmailAction } from "./actions";
 import type { MailAnnouncement } from "./MailDashboard";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
+import type { MailSendReport } from "@/lib/server/email/sendReport";
 
 export type MailUserOption = {
     id: string;
@@ -33,7 +35,7 @@ type MailFormProps = {
     users: MailUserOption[];
     /** Gesetzt, wenn die Mail einen Termin ankündigt (`?termin=<id>`). */
     announcement?: MailAnnouncement | null;
-    onSuccess?: (count: number) => void;
+    onSuccess?: (report: MailSendReport) => void;
 };
 
 const MIN_SEARCH_LEN = 2;
@@ -90,7 +92,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
 
     const form = useActionForm(sendEmailAction, {
         featureLabel: "Mail-Versand",
-        onSuccess: () => onSuccess?.(recipients.length),
+        onSuccess: (report) => report && onSuccess?.(report),
     });
 
     const searchResults = useMemo(() => {
@@ -134,14 +136,26 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
         setSelectedIds(new Set());
     }
 
-    function submitAction(formData: FormData) {
+    // `onSubmit` statt `action`: in einer Form-Action hält React das
+    // Pending-Flag zurück, bis der Versand durch ist — Knopf und Sperre kämen
+    // erst, wenn es nichts mehr zu sperren gibt.
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
         formData.set("message", editor?.getHTML() || "");
-        return form.submit(formData);
+        // Bricht nur die Verbindung ab (Proxy-Timeout, WLAN weg), schickt der
+        // Server womöglich weiter — also nicht zum erneuten Senden auffordern.
+        form.submit(formData).catch(() =>
+            form.setError(
+                "Die Verbindung zum Server ist abgebrochen. Der Versand läuft womöglich noch — bitte erst im Versandprotokoll nachsehen, bevor du erneut sendest.",
+            ),
+        );
     }
 
     return (
-        <form action={submitAction}>
+        <form onSubmit={handleSubmit}>
             <input type="hidden" name="target" value={target} />
+            <SendingOverlay open={form.pending} count={recipients.length} />
 
             <div className="grid gap-5">
                 {form.feedback}
@@ -454,5 +468,45 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                 </div>
             </div>
         </form>
+    );
+}
+
+/**
+ * Sperrt die ganze Seite, solange der Versand läuft: `showModal()` macht alles
+ * dahinter inert, ein zweiter Klick auf „Senden“ ist damit ausgeschlossen.
+ */
+function SendingOverlay({ open, count }: { open: boolean; count: number }) {
+    const ref = useRef<HTMLDialogElement>(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (open && !el.open) el.showModal();
+        else if (!open && el.open) el.close();
+        if (!open) return;
+        // Neu laden leert das Formular und lädt zum zweiten Absenden ein.
+        const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+        window.addEventListener("beforeunload", warn);
+        return () => window.removeEventListener("beforeunload", warn);
+    }, [open]);
+
+    return (
+        <dialog
+            ref={ref}
+            aria-label="E-Mails werden versendet"
+            // Esc schließt nicht; schließt der Browser trotzdem, geht sie wieder auf.
+            onCancel={(event) => event.preventDefault()}
+            onClose={() => open && ref.current?.showModal()}
+            className="dialog-panel m-auto w-[calc(100vw-2rem)] max-w-sm rounded-[4px] border border-line bg-surface p-6 text-foreground shadow-2xl backdrop:bg-black/45"
+        >
+            <div role="status" className="grid justify-items-center gap-3 text-center">
+                <Spinner className="size-10 text-physics" />
+                <p className="text-lg font-bold tracking-tight">E-Mails werden versendet …</p>
+                <p className="text-sm text-muted">
+                    An {count} {count === 1 ? "Person" : "Personen"}, eine nach der anderen. Das
+                    kann einige Minuten dauern — bitte die Seite offen lassen.
+                </p>
+            </div>
+        </dialog>
     );
 }

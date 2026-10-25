@@ -25,7 +25,7 @@ export async function isKosmosParticipant(userId: string): Promise<boolean> {
     return (await prisma.user.count({ where: { id: userId, ...PARTICIPANT } })) > 0;
 }
 
-/** Ohne E-Mail-Adresse: die gibt es nur einzeln auf Klick (`getKosmosEmail`). */
+/** Ohne Kontaktdaten: die gibt es nur einzeln auf Klick (`getKosmosContact`). */
 export async function getKosmosMembers(): Promise<KosmosMember[]> {
     const users = await prisma.user.findMany({
         where: { ...PARTICIPANT, studyStart: { not: null } },
@@ -46,9 +46,8 @@ export async function countKosmosMembers(): Promise<number> {
     return prisma.user.count({ where: { ...PARTICIPANT, studyStart: { not: null } } });
 }
 
-export async function getKosmosEmail(userId: string): Promise<string | null> {
-    const user = await prisma.user.findFirst({ where: { id: userId, ...PARTICIPANT }, select: { email: true } });
-    return user?.email ?? null;
+export async function getKosmosContact(userId: string) {
+    return prisma.user.findFirst({ where: { id: userId, ...PARTICIPANT }, select: { email: true, linkedinUrl: true } });
 }
 
 export async function setKosmosVisibility(userId: string, visible: boolean) {

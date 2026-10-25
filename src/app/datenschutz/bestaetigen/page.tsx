@@ -28,11 +28,14 @@ export default async function ConfirmPrivacyPolicyPage({ searchParams }: Props) 
             description="Unsere Datenschutzerklärung hat sich geändert oder du meldest dich zum ersten Mal an. Bitte lies sie und bestätige am Ende der Seite, dass du sie zur Kenntnis genommen hast."
         >
             <LegalSections document={DATENSCHUTZ} />
-            <div className="sticky bottom-0 mt-12 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-background py-4">
+            {/* Bis `lg` über der festen Schnellnavigation (4rem): sonst trifft
+                der Tipp auf „Weiter“ deren Dashboard-Link, und der leitet
+                zurück hierher. */}
+            <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] mt-12 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-background py-4 lg:bottom-0">
                 <LogoutButton />
                 <form action={confirmPrivacyPolicy}>
                     {target && <input type="hidden" name="next" value={target} />}
-                    <Button type="submit">Zur Kenntnis genommen, weiter</Button>
+                    <Button type="submit">Zur Kenntnis genommen</Button>
                 </form>
             </div>
         </LegalPage>

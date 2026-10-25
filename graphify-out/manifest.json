@@ -252,21 +252,21 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/MailDashboard.tsx": {
-    "mtime": 1792573109.6178427,
-    "seen": 1792743435.488352,
-    "ast_hash": "cd082bae0e22fb9863376e37206547b5",
+    "mtime": 1792958790.3253012,
+    "seen": 1792958926.71035,
+    "ast_hash": "92edf39b7a79d968a4bb5ca5b857412f",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/MailForm.tsx": {
-    "mtime": 1792948256.4182777,
-    "seen": 1792948281.08867,
-    "ast_hash": "2ad7c77d471830e4234a370ed75d4e50",
+    "mtime": 1792958826.971707,
+    "seen": 1792958926.710351,
+    "ast_hash": "117c4e21eca485b534e2ad107dc28e89",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/actions.ts": {
-    "mtime": 1792948256.4181864,
-    "seen": 1792948281.088671,
-    "ast_hash": "0581f625f1789732cf5d51e6c5e9c8b2",
+    "mtime": 1792958726.93451,
+    "seen": 1792958926.710352,
+    "ast_hash": "43bcd51cd6d6d684fdb9cd3588e3a435",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/page.tsx": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1792947450.3477192,
-    "seen": 1792947486.517913,
-    "ast_hash": "866c1b5e49b374bef5e964e4111f40f9",
+    "mtime": 1792958811.6331036,
+    "seen": 1792958926.711722,
+    "ast_hash": "be9a6faa865bc5610679e3761572cc50",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "src/components/EmailComposerDialog.tsx": {
-    "mtime": 1792573109.6288128,
-    "seen": 1792743435.4892821,
-    "ast_hash": "97035c6f2cccbf7fd31b6fbfe7124b3e",
+    "mtime": 1792958790.3258617,
+    "seen": 1792958926.713582,
+    "ast_hash": "d6e29321b895feb149018b8c2b0f067b",
     "semantic_hash": ""
   },
   "src/components/EmailEditorToolbar.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/email/actions.ts": {
-    "mtime": 1792501017.0858133,
-    "seen": 1792502133.3432908,
-    "ast_hash": "5dc0993faff4f4fb382a71348f5fff1a",
+    "mtime": 1792958726.9348311,
+    "seen": 1792958926.7165709,
+    "ast_hash": "05c735a532c80a3ee98d41c82cf8f77c",
     "semantic_hash": ""
   },
   "src/lib/server/email/htmlToText.ts": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": "4468da0bf2b87caab4220b15a58274bb"
   },
   "src/lib/server/email/mailService.ts": {
-    "mtime": 1792948544.7397513,
-    "seen": 1792948589.232831,
-    "ast_hash": "50f2db391d97482ef80a3ba9ff9e114a",
+    "mtime": 1792958726.9340172,
+    "seen": 1792958926.7166872,
+    "ast_hash": "dfdf2f4cd90e37c374fc41c91b20fa01",
     "semantic_hash": ""
   },
   "src/lib/server/email/mailer.ts": {
@@ -1986,9 +1986,9 @@
     "semantic_hash": ""
   },
   "src/components/InterferenceField.tsx": {
-    "mtime": 1792501017.0506995,
-    "seen": 1792502133.343261,
-    "ast_hash": "217b4133b0fe9cdea50c24e5b018c126",
+    "mtime": 1792958358.4791026,
+    "seen": 1792958398.591412,
+    "ast_hash": "92fa646c8b9d1c0bff42c7175bbdedfb",
     "semantic_hash": ""
   },
   "src/components/InterferenceFieldLazy.tsx": {
@@ -2010,9 +2010,9 @@
     "semantic_hash": ""
   },
   "src/lib/rateLimits.ts": {
-    "mtime": 1792501017.0607882,
-    "seen": 1792502133.343287,
-    "ast_hash": "38297bf195206e379cd9fdf6aa067c5e",
+    "mtime": 1792958811.6326792,
+    "seen": 1792958926.7162838,
+    "ast_hash": "27dc2f7071ea137b12723b4239ca1ac6",
     "semantic_hash": ""
   },
   "tests/rateLimits.test.ts": {
@@ -2052,21 +2052,21 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/kosmos/KosmosTimeline.tsx": {
-    "mtime": 1792573109.617391,
-    "seen": 1792743435.488308,
-    "ast_hash": "85f17b26dbbbfd88db9625c19f0738f5",
+    "mtime": 1792958811.631877,
+    "seen": 1792958926.7103019,
+    "ast_hash": "e191be86b99125aa78408bf879f5237e",
     "semantic_hash": ""
   },
   "src/app/dashboard/kosmos/actions.ts": {
-    "mtime": 1792501017.1447356,
-    "seen": 1792502133.343207,
-    "ast_hash": "37a22b4b2e73b8eaf9b105b9efe908de",
+    "mtime": 1792958811.6324992,
+    "seen": 1792958926.710304,
+    "ast_hash": "1a9eeb57ca32e71aeb4320e8b73d95ee",
     "semantic_hash": ""
   },
   "src/app/dashboard/kosmos/page.tsx": {
-    "mtime": 1792573109.6175838,
-    "seen": 1792743435.488325,
-    "ast_hash": "b80f346267ed3834a48222996f727c91",
+    "mtime": 1792958811.6322653,
+    "seen": 1792958926.710305,
+    "ast_hash": "75ea33259c8fe4c345179dc4bdd331ad",
     "semantic_hash": ""
   },
   "src/lib/kosmos.ts": {
@@ -2076,9 +2076,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/services/kosmosService.ts": {
-    "mtime": 1792573109.5263562,
-    "seen": 1792743435.491661,
-    "ast_hash": "0fc29b13ec3a4c91d81d2ed968d471cc",
+    "mtime": 1792958724.2507248,
+    "seen": 1792958926.718026,
+    "ast_hash": "5f22c73534f7401b131bfb383549839d",
     "semantic_hash": ""
   },
   "tests/kosmos.test.ts": {
@@ -2160,9 +2160,27 @@
     "semantic_hash": ""
   },
   "src/app/datenschutz/bestaetigen/page.tsx": {
-    "mtime": 1792947450.3576646,
-    "seen": 1792947486.517913,
-    "ast_hash": "0e1ec94ff0a1c20d373425720b15db71",
+    "mtime": 1792958076.8335915,
+    "seen": 1792958107.49365,
+    "ast_hash": "66d53e959c9b5f980f65b26b08e22deb",
+    "semantic_hash": ""
+  },
+  "src/components/MailSendNotice.tsx": {
+    "mtime": 1792958737.9495144,
+    "seen": 1792958926.714195,
+    "ast_hash": "8fa9690faf68db24914ccff27ff8e190",
+    "semantic_hash": ""
+  },
+  "src/lib/server/email/sendReport.ts": {
+    "mtime": 1792958712.0221071,
+    "seen": 1792958926.716792,
+    "ast_hash": "302c087cde6d3a6265aef43ed2f5c087",
+    "semantic_hash": ""
+  },
+  "tests/sendReport.test.ts": {
+    "mtime": 1792958801.6152647,
+    "seen": 1792958926.719441,
+    "ast_hash": "1e92025a684d079101d6758cc8a841e9",
     "semantic_hash": ""
   }
 }

@@ -60,6 +60,11 @@ export default function InterferenceField({
     let phase = 0;
     let last = performance.now();
     let lastReadout = "";
+    // Punkte je Bild in festen Puffern statt in frischen Path2D-Objekten:
+    // Firefox rechnet deren nativen Speicher nicht der GC an — bei 40 fps
+    // wuchs der Prozess so unbegrenzt.
+    let pts = new Float32Array(0); // x, y, r je Punkt
+    let bucket = new Uint8Array(0); // 2·Stufe + 1 bei Wellental
 
     const resize = () => {
       const dpr = cappedDpr();
@@ -69,6 +74,11 @@ export default function InterferenceField({
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       spacing = isCompactViewport() ? 9 : 10;
+      const capacity = Math.ceil(w / spacing) * Math.ceil(h / spacing);
+      if (bucket.length < capacity) {
+        pts = new Float32Array(capacity * 3);
+        bucket = new Uint8Array(capacity);
+      }
       s1.x = w * 0.26;
       s1.y = h * 0.66;
       if (!s2.x) {
@@ -101,13 +111,7 @@ export default function InterferenceField({
       ctx.clearRect(0, 0, w, h);
 
       const maxR = spacing * 0.4;
-      const crest: Path2D[] = [];
-      const trough: Path2D[] = [];
-      for (let l = 0; l < LEVELS; l++) {
-        crest.push(new Path2D());
-        trough.push(new Path2D());
-      }
-
+      let n = 0;
       const half = spacing / 2;
       const cosPhase = Math.cos(phase);
       const sinPhase = Math.sin(phase);
@@ -128,20 +132,28 @@ export default function InterferenceField({
           const v = inst >= 0 ? mag : -mag;
           const level = Math.min(LEVELS - 1, Math.floor(mag * LEVELS));
           const r = 0.6 + ((level + 1) / LEVELS) * (maxR - 0.6);
-          const path = v > 0 ? crest[level] : trough[level];
-          path.moveTo(x + r, y);
-          path.arc(x, y, r, 0, Math.PI * 2);
+          pts[3 * n] = x;
+          pts[3 * n + 1] = y;
+          pts[3 * n + 2] = r;
+          bucket[n++] = 2 * level + (v > 0 ? 0 : 1);
         }
       }
 
       // Auf hellem Grund kräftiger, auf dunklem (wo dieselben Werte leuchten) leiser.
       const gain = appearance === "dark" ? 0.8 : 1.2;
-      for (let l = 0; l < LEVELS; l++) {
-        const alpha = gain * (0.1 + (0.6 * (l + 1)) / LEVELS);
-        ctx.fillStyle = rgba(colors.physics, alpha);
-        ctx.fill(crest[l]);
-        ctx.fillStyle = rgba(colors.market, alpha * 0.85);
-        ctx.fill(trough[l]);
+      for (let b = 0; b < 2 * LEVELS; b++) {
+        const alpha = gain * (0.1 + (0.6 * ((b >> 1) + 1)) / LEVELS);
+        ctx.fillStyle = b & 1 ? rgba(colors.market, alpha * 0.85) : rgba(colors.physics, alpha);
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          if (bucket[i] !== b) continue;
+          const x = pts[3 * i];
+          const y = pts[3 * i + 1];
+          const r = pts[3 * i + 2];
+          ctx.moveTo(x + r, y);
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+        }
+        ctx.fill();
       }
 
       // Die Quellen: Fadenkreuz und Beschriftung wie in einer Skizze.

@@ -73,7 +73,7 @@ export default async function KosmosPage() {
             <Container size="4" className="py-6">
                 <p className="text-xs text-faint text-pretty">
                     Spur = Studienzeit · Kopf = Abschluss · Ring = studiert noch. Sichtbar sind Name,
-                    Studiengang und Studienzeit; die E-Mail-Adresse erst auf Klick. Schaltest du deine
+                    Studiengang und Studienzeit; E-Mail-Adresse und LinkedIn-Profil erst auf Klick. Schaltest du deine
                     Sichtbarkeit aus, verschwindest du sofort — und siehst den Kosmos selbst nicht mehr.
                 </p>
             </Container>
@@ -93,14 +93,14 @@ function JoinStage({ count }: { count: number }) {
                 <HugeiconsIcon icon={ArrowLeft01Icon} size={14} aria-hidden="true" />
                 Dashboard
             </Link>
-            <div className="k-card grid max-w-xl gap-4 rounded-[10px] border p-5 backdrop-blur-md sm:p-7">
+            <div className="k-card grid max-w-xl gap-4 rounded-[10px] border p-5 sm:p-7">
                 <p className="font-mono text-xs tracking-wider uppercase opacity-80">
                     {count === 1 ? "1 Mitglied ist" : `${count} Mitglieder sind`} schon im Kosmos
                 </p>
                 <h1 className="display text-[clamp(1.75rem,4vw,2.5rem)]">Mach mit und sieh, wer mit dir studiert hat</h1>
                 <ul className="grid list-disc gap-1 pl-5 text-sm">
                     <li>Andere Mitglieder, die ebenfalls mitmachen, sehen deinen Namen, Studiengang und deine Studienzeit.</li>
-                    <li>Deine E-Mail-Adresse sehen sie erst, wenn sie dich anklicken.</li>
+                    <li>Deine E-Mail-Adresse und, falls im Profil hinterlegt, dein LinkedIn-Profil sehen sie erst, wenn sie dich anklicken.</li>
                     <li>Du kannst das jederzeit hier wieder ausschalten.</li>
                 </ul>
                 <KosmosVisibility visible={false} />

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { MailForm, type MailUserOption } from "./MailForm";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { ButtonLink, Callout, Card, Container, Table, TableWrap, Td, Th } from "@/components/ui";
+import { MailSendNotice } from "@/components/MailSendNotice";
+import type { MailSendReport } from "@/lib/server/email/sendReport";
 
 /** Ein Termin, dessen Ankündigung gerade vorbereitet wird. */
 export type MailAnnouncement = {
@@ -149,8 +151,7 @@ export function MailDashboard({
     upcomingEvents: MailEventOption[];
     history: MailHistoryEntry[];
 }) {
-    const [success, setSuccess] = useState(false);
-    const [sentCount, setSentCount] = useState(0);
+    const [report, setReport] = useState<MailSendReport | null>(null);
     const [users, setUsers] = useState<MailUserOption[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -171,16 +172,26 @@ export function MailDashboard({
         fetchUsers();
     }, []);
 
-    if (success) {
+    if (report) {
+        const partial = report.failed.length > 0;
         return (
             <Container size="2" className="py-8 sm:py-12">
                 <Card className="grid justify-items-center gap-3 p-6 text-center sm:p-8">
-                    <HugeiconsIcon icon={CheckmarkCircle01Icon} size={48} className="text-positive" aria-hidden="true" />
-                    <h1 className="text-2xl font-bold tracking-tight">E-Mail gesendet</h1>
+                    <HugeiconsIcon
+                        icon={partial ? Alert01Icon : CheckmarkCircle01Icon}
+                        size={48}
+                        className={partial ? "text-warning" : "text-positive"}
+                        aria-hidden="true"
+                    />
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {partial ? "E-Mail teilweise gesendet" : "E-Mail gesendet"}
+                    </h1>
                     <p className="text-sm text-muted">
-                        Die Nachricht wurde an {sentCount}{" "}
-                        {sentCount === 1 ? "Empfänger" : "Empfänger"} versendet.
+                        Die Nachricht wurde an {report.sent}{" "}
+                        {partial ? `von ${report.sent + report.failed.length} ` : ""}Empfänger
+                        versendet.
                     </p>
+                    <MailSendNotice report={report} />
                     <div className="mt-2 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
                         <ButtonLink href="/dashboard/mail" size="lg">
                             Weitere E-Mail senden
@@ -265,10 +276,7 @@ export function MailDashboard({
                         key={announcement?.id ?? "leer"}
                         users={users}
                         announcement={announcement}
-                        onSuccess={(count) => {
-                            setSentCount(count);
-                            setSuccess(true);
-                        }}
+                        onSuccess={setReport}
                     />
                 )}
             </Card>
