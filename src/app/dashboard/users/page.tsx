@@ -11,6 +11,7 @@ import {
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { processTerminations } from "@/lib/server/services/terminationService";
 import { directoryStats } from "@/lib/memberDirectory";
+import { wasMemberInYear } from "@/lib/feeCalculation";
 import { formatEuro } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { ButtonLink, Card, Container } from "@/components/ui";
@@ -54,26 +55,22 @@ export default async function UserManagementPage({
 
   const currentYear = new Date().getFullYear();
   const existingYears = await getExistingFeeYears();
-  // Ohne jede Beitragszeile gäbe es nichts auszuwählen — dann bleibt das
-  // laufende Jahr als einziger Eintrag stehen.
-  const yearOptions = existingYears.length > 0 ? existingYears : [currentYear];
+  // Wählbar sind die angelegten Jahre plus genau das nächste — angelegt wird
+  // über den Hinweis über der Tabelle. Ohne jede Beitragszeile: das laufende Jahr.
+  const availableYears =
+    existingYears.length > 0
+      ? [...existingYears, existingYears[existingYears.length - 1] + 1]
+      : [currentYear];
 
-  // Gleiche Grenzen wie in den Fee-Schemas — ein "?year=0" darf die Seite nicht
-  // auf ein sinnloses Jahr stellen.
+  // Nur wählbare Jahre — ein "?year=2035" darf nicht am nächsten Jahr vorbei.
   const requestedYear = Number((await searchParams).year);
-  const year =
-    Number.isInteger(requestedYear) && requestedYear >= 2000 && requestedYear <= 2100
-      ? requestedYear
-      : // Voreinstellung: das laufende Jahr, sofern dafür Zeilen existieren,
-        // sonst das zuletzt angelegte.
-        yearOptions.includes(currentYear)
-        ? currentYear
-        : yearOptions[yearOptions.length - 1];
-  // Ein per Link übergebenes Jahr ohne Zeilen bleibt wählbar, sonst zeigte der
-  // Selektor etwas anderes an als die Tabelle.
-  const availableYears = yearOptions.includes(year)
-    ? yearOptions
-    : [...yearOptions, year].sort((a, b) => a - b);
+  const year = availableYears.includes(requestedYear)
+    ? requestedYear
+    : // Voreinstellung: das laufende Jahr, sofern dafür Zeilen existieren,
+      // sonst das zuletzt angelegte.
+      existingYears.includes(currentYear)
+      ? currentYear
+      : (existingYears[existingYears.length - 1] ?? currentYear);
 
   const now = new Date();
   const [users, feeDefaults] = await Promise.all([
@@ -110,7 +107,6 @@ export default async function UserManagementPage({
       amount: f.amount,
       standard: f.standard,
       manuell: f.manuell,
-      angelegt: f.angelegt,
       breakdown: {
         monthly: f.breakdown.monthly,
         months: f.breakdown.months,
@@ -121,6 +117,17 @@ export default async function UserManagementPage({
   }));
 
   const stats = directoryStats(accounts, year, now);
+
+  // Vergangene Jahre: nur wer damals Mitglied war.
+  const shownAccounts =
+    year < currentYear
+      ? accounts.filter(
+          (a) =>
+            a.inFeeYear ||
+            (a.status === "HONORARY_MEMBER" &&
+              wasMemberInYear(year, a.joinedAt ? new Date(a.joinedAt) : null)),
+        )
+      : accounts;
 
   const paidShare = stats.feeDue > 0 ? Math.round((stats.feePaid / stats.feeDue) * 100) : 0;
 
@@ -193,7 +200,8 @@ export default async function UserManagementPage({
       </section>
 
       <MemberDirectory
-        accounts={accounts}
+        accounts={shownAccounts}
+        hiddenCount={accounts.length - shownAccounts.length}
         year={year}
         availableYears={availableYears}
         sepaCandidates={sepaCandidates}

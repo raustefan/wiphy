@@ -59,11 +59,14 @@ function FilterSelect<K extends keyof DirectoryFilters>({
  */
 export function MemberDirectory({
   accounts,
+  hiddenCount,
   year,
   availableYears,
   sepaCandidates,
 }: {
   accounts: DirectoryAccount[];
+  /** Konten ohne Mitgliedschaft im (vergangenen) Jahr — ausgeblendet. */
+  hiddenCount: number;
   year: number;
   availableYears: number[];
   sepaCandidates: SepaCandidate[];
@@ -182,6 +185,7 @@ export function MemberDirectory({
       )}
       <DirectoryTable
         users={accounts}
+        hiddenCount={hiddenCount}
         visibleIds={visibleIds}
         selectedYear={year}
         availableYears={availableYears}

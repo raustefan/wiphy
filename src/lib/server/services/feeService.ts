@@ -154,8 +154,8 @@ export async function getOpenFees(userId: string, year = new Date().getFullYear(
 
 /**
  * Alle Konten für die Benutzerverwaltung, jedes mit seinem Beitragsverlauf.
- * `inFeeYear` markiert die Beitragsliste von `year`; nur diese Konten bekommen
- * eine berechnete Zeile für das Jahr, falls noch keine angelegt ist.
+ * `inFeeYear` markiert die Beitragsliste von `year`. Nur gespeicherte Zeilen —
+ * keine berechneten: Tabelle, Kennzahlen und SEPA zeigen, was angelegt ist.
  */
 export async function getAccountsWithFees(adminId: string, year: number) {
   const [users, defaults] = await Promise.all([
@@ -165,7 +165,7 @@ export async function getAccountsWithFees(adminId: string, year: number) {
 
   return users.map((user) => {
     const inFeeYear = isInFeeYear(user, year);
-    return { ...withResolvedFees(user, defaults, inFeeYear ? year : undefined), inFeeYear };
+    return { ...withResolvedFees(user, defaults), inFeeYear };
   });
 }
 

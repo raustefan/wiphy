@@ -1,7 +1,7 @@
 "use client";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, AddCircleIcon, AlertCircleIcon, Building03Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, CircleIcon, Coins01Icon, EuroCircleIcon, LockIcon, Mail01Icon, Message01Icon, Mortarboard01Icon, PencilEdit02Icon, PencilIcon, SearchMinusIcon, ShieldCheckIcon, SquareUnlock01Icon, TaskDone01Icon, Tick01Icon, UserCircleIcon, UserRemove01Icon } from "@hugeicons/core-free-icons";
+import { AddCircleIcon, AlertCircleIcon, Building03Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, CircleIcon, Coins01Icon, EuroCircleIcon, LockIcon, Mail01Icon, Message01Icon, Mortarboard01Icon, PencilEdit02Icon, PencilIcon, SearchMinusIcon, ShieldCheckIcon, SquareUnlock01Icon, TaskDone01Icon, Tick01Icon, UserCircleIcon, UserRemove01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -75,7 +75,6 @@ export type DirectoryAccount = {
     /** Was der beschlossene Standardbeitrag ergäbe. */
     standard: number;
     manuell: boolean;
-    angelegt: boolean;
     breakdown: { monthly: number; months: number; base: number; surcharge: number };
   }>;
 };
@@ -112,12 +111,7 @@ function compareBy(key: SortKey, a: DirectoryAccount, b: DirectoryAccount, year:
     case "paid":
       return compareNullable(yearFee(a, year)?.paid, yearFee(b, year)?.paid, (x, y) => Number(x) - Number(y));
     case "student":
-      // Ohne Beitragszeile zählt die Erklärung des Mitglieds — genau das zeigt die Spalte.
-      return compareNullable(
-        a.inFeeYear ? (yearFee(a, year)?.isStudent ?? a.studentYears.includes(year)) : null,
-        b.inFeeYear ? (yearFee(b, year)?.isStudent ?? b.studentYears.includes(year)) : null,
-        (x, y) => Number(y) - Number(x),
-      );
+      return compareNullable(yearFee(a, year)?.isStudent, yearFee(b, year)?.isStudent, (x, y) => Number(y) - Number(x));
     case "amount":
       return compareNullable(yearFee(a, year)?.amount, yearFee(b, year)?.amount, (x, y) => x - y);
   }
@@ -464,12 +458,15 @@ const COLUMNS = 9;
  */
 export function DirectoryTable({
   users,
+  hiddenCount,
   visibleIds,
   selectedYear,
   availableYears,
   sepaCandidates,
 }: {
   users: DirectoryAccount[];
+  /** Konten ohne Mitgliedschaft im gewählten Jahr, die gar nicht erst übergeben wurden. */
+  hiddenCount: number;
   /** Treffer der Suche und Filter; ohne Angabe alle. */
   visibleIds?: Set<string>;
   selectedYear: number;
@@ -486,7 +483,7 @@ export function DirectoryTable({
     fee: DirectoryAccount["fees"][number];
   } | null>(null);
   // Schutz vor Fehlklicks: Zahlungsstatus, Sonderstatus, Beträge und neue
-  // Beitragsjahre lassen sich erst nach bewusstem Freischalten ändern. Nach
+  // Beitragseinträge lassen sich erst nach bewusstem Freischalten ändern. Nach
   // einem Neuladen ist wieder gesperrt.
   const [editing, setEditing] = useState(false);
   const [sort, setSort] = useState<SortState<SortKey>>({ key: "name", desc: false });
@@ -515,9 +512,9 @@ export function DirectoryTable({
   }, [users, visibleIds, sort, selectedYear]);
   const visibleUsers = useMemo(() => groups.flatMap((g) => g.users), [groups]);
 
-  // Jahr ohne angelegte Beitragszeilen: erklären und das Anlegen anbieten.
+  // Mitglieder ohne gespeicherte Beitragszeile: erklären und das Anlegen anbieten.
   const feeRows = users.filter((u) => u.inFeeYear);
-  const missing = feeRows.filter((u) => yearFee(u, selectedYear)?.angelegt === false).length;
+  const missing = feeRows.filter((u) => !yearFee(u, selectedYear)).length;
 
   // Nur sichtbare Zeilen zählen als ausgewählt: was ein Filter ausblendet,
   // bekommt keine E-Mail und landet in keiner SEPA-Datei.
@@ -596,9 +593,6 @@ export function DirectoryTable({
   return (
     <>
       <div className="mb-3 grid gap-3 rounded-[3px] border border-line bg-raised/40 p-3 sm:p-4">
-        {/* Schalter und „Neues Jahr“ stehen in beiden Zuständen an derselben
-            Stelle und in derselben Breite — nichts rutscht unter den
-            Mauszeiger, der den Schalter gerade bedient hat. */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <HugeiconsIcon icon={Calendar01Icon} size={16} className="text-faint" aria-hidden="true" />
@@ -619,71 +613,37 @@ export function DirectoryTable({
             </Select>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <form
-              action={async (formData) => {
-                // Nach dem Anlegen gleich zum neuen Jahr wechseln.
-                const result = await initializeBillingYear(formData);
-                if (result.ok) handleYearChange(String(formData.get("year")));
-              }}
-            >
-              <fieldset
-                disabled={!editing}
-                className="flex items-center gap-2"
-                title={editing ? undefined : "Zum Anlegen erst „Bearbeiten“ freischalten"}
-              >
-                <label htmlFor="fees-new-year" className="text-xs whitespace-nowrap text-muted">
-                  Neues Jahr
-                </label>
-                {/* Eigene Breite am Wrapper: `Input` bringt `w-full` mit. */}
-                <div className="w-22">
-                  <Input
-                    id="fees-new-year"
-                    type="number"
-                    name="year"
-                    min={2000}
-                    max={2100}
-                    required
-                    defaultValue={new Date().getFullYear() + 1}
-                    className="py-1.5"
-                  />
-                </div>
-                <IconButton
-                  type="submit"
-                  variant="soft"
-                  color="accent"
-                  size="sm"
-                  aria-label="Jahr für alle Mitglieder anlegen"
-                >
-                  <HugeiconsIcon icon={Add01Icon} size={16} aria-hidden="true" />
-                </IconButton>
-              </fieldset>
-            </form>
-
-            <div
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-[3px] border py-1 pr-3 pl-1 transition-colors",
+              editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
+            )}
+          >
+            <Switch
+              checked={editing}
+              onCheckedChange={setEditing}
+              aria-label="Zahlungsdaten bearbeiten"
+            />
+            <span
+              aria-hidden="true"
               className={cn(
-                "flex items-center gap-2 rounded-[3px] border py-1 pr-3 pl-1 transition-colors",
-                editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
+                "flex items-center gap-1.5 text-sm font-medium",
+                editing ? "text-physics" : "text-muted",
               )}
             >
-              <Switch
-                checked={editing}
-                onCheckedChange={setEditing}
-                aria-label="Zahlungsdaten bearbeiten"
-              />
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "flex items-center gap-1.5 text-sm font-medium",
-                  editing ? "text-physics" : "text-muted",
-                )}
-              >
-                {editing ? <HugeiconsIcon icon={SquareUnlock01Icon} size={14} /> : <HugeiconsIcon icon={LockIcon} size={14} />}
-                Bearbeiten
-              </span>
-            </div>
+              {editing ? <HugeiconsIcon icon={SquareUnlock01Icon} size={14} /> : <HugeiconsIcon icon={LockIcon} size={14} />}
+              Bearbeiten
+            </span>
           </div>
         </div>
+
+        {/* Jahre weit in der Zukunft mit nur einzelnen Mitgliedern wirken sonst wie ein Fehler. */}
+        <p className="text-xs text-pretty text-muted">
+          Zur Auswahl stehen alle Jahre mit mindestens einem Beitragseintrag und das nächste Jahr
+          zum Anlegen. Wer bei der Aufnahme einen Sonderstatus für spätere Jahre beantragt, bekommt
+          schon Einträge bis dahin. Deshalb reichen manche Jahre weit in die Zukunft und enthalten
+          nur einzelne Mitglieder.
+        </p>
 
         <Separator />
 
@@ -739,11 +699,13 @@ export function DirectoryTable({
             <p className="text-sm text-pretty">
               <strong className="font-semibold">
                 {missing === feeRows.length
-                  ? `Das Beitragsjahr ${selectedYear} ist noch nicht angelegt.`
-                  : `${missing} von ${feeRows.length} Mitgliedern ${missing === 1 ? "hat" : "haben"} für ${selectedYear} noch keinen Beitragseintrag.`}
+                  ? `Für ${selectedYear} gibt es noch keine Beitragseinträge.`
+                  : `Erst ${feeRows.length - missing} von ${feeRows.length} Mitgliedern ${feeRows.length - missing === 1 ? "hat" : "haben"} einen Beitragseintrag für ${selectedYear}.`}
               </strong>{" "}
-              Die Beträge sind aus den Standardsätzen berechnet und gelten als offen, bis sie als
-              bezahlt markiert werden.
+              Ein Eintrag hält Betrag, Zahlungsstand und Sonderstatus fest; ohne ihn steht in der
+              Tabelle „—“. „Einträge für {selectedYear} anlegen“ ergänzt für{" "}
+              {missing === feeRows.length ? "alle" : "die übrigen"} {missing} die Standardbeträge,
+              vorhandene Einträge bleiben unverändert.
             </p>
             <form
               action={async (formData) => {
@@ -765,6 +727,14 @@ export function DirectoryTable({
             </form>
           </div>
         </Callout>
+      )}
+
+      {hiddenCount > 0 && (
+        <p className="mb-3 text-sm text-muted">
+          {hiddenCount} von {users.length + hiddenCount} Konten{" "}
+          {hiddenCount === 1 ? "hatte" : "hatten"} {selectedYear} (noch) keine Mitgliedschaft und{" "}
+          {hiddenCount === 1 ? "wird" : "werden"} deshalb nicht angezeigt.
+        </p>
       )}
 
       <TableWrap
@@ -848,7 +818,6 @@ export function DirectoryTable({
                     const fee = yearFee(user, selectedYear);
                     const paid = fee?.paid ?? false;
                     const isStudent = fee?.isStudent ?? false;
-                    const declaredStudent = user.studentYears.includes(selectedYear);
                     const isSelected = selectedIds.has(user.id);
                     const leftThisYear = user.inFeeYear && user.status === "NON_MEMBER";
                     return (
@@ -948,13 +917,7 @@ export function DirectoryTable({
                                 tone={isStudent ? "info" : "neutral"}
                                 icon={isStudent ? <HugeiconsIcon icon={Mortarboard01Icon} size={15} /> : <HugeiconsIcon icon={UserCircleIcon} size={15} />}
                                 actionLabel={`${name}: ${isStudent ? "Sonderstatus" : "regulärer Beitrag"}${editing ? " — klicken zum Ändern" : ""}`}
-                                title={
-                                  fee.angelegt === false && declaredStudent
-                                    ? `Sonderstatus laut Erklärung des Mitglieds für ${selectedYear}`
-                                    : isStudent
-                                      ? "Sonderstatus nach § 5 (z. B. Studierende)"
-                                      : "Regulärer Beitrag"
-                                }
+                                title={isStudent ? "Sonderstatus nach § 5 (z. B. Studierende)" : "Regulärer Beitrag"}
                               />
                             </form>
                           ) : (
@@ -1004,15 +967,6 @@ export function DirectoryTable({
                                   <span className="sr-only">Ausnahme:</span>
                                 </span>
                               )}
-                              {fee.angelegt === false && (
-                                <span
-                                  title={`Für ${selectedYear} gibt es noch keinen Beitragseintrag. Der Betrag ist aus den Standardsätzen berechnet.`}
-                                  className="text-faint max-sm:hidden"
-                                >
-                                  <HugeiconsIcon icon={CircleIcon} size={13} aria-hidden="true" />
-                                  <span className="sr-only">Kein Eintrag:</span>
-                                </span>
-                              )}
                               {/* Freigeschaltet wird der Betrag selbst zum Knopf
                                   für die Ausnahme — kein eigener Stift nötig. */}
                               {editing ? (
@@ -1029,6 +983,16 @@ export function DirectoryTable({
                                   {formatEuro(fee.amount)}
                                 </span>
                               )}
+                            </span>
+                          ) : user.inFeeYear ? (
+                            // Mitglied im Jahr, aber noch keine Zeile in der Datenbank.
+                            <span
+                              title={`Für ${selectedYear} gibt es noch keinen Beitragseintrag`}
+                              className="inline-flex items-center justify-end gap-1 text-faint"
+                            >
+                              <HugeiconsIcon icon={CircleIcon} size={13} aria-hidden="true" />
+                              <span className="sr-only">Kein Beitragseintrag</span>
+                              <span aria-hidden="true">—</span>
                             </span>
                           ) : (
                             <span className="text-faint">—</span>
