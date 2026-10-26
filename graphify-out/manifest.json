@@ -1596,9 +1596,9 @@
     "semantic_hash": ""
   },
   "src/components/InstallHint.tsx": {
-    "mtime": 1792573109.6310577,
-    "seen": 1792743435.489367,
-    "ast_hash": "cd7ca50d173464a0c011e7b0b0cf7e58",
+    "mtime": 1793035990.7909799,
+    "seen": 1793036019.069338,
+    "ast_hash": "8b543533ec2e882ade4d6dac30724bb6",
     "semantic_hash": ""
   },
   "public/sw.js": {
@@ -2142,15 +2142,15 @@
     "semantic_hash": ""
   },
   "src/app/datenschutz/bestaetigen/actions.ts": {
-    "mtime": 1792947450.3575723,
-    "seen": 1792947486.5179121,
-    "ast_hash": "1bc5e57f828fc67dd87dd82d9393420a",
+    "mtime": 1793033836.9246883,
+    "seen": 1793034227.8369222,
+    "ast_hash": "0e617f9dcfacd2cb1ff50410ce42f346",
     "semantic_hash": ""
   },
   "src/app/datenschutz/bestaetigen/page.tsx": {
-    "mtime": 1792958076.8335915,
-    "seen": 1792958107.49365,
-    "ast_hash": "66d53e959c9b5f980f65b26b08e22deb",
+    "mtime": 1793035990.7915044,
+    "seen": 1793036019.0678241,
+    "ast_hash": "f0f3c3de841a1a1676ab04b73fa50a17",
     "semantic_hash": ""
   },
   "src/components/MailSendNotice.tsx": {

@@ -31,7 +31,7 @@ export default async function ConfirmPrivacyPolicyPage({ searchParams }: Props) 
             {/* Bis `lg` über der festen Schnellnavigation (4rem): sonst trifft
                 der Tipp auf „Weiter“ deren Dashboard-Link, und der leitet
                 zurück hierher. */}
-            <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] mt-12 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-background py-4 lg:bottom-0">
+            <div data-action-bar className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] mt-12 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-background py-4 lg:bottom-0">
                 <LogoutButton />
                 <form action={confirmPrivacyPolicy}>
                     {target && <input type="hidden" name="next" value={target} />}
