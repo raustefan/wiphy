@@ -12,6 +12,7 @@ import {
 } from "@/components/EmailComposerDialog";
 import { formatDate, formatDateShort, formatEuro } from "@/lib/format";
 import { groupAccounts, yearFee } from "@/lib/memberDirectory";
+import { studentStatusEndsAfter } from "@/lib/membership";
 import { renderBlocksEditorHtml } from "@/lib/email/blocks";
 import { feeReminderMessage } from "@/lib/email/messages";
 import {
@@ -58,6 +59,7 @@ export type DirectoryAccount = {
   directDebit: boolean;
   /** Vom Mitglied erklärte Jahre mit Sonderstatus (§ 5). */
   studentYears: number[];
+  notStudentFromYear: number | null;
   role: string;
   status: string;
   emailVerified: boolean;
@@ -357,7 +359,7 @@ export function UserPaymentHistoryDialog({
 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
         <HugeiconsIcon icon={Mortarboard01Icon} size={16} className="text-faint" aria-hidden="true" />
-        Sonderstatus erklärt für:
+        Sonderstatus:
         {user.studentYears.length === 0 ? (
           <span className="font-medium">—</span>
         ) : (
@@ -637,14 +639,6 @@ export function DirectoryTable({
           </div>
         </div>
 
-        {/* Jahre weit in der Zukunft mit nur einzelnen Mitgliedern wirken sonst wie ein Fehler. */}
-        <p className="text-xs text-pretty text-muted">
-          Zur Auswahl stehen alle Jahre mit mindestens einem Beitragseintrag und das nächste Jahr
-          zum Anlegen. Wer bei der Aufnahme einen Sonderstatus für spätere Jahre beantragt, bekommt
-          schon Einträge bis dahin. Deshalb reichen manche Jahre weit in die Zukunft und enthalten
-          nur einzelne Mitglieder.
-        </p>
-
         <Separator />
 
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -702,8 +696,7 @@ export function DirectoryTable({
                   ? `Für ${selectedYear} gibt es noch keine Beitragseinträge.`
                   : `Erst ${feeRows.length - missing} von ${feeRows.length} Mitgliedern ${feeRows.length - missing === 1 ? "hat" : "haben"} einen Beitragseintrag für ${selectedYear}.`}
               </strong>{" "}
-              Ein Eintrag hält Betrag, Zahlungsstand und Sonderstatus fest; ohne ihn steht in der
-              Tabelle „—“. „Einträge für {selectedYear} anlegen“ ergänzt für{" "}
+              Ein Eintrag hält Betrag und Zahlungsstand fest; ohne ihn steht in der Tabelle „—“. „Einträge für {selectedYear} anlegen“ ergänzt für{" "}
               {missing === feeRows.length ? "alle" : "die übrigen"} {missing} die Standardbeträge,
               vorhandene Einträge bleiben unverändert.
             </p>
@@ -869,6 +862,19 @@ export function DirectoryTable({
                             {leftThisYear && (
                               <Badge className="shrink-0 px-1.5 py-0 text-[11px]" title="Im Beitragsjahr ausgetreten">
                                 ausgetreten
+                              </Badge>
+                            )}
+                            {user.status === "REGULAR_MEMBER" && studentStatusEndsAfter(user, selectedYear) && (
+                              <Badge
+                                tone={user.notStudentFromYear === selectedYear + 1 ? "neutral" : "warning"}
+                                className="shrink-0 px-1.5 py-0 text-[11px]"
+                                title={
+                                  user.notStudentFromYear === selectedYear + 1
+                                    ? `Sonderstatus endet nach ${selectedYear} — vom Mitglied bestätigt`
+                                    : `Sonderstatus endet nach ${selectedYear} — Mitglied hat noch nicht geantwortet`
+                                }
+                              >
+                                {user.notStudentFromYear === selectedYear + 1 ? "Studium endet · bestätigt" : "Studium endet · offen"}
                               </Badge>
                             )}
                             {!user.inFeeYear && user.status === "REGULAR_MEMBER" && (

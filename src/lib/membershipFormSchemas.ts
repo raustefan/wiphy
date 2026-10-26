@@ -12,7 +12,7 @@ import { isCountryCode } from "@/lib/countries";
 import { hasControlChars, isPlausibleBirthDate, isValidPhone, isValidPostalCode } from "@/lib/inputRules";
 import {
   MINOR_HINT,
-  STUDENT_YEAR_LOOKAHEAD,
+  STUDY_END_LOOKAHEAD,
   isOldEnough,
 } from "@/lib/membership";
 
@@ -101,6 +101,41 @@ export const applicationStudySchema = z.object({
 });
 
 /**
+ * Aus dem Studienzeitraum werden die ermäßigten Jahre berechnet
+ * (`studentYearsFromStudy`). Ein Beginn ohne Ende ließe offen, wie lange — und
+ * ein Ende weit in der Zukunft hieße Ermäßigung auf Jahrzehnte.
+ */
+export function addStudyIssues(
+  data: { studyStart: Date | null; studyEnd: Date | null },
+  ctx: z.RefinementCtx,
+) {
+  if (data.studyStart && !data.studyEnd) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Bitte zum Studienbeginn auch das (voraussichtliche) Studienende angeben.",
+      path: ["studyEnd"],
+    });
+  }
+  if (data.studyStart && data.studyEnd && data.studyEnd < data.studyStart) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Das Studienende kann nicht vor dem Studienbeginn liegen.",
+      path: ["studyEnd"],
+    });
+  }
+  const lastYear = new Date().getFullYear() + STUDY_END_LOOKAHEAD;
+  if (data.studyEnd && data.studyEnd.getUTCFullYear() > lastYear) {
+    ctx.addIssue({
+      code: "custom",
+      message: `Das Studienende darf höchstens im Jahr ${lastYear} liegen.`,
+      path: ["studyEnd"],
+    });
+  }
+}
+
+export const applicationStudyStepSchema = applicationStudySchema.superRefine(addStudyIssues);
+
+/**
  * Wie der Beitrag bezahlt wird. Eigener Schritt im Antrag, damit die
  * Entscheidung bewusst fällt und nicht nebenbei beim Ausfüllen der Bankdaten.
  */
@@ -187,15 +222,14 @@ export function addDirectDebitIssues(
 }
 
 /**
- * Gesamtschema für das Absenden. `studentYears` kommt über `getAll` als Array
- * und wird deshalb außerhalb von `parseFormData` eingespeist.
+ * Gesamtschema für das Absenden. Studienjahre schickt der Browser nicht mit —
+ * der Server berechnet sie aus dem Studienzeitraum.
  */
 export const membershipApplicationSchema = applicationPersonSchema
   .extend(applicationStudySchema.shape)
   .extend(applicationPaymentSchema.shape)
   .extend(bankFieldsOptional.shape)
   .extend({
-    studentYears: z.array(z.coerce.number().int()).default([]),
     bylawsAccepted: checkedBox,
     privacyAccepted: checkedBox,
   })
@@ -215,28 +249,7 @@ export const membershipApplicationSchema = applicationPersonSchema
       addDirectDebitIssues(data, ctx);
     }
 
-    if (data.studyStart && data.studyEnd && data.studyEnd < data.studyStart) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Das Studienende kann nicht vor dem Studienbeginn liegen.",
-        path: ["studyEnd"],
-      });
-    }
-
-    // Der Client bietet nur das laufende Jahr bis +STUDENT_YEAR_LOOKAHEAD an;
-    // hier wird derselbe Rahmen serverseitig erzwungen, damit niemand sich per
-    // manipuliertem Request eine Ermäßigung für 30 Jahre einträgt.
-    const currentYear = new Date().getFullYear();
-    const outOfRange = data.studentYears.some(
-      (year) => year < currentYear || year > currentYear + STUDENT_YEAR_LOOKAHEAD,
-    );
-    if (outOfRange) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Ungültiges Studienjahr ausgewählt.",
-        path: ["studentYears"],
-      });
-    }
+    addStudyIssues(data, ctx);
   })
   /*
    * Ohne Mandat werden die Bankfelder verworfen, statt sie nur zu ignorieren:

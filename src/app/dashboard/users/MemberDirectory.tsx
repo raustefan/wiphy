@@ -161,6 +161,7 @@ export function MemberDirectory({
             ["", "Alle"],
             ["student", "Sonderstatus"],
             ["regular", "Regulär"],
+            ["ending", "Letztes Jahr ermäßigt"],
           ]}
         />
       </div>

@@ -1,8 +1,17 @@
 import type { Role } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { AppError } from "@/lib/server/errors";
+import {
+  changedStudentYears,
+  studentEndYearOptions,
+  studentStatusEndsAfter,
+  withStudentEndYear,
+} from "@/lib/membership";
 import {
   findUsersWithFees,
   findFeeLiableUsers,
-  upsertFeeStatus,
+  upsertFeePaid,
+  setStudentYear,
   upsertFeeAmount,
   clearFeeAmountOverride,
   findExistingFeeYears,
@@ -96,14 +105,16 @@ function withResolvedFees(user: UserWithFees, defaults: FeeDefaults, ensureYear?
     };
   }
 
-  const fees = user.fees.map((fee) => toDashboardFee({ ...fee, angelegt: true }));
+  // Der Sonderstatus steht nicht in der Zeile, sondern allein beim Mitglied.
+  const fees = user.fees.map((fee) =>
+    toDashboardFee({ ...fee, isStudent: user.studentYears.includes(fee.year), angelegt: true }),
+  );
 
   if (ensureYear !== undefined && !fees.some((fee) => fee.year === ensureYear)) {
     fees.push(
       toDashboardFee({
         year: ensureYear,
         paid: false,
-        // Ohne Zeile zählt die Erklärung des Mitglieds.
         isStudent: user.studentYears.includes(ensureYear),
         amount: 0,
         manualAmount: false,
@@ -170,7 +181,56 @@ export async function getAccountsWithFees(adminId: string, year: number) {
 }
 
 export async function setFeeStatus(input: { userId: string; year: number; field: "paid" | "isStudent"; value: boolean }) {
-  await upsertFeeStatus(input.userId, input.year, input.field, input.value);
+  if (input.field === "isStudent") await setStudentYear(input.userId, input.year, input.value);
+  else await upsertFeePaid(input.userId, input.year, input.value);
+}
+
+/**
+ * Ob das Mitglied gerade im letzten ermäßigten Jahr steckt und noch nicht
+ * gesagt hat, wie es weitergeht — dann zeigt das Dashboard die Frage.
+ */
+export function needsStudentStatusAnswer(
+  member: { status: string; studentYears: number[]; notStudentFromYear: number | null },
+  year: number,
+): boolean {
+  return (
+    member.status === "REGULAR_MEMBER" &&
+    member.notStudentFromYear !== year + 1 &&
+    studentStatusEndsAfter(member, year)
+  );
+}
+
+/**
+ * Das Mitglied legt fest, bis wann es ermäßigt ist (Zahlungsseite, „Nein“ im
+ * Dashboard). Nur künftige Jahre, höchstens drei voraus; bezahlte Jahre sind
+ * fest, sonst änderte sich nachträglich ihr Betrag. Kein Nachweis — der Verein
+ * vertraut der Angabe (§ 5 Abs. 10 verpflichtet zur Meldung).
+ */
+export async function setOwnStudentEndYear(userId: string, endYear: number) {
+  const year = new Date().getFullYear();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { status: true, studentYears: true, fees: { where: { paid: true }, select: { year: true } } },
+  });
+  if (!user || user.status !== "REGULAR_MEMBER") {
+    throw new AppError("FORBIDDEN", "Den Studierendenstatus können nur ordentliche Mitglieder angeben.");
+  }
+  if (!studentEndYearOptions(user.studentYears, year).includes(endYear)) {
+    throw new AppError("VALIDATION_ERROR", "Dieses Jahr kann nicht gewählt werden.");
+  }
+
+  const studentYears = withStudentEndYear(user.studentYears, endYear, year);
+  const paidYears = new Set(user.fees.map((fee) => fee.year));
+  if (changedStudentYears(user.studentYears, studentYears).some((y) => paidYears.has(y))) {
+    throw new AppError("CONFLICT", "Ein betroffenes Jahr ist schon bezahlt. Bitte wende dich an den Vorstand.");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    // Endet der Status mit dem laufenden Jahr, ist das zugleich die Antwort
+    // „Nein“ auf die Frage im Dashboard.
+    data: { studentYears, notStudentFromYear: endYear === year ? year + 1 : null },
+  });
 }
 
 export async function setFeeAmount(input: { userId: string; year: number; amount: number }) {

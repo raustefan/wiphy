@@ -677,7 +677,7 @@ function EntryDetails({
 }
 
 /** Ja/Nein-Felder: fehlt die Angabe, speichert der Import „Nein“ — so steht es auch da. */
-const FALSE_BY_DEFAULT = new Set(["directDebit", "loginDisabled", "paid", "isStudent", "manualAmount"]);
+const FALSE_BY_DEFAULT = new Set(["directDebit", "loginDisabled", "paid", "manualAmount"]);
 
 function display(key: string, value: unknown): string {
     if ((value === null || value === undefined) && FALSE_BY_DEFAULT.has(key)) return "Nein";

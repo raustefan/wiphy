@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, Mortarboard01Icon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { isDebugMode, requireUser } from "@/lib/server/authz";
 import { toggleDebugMode } from "./actions";
 import { MailSuccessDialog } from "./MailSuccessDialog";
 import { getEditableUser } from "@/lib/server/services/userService";
-import { getFeeDashboardData } from "@/lib/server/services/feeService";
+import { getFeeDashboardData, needsStudentStatusAnswer } from "@/lib/server/services/feeService";
 import LogoutButton from "@/components/LogoutButton";
 import { ProfileSummary } from "./ProfileSummary";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -30,6 +30,7 @@ import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { getDashboardEvent } from "@/lib/server/services/eventService";
 import { UpcomingEventAlert } from "./UpcomingEventAlert";
 import { NewsletterRow } from "./NewsletterSettings";
+import { StudentStatusPrompt } from "./StudentStatusPrompt";
 import { processTerminations } from "@/lib/server/services/terminationService";
 import { MEMBERSHIP_ADMIN_PATH, MEMBERSHIP_APPLICATION_PATH } from "@/lib/membership";
 
@@ -147,6 +148,10 @@ export default async function DashboardPage() {
             certificate ? isFeatureEnabled("PDF_DOCUMENTS") : false,
         ]);
     const showApplicationCta = isNonMember && !owesFees && (applicationEnabled || openApplication != null);
+    const showStudentPrompt = myRecord != null && needsStudentStatusAnswer(myRecord, currentYear);
+    // Letztes ermäßigtes Jahr ab heute; null, wenn keins mehr ansteht.
+    const lastStudentYear = Math.max(...(myRecord?.studentYears ?? []));
+    const studentUntil = lastStudentYear >= currentYear ? lastStudentYear : null;
 
 
     return (
@@ -292,6 +297,8 @@ export default async function DashboardPage() {
                     />
                 )}
 
+                {showStudentPrompt && <StudentStatusPrompt year={currentYear} />}
+
                 {/*
                   Zwei Spalten ab `lg`: links das Nachschlagewerk (Beiträge,
                   Konten), rechts das Handeln (Termin, Profil, Verwaltung).
@@ -401,7 +408,7 @@ export default async function DashboardPage() {
                                     {last3Years.map((year) => {
                                         const fee = myFees.find((f) => f.year === year);
                                         const isPaid = fee?.paid ?? false;
-                                        const isStudent = fee?.isStudent ?? false;
+                                        const isStudent = myRecord?.studentYears.includes(year) ?? false;
                                         const amount = fee?.amount ?? 0;
                                         return (
                                             <li
@@ -424,6 +431,26 @@ export default async function DashboardPage() {
                                         );
                                     })}
                                 </ul>
+
+                                {/* Der Einstieg zum Verlängern: auf der Zahlungsseite
+                                    würde ihn sonst niemand vermuten. */}
+                                {userStatus === "REGULAR_MEMBER" && (
+                                    <Link
+                                        href="/dashboard/zahlungen#studium"
+                                        className="group mt-3 flex items-center gap-3 rounded-[3px] border border-line px-4 py-3 text-sm transition-colors hover:border-physics focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
+                                    >
+                                        <HugeiconsIcon icon={Mortarboard01Icon} size={18} aria-hidden="true" className="shrink-0 text-physics" />
+                                        <span className="grid min-w-0 flex-1 gap-0.5">
+                                            <span className="font-medium">Studierendenstatus</span>
+                                            <span className="text-muted">
+                                                {studentUntil != null
+                                                    ? `Ermäßigt bis einschließlich ${studentUntil} — verlängern oder beenden`
+                                                    : "Studierst du? Dann gilt der ermäßigte Beitrag — hier eintragen"}
+                                            </span>
+                                        </span>
+                                        <HugeiconsIcon icon={ArrowRight01Icon} size={16} aria-hidden="true" className="shrink-0 text-faint transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+                                    </Link>
+                                )}
                             </Card>
                         )}
 

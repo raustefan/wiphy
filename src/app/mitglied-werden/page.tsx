@@ -10,7 +10,6 @@ import { getOpenApplication } from "@/lib/server/services/membershipService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { isFeatureEnabled } from "@/lib/server/services/featureFlagService";
 import { resolveFeeDefault } from "@/lib/feeDefaults";
-import { deriveStudentYears, selectableStudentYears } from "@/lib/membership";
 import {
     JOURNEY_STEPS,
     journeyStepIndex,
@@ -244,8 +243,6 @@ async function ApplicationStage({
                 iban: profile?.iban ?? "",
                 bic: profile?.bic ?? "",
             }}
-            selectableYears={selectableStudentYears(currentYear)}
-            preselectedYears={deriveStudentYears(profile?.studyEnd, currentYear)}
             rates={resolveFeeDefault(feeDefaults, currentYear)}
             feeYear={currentYear}
         />

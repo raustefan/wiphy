@@ -11,13 +11,15 @@ import {
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
 import { processTerminations } from "@/lib/server/services/terminationService";
 import { directoryStats } from "@/lib/memberDirectory";
-import { wasMemberInYear } from "@/lib/feeCalculation";
+import { annualFee, wasMemberInYear } from "@/lib/feeCalculation";
+import { resolveFeeDefault } from "@/lib/feeDefaults";
 import { formatEuro } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { ButtonLink, Card, Container } from "@/components/ui";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
 import { DashboardPageHeader } from "../DashboardPageHeader";
 import { FeeDefaultsCard } from "./FeeDefaultsCard";
+import { AddFeeYearCard } from "./AddFeeYearCard";
 import { DialogButton } from "./DialogButton";
 import { MemberDirectory } from "./MemberDirectory";
 import type { DirectoryAccount } from "./DirectoryTable";
@@ -55,22 +57,17 @@ export default async function UserManagementPage({
 
   const currentYear = new Date().getFullYear();
   const existingYears = await getExistingFeeYears();
-  // Wählbar sind die angelegten Jahre plus genau das nächste — angelegt wird
-  // über den Hinweis über der Tabelle. Ohne jede Beitragszeile: das laufende Jahr.
-  const availableYears =
-    existingYears.length > 0
-      ? [...existingYears, existingYears[existingYears.length - 1] + 1]
-      : [currentYear];
+  // Wählbar: angelegte Jahre, das laufende und das nächste — nie weiter voraus,
+  // für spätere Jahre ist noch nichts beschlossen.
+  const availableYears = [
+    ...new Set([...existingYears.filter((y) => y <= currentYear + 1), currentYear, currentYear + 1]),
+  ].sort((a, b) => a - b);
 
   // Nur wählbare Jahre — ein "?year=2035" darf nicht am nächsten Jahr vorbei.
   const requestedYear = Number((await searchParams).year);
-  const year = availableYears.includes(requestedYear)
-    ? requestedYear
-    : // Voreinstellung: das laufende Jahr, sofern dafür Zeilen existieren,
-      // sonst das zuletzt angelegte.
-      existingYears.includes(currentYear)
-      ? currentYear
-      : (existingYears[existingYears.length - 1] ?? currentYear);
+  const year = availableYears.includes(requestedYear) ? requestedYear : currentYear;
+  // Ohne jede Zeile gibt es für das Jahr nichts zu verwalten: dann nur „Jahr hinzufügen“.
+  const yearAdded = existingYears.includes(year);
 
   const now = new Date();
   const [users, feeDefaults] = await Promise.all([
@@ -94,6 +91,7 @@ export default async function UserManagementPage({
     joinedAt: u.joinedAt?.toISOString() ?? null,
     directDebit: u.directDebit,
     studentYears: u.studentYears,
+    notStudentFromYear: u.notStudentFromYear,
     role: u.role,
     status: u.status,
     emailVerified: u.emailVerified,
@@ -128,6 +126,15 @@ export default async function UserManagementPage({
               wasMemberInYear(year, a.joinedAt ? new Date(a.joinedAt) : null)),
         )
       : accounts;
+
+  // Wer beim Hinzufügen eine Zeile bekommt — dieselbe Auswahl wie `initializeBillingYear`.
+  const liable = accounts.filter(
+    (a) => a.status === "REGULAR_MEMBER" && wasMemberInYear(year, a.joinedAt ? new Date(a.joinedAt) : null),
+  );
+  const rates = resolveFeeDefault(feeDefaults, year);
+  // Wie `resolveFeeDefault`: der letzte Satz bis `year`, sonst der älteste.
+  const rateYears = feeDefaults.map((d) => d.year).sort((a, b) => a - b);
+  const ratesFromYear = rateYears.filter((y) => y <= year).at(-1) ?? rateYears[0] ?? null;
 
   const paidShare = stats.feeDue > 0 ? Math.round((stats.feePaid / stats.feeDue) * 100) : 0;
 
@@ -165,47 +172,61 @@ export default async function UserManagementPage({
         </div>
       </DashboardPageHeader>
 
-      <section
-        aria-label="Kennzahlen"
-        className="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:gap-4 lg:grid-cols-5"
-      >
-        <StatTile label="Konten" value={stats.total}>
-          {stats.admins} {stats.admins === 1 ? "Admin" : "Admins"} ·{" "}
-          {stats.total - stats.admins} Nutzer
-        </StatTile>
-        <StatTile label="Ordentliche Mitglieder" value={stats.regular}>
-          {stats.honorary} Ehrenmitglieder · {stats.none} ohne Mitgliedschaft
-        </StatTile>
-        <StatTile label={`Sonderstatus ${year}`} value={stats.students}>
-          Studierende u. a. nach § 5
-        </StatTile>
-        {/* Keine Austritte: wer austritt, verschwindet samt Konto und zählt nicht mehr. */}
-        <StatTile label="Letzte 365 Tage" value={`+${stats.joined}`}>
-          {stats.joined === 1 ? "Eintritt" : "Eintritte"}
-        </StatTile>
-        <StatTile
-          label={`Beiträge ${year}`}
-          value={formatEuro(stats.feePaid)}
-          className="col-span-2 lg:col-span-1"
-        >
-          von {formatEuro(stats.feeDue)} · offen {formatEuro(stats.feeDue - stats.feePaid)}
-          <div
-            className="mt-1.5 h-1.5 overflow-hidden rounded-[3px] bg-raised"
-            role="img"
-            aria-label={`${paidShare} % bezahlt`}
+      {!yearAdded ? (
+        <AddFeeYearCard
+          year={year}
+          availableYears={availableYears}
+          members={liable.length}
+          students={liable.filter((a) => a.studentYears.includes(year)).length}
+          annualRegular={annualFee(rates.regular)}
+          annualStudent={annualFee(rates.student)}
+          ratesFromYear={ratesFromYear}
+        />
+      ) : (
+        <>
+          <section
+            aria-label="Kennzahlen"
+            className="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:gap-4 lg:grid-cols-5"
           >
-            <div className="h-full rounded-[3px] bg-positive" style={{ width: `${paidShare}%` }} />
-          </div>
-        </StatTile>
-      </section>
+            <StatTile label="Konten" value={stats.total}>
+              {stats.admins} {stats.admins === 1 ? "Admin" : "Admins"} ·{" "}
+              {stats.total - stats.admins} Nutzer
+            </StatTile>
+            <StatTile label="Ordentliche Mitglieder" value={stats.regular}>
+              {stats.honorary} Ehrenmitglieder · {stats.none} ohne Mitgliedschaft
+            </StatTile>
+            <StatTile label={`Sonderstatus ${year}`} value={stats.students}>
+              Studierende u. a. nach § 5
+            </StatTile>
+            {/* Keine Austritte: wer austritt, verschwindet samt Konto und zählt nicht mehr. */}
+            <StatTile label="Letzte 365 Tage" value={`+${stats.joined}`}>
+              {stats.joined === 1 ? "Eintritt" : "Eintritte"}
+            </StatTile>
+            <StatTile
+              label={`Beiträge ${year}`}
+              value={formatEuro(stats.feePaid)}
+              className="col-span-2 lg:col-span-1"
+            >
+              von {formatEuro(stats.feeDue)} · offen {formatEuro(stats.feeDue - stats.feePaid)}
+              <div
+                className="mt-1.5 h-1.5 overflow-hidden rounded-[3px] bg-raised"
+                role="img"
+                aria-label={`${paidShare} % bezahlt`}
+              >
+                <div className="h-full rounded-[3px] bg-positive" style={{ width: `${paidShare}%` }} />
+              </div>
+            </StatTile>
+          </section>
 
-      <MemberDirectory
-        accounts={shownAccounts}
-        hiddenCount={accounts.length - shownAccounts.length}
-        year={year}
-        availableYears={availableYears}
-        sepaCandidates={sepaCandidates}
-      />
+          <MemberDirectory
+            accounts={shownAccounts}
+            hiddenCount={accounts.length - shownAccounts.length}
+            year={year}
+            availableYears={availableYears}
+            sepaCandidates={sepaCandidates}
+          />
+        </>
+      )}
     </Container>
   );
 }

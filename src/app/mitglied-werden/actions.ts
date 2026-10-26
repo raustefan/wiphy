@@ -38,13 +38,10 @@ export async function submitMembershipApplication(formData: FormData) {
 
     await consumeRateLimit("membership-application", [currentUser.id]);
 
-    // `studentYears` kommt als Mehrfachwert und passt deshalb nicht durch
-    // `parseFormData`, das pro Schlüssel nur einen String übernimmt.
     const raw: Record<string, unknown> = {};
     for (const [key, value] of formData.entries()) {
-      if (typeof value === "string" && key !== "studentYears") raw[key] = value;
+      if (typeof value === "string") raw[key] = value;
     }
-    raw.studentYears = formData.getAll("studentYears").filter((v) => typeof v === "string");
 
     const parsed = membershipApplicationSchema.safeParse(raw);
     if (!parsed.success) {

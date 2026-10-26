@@ -2,8 +2,9 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { executeAction } from "@/lib/server/errors";
+import { AppError, executeAction } from "@/lib/server/errors";
 import { setNewsletter } from "@/lib/server/services/userService";
+import { setOwnStudentEndYear } from "@/lib/server/services/feeService";
 import {
     AS_MEMBER_COOKIE,
     DEBUG_COOKIE,
@@ -51,5 +52,17 @@ export async function setOwnNewsletterAction(subscribed: boolean) {
         revalidatePath("/dashboard");
         revalidatePath(`/dashboard/users/${user.id}`);
         return subscribed === true;
+    });
+}
+
+/** „Ermäßigt bis einschließlich …“ — von der Zahlungsseite und aus dem Dashboard-Hinweis. */
+export async function setStudentEndYearAction(formData: FormData) {
+    return executeAction(async () => {
+        const user = await requireUser();
+        const endYear = Number(formData.get("endYear"));
+        if (!Number.isInteger(endYear)) throw new AppError("VALIDATION_ERROR", "Ungültiges Jahr.");
+        await setOwnStudentEndYear(user.id, endYear);
+        revalidatePath("/dashboard");
+        revalidatePath("/dashboard/zahlungen");
     });
 }

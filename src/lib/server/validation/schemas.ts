@@ -340,7 +340,6 @@ const importFeeSchema = z.strictObject(
   {
     year: importYear,
     paid: importBool(false),
-    isStudent: importBool(false),
     amount: z.preprocess(
       absent,
       z

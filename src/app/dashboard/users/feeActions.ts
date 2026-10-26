@@ -58,9 +58,9 @@ export async function initializeBillingYear(formData: FormData) {
   return executeAction(async () => {
     await requireAdmin();
     await requireFeatureEnabledOrRedirect("FEE_CHANGES", "/dashboard/users");
-    // Gleiche Grenzen wie auf der Seite und in den Fee-Schemas.
+    // Höchstens das nächste Jahr — weiter voraus ist nichts beschlossen.
     const year = Number(formData.get("year"));
-    if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    if (!Number.isInteger(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       throw new AppError("VALIDATION_ERROR", "Ungültiges Jahr.");
     }
 
@@ -68,32 +68,11 @@ export async function initializeBillingYear(formData: FormData) {
     // für alle anderen wäre die Zeile sinnlos.
     const users = (await getFeeLiableUsers()).filter((u) => wasMemberInYear(year, u.joinedAt));
 
-    // Status des zuletzt erfassten Jahres je Mitglied, in einer Abfrage:
-    // absteigend sortiert liefert `distinct` die jüngste Zeile.
-    const lastFees = await prisma.memberFee.findMany({
-      where: { userId: { in: users.map((u) => u.id) }, year: { lt: year } },
-      orderBy: { year: "desc" },
-      distinct: ["userId"],
-      select: { userId: true, isStudent: true },
-    });
-    const lastIsStudent = new Map(lastFees.map((f) => [f.userId, f.isStudent]));
-
     await prisma.memberFee.createMany({
-      data: users.map((user) => ({
-        userId: user.id,
-        year: year,
-        paid: false,
-        // Der erklärte Sonderstatus des Mitglieds geht vor; fehlt er, wird der
-        // Status des zuletzt erfassten Jahres fortgeschrieben.
-        isStudent:
-          user.studentYears.length > 0
-            ? user.studentYears.includes(year)
-            : (lastIsStudent.get(user.id) ?? false),
-        // Kein Betrag: die Zeile folgt automatisch den Standard-Beitragssätzen,
-        // bis ein Admin sie ausdrücklich als Ausnahme überschreibt.
-        amount: 0,
-        manualAmount: false,
-      })),
+      // Kein Betrag und kein Status: Die Zeile folgt den Standardsätzen und dem
+      // Sonderstatus aus `User.studentYears`, bis ein Admin den Betrag
+      // ausdrücklich als Ausnahme festlegt.
+      data: users.map((user) => ({ userId: user.id, year, paid: false, amount: 0, manualAmount: false })),
       // Bestehende Zeilen bleiben unangetastet.
       skipDuplicates: true,
     });

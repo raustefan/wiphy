@@ -106,7 +106,8 @@ def convert(row):
         "mandateSignedAt": day(row["Mandatserteilung"]) if debit else None,
         "loginDisabled": row["Ausschluss"] == "ja",
         # Zahlstand manuell geprüft: alles bis einschließlich laufendes Jahr bezahlt.
-        # Künftige Studienjahre legt die App aus studentYears offen an.
+        # Ermäßigte Jahre stehen allein in studentYears; künftige Beitragsjahre
+        # entstehen in der App mit „Jahr hinzufügen“.
         # Schema erlaubt allPaid nur für ordentliche Mitglieder mit Beitritt.
         "allPaid": bool(regular and joined),
         "fees": None,

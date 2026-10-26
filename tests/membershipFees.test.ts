@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { planApplicationFees, resolveFeeDefault } from "../src/lib/feeDefaults";
-import { ageAt, deriveStudentYears, isOldEnough, selectableStudentYears } from "../src/lib/membership";
+import {
+  ageAt,
+  changedStudentYears,
+  currentStudentEndYear,
+  formatYearRanges,
+  isOldEnough,
+  studentEndYearOptions,
+  studentStatusEndsAfter,
+  studentYearsFromStudy,
+  withStudentEndYear,
+} from "../src/lib/membership";
 
 /** Monatsbeträge, wie sie in `FeeDefault` stehen. */
 const defaults = [
@@ -25,42 +35,30 @@ test("without any configured rate the fee is zero rather than undefined", () => 
   assert.deepEqual(resolveFeeDefault([], 2026), { regular: 0, student: 0 });
 });
 
-test("the fee plan starts at the joining year and never before it", () => {
+test("the fee plan covers only the joining year, later student years included", () => {
   const plan = planApplicationFees({
     joinedAt: januar(2026),
     studentYears: [2024, 2025, 2026, 2027],
     defaults,
     directDebit: true,
   });
-  assert.deepEqual(
-    plan.map((f) => f.year),
-    [2026, 2027],
-  );
-});
-
-test("student years get the reduced rate, gaps in between the regular one", () => {
-  const plan = planApplicationFees({
-    joinedAt: januar(2026),
-    // Unterbrechung im Studium: 2027 ist regulär beitragspflichtig.
-    studentYears: [2026, 2028],
-    defaults,
-    directDebit: true,
-  });
-  assert.deepEqual(plan, [
-    { year: 2026, isStudent: true, amount: 18 },
-    { year: 2027, isStudent: false, amount: 36 },
-    { year: 2028, isStudent: true, amount: 18 },
-  ]);
-});
-
-test("the plan ends with the joining year when no later student year is claimed", () => {
-  const plan = planApplicationFees({
-    joinedAt: januar(2026),
-    studentYears: [2026],
-    defaults,
-    directDebit: true,
-  });
+  // 2027 entsteht erst mit „Jahr hinzufügen“; der Status steht in studentYears.
   assert.deepEqual(plan, [{ year: 2026, isStudent: true, amount: 18 }]);
+});
+
+test("taking over a member plans every year up to untilYear with its own rate", () => {
+  const plan = planApplicationFees({
+    joinedAt: januar(2024),
+    studentYears: [2024, 2026],
+    defaults,
+    directDebit: true,
+    untilYear: 2026,
+  });
+  assert.deepEqual(plan.map((f) => [f.year, f.isStudent]), [
+    [2024, true],
+    [2025, false],
+    [2026, true],
+  ]);
 });
 
 test("without student years only the joining year is planned", () => {
@@ -81,16 +79,41 @@ test("age is counted in full years, so a birthday tomorrow does not count yet", 
   assert.equal(isOldEnough(new Date("2008-09-05"), reference), false);
 });
 
-test("selectable student years span the current year plus five", () => {
-  assert.deepEqual(selectableStudentYears(2026), [2026, 2027, 2028, 2029, 2030, 2031]);
+test("every year the studies touch counts in full", () => {
+  // 31.12.2026–01.01.2028: drei angebrochene Jahre.
+  assert.deepEqual(studentYearsFromStudy(new Date("2026-12-31"), new Date("2028-01-01"), 2026), [2026, 2027, 2028]);
+  // Begonnen vor dem Eintritt: erst ab dem laufenden Jahr.
+  assert.deepEqual(studentYearsFromStudy(new Date("2022-10-01"), new Date("2027-03-31"), 2026), [2026, 2027]);
+  // Ohne Beginn ebenfalls ab dem laufenden Jahr.
+  assert.deepEqual(studentYearsFromStudy(null, new Date("2027-03-31"), 2026), [2026, 2027]);
+  // Studium bereits beendet oder ohne Ende — keine Ermäßigung.
+  assert.deepEqual(studentYearsFromStudy(new Date("2020-10-01"), new Date("2025-03-31"), 2026), []);
+  assert.deepEqual(studentYearsFromStudy(new Date("2026-10-01"), null, 2026), []);
 });
 
-test("student years are derived from the end of studies and capped at the lookahead", () => {
-  assert.deepEqual(deriveStudentYears(new Date("2028-03-31"), 2026), [2026, 2027, 2028]);
-  // Studium bereits beendet — keine Ermäßigung.
-  assert.deepEqual(deriveStudentYears(new Date("2025-03-31"), 2026), []);
-  assert.deepEqual(deriveStudentYears(null, 2026), []);
-  assert.equal(deriveStudentYears(new Date("2099-01-01"), 2026).length, 6);
+test("members pick the end of their discount, past and current years stay fixed", () => {
+  // Altbestand bis 2031: das bisherige Ende bleibt wählbar.
+  assert.deepEqual(studentEndYearOptions([2024, 2025], 2026), [2026, 2027, 2028, 2029]);
+  assert.deepEqual(studentEndYearOptions([2026, 2027, 2028, 2029, 2030, 2031], 2026).at(-1), 2031);
+  assert.equal(currentStudentEndYear([2024, 2025, 2026, 2027], 2026), 2027);
+  assert.equal(currentStudentEndYear([2024], 2026), 2026);
+
+  // 2024–2027 → bis 2029 verlängert.
+  assert.deepEqual(withStudentEndYear([2024, 2025, 2026, 2027], 2029, 2026), [2024, 2025, 2026, 2027, 2028, 2029]);
+  // Ende 2026: künftige Jahre fallen weg, das laufende bleibt.
+  assert.deepEqual(withStudentEndYear([2025, 2026, 2027], 2026, 2026), [2025, 2026]);
+  // Kein Student im laufenden Jahr: es bleibt regulär, ab 2027 ermäßigt.
+  assert.deepEqual(withStudentEndYear([2023], 2028, 2026), [2023, 2027, 2028]);
+
+  assert.deepEqual(changedStudentYears([2026, 2027], [2026, 2028]).sort(), [2027, 2028]);
+  assert.equal(formatYearRanges([2026, 2019, 2020, 2021]), "2019–2021, 2026");
+});
+
+test("the status ends after the last discounted year only", () => {
+  const member = { studentYears: [2026, 2027] };
+  assert.equal(studentStatusEndsAfter(member, 2026), false);
+  assert.equal(studentStatusEndsAfter(member, 2027), true);
+  assert.equal(studentStatusEndsAfter(member, 2028), false);
 });
 
 test("joining mid-year charges only the remaining twelfths (§ 5 Abs. 3)", () => {

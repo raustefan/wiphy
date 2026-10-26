@@ -32,8 +32,9 @@ export function resolveFeeDefault(defaults: FeeDefaultEntry[], year: number): Fe
 }
 
 /**
- * Beiträge, die bei Aufnahme angelegt werden: vom Eintrittsjahr bis zum
- * spätesten angegebenen Studienjahr (mindestens aber das Eintrittsjahr).
+ * Beiträge, die bei Aufnahme angelegt werden: das Eintrittsjahr, beim
+ * Übernehmen von Bestandsmitgliedern bis `untilYear`. Spätere Jahre entstehen
+ * erst mit „Jahr hinzufügen“ — der Sonderstatus steht ohnehin in `studentYears`.
  *
  * Jahre *vor* dem Eintritt bleiben bewusst außen vor — für sie bestand keine
  * Beitragspflicht, und ein Eintrag dort wäre eine erfundene Forderung. Im
@@ -50,12 +51,11 @@ export function planApplicationFees(params: {
   untilYear?: number;
 }): Array<{ year: number; isStudent: boolean; amount: number }> {
   const joinYear = params.joinedAt.getFullYear();
-  const futureStudentYears = params.studentYears.filter((y) => y >= joinYear);
-  const lastYear = Math.max(joinYear, params.untilYear ?? joinYear, ...futureStudentYears);
+  const lastYear = Math.max(joinYear, params.untilYear ?? joinYear);
 
   const plan: Array<{ year: number; isStudent: boolean; amount: number }> = [];
   for (let year = joinYear; year <= lastYear; year++) {
-    const isStudent = futureStudentYears.includes(year);
+    const isStudent = params.studentYears.includes(year);
     const rates = resolveFeeDefault(params.defaults, year);
     plan.push({
       year,

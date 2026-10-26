@@ -55,9 +55,9 @@ export const EXAMPLE = {
 
 /** Beispiel für `fees`, wenn nicht alles bezahlt ist — ein Objekt je Beitragsjahr. */
 export const FEES_EXAMPLE = [
-    { year: 2015, paid: true, isStudent: true, amount: null, manualAmount: false },
-    { year: 2016, paid: true, isStudent: true, amount: null, manualAmount: false },
-    { year: 2017, paid: false, isStudent: false, amount: 20, manualAmount: true },
+    { year: 2015, paid: true, amount: null, manualAmount: false },
+    { year: 2016, paid: true, amount: null, manualAmount: false },
+    { year: 2017, paid: false, amount: 20, manualAmount: true },
 ];
 
 /**
@@ -65,6 +65,7 @@ export const FEES_EXAMPLE = [
  * selbst. `kosmosVisible` ist eine Einwilligung — die gibt nur das Mitglied,
  * ebenso die Bestätigung der Datenschutzerklärung (`privacyPolicyVersion`).
  * `newsletter` startet immer an; abbestellen kann nur das Mitglied selbst.
+ * `notStudentFromYear` ist die Antwort des Mitglieds auf die Studiums-Frage.
  */
 export const IMPORT_EXCLUDED_FIELDS = [
     "id",
@@ -79,6 +80,7 @@ export const IMPORT_EXCLUDED_FIELDS = [
     "kosmosVisible",
     "privacyPolicyVersion",
     "newsletter",
+    "notStudentFromYear",
 ] as const;
 
 export type ImportField = { key: string; label: string; format: string };
@@ -114,7 +116,7 @@ export const IMPORT_SECTIONS: { title: string; fields: ImportField[] }[] = [
             { key: "joinedAt", label: "Beitritt", format: "JJJJ-MM-TT" },
             { key: "status", label: "Status", format: "REGULAR_MEMBER, HONORARY_MEMBER, NON_MEMBER" },
             { key: "role", label: "Rolle", format: "MEMBER oder ADMIN" },
-            { key: "studentYears", label: "Studienjahre", format: "Liste, z. B. [2015, 2016]" },
+            { key: "studentYears", label: "Studienjahre", format: "Liste, z. B. [2015, 2016]; bestimmt den ermäßigten Beitrag" },
             { key: "loginDisabled", label: "Login gesperrt", format: "true / false" },
             { key: "adminNote", label: "Interner Vermerk", format: "Text" },
         ],
@@ -154,7 +156,6 @@ export const PAYMENT_FIELDS: ImportField[] = [
 export const FEE_FIELDS: ImportField[] = [
     { key: "year", label: "Jahr", format: "Zahl, Pflicht" },
     { key: "paid", label: "Bezahlt", format: "true / false" },
-    { key: "isStudent", label: "Ermäßigt", format: "true / false" },
     { key: "amount", label: "Betrag", format: "Euro; nur mit manualAmount" },
     { key: "manualAmount", label: "Betrag fest", format: "true = amount gilt, sonst Standardsatz" },
 ];

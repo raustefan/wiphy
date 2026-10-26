@@ -337,7 +337,6 @@ export async function adminCreateUser(
         const rates = resolveFeeDefault(defaults, fee.year);
         return {
           year: fee.year,
-          isStudent: fee.isStudent,
           paid: fee.paid,
           manualAmount: fee.manualAmount,
           // Ohne festen Betrag gilt der Standardsatz — wie bei jeder anderen Zeile.
@@ -346,7 +345,7 @@ export async function adminCreateUser(
             : calculateFeeAmount({
                 monthlyRegular: rates.regular,
                 monthlyStudent: rates.student,
-                isStudent: fee.isStudent,
+                isStudent: studentYears.includes(fee.year),
                 directDebit,
                 year: fee.year,
                 joinedAt: input.joinedAt,
@@ -355,9 +354,8 @@ export async function adminCreateUser(
       })
     : feePlan.map((fee) => ({
         year: fee.year,
-        isStudent: fee.isStudent,
         amount: fee.amount,
-        // Künftige Studienjahre sind noch nicht fällig, also nie „bezahlt“.
+        // Ein künftiges Eintrittsjahr ist noch nicht fällig, also nie „bezahlt“.
         paid: Boolean(input.allPaid) && fee.year <= currentYear,
       }));
 

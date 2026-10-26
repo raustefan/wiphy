@@ -28,39 +28,13 @@ export function findUsersWithFees(userId: string, role: Role, year?: number) {
 export function findFeeLiableUsers() {
   return prisma.user.findMany({
     where: { status: "REGULAR_MEMBER" },
-    select: { id: true, studentYears: true, joinedAt: true },
+    select: { id: true, joinedAt: true },
   });
 }
 
 
-/**
- * Sonderstatus-Vorbelegung für ein Jahr ohne eigene Beitragszeile.
- *
- * Vorrang hat die Erklärung des Mitglieds (`User.studentYears`) — sie deckt auch
- * künftige Jahre ab, für die es noch gar keine Zeile geben kann. Nur wenn dort
- * nichts hinterlegt ist, wird der Status des zuletzt erfassten Jahres
- * fortgeschrieben.
- */
-async function resolveIsStudentDefault(userId: string, year: number): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { studentYears: true },
-  });
-  if (user?.studentYears.length) return user.studentYears.includes(year);
-
-  const lastFee = await prisma.memberFee.findFirst({
-    where: { userId, year: { lt: year } },
-    orderBy: { year: "desc" },
-  });
-  return lastFee?.isStudent ?? false;
-}
-
-/**
- * Hält `User.studentYears` mit der Beitragszeile in Deckung. Ohne diesen Abgleich
- * würde ein im Dashboard umgeschalteter Sonderstatus von der Erklärung des
- * Mitglieds überstimmt, sobald eine neue Zeile angelegt wird.
- */
-async function syncStudentYear(userId: string, year: number, isStudent: boolean) {
+/** Sonderstatus eines Jahres — er steht allein in `User.studentYears`. */
+export async function setStudentYear(userId: string, year: number, isStudent: boolean) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { studentYears: true },
@@ -77,33 +51,11 @@ async function syncStudentYear(userId: string, year: number, isStudent: boolean)
   });
 }
 
-export async function upsertFeeStatus(userId: string, year: number, field: "paid" | "isStudent", value: boolean) {
-  if (field === "isStudent") {
-    await syncStudentYear(userId, year, value);
-  }
-
-  const existing = await prisma.memberFee.findUnique({
+export function upsertFeePaid(userId: string, year: number, paid: boolean) {
+  return prisma.memberFee.upsert({
     where: { userId_year: { userId, year } },
-  });
-
-  if (existing) {
-    return prisma.memberFee.update({
-      where: { userId_year: { userId, year } },
-      data: {
-        [field === "paid" ? "paid" : "isStudent"]: value,
-      },
-    });
-  }
-
-  return prisma.memberFee.create({
-    data: {
-      userId,
-      year,
-      paid: field === "paid" ? value : false,
-      isStudent:
-        field === "isStudent" ? value : await resolveIsStudentDefault(userId, year),
-      amount: 0,
-    },
+    update: { paid },
+    create: { userId, year, paid, amount: 0 },
   });
 }
 
@@ -125,7 +77,6 @@ export async function upsertFeeAmount(userId: string, year: number, amount: numb
       userId,
       year,
       paid: false,
-      isStudent: await resolveIsStudentDefault(userId, year),
       amount,
       manualAmount: true,
     },

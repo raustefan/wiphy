@@ -17,7 +17,17 @@ export const MIN_APPLICANT_AGE = 18;
 export const MINOR_HINT =
   "Ein Beitritt über dieses Formular ist erst ab 18 Jahren möglich. Bitte wende dich für eine Mitgliedschaft direkt an den Vorstand.";
 
-/** Wie weit in die Zukunft Studienjahre angegeben werden dürfen. */
+/**
+ * Wie viele Jahre über das laufende hinaus das (voraussichtliche) Studienende
+ * im Aufnahmeantrag liegen darf.
+ */
+export const STUDY_END_LOOKAHEAD = 10;
+
+/**
+ * Studienjahre im Voraus, wenn ein Admin ein Konto von Hand anlegt — derselbe
+ * pauschale Rahmen wie beim Übernehmen aus dem Altsystem
+ * (`scripts/convert_alumni.py`), das nur „Student ja/nein“ kannte.
+ */
 export const STUDENT_YEAR_LOOKAHEAD = 5;
 
 /**
@@ -97,22 +107,76 @@ export function isOldEnough(birthDate: Date, reference: Date = new Date()): bool
   return ageAt(birthDate, reference) >= MIN_APPLICANT_AGE;
 }
 
-/** Auswählbare Studienjahre: laufendes Jahr bis +STUDENT_YEAR_LOOKAHEAD. */
-export function selectableStudentYears(currentYear: number = new Date().getFullYear()): number[] {
-  return Array.from({ length: STUDENT_YEAR_LOOKAHEAD + 1 }, (_, i) => currentYear + i);
-}
-
 /**
- * Vorbelegung der Studienjahre aus dem angegebenen Studienzeitraum. Ein bereits
- * abgeschlossenes Studium liefert nichts — die Ermäßigung gilt nur für Jahre,
- * in denen tatsächlich noch studiert wird.
+ * Studienjahre für die Ermäßigung, abgeleitet aus dem Studienzeitraum.
+ * Großzügig: Jedes angebrochene Jahr zählt ganz, 31.12.2026–01.01.2028 ergibt
+ * also 2026, 2027 und 2028. Vergangene Jahre fallen weg — Beiträge gibt es erst
+ * ab dem Eintritt. Ohne Ende keine Ermäßigung, ohne Beginn ab dem laufenden Jahr.
+ *
+ * Datumsfelder kommen als `YYYY-MM-DD` und werden als UTC-Mitternacht gelesen,
+ * deshalb `getUTCFullYear` — sonst kippte der 1. Januar je nach Zeitzone.
  */
-export function deriveStudentYears(
+export function studentYearsFromStudy(
+  studyStart: Date | null | undefined,
   studyEnd: Date | null | undefined,
   currentYear: number = new Date().getFullYear(),
 ): number[] {
   if (!studyEnd) return [];
-  const endYear = studyEnd.getFullYear();
-  if (endYear < currentYear) return [];
-  return selectableStudentYears(currentYear).filter((year) => year <= endYear);
+  const from = Math.max(studyStart?.getUTCFullYear() ?? currentYear, currentYear);
+  const to = studyEnd.getUTCFullYear();
+  return Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i);
+}
+
+/** Wie weit Mitglieder ihren Sonderstatus selbst in die Zukunft verlängern dürfen. */
+export const MEMBER_STUDENT_LOOKAHEAD = 3;
+
+type StudentYears = { studentYears: number[] };
+
+/** `year` ist das letzte ermäßigte Jahr: jetzt noch Sonderstatus, im Folgejahr nicht mehr. */
+export function studentStatusEndsAfter(member: StudentYears, year: number): boolean {
+  return member.studentYears.includes(year) && !member.studentYears.includes(year + 1);
+}
+
+/**
+ * Wählbare Enden für „ermäßigt bis einschließlich …“: das laufende Jahr (keine
+ * künftigen Jahre) bis +MEMBER_STUDENT_LOOKAHEAD. Reicht der Status schon
+ * weiter (Antrag mit bis zu zehn Jahren, Altbestand mit fünf), bleibt auch das
+ * bisherige Ende wählbar — sonst ließe sich nichts ändern, ohne zu kürzen.
+ */
+export function studentEndYearOptions(studentYears: number[], currentYear: number): number[] {
+  const last = Math.max(currentYear + MEMBER_STUDENT_LOOKAHEAD, ...studentYears);
+  return Array.from({ length: last - currentYear + 1 }, (_, i) => currentYear + i);
+}
+
+/** Das gewählte Ende: letztes ermäßigtes Jahr nach dem laufenden, sonst das laufende. */
+export function currentStudentEndYear(studentYears: number[], currentYear: number): number {
+  return Math.max(currentYear, ...studentYears.filter((year) => year > currentYear));
+}
+
+/**
+ * Neue Studienjahre bei Ende `endYear`: Vergangenes und das laufende Jahr
+ * bleiben, wie sie sind (der Beitrag ist am 1. Januar fällig, § 5 Abs. 3);
+ * danach lückenlos bis `endYear`.
+ */
+export function withStudentEndYear(studentYears: number[], endYear: number, currentYear: number): number[] {
+  const kept = studentYears.filter((year) => year <= currentYear);
+  const future = Array.from({ length: Math.max(0, endYear - currentYear) }, (_, i) => currentYear + 1 + i);
+  return [...new Set([...kept, ...future])].sort((a, b) => a - b);
+}
+
+/** Jahre, deren Status sich zwischen zwei Ständen unterscheidet. */
+export function changedStudentYears(before: number[], after: number[]): number[] {
+  return [...before.filter((y) => !after.includes(y)), ...after.filter((y) => !before.includes(y))];
+}
+
+/** „2019–2021, 2026“ statt einer langen Liste einzelner Jahre. */
+export function formatYearRanges(years: number[]): string {
+  const sorted = [...new Set(years)].sort((a, b) => a - b);
+  const ranges: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const start = sorted[i];
+    while (sorted[i + 1] === sorted[i] + 1) i++;
+    ranges.push(sorted[i] === start ? String(start) : `${start}–${sorted[i]}`);
+  }
+  return ranges.join(", ");
 }

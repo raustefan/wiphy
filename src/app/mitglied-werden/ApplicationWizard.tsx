@@ -26,6 +26,8 @@ import {
     SATZUNG_URL,
     SEPA_CREDITOR_ID,
     STEPS,
+    STUDY_END_LOOKAHEAD,
+    studentYearsFromStudy,
 } from "@/lib/membership";
 import { formatEuro } from "@/lib/format";
 import type { FeeRates } from "@/lib/feeDefaults";
@@ -35,7 +37,7 @@ import {
     applicationBankSchema,
     applicationPaymentSchema,
     applicationPersonStepSchema,
-    applicationStudySchema,
+    applicationStudyStepSchema,
     type PaymentMethod,
 } from "@/lib/membershipFormSchemas";
 import { submitMembershipApplication } from "./actions";
@@ -52,7 +54,7 @@ const STEP_ICONS = [FileAttachmentIcon, UserCircleIcon, Mortarboard01Icon, Walle
 const STEP_SCHEMAS = [
     null,
     applicationPersonStepSchema,
-    applicationStudySchema,
+    applicationStudyStepSchema,
     applicationPaymentSchema,
     applicationBankSchema,
     null,
@@ -63,14 +65,10 @@ const BANK_STEP = 4;
 
 export function ApplicationWizard({
     initial,
-    selectableYears,
-    preselectedYears,
     rates,
     feeYear,
 }: {
     initial: InitialValues;
-    selectableYears: number[];
-    preselectedYears: number[];
     rates: FeeRates;
     feeYear: number;
 }) {
@@ -79,7 +77,14 @@ export function ApplicationWizard({
     const [step, setStep] = useState(0);
     const [error, setError] = useState("");
     const [zahlungsweise, setZahlungsweise] = useState<PaymentMethod | "">("");
-    const [studentYears, setStudentYears] = useState<number[]>(preselectedYears);
+    const [studyStart, setStudyStart] = useState(initial.studyStart);
+    const [studyEnd, setStudyEnd] = useState(initial.studyEnd);
+    // Dieselbe Rechnung wie auf dem Server, nur zur Vorschau.
+    const studentYears = studentYearsFromStudy(
+        studyStart ? new Date(studyStart) : null,
+        studyEnd ? new Date(studyEnd) : null,
+        feeYear,
+    );
     const [summary, setSummary] = useState<Record<string, string>>({});
     const [isPending, startTransition] = useTransition();
 
@@ -88,7 +93,7 @@ export function ApplicationWizard({
         if (!form) return {};
         const values: Record<string, string> = {};
         for (const [key, value] of new FormData(form).entries()) {
-            if (typeof value === "string" && key !== "studentYears") values[key] = value;
+            if (typeof value === "string") values[key] = value;
         }
         return values;
     }
@@ -121,7 +126,6 @@ export function ApplicationWizard({
         const form = formRef.current;
         if (!form) return;
         const formData = new FormData(form);
-        for (const year of studentYears) formData.append("studentYears", String(year));
 
         startTransition(async () => {
             const result = await submitMembershipApplication(formData);
@@ -236,57 +240,40 @@ export function ApplicationWizard({
                 <div hidden={step !== 2} className="grid gap-4">
                     <StepHeading
                         title="Studium und Beruf"
-                        description="Alle Angaben sind freiwillig — außer den Studienjahren, wenn du die ermäßigte Beitragsstufe nutzen möchtest."
+                        description="Alle Angaben sind freiwillig — für den ermäßigten Beitrag brauchen wir aber Studienbeginn und -ende."
                     />
                     <Field label="Studiengang">
                         <Input enterKeyHint="next" name="degreeProgram" defaultValue={initial.degreeProgram} />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Studienbeginn">
-                            <Input enterKeyHint="next" type="date" name="studyStart" defaultValue={initial.studyStart} />
+                            <Input
+                                enterKeyHint="next"
+                                type="date"
+                                name="studyStart"
+                                defaultValue={initial.studyStart}
+                                onChange={(event) => setStudyStart(event.target.value)}
+                            />
                         </Field>
                         <Field
                             label="Studienende (ggf. voraussichtlich)"
-                            hint="Bestimmt die Vorauswahl der Studienjahre."
+                            hint={`Pflicht, wenn ein Beginn angegeben ist; spätestens ${feeYear + STUDY_END_LOOKAHEAD}.`}
                         >
-                            <Input enterKeyHint="next" type="date" name="studyEnd" defaultValue={initial.studyEnd} />
+                            <Input
+                                enterKeyHint="next"
+                                type="date"
+                                name="studyEnd"
+                                max={`${feeYear + STUDY_END_LOOKAHEAD}-12-31`}
+                                defaultValue={initial.studyEnd}
+                                onChange={(event) => setStudyEnd(event.target.value)}
+                            />
                         </Field>
                     </div>
-
-                    <Separator className="my-1" />
-
-                    <fieldset className="grid gap-3">
-                        <legend className="text-sm font-semibold">
-                            In welchen Jahren bist du Studierende:r?
-                        </legend>
-                        <p className="text-sm text-muted text-pretty">
-                            Für diese Jahre wird der ermäßigte Beitrag angesetzt. Der Verein kann
-                            dafür einen Immatrikulationsnachweis anfordern.
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            {selectableYears.map((year) => {
-                                const checked = studentYears.includes(year);
-                                return (
-                                    <label
-                                        key={year}
-                                        className="flex cursor-pointer items-center gap-2 rounded-[3px] border border-line bg-raised/60 px-3.5 py-2.5 text-sm font-medium"
-                                    >
-                                        <Checkbox
-                                            checked={checked}
-                                            onChange={(event) =>
-                                                setStudentYears((prev) =>
-                                                    event.target.checked
-                                                        ? [...prev, year].sort((a, b) => a - b)
-                                                        : prev.filter((y) => y !== year),
-                                                )
-                                            }
-                                        />
-                                        {year}
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </fieldset>
+                    <p className="text-sm text-muted text-pretty">
+                        {studentYears.length > 0
+                            ? `Ermäßigter Beitrag für ${studentYears.join(", ")}. Jedes angefangene Studienjahr zählt ganz.`
+                            : "Mit Studienbeginn und -ende im laufenden oder einem künftigen Jahr gilt für diese Jahre der ermäßigte Beitrag."}
+                    </p>
 
                     <Separator className="my-1" />
 

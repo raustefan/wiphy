@@ -23,6 +23,8 @@ function account(overrides: Partial<DirectoryAccountBase & { joinedAt: Date | nu
     directDebit: true,
     inFeeYear: true,
     fees: [{ year: 2026, paid: false, isStudent: true, amount: 30 }],
+    studentYears: [2026, 2027],
+    notStudentFromYear: null,
     joinedAt: new Date("2020-01-01T00:00:00Z"),
     ...overrides,
   };
@@ -97,4 +99,12 @@ test("Filter in der Adresszeile: Rundreise, fremde Werte fallen weg, Jahr bleibt
     ...EMPTY_FILTERS,
     sepa: "yes",
   });
+});
+
+test("the ending filter finds members in their last discounted year", () => {
+  const ending = { ...EMPTY_FILTERS, tariff: "ending" as const };
+  const lastYear = account({ studentYears: [2026] });
+  assert.equal(matchesFilters(lastYear, ending, 2026), true);
+  assert.equal(matchesFilters(account({}), ending, 2026), false);
+  assert.equal(filtersFromParams(new URLSearchParams("tariff=ending")).tariff, "ending");
 });

@@ -3,6 +3,8 @@
  * React-Imports, damit Seite, Client-Tabelle und Tests dieselbe Logik teilen.
  */
 
+import { studentStatusEndsAfter } from "@/lib/membership";
+
 type Status = "REGULAR_MEMBER" | "HONORARY_MEMBER" | "NON_MEMBER";
 
 export type DirectoryAccountBase = {
@@ -18,6 +20,9 @@ export type DirectoryAccountBase = {
   /** Steht in der Beitragsliste des gewählten Jahres. */
   inFeeYear: boolean;
   fees: Array<{ year: number; paid: boolean; isStudent: boolean; amount: number }>;
+  studentYears: number[];
+  /** „Nein“ auf die Studiums-Frage: ab diesem Jahr kein Sonderstatus mehr. */
+  notStudentFromYear: number | null;
 };
 
 export type DirectoryFilters = {
@@ -25,7 +30,8 @@ export type DirectoryFilters = {
   role: "" | "ADMIN" | "MEMBER";
   access: "" | "active" | "locked" | "unverified";
   payment: "" | "open" | "paid";
-  tariff: "" | "student" | "regular";
+  /** `ending`: letztes ermäßigtes Jahr — ab dem Folgejahr regulär. */
+  tariff: "" | "student" | "regular" | "ending";
   sepa: "" | "yes" | "no";
 };
 
@@ -60,7 +66,7 @@ const FILTER_VALUES = {
   role: ["ADMIN", "MEMBER"],
   access: ["active", "locked", "unverified"],
   payment: ["open", "paid"],
-  tariff: ["student", "regular"],
+  tariff: ["student", "regular", "ending"],
   sepa: ["yes", "no"],
 } as const;
 
@@ -111,7 +117,9 @@ export function matchesFilters(
     const fee = yearFee(account, year);
     if (!fee) return false;
     if (filters.payment && fee.paid !== (filters.payment === "paid")) return false;
-    if (filters.tariff && fee.isStudent !== (filters.tariff === "student")) return false;
+    if (filters.tariff === "ending") {
+      if (!studentStatusEndsAfter(account, year)) return false;
+    } else if (filters.tariff && fee.isStudent !== (filters.tariff === "student")) return false;
   }
   return true;
 }

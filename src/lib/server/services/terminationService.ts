@@ -69,7 +69,7 @@ export async function resignMembership(userId: string) {
     // Nur berechnete Beiträge festschreiben: ohne Zeile fiele das Jahr mit
     // NON_MEMBER aus der Beitragsliste (`isInFeeYear`).
     for (const fee of openFees.filter((f) => !f.angelegt)) {
-      await tx.memberFee.create({ data: { userId, year: fee.year, isStudent: fee.isStudent } });
+      await tx.memberFee.create({ data: { userId, year: fee.year } });
     }
     // Künftige Jahre schuldet niemand, der heute austritt.
     await tx.memberFee.deleteMany({

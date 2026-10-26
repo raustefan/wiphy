@@ -3,7 +3,7 @@ import type { MembershipApplication } from "@prisma/client";
 import { AppError } from "@/lib/server/errors";
 import { planApplicationFees, resolveFeeDefault } from "@/lib/feeDefaults";
 import { annualFee } from "@/lib/feeCalculation";
-import { CONSENT_VERSION } from "@/lib/membership";
+import { CONSENT_VERSION, studentYearsFromStudy } from "@/lib/membership";
 import type { MembershipApplicationInput } from "@/lib/server/validation/membershipSchemas";
 import {
   findApplicationById,
@@ -62,7 +62,7 @@ export async function submitApplication(
 
   const submittedAt = new Date();
   const monthly = resolveFeeDefault(await findFeeDefaults(), submittedAt.getFullYear());
-  const studentYears = [...new Set(input.studentYears)].sort((a, b) => a - b);
+  const studentYears = studentYearsFromStudy(input.studyStart, input.studyEnd, submittedAt.getFullYear());
 
   const application = await prisma.$transaction(async (tx) => {
     const created = await tx.membershipApplication.create({
@@ -225,7 +225,6 @@ export async function approveApplication(params: {
           userId: application.userId,
           year: fee.year,
           paid: false,
-          isStudent: fee.isStudent,
           amount: fee.amount,
         },
       });

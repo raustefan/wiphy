@@ -38,10 +38,14 @@ model User {
   memberNumber  Int?         @unique
   joinedAt      DateTime?
   status        MemberStatus @default(NON_MEMBER)
-  /// Jahre mit Sonderstatus nach § 5 (z. B. Studierende). Maßgeblich für den
-  /// Beitragssatz eines Jahres, solange dafür noch keine `MemberFee`-Zeile
-  /// existiert — und damit auch für Jahre, die erst künftig angelegt werden.
+  /// Jahre mit Sonderstatus nach § 5 (z. B. Studierende) — die einzige Quelle
+  /// dafür: Steht ein Jahr hier, gilt für seine Beitragszeile der ermäßigte
+  /// Satz, vergangen wie künftig. `MemberFee` speichert den Status nicht.
   studentYears  Int[]
+  /// Antwort „Nein“ auf den Hinweis im letzten ermäßigten Jahr: ab diesem Jahr
+  /// studiert das Mitglied laut eigener Angabe nicht mehr. Nur, damit der
+  /// Hinweis verschwindet und Admins sehen, wer schon geantwortet hat.
+  notStudentFromYear Int?
   /// Einwilligung, im Alumni-Kosmos (/dashboard/kosmos) mit Name,
   /// Studiengang, Studienzeit und auf Klick E-Mail-Adresse für andere
   /// Mitglieder sichtbar zu sein, die ebenfalls eingewilligt haben.
@@ -134,7 +138,6 @@ model MemberFee {
   /// Beitragsjahr (z. B. 2000, 2001, ...).
   year         Int
   paid         Boolean @default(false)
-  isStudent    Boolean @default(false)
   /// Effektiver Betrag. Nur maßgeblich, wenn `manualAmount` gesetzt ist —
   /// sonst gilt der aus `FeeDefault` berechnete Standardbeitrag.
   amount       Float   @default(0)

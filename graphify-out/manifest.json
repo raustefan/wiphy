@@ -294,9 +294,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1792963160.1715968,
-    "seen": 1792963249.534393,
-    "ast_hash": "faa49a25ae3951924ddc5d5f18aa5ad5",
+    "mtime": 1793033179.0569954,
+    "seen": 1793033221.0325289,
+    "ast_hash": "acea20a14d7df85967eb5bdfc87c3b38",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {
@@ -474,15 +474,15 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/zahlungen/page.tsx": {
-    "mtime": 1792963139.8853722,
-    "seen": 1792963249.535404,
-    "ast_hash": "4e0519c9fa042693769a4b2978e1dc76",
+    "mtime": 1793032373.1066563,
+    "seen": 1793033221.034121,
+    "ast_hash": "245481a84debd53acaaf0bb3cbcf8373",
     "semantic_hash": ""
   },
   "src/app/datenschutz/datenschutztext.ts": {
-    "mtime": 1792963642.4799848,
-    "seen": 1793000368.003152,
-    "ast_hash": "339b8ae6fe18a2f4df465497ddfd3358",
+    "mtime": 1793030491.2331467,
+    "seen": 1793030885.766847,
+    "ast_hash": "810140ab1709673e09751ec3019f8bd4",
     "semantic_hash": ""
   },
   "src/app/datenschutz/page.tsx": {
@@ -612,9 +612,9 @@
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/ApplicationWizard.tsx": {
-    "mtime": 1792573109.626898,
-    "seen": 1792743435.488915,
-    "ast_hash": "bd76e061734bcc6db96f63ffab6eb219",
+    "mtime": 1793027309.834119,
+    "seen": 1793027508.2059221,
+    "ast_hash": "09040808d1a7dfe299263d764069b8ce",
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/JourneyRail.tsx": {
@@ -636,15 +636,15 @@
     "semantic_hash": "8e6a1969bfdbf74669e40729f306a3ee"
   },
   "src/app/mitglied-werden/actions.ts": {
-    "mtime": 1792917259.0834842,
-    "seen": 1792917337.5422819,
-    "ast_hash": "280dcbbd182f416165dd3578c9e0fea9",
+    "mtime": 1793027291.1828313,
+    "seen": 1793027508.2059898,
+    "ast_hash": "1305b43ba390ded2740c232c36b0a194",
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/page.tsx": {
-    "mtime": 1792947450.3478463,
-    "seen": 1792947486.5182772,
-    "ast_hash": "d5da7ae883ad711e73e70c7f557ec428",
+    "mtime": 1793027313.3832424,
+    "seen": 1793027508.205991,
+    "ast_hash": "2b68a09229faaa64c6f819fa73d30c71",
     "semantic_hash": ""
   },
   "src/app/mitglied-werden/registerAction.ts": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "src/lib/feeDefaults.ts": {
-    "mtime": 1792573109.522148,
-    "seen": 1792743435.4909718,
-    "ast_hash": "69c59df37f3d40881952ffb5b4836025",
+    "mtime": 1793030323.1114345,
+    "seen": 1793030885.7685068,
+    "ast_hash": "8c84a80b08c36ce86604e0119316f35d",
     "semantic_hash": ""
   },
   "src/lib/format.ts": {
@@ -1098,9 +1098,9 @@
     "semantic_hash": "c1a0addf7729630814ad85e0c00b2077"
   },
   "src/lib/membership.ts": {
-    "mtime": 1792963160.1723437,
-    "seen": 1792963249.538346,
-    "ast_hash": "2017b302b18b5147466b28a38eaa7792",
+    "mtime": 1793030273.898239,
+    "seen": 1793030885.768629,
+    "ast_hash": "876b47340ff2af87658b380ab3b85612",
     "semantic_hash": ""
   },
   "src/lib/membershipCertificate.ts": {
@@ -1110,9 +1110,9 @@
     "semantic_hash": ""
   },
   "src/lib/membershipFormSchemas.ts": {
-    "mtime": 1792573109.5232394,
-    "seen": 1792743435.491083,
-    "ast_hash": "c176c52ad7a63d2f381d9767fc03c00a",
+    "mtime": 1793027284.1418903,
+    "seen": 1793027508.208023,
+    "ast_hash": "d8ae85818b175b0257e5ed4b237bdc3e",
     "semantic_hash": ""
   },
   "src/lib/membershipJourney.ts": {
@@ -1326,9 +1326,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/repositories/feeRepository.ts": {
-    "mtime": 1792963173.1160734,
-    "seen": 1792963249.539493,
-    "ast_hash": "d0e25b93cc4c112d660df2e75d2aa357",
+    "mtime": 1793030281.7211084,
+    "seen": 1793030885.769184,
+    "ast_hash": "deddd676c215932e049040e95623b8d8",
     "semantic_hash": ""
   },
   "src/lib/server/repositories/membershipRepository.ts": {
@@ -1386,15 +1386,15 @@
     "semantic_hash": ""
   },
   "src/lib/server/services/feeService.ts": {
-    "mtime": 1793000322.06097,
-    "seen": 1793000368.007197,
-    "ast_hash": "e4bb89024a057bf19fcb145412c719a8",
+    "mtime": 1793030295.209481,
+    "seen": 1793030885.769367,
+    "ast_hash": "dc9345794075c3b25723e9cec3ab3f54",
     "semantic_hash": ""
   },
   "src/lib/server/services/membershipService.ts": {
-    "mtime": 1792573109.5265927,
-    "seen": 1792743435.491662,
-    "ast_hash": "fd6f70b0644cbf96ef73e74f98f53085",
+    "mtime": 1793030340.48029,
+    "seen": 1793030885.7693892,
+    "ast_hash": "eef1af860daf97c398ed75500dc70dfb",
     "semantic_hash": ""
   },
   "src/lib/server/services/rateLimitService.ts": {
@@ -1410,9 +1410,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/services/userService.ts": {
-    "mtime": 1792960276.5465782,
-    "seen": 1792960721.6109571,
-    "ast_hash": "671cab380eca368f733097316c0f522a",
+    "mtime": 1793030348.4255304,
+    "seen": 1793030885.7694201,
+    "ast_hash": "c515f0483eca4986116c0c75acc8252d",
     "semantic_hash": ""
   },
   "src/lib/server/services/userUpdateData.ts": {
@@ -1440,9 +1440,9 @@
     "semantic_hash": "c04fbcc2f66a2d2e3e50717b0e570089"
   },
   "src/lib/server/validation/schemas.ts": {
-    "mtime": 1792960226.0215852,
-    "seen": 1792960721.611085,
-    "ast_hash": "a7e87b2da2da0d47f12f0d6378852d98",
+    "mtime": 1793030348.425841,
+    "seen": 1793030885.769515,
+    "ast_hash": "44eb4baee7fc1671d283c282243f339e",
     "semantic_hash": ""
   },
   "src/lib/siteUrl.ts": {
@@ -1536,9 +1536,9 @@
     "semantic_hash": ""
   },
   "tests/membershipFees.test.ts": {
-    "mtime": 1792573109.5308993,
-    "seen": 1792743435.4918919,
-    "ast_hash": "4112582fe22acc0ce194e10e84544fc4",
+    "mtime": 1793030334.7336078,
+    "seen": 1793030885.769804,
+    "ast_hash": "1c4d7a97b25ec34f9ee0aa5fe09abd92",
     "semantic_hash": ""
   },
   "tests/membershipFormSchemas.test.ts": {
@@ -1680,9 +1680,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/services/terminationService.ts": {
-    "mtime": 1792963010.2500648,
-    "seen": 1792963249.539937,
-    "ast_hash": "4db4e62cb2df226169d4a84224951d02",
+    "mtime": 1793030340.4804416,
+    "seen": 1793030885.769419,
+    "ast_hash": "c7084cb82c393f311171cb4d0583b81e",
     "semantic_hash": ""
   },
   "src/app/api/dashboard/server/route.ts": {
@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/actions.ts": {
-    "mtime": 1792960334.264407,
-    "seen": 1792960721.605403,
-    "ast_hash": "65188764536a227fdea85822c4b529b7",
+    "mtime": 1793030309.1727333,
+    "seen": 1793030885.765787,
+    "ast_hash": "38792d9e71269a767810c80fc7a5a735",
     "semantic_hash": ""
   },
   "src/components/DebugBar.tsx": {
@@ -1824,9 +1824,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/MemberDirectory.tsx": {
-    "mtime": 1793000322.0615363,
-    "seen": 1793000368.0025542,
-    "ast_hash": "eafc56e1e8e6cf0d6f4c8a253242f9f1",
+    "mtime": 1793030716.488414,
+    "seen": 1793030885.766552,
+    "ast_hash": "a63bd7a781243e753b56ecd9db0a2661",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/SepaDialog.tsx": {
@@ -1836,45 +1836,45 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/users/feeActions.ts": {
-    "mtime": 1792573109.5172553,
-    "seen": 1792743435.4885702,
-    "ast_hash": "fdd8d168b58082ec6da13ed91ee8a8f8",
+    "mtime": 1793030315.830764,
+    "seen": 1793030885.766645,
+    "ast_hash": "9bc2f656b6a4e3fbc34e09cef5a30d33",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/page.tsx": {
-    "mtime": 1793000691.8289886,
-    "seen": 1793000701.372244,
-    "ast_hash": "f25c3cf831e9008d681fa96b42d3e236",
+    "mtime": 1793030467.6817183,
+    "seen": 1793030885.766695,
+    "ast_hash": "39a1a15cde654b3609e2b5b834c9dbb3",
     "semantic_hash": ""
   },
   "src/lib/memberDirectory.ts": {
-    "mtime": 1792573109.5226843,
-    "seen": 1792743435.491081,
-    "ast_hash": "5e266f2fe5e031a9afc7b0f51080c09d",
+    "mtime": 1793027456.1542344,
+    "seen": 1793027508.208003,
+    "ast_hash": "3870f68e106e3f8f33c1fe6463509bed",
     "semantic_hash": ""
   },
   "tests/memberDirectory.test.ts": {
-    "mtime": 1792573109.5304642,
-    "seen": 1792743435.491891,
-    "ast_hash": "b6eb7abd7abbb6e2d9f2e1b98f5d8c11",
+    "mtime": 1793027473.2594993,
+    "seen": 1793027508.2097752,
+    "ast_hash": "43c95de19b16b760cb9c732172b00c17",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/DirectoryTable.tsx": {
-    "mtime": 1793000840.536205,
-    "seen": 1793000849.55107,
-    "ast_hash": "5956ebf24ea92c8c1a4940d02b91645d",
+    "mtime": 1793030491.232971,
+    "seen": 1793030885.766537,
+    "ast_hash": "0240a8b15362767bf2c08efb470617cf",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/BulkImport.tsx": {
-    "mtime": 1792743428.9186268,
-    "seen": 1792743435.488571,
-    "ast_hash": "1c9a375d6fc4cef313c94f33f27b5cae",
+    "mtime": 1793030348.4261768,
+    "seen": 1793030885.766645,
+    "ast_hash": "4a617d855708b6c4e3d89baa8af051fa",
     "semantic_hash": ""
   },
   "src/app/dashboard/users/new/importFormat.ts": {
-    "mtime": 1792960411.8998263,
-    "seen": 1792960721.606843,
-    "ast_hash": "974802ce53db583d25c0b81f36ee1c7b",
+    "mtime": 1793030353.9045944,
+    "seen": 1793030885.766679,
+    "ast_hash": "763d9fe8404655658ffb6423fc4e2343",
     "semantic_hash": ""
   },
   "tests/userImport.test.ts": {
@@ -2118,9 +2118,9 @@
     "semantic_hash": ""
   },
   "scripts/convert_alumni.py": {
-    "mtime": 1792934892.3189456,
-    "seen": 1792947146.35066,
-    "ast_hash": "823ce62ea0274677678598a60642b1c0",
+    "mtime": 1793030353.9066455,
+    "seen": 1793030885.765325,
+    "ast_hash": "f50ad575628a304d425b5d994ad6eddc",
     "semantic_hash": ""
   },
   "scripts/backup.sh": {
@@ -2232,9 +2232,9 @@
     "semantic_hash": ""
   },
   "anleitungen/02-konten/benutzerverwaltung.md": {
-    "mtime": 1792998923.200957,
-    "seen": 1793000368.008285,
-    "ast_hash": "d527e03670224639b9b5e35df2fd4c79",
+    "mtime": 1793001476.9020362,
+    "seen": 1793027508.210132,
+    "ast_hash": "dad9c05d7a5882684c71bcb435d719e1",
     "semantic_hash": ""
   },
   "anleitungen/02-konten/konto-anlegen.md": {
@@ -2262,9 +2262,9 @@
     "semantic_hash": ""
   },
   "anleitungen/03-aufnahme-und-austritt/antrag-bearbeiten.md": {
-    "mtime": 1792998952.568109,
-    "seen": 1793000368.008289,
-    "ast_hash": "f4e11968efd0cd375dc477df828979ff",
+    "mtime": 1793001476.903815,
+    "seen": 1793027508.210208,
+    "ast_hash": "dc8cf215decfb3e4d03567f08d269ccb",
     "semantic_hash": ""
   },
   "anleitungen/03-aufnahme-und-austritt/austritte.md": {
@@ -2280,21 +2280,21 @@
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/beitraege-pflegen.md": {
-    "mtime": 1792999857.916437,
-    "seen": 1793000368.008291,
-    "ast_hash": "3990661cb1b5cf754788486cf7fa905d",
+    "mtime": 1793001476.902338,
+    "seen": 1793027508.2102451,
+    "ast_hash": "09ef2588aae449ba0a20af2ea7afd0fa",
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/beitragsberechnung.md": {
-    "mtime": 1792999003.4076114,
-    "seen": 1793000368.008291,
-    "ast_hash": "997859edc09fe1d45a4250b347dd7857",
+    "mtime": 1793001476.9034605,
+    "seen": 1793027508.2102458,
+    "ast_hash": "f5a754b322d8b6e315e53d44d52a8c10",
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/beitragsjahr-anlegen.md": {
-    "mtime": 1792999003.4131055,
-    "seen": 1793000368.0082922,
-    "ast_hash": "6c7990c20961b675e7d9c5ec939eb84e",
+    "mtime": 1793001464.263961,
+    "seen": 1793027508.2102468,
+    "ast_hash": "1c955a967f8d9280dbf66163a246c705",
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/beitragssaetze.md": {
@@ -2304,15 +2304,15 @@
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/sepa-lastschrift.md": {
-    "mtime": 1792999003.4207683,
-    "seen": 1793000368.0082932,
-    "ast_hash": "6c6417b2f0a4f696a0f3f9171f78362e",
+    "mtime": 1793001476.902631,
+    "seen": 1793027508.210269,
+    "ast_hash": "4a5427b33e70e7cf9d469768a7cc0a1e",
     "semantic_hash": ""
   },
   "anleitungen/04-beitraege/zahlungserinnerung.md": {
-    "mtime": 1792999003.4183264,
-    "seen": 1793000368.0082932,
-    "ast_hash": "9faa366f67c9699ebfa9c6cfd9c95e92",
+    "mtime": 1793001476.9029927,
+    "seen": 1793027508.21027,
+    "ast_hash": "191fc010e7fa4ab10d8ccedcddff0567",
     "semantic_hash": ""
   },
   "anleitungen/05-inhalte/blog-bilder.md": {
@@ -2415,6 +2415,24 @@
     "mtime": 1792998863.3864088,
     "seen": 1793000368.0083032,
     "ast_hash": "d4eae86ee6c8a4b16642d13cb5058ad4",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/StudentStatusPrompt.tsx": {
+    "mtime": 1793030309.1769757,
+    "seen": 1793030885.765772,
+    "ast_hash": "c475a3771e174c3d441d68c8ebc85743",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/users/AddFeeYearCard.tsx": {
+    "mtime": 1793030432.7565732,
+    "seen": 1793030885.766521,
+    "ast_hash": "b8bf7ffcb18166b69fbc93f1a1f7d43d",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/zahlungen/StudentStatusEditor.tsx": {
+    "mtime": 1793030658.5409403,
+    "seen": 1793030885.7668018,
+    "ast_hash": "1594288fafae75f6e9aa3a84ca44de6e",
     "semantic_hash": ""
   }
 }

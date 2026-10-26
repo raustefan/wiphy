@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CreditCardIcon, Download01Icon, LayoutThreeRowIcon } from "@hugeicons/core-free-icons";
+import { CreditCardIcon, Download01Icon, LayoutThreeRowIcon, Mortarboard01Icon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/server/authz";
@@ -15,6 +15,7 @@ import { DashboardPageHeader } from "../DashboardPageHeader";
 import { SectionHeader } from "../SectionHeader";
 import { PaymentHistoryTable } from "./PaymentHistoryTable";
 import { BankDetailsForm } from "./BankDetailsForm";
+import { StudentStatusEditor } from "./StudentStatusEditor";
 
 export const metadata: Metadata = { title: "Zahlungen" };
 
@@ -66,6 +67,24 @@ export default async function ZahlungenPage() {
             </DashboardPageHeader>
 
             <div className="grid gap-6">
+                {status === "REGULAR_MEMBER" && myRecord && (
+                    <Card id="studium" className="scroll-mt-24 p-5 sm:p-6">
+                        <SectionHeader
+                            icon={<HugeiconsIcon icon={Mortarboard01Icon} size={16} />}
+                            eyebrow="Studierendenstatus"
+                            title="Ermäßigter Beitrag"
+                            description="Solange du studierst, zahlst du den ermäßigten Beitrag. Du kannst hier für die nächsten drei Jahre angeben, ob du noch studierst. Falls du noch länger als drei Jahre studierst, schau bitte in ein paar Jahren wieder vorbei und aktualisiere deinen Status."
+                        />
+                        <Separator className="my-4" />
+                        <StudentStatusEditor
+                            currentYear={currentYear}
+                            studentYears={myRecord.studentYears}
+                            joinYear={myRecord.joinedAt?.getFullYear() ?? null}
+                            paidYears={myRecord.fees.filter((f) => f.paid && f.year > currentYear).map((f) => f.year)}
+                        />
+                    </Card>
+                )}
+
                 <Card className="p-5 sm:p-6">
                     <SectionHeader
                         icon={<HugeiconsIcon icon={CreditCardIcon} size={16} />}
