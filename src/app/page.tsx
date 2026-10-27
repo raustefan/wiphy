@@ -79,17 +79,20 @@ export default async function HomePage() {
       <section aria-labelledby="hero-title" className="relative isolate overflow-hidden">
         {/* Lageplan des Campus — zum Text hin (links unten) ausgeblendet, auf dem
             Telefon (Text über volle Breite) noch leiser. */}
-        <CampusPlan className="decor absolute inset-0 -z-10 size-full opacity-35 lg:opacity-60 [mask-image:radial-gradient(75%_90%_at_75%_35%,#000_25%,transparent_80%)]" />
+        <CampusPlan className="decor absolute -top-1/4 -left-[70%] -z-10 h-[125%] w-[170%] max-w-none opacity-35 sm:inset-0 sm:size-full lg:opacity-60 [mask-image:radial-gradient(75%_90%_at_75%_35%,#000_25%,transparent_80%)]" />
         <div aria-hidden="true" className="decor glow absolute inset-0 -z-10" />
-        <Frame className="relative flex flex-col justify-center pt-14 pb-16 sm:pt-20 sm:pb-20 lg:min-h-[calc(100svh-5rem)] lg:py-24">
-          <p className="rise flex items-center gap-3 font-serif text-lg text-physics italic sm:text-xl">
+        {/* Füllt genau den Bildschirm zwischen Kopfzeile (4rem) und Daumenleiste
+            (4rem + 1px Rand + Safe Area); als installierte App fehlt am Telefon
+            die Kopfzeile, am Desktop die Daumenleiste. */}
+        <Frame className="relative flex min-h-[calc(100svh_-_8rem_-_1px_-_env(safe-area-inset-bottom))] flex-col justify-center pt-8 pb-9 standalone:max-lg:min-h-[calc(100svh_-_4rem_-_1px_-_env(safe-area-inset-bottom))] sm:pt-20 sm:pb-20 lg:min-h-[calc(100svh-4rem)] lg:py-24">
+          <p className="rise flex items-center gap-3 font-serif text-lg max-sm:mt-auto text-physics italic sm:text-xl">
             <span aria-hidden="true" className="draw h-px w-10 bg-physics" />
             e. V. an der Universität Ulm, seit&nbsp;2004
           </p>
           {/* Die Größe folgt der Containerbreite: „WirtschaftsPhysik“ ist
               ≈ 7,65 × Schriftgröße breit und passt so immer in eine Zeile.
               Das &shy; bleibt als Netz für breitere Ersatzschriften. */}
-          <div className="@container mt-6">
+          <div className="@container mt-4 sm:mt-6">
             <h1
               id="hero-title"
               className="display rise text-[min(12.6cqi,8.5rem)] hyphens-manual"
@@ -104,16 +107,16 @@ export default async function HomePage() {
 
           <div
             aria-hidden="true"
-            className="draw mt-10 h-px bg-line-strong sm:mt-14"
+            className="draw mt-[clamp(1.5rem,5svh,4rem)] h-px bg-line-strong sm:mt-14"
             style={{ "--i": 2 } as React.CSSProperties}
           />
-          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <p className="rise max-w-xl text-lg leading-relaxed text-pretty sm:text-xl" style={{ "--i": 3 } as React.CSSProperties}>
+          <div className="mt-6 grid gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <p className="rise max-w-xl text-base leading-relaxed text-pretty sm:text-xl" style={{ "--i": 3 } as React.CSSProperties}>
               Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
               <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
               <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen.
             </p>
-            <div className="rise flex flex-col gap-3 min-[420px]:flex-row" style={{ "--i": 4 } as React.CSSProperties}>
+            <div className="rise flex flex-wrap gap-3 max-sm:*:grow" style={{ "--i": 4 } as React.CSSProperties}>
               {session ? (
                 <Cta href="/dashboard" arrow>
                   Zum Mitgliederbereich
@@ -131,7 +134,7 @@ export default async function HomePage() {
             </div>
           </div>
           {/* Pflichtvermerk der ODbL für den Lageplan. */}
-          <p className="decor mt-12 -mb-8 text-right text-xs text-faint sm:-mb-10 lg:absolute lg:right-8 lg:bottom-3 lg:m-0">
+          <p className="decor mt-8 -mb-6 text-right text-xs text-faint sm:mt-12 sm:-mb-10 lg:absolute lg:right-8 lg:bottom-3 lg:m-0">
             Lageplan Oberer Eselsberg, Daten ©{" "}
             <a href="https://www.openstreetmap.org/copyright" className="underline-offset-2 hover:underline">
               OpenStreetMap-Mitwirkende

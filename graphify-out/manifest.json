@@ -666,9 +666,9 @@
     "semantic_hash": "3e667da023325c98c835de412488b71f"
   },
   "src/app/page.tsx": {
-    "mtime": 1793109453.3901718,
-    "seen": 1793109481.917066,
-    "ast_hash": "22d405f4d80e67f81bed5d9eb83042bb",
+    "mtime": 1793115981.8011272,
+    "seen": 1793116007.074676,
+    "ast_hash": "0c674904bf6c3a484816e165df6dda76",
     "semantic_hash": ""
   },
   "src/app/reset-password/layout.tsx": {
