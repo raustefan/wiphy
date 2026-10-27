@@ -90,6 +90,13 @@ Harmlos, solange sie nicht massenhaft auftreten:
   deployment` — ein Browser hatte die Seite vor einem Deploy geöffnet. Taucht
   nach jedem Deploy kurz auf.
 - `Failed to parse body as FormData` — kaputte Anfragen, meist Bots.
+- `[auth][error] UnknownAction: Cannot parse action at /api/auth/…` — Bots
+  rufen Pfade wie `/api/auth/config` auf, die Auth.js nicht kennt.
+
+Treten die vier zusammen gehäuft auf (IDs wie `x`, Multipart ohne Boundary),
+ist das ein Scanner für die React-Server-Components-Lücke CVE-2025-55182
+(„React2Shell“). Gepatcht ab `react`/`react-dom` 19.2.1 bzw. aktuellem Next —
+bei einem Update von `react`, `react-dom` oder `next` nie unter diese Stände gehen.
 
 Nicht harmlos:
 

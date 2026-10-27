@@ -777,6 +777,145 @@ html[data-high-contrast] .blueprint {
 }
 }
 
+/* --------------------------------------------------------------------------
+   Startseite: Bewegung
+   --------------------------------------------------------------------------
+   Der Kopf baut sich beim Laden gestaffelt auf (`.rise`, `.draw`), alles
+   darunter fliegt beim Hereinscrollen ein (`[data-reveal]`, gesteuert von
+   ScrollReveal). `--i` staffelt Geschwister. Einmalige Bewegung, keine
+   Schleifen — und gar keine, wenn das System weniger Bewegung wünscht.
+   -------------------------------------------------------------------------- */
+:root {
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Zwei weiche Lichtflecken in den Vereinsfarben hinter dem Titel. */
+.glow {
+  background:
+    radial-gradient(38% 55% at 88% 18%, color-mix(in oklab, var(--physics) 20%, transparent), transparent 70%),
+    radial-gradient(32% 45% at 72% 92%, color-mix(in oklab, var(--market) 14%, transparent), transparent 70%);
+}
+
+/* Lageplan hinter dem Hero (CampusPlan). Strichstärken in Plan-Metern:
+   der Plan ist ≈ 2500 m breit, 2 m ≈ 1 px auf dem Desktop. */
+.plan path {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.plan-roads path {
+  stroke: var(--line-strong);
+  stroke-width: 5;
+  opacity: 0.45;
+}
+.plan-tram path {
+  stroke: var(--market);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+  opacity: 0.55;
+}
+.plan-buildings path {
+  stroke: color-mix(in oklab, var(--physics) 60%, transparent);
+  stroke-width: 2;
+  fill: color-mix(in oklab, var(--physics) 7%, transparent);
+}
+/* Haltestellen als kleine Ringe, die Bahnen als volle Kapseln. */
+.plan-tram circle {
+  fill: var(--background);
+  stroke: var(--market);
+  stroke-width: 2.5;
+}
+.plan-trams rect {
+  fill: var(--market);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-trams {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* pathLength="1": Strich und Lücke sind je eine ganze Pfadlänge. */
+  .plan-roads path,
+  .plan-buildings path {
+    stroke-dasharray: 1;
+  }
+  .plan-roads path {
+    animation: plan-draw 2.4s var(--ease-out-soft) backwards;
+  }
+  .plan-buildings path {
+    animation:
+      plan-draw 1.4s var(--ease-out-soft) calc(0.4s + var(--i) * 180ms) backwards,
+      plan-fill 1s ease calc(1.2s + var(--i) * 180ms) backwards;
+  }
+  .plan-tram {
+    animation: plan-fade 1.2s ease 2s backwards;
+  }
+
+  .rise {
+    animation: rise 0.9s var(--ease-out-soft) calc(var(--i, 0) * 110ms) backwards;
+  }
+  .draw {
+    transform-origin: left;
+    animation: draw 1.1s var(--ease-out-soft) calc(var(--i, 0) * 110ms) backwards;
+  }
+
+  [data-reveal] {
+    transition:
+      opacity 0.8s ease,
+      transform 0.9s var(--ease-out-soft);
+    transition-delay: calc(var(--i, 0) * 110ms);
+  }
+  html[data-reveal-ready] [data-reveal]:not(.revealed) {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  /* Seitlich erst ab lg: auf dem Telefon weitete der Versatz sonst den
+     Layout-Viewport — `overflow-x: clip` am body hilft dagegen nicht. */
+  @media (min-width: 1024px) {
+    html[data-reveal-ready] [data-reveal="left"]:not(.revealed) {
+      transform: translateX(-2.5rem);
+    }
+    html[data-reveal-ready] [data-reveal="right"]:not(.revealed) {
+      transform: translateX(2.5rem);
+    }
+  }
+  html[data-reveal-ready] [data-reveal="scale"]:not(.revealed) {
+    transform: scale(0.94);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes plan-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes plan-fill {
+  from {
+    fill-opacity: 0;
+  }
+}
+
+@keyframes plan-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 /* ==========================================================================
    Alumni-Kosmos (/dashboard/kosmos)
    Tag und Nacht sind zwei Himmel, nicht zwei Farbsätze: tagsüber Wolken

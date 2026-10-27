@@ -3,6 +3,8 @@ import Link from "next/link";
 import InterferenceField from "@/components/InterferenceFieldLazy";
 import MarketDiffusion from "@/components/MarketDiffusionLazy";
 import { Cta, Frame } from "@/components/Site";
+import ScrollReveal from "@/components/ScrollReveal";
+import CampusPlan from "@/components/CampusPlan";
 import { EventFeature } from "@/components/EventCard";
 import { getPublishedPosts } from "@/lib/server/services/blogService";
 import { getFeaturedEvent } from "@/lib/server/services/eventService";
@@ -71,28 +73,47 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ═══════════════════ Hero: Text und Abb. 1 ═══════════════════ */}
+      <ScrollReveal />
+
+      {/* ═══════════════════ Hero ═══════════════════ */}
       <section aria-labelledby="hero-title" className="relative isolate overflow-hidden">
-        <div aria-hidden="true" className="decor paper paper-fade absolute inset-0 -z-10" />
-        <Frame className="grid items-end gap-10 pt-10 pb-14 sm:pt-14 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-14 lg:pt-20 lg:pb-20">
-          <div data-observer className="@container min-w-0">
-            {/* Unter lg passt die Größe „WirtschaftsPhysik“ genau in eine Zeile
-                (Wortbreite ≈ 7,65 × Schriftgröße, plus Luft) — die Wortmarke
-                bricht dort nicht mehr als „Wirtschafts-/Physik“. Das &shy;
-                bleibt als Netz für breitere Ersatzschriften. */}
-            <h1 id="hero-title" className="display text-[clamp(3.25rem,7.6vw,6.5rem)] hyphens-manual max-lg:text-[min(12.6cqi,6.5rem)]">
-              <span className="block">Wirtschafts&shy;Physik</span>
+        {/* Lageplan des Campus — zum Text hin (links unten) ausgeblendet, auf dem
+            Telefon (Text über volle Breite) noch leiser. */}
+        <CampusPlan className="decor absolute inset-0 -z-10 size-full opacity-35 lg:opacity-60 [mask-image:radial-gradient(75%_90%_at_75%_35%,#000_25%,transparent_80%)]" />
+        <div aria-hidden="true" className="decor glow absolute inset-0 -z-10" />
+        <Frame className="relative flex flex-col justify-center pt-14 pb-16 sm:pt-20 sm:pb-20 lg:min-h-[calc(100svh-5rem)] lg:py-24">
+          <p className="rise flex items-center gap-3 font-serif text-lg text-physics italic sm:text-xl">
+            <span aria-hidden="true" className="draw h-px w-10 bg-physics" />
+            e. V. an der Universität Ulm, seit&nbsp;2004
+          </p>
+          {/* Die Größe folgt der Containerbreite: „WirtschaftsPhysik“ ist
+              ≈ 7,65 × Schriftgröße breit und passt so immer in eine Zeile.
+              Das &shy; bleibt als Netz für breitere Ersatzschriften. */}
+          <div className="@container mt-6">
+            <h1
+              id="hero-title"
+              className="display rise text-[min(12.6cqi,8.5rem)] hyphens-manual"
+              style={{ "--i": 1 } as React.CSSProperties}
+            >
+              <span className="block">
+                Wirtschafts&shy;<span className="text-physics">Physik</span>
+              </span>
               <span className="block">Alumni</span>
             </h1>
-            <p className="mt-4 font-serif text-xl text-physics italic sm:text-2xl">
-              e. V. an der Universität Ulm, seit&nbsp;2004
-            </p>
-            <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty">
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="draw mt-10 h-px bg-line-strong sm:mt-14"
+            style={{ "--i": 2 } as React.CSSProperties}
+          />
+          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <p className="rise max-w-xl text-lg leading-relaxed text-pretty sm:text-xl" style={{ "--i": 3 } as React.CSSProperties}>
               Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
               <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
               <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen.
             </p>
-            <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row">
+            <div className="rise flex flex-col gap-3 min-[420px]:flex-row" style={{ "--i": 4 } as React.CSSProperties}>
               {session ? (
                 <Cta href="/dashboard" arrow>
                   Zum Mitgliederbereich
@@ -109,28 +130,13 @@ export default async function HomePage() {
               )}
             </div>
           </div>
-
-          <figure className="decor min-w-0">
-            <div className="relative grid grid-cols-[11px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_11px]">
-              <div className="ruler-y border-r border-line-strong" />
-              <div className="relative aspect-[5/4] sm:aspect-[3/2] lg:aspect-[1/1]">
-                <InterferenceField readoutId="hero-readout" />
-              </div>
-              <span />
-              <div className="ruler border-t border-line-strong" />
-              <span className="math absolute -top-1 left-4 text-sm text-muted">y</span>
-              <span className="math absolute right-0 -bottom-6 text-sm text-muted">x</span>
-            </div>
-            <figcaption className="mt-8 grid gap-1 text-sm text-muted sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-4">
-              <span className="font-serif text-foreground italic">Abb. 1</span>
-              <span className="max-w-lg text-pretty">
-                Zwei Kreiswellen gleicher Frequenz. Wo Berg auf Tal trifft, löschen sie sich aus.
-                Mit dem Zeiger verschiebst du S₂ — und solange du links liest, steht die Welle
-                still.
-                <span id="hero-readout" className="math mt-1 block text-muted" aria-hidden="true" />
-              </span>
-            </figcaption>
-          </figure>
+          {/* Pflichtvermerk der ODbL für den Lageplan. */}
+          <p className="decor mt-12 -mb-8 text-right text-xs text-faint sm:-mb-10 lg:absolute lg:right-8 lg:bottom-3 lg:m-0">
+            Lageplan Oberer Eselsberg, Daten ©{" "}
+            <a href="https://www.openstreetmap.org/copyright" className="underline-offset-2 hover:underline">
+              OpenStreetMap-Mitwirkende
+            </a>
+          </p>
         </Frame>
       </section>
 
@@ -138,7 +144,7 @@ export default async function HomePage() {
       {shows("/geschichte") && (
         <section aria-labelledby="strip-title" className="border-y border-line bg-surface">
           <Frame className="py-10 sm:py-12">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <div data-reveal className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
               <h2 id="strip-title" className="headline text-2xl sm:text-3xl">
                 Von {STRIP_FROM} bis heute
               </h2>
@@ -149,8 +155,8 @@ export default async function HomePage() {
 
             {/* Telefon: senkrechte Liste. */}
             <ol className="mt-8 grid gap-5 border-l border-line-strong pl-5 md:hidden">
-              {strip.map((m) => (
-                <li key={m.id} className="relative">
+              {strip.map((m, i) => (
+                <li key={m.id} data-reveal="left" className="relative" style={{ "--i": i } as React.CSSProperties}>
                   <span aria-hidden="true" className={`absolute top-2 -left-[24.5px] size-2 rounded-full ${tone(m.category).bg}`} />
                   <Link href={`/geschichte#${m.id}`} className="grid rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-physics">
                     <span className={`font-serif text-lg italic ${tone(m.category).text}`}>{m.year}</span>
@@ -161,7 +167,7 @@ export default async function HomePage() {
             </ol>
 
             {/* Ab md: maßstäblicher Zeitstrahl, Beschriftung abwechselnd oben und unten. */}
-            <div className="relative mt-10 hidden h-48 md:block">
+            <div data-reveal className="relative mt-10 hidden h-48 md:block">
               <div
                 aria-hidden="true"
                 className="absolute inset-x-0 top-1/2 h-2 -translate-y-full border-b border-line-strong"
@@ -186,7 +192,12 @@ export default async function HomePage() {
                   const above = i % 2 === 0;
                   const right = m.year - STRIP_FROM > (stripTo - STRIP_FROM) * 0.82;
                   return (
-                    <li key={m.id} className="absolute top-1/2" style={{ left: pos(m.year) }}>
+                    <li
+                      key={m.id}
+                      data-reveal="scale"
+                      className="absolute top-1/2"
+                      style={{ left: pos(m.year), "--i": i + 2 } as React.CSSProperties}
+                    >
                       <span aria-hidden="true" className={`absolute -top-1.5 -left-1.5 size-3 rounded-full ring-4 ring-surface ${tone(m.category).bg}`} />
                       <span
                         aria-hidden="true"
@@ -214,6 +225,7 @@ export default async function HomePage() {
 
       {/* ═══════════════════ Nächster Termin ═══════════════════ */}
       {featured && shows("/termine") && (
+        <div data-reveal>
         <EventFeature
           event={featured.event}
           past={featured.isPast}
@@ -232,6 +244,7 @@ export default async function HomePage() {
             </p>
           }
         />
+        </div>
       )}
 
       {/* ═══════════════════ Die Physik dahinter ═══════════════════ */}
@@ -289,7 +302,7 @@ export default async function HomePage() {
       {/* ═══════════════════ Was der Verein tut ═══════════════════ */}
       <section aria-labelledby="levels-title">
         <Frame className="py-20 sm:py-28">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
+          <div data-reveal className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
             <h2 id="levels-title" className="headline text-4xl sm:text-5xl">
               Was im Hörsaal beginnt, hört dort nicht auf.
             </h2>
@@ -304,14 +317,51 @@ export default async function HomePage() {
             {levels.map((level, i) => (
               <li
                 key={level.title}
+                data-reveal
                 className={`relative border-t-2 pt-5 ml-[calc(var(--i)*min(12%,6rem))] lg:ml-0 lg:mt-[calc(var(--i)*3rem)] ${i % 2 ? "border-market" : "border-physics"}`}
                 style={{ "--i": i } as React.CSSProperties}
               >
-                <h3 className="headline text-2xl sm:text-3xl">{level.title}</h3>
+                <span className={`font-serif text-sm tabular-nums italic ${i % 2 ? "text-market" : "text-physics"}`}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="headline mt-1 text-2xl sm:text-3xl">{level.title}</h3>
                 <p className="mt-3 max-w-lg leading-relaxed text-muted text-pretty">{level.body}</p>
               </li>
             ))}
           </ul>
+        </Frame>
+      </section>
+
+      {/* ═══════════════════ Abb. 1: Interferenz ═══════════════════ */}
+      <section aria-labelledby="wave-title" className="overflow-hidden border-t border-line">
+        <Frame className="grid items-center gap-12 py-20 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-20">
+          <div data-observer data-reveal="left" className="min-w-0">
+            <p className="font-serif text-lg text-muted italic">Abb. 1</p>
+            <h2 id="wave-title" className="headline mt-2 text-4xl sm:text-5xl">
+              Wo zwei Wellen sich treffen
+            </h2>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-pretty">
+              Zwei Kreiswellen gleicher Frequenz. Wo Berg auf Berg
+              trifft, verstärken sie sich; wo Berg auf Tal trifft, löschen sie sich aus.
+            </p>
+            <p className="mt-4 max-w-lg leading-relaxed text-muted text-pretty">
+              Mit dem Zeiger verschiebst du S₂.
+            </p>
+            <p id="wave-readout" className="math mt-4 text-sm text-muted" aria-hidden="true" />
+          </div>
+
+          <figure data-reveal="right" className="decor mx-auto w-full max-w-[26rem] min-w-0">
+            <div className="relative grid grid-cols-[11px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_11px]">
+              <div className="ruler-y border-r border-line-strong" />
+              <div className="relative aspect-square overflow-hidden rounded-[3px]">
+                <InterferenceField readoutId="wave-readout" />
+              </div>
+              <span />
+              <div className="ruler border-t border-line-strong" />
+              <span className="math absolute -top-1 left-4 text-sm text-muted">y</span>
+              <span className="math absolute right-0 -bottom-6 text-sm text-muted">x</span>
+            </div>
+          </figure>
         </Frame>
       </section>
 
@@ -326,7 +376,7 @@ export default async function HomePage() {
             }`}
           >
             {latestPost.cover ? (
-              <div className="relative">
+              <div data-reveal="left" className="relative">
                 {/* Versetztes Millimeterpapier hinter dem Bild. */}
                 <div aria-hidden="true" className="decor paper absolute inset-0 translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -341,12 +391,12 @@ export default async function HomePage() {
                 />
               </div>
             ) : (
-              <h2 id="blog-title" className="headline text-4xl sm:text-5xl">
+              <h2 id="blog-title" data-reveal className="headline text-4xl sm:text-5xl">
                 Zuletzt im Blog
               </h2>
             )}
 
-            <div className="min-w-0">
+            <div data-reveal="right" className="min-w-0" style={{ "--i": 1 } as React.CSSProperties}>
               {latestPost.cover && (
                 <h2 id="blog-title" className="font-serif text-lg text-muted italic">
                   Zuletzt im Blog
@@ -383,7 +433,7 @@ export default async function HomePage() {
       {/* ═══════════════════ Mitglied werden ═══════════════════ */}
       <section aria-labelledby="join-title" className="blueprint paper">
         <Frame className="py-20 sm:py-28">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
+          <div data-reveal className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-14">
             <h2 id="join-title" className="display text-[clamp(2.75rem,8vw,5.5rem)]">
               Mitglied werden
             </h2>
@@ -396,7 +446,7 @@ export default async function HomePage() {
 
           <ol className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
             {JOURNEY_STEPS.map((step, i) => (
-              <li key={step.id} className="relative border-t border-on-physics pt-5 lg:pr-8">
+              <li key={step.id} data-reveal className="relative border-t border-on-physics pt-5 lg:pr-8" style={{ "--i": i } as React.CSSProperties}>
                 <span aria-hidden="true" className="absolute -top-[5px] left-0 size-[9px] rounded-full border border-on-physics bg-physics" />
                 <span className="font-serif text-4xl tabular-nums italic">{i + 1}</span>
                 <h3 className="mt-2 font-semibold">{step.title}</h3>
@@ -405,7 +455,7 @@ export default async function HomePage() {
             ))}
           </ol>
 
-          <div className="mt-14 flex flex-col gap-3 min-[420px]:flex-row">
+          <div data-reveal className="mt-14 flex flex-col gap-3 min-[420px]:flex-row">
             <Cta href={MEMBERSHIP_APPLICATION_PATH} variant="invert" arrow className="focus-visible:outline-on-physics">
               Jetzt beginnen
             </Cta>
