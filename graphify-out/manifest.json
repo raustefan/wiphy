@@ -294,9 +294,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1793033179.0569954,
-    "seen": 1793033221.0325289,
-    "ast_hash": "acea20a14d7df85967eb5bdfc87c3b38",
+    "mtime": 1793297476.9439943,
+    "seen": 1793297597.061409,
+    "ast_hash": "bc904d8bdfb290911fbc3b94cabf0670",
     "semantic_hash": ""
   },
   "src/app/dashboard/security/ActivityHeatmap.tsx": {
@@ -864,9 +864,9 @@
     "semantic_hash": "085ffa6305ca62d425907df2cdb5ecdf"
   },
   "src/components/MarkdownViewer.tsx": {
-    "mtime": 1792501017.048396,
-    "seen": 1792502133.343264,
-    "ast_hash": "46224bcc9944943911064c56c29a202f",
+    "mtime": 1793297448.5452843,
+    "seen": 1793297597.063207,
+    "ast_hash": "84923bbd6cfd57ce48e5a9b42ae44d44",
     "semantic_hash": ""
   },
   "src/components/MarketDiffusion.tsx": {
@@ -2213,208 +2213,10 @@
     "ast_hash": "b89a92e01ad10fea8f126bf8299e98f5",
     "semantic_hash": ""
   },
-  "anleitungen/01-grundlagen/admin-bereich.md": {
-    "mtime": 1792998863.3891375,
-    "seen": 1793000368.008283,
-    "ast_hash": "92509787ce83c239fb3c7df062e20669",
-    "semantic_hash": ""
-  },
-  "anleitungen/01-grundlagen/debug-modus.md": {
-    "mtime": 1792998863.3917668,
-    "seen": 1793000368.0082839,
-    "ast_hash": "fac9b4bf2002b521956311f9614b4300",
-    "semantic_hash": ""
-  },
-  "anleitungen/01-grundlagen/eigenes-konto.md": {
-    "mtime": 1792998914.3330915,
-    "seen": 1793000368.008285,
-    "ast_hash": "1c46bad1295b0071e4c661695d0715a7",
-    "semantic_hash": ""
-  },
-  "anleitungen/02-konten/benutzerverwaltung.md": {
-    "mtime": 1793001476.9020362,
-    "seen": 1793027508.210132,
-    "ast_hash": "dad9c05d7a5882684c71bcb435d719e1",
-    "semantic_hash": ""
-  },
-  "anleitungen/02-konten/konto-anlegen.md": {
-    "mtime": 1792998914.3383276,
-    "seen": 1793000368.008286,
-    "ast_hash": "ad44f2f95256a0fdcd205e2cf5baf25a",
-    "semantic_hash": ""
-  },
-  "anleitungen/02-konten/konto-bearbeiten.md": {
-    "mtime": 1792998923.2171216,
-    "seen": 1793000368.008287,
-    "ast_hash": "e17433a83ab30ce20a9f044912160072",
-    "semantic_hash": ""
-  },
-  "anleitungen/02-konten/konto-loeschen.md": {
-    "mtime": 1792999485.6760268,
-    "seen": 1793000368.008288,
-    "ast_hash": "7de2f504d9d45e71493f4808fc29f2d6",
-    "semantic_hash": ""
-  },
-  "anleitungen/02-konten/login-sperren.md": {
-    "mtime": 1792998914.3435013,
-    "seen": 1793000368.008288,
-    "ast_hash": "e8108fd6a05ad40dcf6535d1ba25002e",
-    "semantic_hash": ""
-  },
-  "anleitungen/03-aufnahme-und-austritt/antrag-bearbeiten.md": {
-    "mtime": 1793001476.903815,
-    "seen": 1793027508.210208,
-    "ast_hash": "dc8cf215decfb3e4d03567f08d269ccb",
-    "semantic_hash": ""
-  },
-  "anleitungen/03-aufnahme-und-austritt/austritte.md": {
-    "mtime": 1792999634.7222342,
-    "seen": 1793000368.008289,
-    "ast_hash": "813e5069ca71cbf654f531977655d225",
-    "semantic_hash": ""
-  },
-  "anleitungen/03-aufnahme-und-austritt/mitgliedschaft-beenden.md": {
-    "mtime": 1792999003.4020987,
-    "seen": 1793000368.00829,
-    "ast_hash": "d8c2033e2b350dcd562fcf1210456bf8",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/beitraege-pflegen.md": {
-    "mtime": 1793001476.902338,
-    "seen": 1793027508.2102451,
-    "ast_hash": "09ef2588aae449ba0a20af2ea7afd0fa",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/beitragsberechnung.md": {
-    "mtime": 1793001476.9034605,
-    "seen": 1793027508.2102458,
-    "ast_hash": "f5a754b322d8b6e315e53d44d52a8c10",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/beitragsjahr-anlegen.md": {
-    "mtime": 1793001464.263961,
-    "seen": 1793027508.2102468,
-    "ast_hash": "1c955a967f8d9280dbf66163a246c705",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/beitragssaetze.md": {
-    "mtime": 1792999003.4102564,
-    "seen": 1793000368.0082922,
-    "ast_hash": "0fa2036ac7f78fdec699ac781ecbb569",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/sepa-lastschrift.md": {
-    "mtime": 1793001476.902631,
-    "seen": 1793027508.210269,
-    "ast_hash": "4a5427b33e70e7cf9d469768a7cc0a1e",
-    "semantic_hash": ""
-  },
-  "anleitungen/04-beitraege/zahlungserinnerung.md": {
-    "mtime": 1793001476.9029927,
-    "seen": 1793027508.21027,
-    "ast_hash": "191fc010e7fa4ab10d8ccedcddff0567",
-    "semantic_hash": ""
-  },
-  "anleitungen/05-inhalte/blog-bilder.md": {
-    "mtime": 1792999046.599882,
-    "seen": 1793000368.0082939,
-    "ast_hash": "17dffda7215c2415fc8f067fcd3cbc8c",
-    "semantic_hash": ""
-  },
-  "anleitungen/05-inhalte/blogbeitrag-schreiben.md": {
-    "mtime": 1792999046.5971293,
-    "seen": 1793000368.0082948,
-    "ast_hash": "cdfcbc740dd65d20d37590dd6237a57f",
-    "semantic_hash": ""
-  },
-  "anleitungen/05-inhalte/termin-anlegen.md": {
-    "mtime": 1792999046.5941048,
-    "seen": 1793000368.0082948,
-    "ast_hash": "92673e7c336db94a9314844eb3aadf2f",
-    "semantic_hash": ""
-  },
-  "anleitungen/05-inhalte/vorstand-pflegen.md": {
-    "mtime": 1792999046.6022341,
-    "seen": 1793000368.008296,
-    "ast_hash": "52df0c3a51cd69f4cf3dfe18bfa9e344",
-    "semantic_hash": ""
-  },
-  "anleitungen/06-kommunikation/kontaktanfragen.md": {
-    "mtime": 1792999134.1010954,
-    "seen": 1793000368.008296,
-    "ast_hash": "2a2c0cc9732b1118d58fd0ae430645cb",
-    "semantic_hash": ""
-  },
-  "anleitungen/06-kommunikation/mail-platzhalter.md": {
-    "mtime": 1792999107.142812,
-    "seen": 1793000368.008297,
-    "ast_hash": "9d1f43dfcc311ed7d9f7ce84dd04d247",
-    "semantic_hash": ""
-  },
-  "anleitungen/06-kommunikation/newsletter.md": {
-    "mtime": 1792999107.1401598,
-    "seen": 1793000368.008297,
-    "ast_hash": "4e997bbd05a9525057f2b14e31084553",
-    "semantic_hash": ""
-  },
-  "anleitungen/06-kommunikation/rundmail-senden.md": {
-    "mtime": 1792999107.1349552,
-    "seen": 1793000368.008298,
-    "ast_hash": "c955ecdfdc3d5bd94b2ebbc8f9ee3000",
-    "semantic_hash": ""
-  },
-  "anleitungen/06-kommunikation/zu-termin-einladen.md": {
-    "mtime": 1792999107.1376681,
-    "seen": 1793000368.008298,
-    "ast_hash": "59d6695d3d5fb2140bfb8e1bdcbe484b",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/backup.md": {
-    "mtime": 1792999206.999487,
-    "seen": 1793000368.008299,
-    "ast_hash": "277e7695eff12b18f94a95008134a853",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/deploy.md": {
-    "mtime": 1792999224.735144,
-    "seen": 1793000368.0083,
-    "ast_hash": "1939c86b63b3542637caa0ce2b203cf8",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/feature-flags.md": {
-    "mtime": 1792999224.720056,
-    "seen": 1793000368.0083,
-    "ast_hash": "12822845d0a972c223706da2d40c6c4f",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/notfall-abschalten.md": {
-    "mtime": 1792999206.9869442,
-    "seen": 1793000368.008301,
-    "ast_hash": "a502755afb888d3db2a1ff9ad244626e",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/rate-limit-aufheben.md": {
-    "mtime": 1792999206.991994,
-    "seen": 1793000368.008301,
-    "ast_hash": "f4a190cfe2e8b5065138544f4056fc40",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/server-und-logs.md": {
-    "mtime": 1792999206.994496,
-    "seen": 1793000368.008302,
-    "ast_hash": "46fe67e4c0bf39ea59d87c157895a7da",
-    "semantic_hash": ""
-  },
-  "anleitungen/07-technik/sicherheit.md": {
-    "mtime": 1792999206.989484,
-    "seen": 1793000368.008302,
-    "ast_hash": "4d2bda19b581c222f423eb9622c49fa3",
-    "semantic_hash": ""
-  },
   "anleitungen/README.md": {
-    "mtime": 1792998863.3864088,
-    "seen": 1793000368.0083032,
-    "ast_hash": "d4eae86ee6c8a4b16642d13cb5058ad4",
+    "mtime": 1793295274.3278265,
+    "seen": 1793295479.588088,
+    "ast_hash": "c2218811187f42db932310c721c1bb53",
     "semantic_hash": ""
   },
   "src/app/dashboard/StudentStatusPrompt.tsx": {
@@ -2463,6 +2265,60 @@
     "mtime": 1793113841.6612675,
     "seen": 1793113966.704231,
     "ast_hash": "d3a3006f623bbf90a98e92ba896b70af",
+    "semantic_hash": ""
+  },
+  "anleitungen/beitraege.md": {
+    "mtime": 1793295378.3731556,
+    "seen": 1793295479.588089,
+    "ast_hash": "90f5d7bf5ffea1e9e171bd464f95146b",
+    "semantic_hash": ""
+  },
+  "anleitungen/inhalte.md": {
+    "mtime": 1793295400.9389358,
+    "seen": 1793295479.5880902,
+    "ast_hash": "98d1eaef58172f3c7e7e99ab13f670c4",
+    "semantic_hash": ""
+  },
+  "anleitungen/kommunikation.md": {
+    "mtime": 1793297155.783739,
+    "seen": 1793297597.065218,
+    "ast_hash": "07c81cf15298d7983a59fb061fd59f7e",
+    "semantic_hash": ""
+  },
+  "anleitungen/konten.md": {
+    "mtime": 1793295310.265373,
+    "seen": 1793295479.5880902,
+    "ast_hash": "79d9c1178746a825adf27190c7a4c2ad",
+    "semantic_hash": ""
+  },
+  "anleitungen/mitgliedschaft.md": {
+    "mtime": 1793295348.021264,
+    "seen": 1793295479.588091,
+    "ast_hash": "0b8b9803332bc3aba6ff9af8615bb1e6",
+    "semantic_hash": ""
+  },
+  "anleitungen/technik.md": {
+    "mtime": 1793295469.1682358,
+    "seen": 1793295479.588091,
+    "ast_hash": "85a9b9212026de745cf13a7b94fe73e3",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/anleitungen/[slug]/page.tsx": {
+    "mtime": 1793297473.4053597,
+    "seen": 1793297597.061034,
+    "ast_hash": "19ce6334c3630a1c336a12ce810b09f2",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/anleitungen/guides.tsx": {
+    "mtime": 1793297458.2730556,
+    "seen": 1793297597.061035,
+    "ast_hash": "5067399dc0a85a87db1aebcee7f42232",
+    "semantic_hash": ""
+  },
+  "src/app/dashboard/anleitungen/page.tsx": {
+    "mtime": 1793297469.6551557,
+    "seen": 1793297597.061035,
+    "ast_hash": "acef110dacb22593af838af1cd0f96e0",
     "semantic_hash": ""
   }
 }

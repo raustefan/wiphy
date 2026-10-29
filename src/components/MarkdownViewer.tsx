@@ -24,10 +24,10 @@ const shiftedHeadings: Components = {
     h5: headingAs("h6"),
 };
 
-export default function MarkdownViewer({ content }: { content: string }) {
+export default function MarkdownViewer({ content, components }: { content: string; components?: Components }) {
     return (
         <div className="markdown-content" style={{ padding: "20px 0" }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={shiftedHeadings} skipHtml>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ...shiftedHeadings, ...components }} skipHtml>
                 {content}
             </ReactMarkdown>
         </div>

@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, Mortarboard01Icon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, Book02Icon, BookOpen01Icon, Bug01Icon, Calendar01Icon, ContactIcon, CreditCardIcon, FileAttachmentIcon, IdCardIcon, Key02Icon, Mail01Icon, Mortarboard01Icon, SentIcon, ServerIcon, Shield01Icon, SlidersHorizontalIcon, SparklesIcon, ToggleOffIcon, UserCircleIcon, UserGroupIcon, UserIcon, UserSettings01Icon } from "@hugeicons/core-free-icons";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -43,6 +43,7 @@ const ADMIN_ACTIONS = [
     { href: "/dashboard/blog", label: "Blog", description: "Beiträge schreiben und pflegen", Icon: BookOpen01Icon },
     { href: "/dashboard/vorstand", label: "Vorstand", description: "Vorstandsseite aktualisieren", Icon: UserGroupIcon },
     { href: "/dashboard/kontakt", label: "Kontaktanfragen", description: "Nachrichten über das Formular", Icon: Mail01Icon },
+    { href: "/dashboard/anleitungen", label: "Anleitungen", description: "So bedienst du die Verwaltung", Icon: Book02Icon },
     // Nur im Debug-Modus sichtbar und erreichbar (`requireDebugAdmin`).
     { href: "/dashboard/feature-flags", label: "Feature Flags", description: "Funktionen ein- und ausschalten", Icon: ToggleOffIcon, debug: true },
     { href: "/dashboard/security", label: "Sicherheit", description: "Protokoll und Rate-Limits", Icon: Shield01Icon, debug: true },
