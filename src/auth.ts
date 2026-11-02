@@ -57,7 +57,7 @@ const dummyPasswordHash = bcrypt.hash(crypto.randomUUID(), 12);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     // Auth.js leitet das Secure-Flag sonst aus NEXTAUTH_URL ab — steht dort
-    // `http://…` (so im README-Beispiel), geht das Session-Cookie ohne Secure
+    // `http://…` (so im Beispiel in ENTWICKLUNG.md), geht das Session-Cookie ohne Secure
     // raus und kann über jede unverschlüsselte Anfrage mitgelesen werden.
     useSecureCookies: process.env.NODE_ENV === "production",
     providers: [

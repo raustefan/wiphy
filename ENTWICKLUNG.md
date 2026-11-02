@@ -1,4 +1,7 @@
-# WirtschaftsPhysik Alumni e. V. — Vereinswebsite
+# Technische Dokumentation
+
+Was die Seite aus Sicht der Nutzer:innen kann, steht in der
+[README](README.md); hier geht es um Setup, Aufbau und Betrieb.
 
 Öffentliche Website und Mitgliederportal des WirtschaftsPhysik Alumni e. V.
 (Universität Ulm). Die Seite kombiniert eine öffentliche Präsenz (Blog,

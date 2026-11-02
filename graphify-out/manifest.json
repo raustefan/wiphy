@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "src/auth.ts": {
-    "mtime": 1792947450.3479755,
-    "seen": 1792947486.518534,
-    "ast_hash": "9c0300cc47a7b9f7482c4184e30cc777",
+    "mtime": 1793655031.5163083,
+    "seen": 1793655065.6081889,
+    "ast_hash": "363fdb6ae53059b80e326ed5a6a5432c",
     "semantic_hash": ""
   },
   "src/components/AltchaField.tsx": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/clientIp.ts": {
-    "mtime": 1792501017.073422,
-    "seen": 1792502133.34329,
-    "ast_hash": "bce688fddec8e87f918ef5973c334f35",
+    "mtime": 1793655031.5199072,
+    "seen": 1793655065.6092658,
+    "ast_hash": "5e65b7cfe0ea48ecaf1ffcefe39e76f7",
     "semantic_hash": ""
   },
   "src/lib/server/contactSpam.ts": {
@@ -1584,9 +1584,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792771381.0059626,
-    "seen": 1792771385.356134,
-    "ast_hash": "f3879cd1e22416b67b43df48d21af245",
+    "mtime": 1793655053.431379,
+    "seen": 1793655065.6102998,
+    "ast_hash": "32ee11698e5481e588cd9fdc24700732",
     "semantic_hash": ""
   },
   "pnpm-workspace.yaml": {
@@ -1692,9 +1692,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/server/ServerDashboard.tsx": {
-    "mtime": 1792769752.722418,
-    "seen": 1792769877.60982,
-    "ast_hash": "6db985b0c37694a14a2ce4a1a1998863",
+    "mtime": 1793655031.5145757,
+    "seen": 1793655065.607084,
+    "ast_hash": "390d1ee2e62aef4b88fb5fbae2ce0396",
     "semantic_hash": ""
   },
   "src/app/dashboard/server/UsageChart.tsx": {
@@ -1716,9 +1716,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/serverStatus.ts": {
-    "mtime": 1792769858.293694,
-    "seen": 1792769877.613986,
-    "ast_hash": "7f792187cb5cb92a08403ddf0553a15a",
+    "mtime": 1793655031.518311,
+    "seen": 1793655065.609643,
+    "ast_hash": "1f35225a7f8a6d2bde494ccceedea143",
     "semantic_hash": ""
   },
   "tests/serverStatus.test.ts": {
@@ -2088,9 +2088,9 @@
     "semantic_hash": ""
   },
   "BETRIEB.md": {
-    "mtime": 1793109213.2092886,
-    "seen": 1793109290.002114,
-    "ast_hash": "d0e607bfa75060c0fc26314a64d40e2e",
+    "mtime": 1793655031.5103767,
+    "seen": 1793655065.610281,
+    "ast_hash": "05c6273f1cb06aabc0c60c246b66d010",
     "semantic_hash": ""
   },
   "src/components/CountryOptions.tsx": {
@@ -2130,9 +2130,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/server/BackupHistory.tsx": {
-    "mtime": 1792769844.4705727,
-    "seen": 1792769877.609819,
-    "ast_hash": "07aa17582159331a23ea850bfce6a163",
+    "mtime": 1793655031.5140746,
+    "seen": 1793655065.607083,
+    "ast_hash": "c5e9f631a73de739cbd5870eb21a2669",
     "semantic_hash": ""
   },
   "src/proxy.ts": {
@@ -2319,6 +2319,12 @@
     "mtime": 1793297469.6551557,
     "seen": 1793297597.061035,
     "ast_hash": "acef110dacb22593af838af1cd0f96e0",
+    "semantic_hash": ""
+  },
+  "ENTWICKLUNG.md": {
+    "mtime": 1793655055.2008245,
+    "seen": 1793655065.6102898,
+    "ast_hash": "48f0a0d9972c8ae51aa91967183e9afe",
     "semantic_hash": ""
   }
 }

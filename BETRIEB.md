@@ -1,7 +1,7 @@
 # Betrieb: Checkliste für den Produktionsserver
 
 Für alle, die den Server übernehmen. Einrichtung, nginx, Deploy und Backup
-stehen ausführlich in der [README](README.md#deployment-hetzner-cloud--ubuntu);
+stehen ausführlich in der [ENTWICKLUNG.md](ENTWICKLUNG.md#deployment-hetzner-cloud--ubuntu);
 hier steht, **was auf dem echten Server wo liegt** und **wie man prüft, ob
 alles läuft**. Jeder Befehl in der Checkliste ist nur lesend.
 
@@ -16,7 +16,7 @@ um, beide Domains und DNS bei Hetzner. Zugang nur per SSH-Schlüssel als `root`
 
 | Was                  | Wo                                                  | Ändern / neu laden                           |
 | -------------------- | --------------------------------------------------- | -------------------------------------------- |
-| Code (Git-Checkout von `main`) | `/var/www/wiphy/wiphy` — **doppeltes `wiphy`**, nicht `/var/www/wiphy` wie in der README | `bash deploy.sh` (ist auf dem Server nicht ausführbar) oder Knopf in `/dashboard/server`; nie direkt auf dem Server editieren |
+| Code (Git-Checkout von `main`) | `/var/www/wiphy/wiphy` — **doppeltes `wiphy`**, nicht `/var/www/wiphy` wie in der ENTWICKLUNG.md | `bash deploy.sh` (ist auf dem Server nicht ausführbar) oder Knopf in `/dashboard/server`; nie direkt auf dem Server editieren |
 | Geheimnisse/Config   | `/var/www/wiphy/wiphy/.env`                         | Datei bearbeiten, dann `pm2 restart wiphy --update-env` |
 | Feature Flags        | Admin-Dashboard (liegen in der Datenbank)           | im Browser                                   |
 | App-Prozess          | PM2-Prozess `wiphy` (`pnpm start` → `127.0.0.1:3000`), Node 24, pnpm 10 | `pm2 restart wiphy`        |
@@ -27,7 +27,7 @@ um, beide Domains und DNS bei Hetzner. Zugang nur per SSH-Schlüssel als `root`
 | nginx-Logs           | `/var/log/nginx/access.log`, `error.log`            | —                                            |
 | TLS-Zertifikat       | `/etc/letsencrypt/live/wiphy.de/` und `/etc/letsencrypt/live/wirtschaftsphysik.de/` (certbot, `certbot.timer` erneuert automatisch) | `certbot renew --dry-run` zum Testen |
 | Datenbank            | PostgreSQL 18 lokal (`127.0.0.1:5432`), DB `wiphy`  | `sudo -u postgres psql wiphy`                |
-| Backup               | täglich 3:30 UTC nach `/var/backups/wiphy/` (14 Tage), Skript `/usr/local/sbin/wiphy-backup`, Cron `/etc/cron.d/wiphy-backup`; manuell: `/dashboard/server` → „Backup anfordern“ | README „Backup & Wiederherstellung“ |
+| Backup               | täglich 3:30 UTC nach `/var/backups/wiphy/` (14 Tage), Skript `/usr/local/sbin/wiphy-backup`, Cron `/etc/cron.d/wiphy-backup`; manuell: `/dashboard/server` → „Backup anfordern“ | ENTWICKLUNG.md „Backup & Wiederherstellung“ |
 | OS-Updates           | `unattended-upgrades` (Sicherheitsupdates automatisch) | `apt upgrade`, danach ggf. `reboot`       |
 
 ## Checkliste
@@ -61,7 +61,7 @@ Jeweils: Befehl → was rauskommen soll. Vorher `cd /var/www/wiphy/wiphy`.
 - [ ] `curl -s https://wiphy.de/robots.txt | grep Sitemap` → `https://…`
 - [ ] `curl -sI https://wirtschaftsphysik.de/blog | grep -i location` → `https://wiphy.de/blog`
 - [ ] `certbot certificates` → beide mehr als 30 Tage gültig
-- [ ] `grep -E 'X-Real-IP|client_max_body_size' /etc/nginx/sites-available/wiphy` → beide vorhanden (siehe README)
+- [ ] `grep -E 'X-Real-IP|client_max_body_size' /etc/nginx/sites-available/wiphy` → beide vorhanden (siehe ENTWICKLUNG.md)
 
 **System & Sicherheit**
 - [ ] `df -h /` → unter 80 % belegt

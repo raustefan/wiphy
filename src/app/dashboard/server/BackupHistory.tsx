@@ -35,7 +35,7 @@ export function BackupHistory({ status }: { status: BackupStatus }) {
         {!status.available ? (
           <p className="text-sm text-muted">
             Auf diesem Rechner sind keine automatischen Backups eingerichtet — sie laufen nur auf dem
-            Produktionsserver (siehe README).
+            Produktionsserver (siehe ENTWICKLUNG.md).
           </p>
         ) : (
           <>

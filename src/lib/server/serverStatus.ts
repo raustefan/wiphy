@@ -341,7 +341,7 @@ export function pgEnv(databaseUrl: string): Record<string, string> {
  * Die ganze Datenbank als `pg_dump`-Archiv (Custom-Format), inklusive
  * Passwort-Hashes und `_prisma_migrations`. Ohne Eigentümer und Rechte, damit
  * es sich auch unter einem anderen Datenbanknutzer wiederherstellen lässt —
- * Anleitung im README unter „Backup & Wiederherstellung“.
+ * Anleitung in ENTWICKLUNG.md unter „Backup & Wiederherstellung“.
  *
  * ponytail: ganz im Speicher, damit ein Fehler als Meldung statt als halbe
  * Datei ankommt. Bei einer Datenbank jenseits einiger hundert MB streamen.

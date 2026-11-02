@@ -31,7 +31,7 @@ export function addressKey(ip: string): string {
  *
  * Welcher Header gewinnt, ist eine Sicherheitsentscheidung und keine
  * Geschmacksfrage. nginx steht als einziger Vermittler direkt am Netz und setzt
- * beide Header selbst (siehe README, Abschnitt „nginx als Reverse Proxy“).
+ * beide Header selbst (siehe ENTWICKLUNG.md, Abschnitt „nginx als Reverse Proxy“).
  * Damit wird alles überschrieben, was ein Client unter denselben Namen
  * mitschickt — und genau das ist nötig: unbekannte Request-Header reicht nginx
  * sonst unverändert an die Anwendung durch.

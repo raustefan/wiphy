@@ -316,7 +316,7 @@ function BackupSection() {
           Die komplette Datenbank als <code>pg_dump</code>-Archiv — alle Mitglieder, Bankdaten,
           Passwort-Hashes, Bilder und Nachrichten. Nach der Passwortabfrage kommt ein kurz gültiger
           Einmal-Link per E-Mail. Wiederherstellen lässt sich das Archiv auf der Konsole mit{" "}
-          <code>pg_restore</code> (siehe README).
+          <code>pg_restore</code> (siehe ENTWICKLUNG.md).
         </p>
 
         {sentTo && (
