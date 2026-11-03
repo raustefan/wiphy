@@ -36,6 +36,7 @@ TRAM_DWELL = 2.5  # s je Halt
 TRAM_RAMP = 1.6  # s Zuschlag je Abschnitt fürs Bremsen und Anfahren
 TRAM_PAUSE = 4  # s unsichtbar zwischen zwei Runden
 TRAM_CURVE = 25  # m Kurvenradius an Knicken des Gleises
+HELI_BASE = {"lat": 48.426449639927064, "lon": 9.945178020579663}  # Christoph 22, ADAC Luftrettung
 OUT = Path(__file__).resolve().parent.parent / "src/components/campusPlan.json"
 
 
@@ -244,7 +245,7 @@ def main(ways_path, relations_path, routes_path):
         rings += [[] for _ in range(n + 1 - len(rings))]
         rings[n].append(d(pts, closed=True))
 
-    OUT.write_text(json.dumps({"w": round(W), "h": round(H), "rings": rings, "roads": roads, "tram": tram, "trams": trams}))
+    OUT.write_text(json.dumps({"w": round(W), "h": round(H), "rings": rings, "roads": roads, "tram": tram, "trams": trams, "heliBase": [round(c) for c in project(HELI_BASE)]}))
     print(f"{OUT}: {len(buildings)} Gebäude, {len(roads)} Straßen, {len(tram)} Gleise, "
           + ", ".join(f"{t['dur']} s / {len(t['halts'])} Halte" for t in trams))
 

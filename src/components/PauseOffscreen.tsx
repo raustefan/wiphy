@@ -21,7 +21,7 @@ export default function PauseOffscreen({ className, children }: { className?: st
   }, []);
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={ref} data-gravity-ignore className={className}>
       {children}
     </div>
   );

@@ -1,4 +1,5 @@
 import plan from "@/components/campusPlan.json";
+import Helicopter from "@/components/Helicopter";
 import PauseOffscreen from "@/components/PauseOffscreen";
 
 /**
@@ -7,16 +8,17 @@ import PauseOffscreen from "@/components/PauseOffscreen";
  * nach außen (Stile in globals.css, `.plan`). Erzeugt mit
  * scripts/campus-plan.py aus OpenStreetMap-Daten.
  */
-export default function CampusPlan({ className }: { className?: string }) {
+export default function CampusPlan({ className, fade }: { className: string; fade: string }) {
+  const viewBox = `0 0 ${plan.w} ${plan.h}`;
   const svg = {
-    viewBox: `0 0 ${plan.w} ${plan.h}`,
+    viewBox,
     preserveAspectRatio: "xMidYMid slice",
     "aria-hidden": true,
   } as const;
 
   return (
     <>
-      <svg {...svg} className={`plan ${className ?? ""}`}>
+      <svg {...svg} className={`plan ${className} ${fade}`}>
         <g className="plan-roads">
           {plan.roads.map((d, i) => (
             <path key={i} d={d} pathLength={1} />
@@ -44,7 +46,7 @@ export default function CampusPlan({ className }: { className?: string }) {
           `animateMotion` Bahn und Drehung zugleich einem Pfad folgen lässt.
           Eigenes SVG, damit der Plan darunter nicht in jedem Bild neu gemalt
           wird. Die zweite Bahn startet eine halbe Runde später. */}
-      <PauseOffscreen className={`plan-trams ${className ?? ""}`}>
+      <PauseOffscreen className={`plan-trams ${className} ${fade}`}>
         <svg {...svg} className="plan size-full">
           {plan.trams.map((tram, i) => {
             const timing = { dur: `${tram.dur}s`, begin: `${3 + (i * tram.dur) / 2}s`, repeatCount: "indefinite" };
@@ -65,6 +67,8 @@ export default function CampusPlan({ className }: { className?: string }) {
           })}
         </svg>
       </PauseOffscreen>
+
+      <Helicopter base={plan.heliBase} viewBox={viewBox} className={`${className} pointer-events-none z-10`} />
     </>
   );
 }

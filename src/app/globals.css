@@ -828,8 +828,51 @@ html[data-high-contrast] .blueprint {
 .plan-trams rect {
   fill: var(--market);
 }
+/* Im Schwerkraft-Effekt ruhen die Bahnen: auf langsamen Geräten kosteten sie
+   dort messbar Bilder (GravityEasterEgg). */
+html[data-gravity-active] .plan-trams {
+  display: none;
+}
+/* Hubschrauber: per Klick startbar (Helicopter.tsx). */
+.plan-heli {
+  pointer-events: auto;
+  cursor: pointer;
+  outline: none;
+  opacity: 0.55;
+  transition: opacity 0.4s ease;
+}
+.plan-heli[data-flying],
+.plan-heli:hover,
+.plan-heli:focus-visible {
+  opacity: 1;
+}
+.plan-heli circle {
+  fill: transparent;
+}
+/* Nur geparkt: WASD zählt als Tastaturbedienung, der Ring flöge sonst mit. */
+.plan-heli:not([data-flying]):focus-visible circle {
+  stroke: var(--physics);
+  stroke-width: 2.5;
+}
+.plan-heli rect {
+  fill: var(--physics);
+}
+.plan-heli path {
+  stroke: var(--physics);
+  stroke-width: 3;
+}
+.plan-heli .plan-heli-rotor path {
+  stroke-width: 1.5;
+}
+/* Ohne Tastatur ließe er sich zwar starten, aber nicht steuern. */
+@media (hover: none) {
+  .plan-heli-layer {
+    display: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .plan-trams {
+  .plan-trams,
+  .plan-heli-layer {
     display: none;
   }
 }

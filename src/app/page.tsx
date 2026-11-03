@@ -76,16 +76,20 @@ export default async function HomePage() {
       <ScrollReveal />
 
       {/* ═══════════════════ Hero ═══════════════════ */}
-      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden">
+      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden sm:[html[data-gravity-active]_&]:overflow-visible">
         {/* Lageplan des Campus — zum Text hin (links unten) ausgeblendet, auf dem
             Telefon (Text über volle Breite) noch leiser. */}
-        <CampusPlan className="decor absolute -top-1/4 -left-[70%] -z-10 h-[125%] w-[170%] max-w-none opacity-35 sm:inset-0 sm:size-full lg:opacity-60 [mask-image:radial-gradient(75%_90%_at_75%_35%,#000_25%,transparent_80%)]" />
-        <div aria-hidden="true" className="decor glow absolute inset-0 -z-10" />
+        <CampusPlan
+          className="decor absolute -top-1/4 -left-[70%] h-[125%] w-[170%] max-w-none sm:inset-0 sm:size-full"
+          fade="-z-10 opacity-35 lg:opacity-60 [mask-image:radial-gradient(75%_90%_at_75%_35%,#000_25%,transparent_80%)]"
+        />
+        <div aria-hidden="true" data-gravity-ignore className="decor glow absolute inset-0 -z-10" />
         {/* Füllt genau den Bildschirm zwischen Kopfzeile (4rem) und Daumenleiste
             (4rem + 1px Rand + Safe Area); als installierte App fehlt am Telefon
-            die Kopfzeile, am Desktop die Daumenleiste. */}
-        <Frame className="relative flex min-h-[calc(100svh_-_8rem_-_1px_-_env(safe-area-inset-bottom))] flex-col justify-center pt-8 pb-9 standalone:max-lg:min-h-[calc(100svh_-_4rem_-_1px_-_env(safe-area-inset-bottom))] sm:pt-20 sm:pb-20 lg:min-h-[calc(100svh-4rem)] lg:py-24">
-          <p className="rise flex items-center gap-3 font-serif text-lg max-sm:mt-auto text-physics italic sm:text-xl">
+            die Kopfzeile, am Desktop die Daumenleiste. `data-gravity-*`: Text und
+            Knöpfe fallen einzeln und sind die Hindernisse für den Hubschrauber. */}
+        <Frame data-gravity-split className="relative flex min-h-[calc(100svh_-_8rem_-_1px_-_env(safe-area-inset-bottom))] flex-col justify-center pt-8 pb-9 standalone:max-lg:min-h-[calc(100svh_-_4rem_-_1px_-_env(safe-area-inset-bottom))] sm:pt-20 sm:pb-20 lg:min-h-[calc(100svh-4rem)] lg:py-24">
+          <p data-gravity-body className="rise flex items-center gap-3 font-serif text-lg max-sm:mt-auto text-physics italic sm:text-xl">
             <span aria-hidden="true" className="draw h-px w-10 bg-physics" />
             e. V. an der Universität Ulm, seit&nbsp;2004
           </p>
@@ -95,13 +99,14 @@ export default async function HomePage() {
           <div className="@container mt-4 sm:mt-6">
             <h1
               id="hero-title"
+              data-gravity-split
               className="display rise text-[min(12.6cqi,8.5rem)] hyphens-manual"
               style={{ "--i": 1 } as React.CSSProperties}
             >
-              <span className="block">
+              <span data-gravity-body className="block w-fit">
                 Wirtschafts&shy;<span className="text-physics">Physik</span>
               </span>
-              <span className="block">Alumni</span>
+              <span data-gravity-body className="block w-fit">Alumni</span>
             </h1>
           </div>
 
@@ -111,23 +116,23 @@ export default async function HomePage() {
             style={{ "--i": 2 } as React.CSSProperties}
           />
           <div className="mt-6 grid gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <p className="rise max-w-xl text-base leading-relaxed text-pretty sm:text-xl" style={{ "--i": 3 } as React.CSSProperties}>
+            <p data-gravity-body className="rise max-w-xl text-base leading-relaxed text-pretty sm:text-xl" style={{ "--i": 3 } as React.CSSProperties}>
               Wir verbinden Studierende, Absolvent:innen und Lehrende der{" "}
               <a href={STUDY_PROGRAMS.physik} className="link">Physik</a> und{" "}
               <a href={STUDY_PROGRAMS.wirtschaftsphysik} className="link">Wirtschaftsphysik</a>{"\u00a0"}— mit Stammtischen, Vorträgen und Exkursionen.
             </p>
             <div className="rise flex flex-wrap gap-3 max-sm:*:grow" style={{ "--i": 4 } as React.CSSProperties}>
               {session ? (
-                <Cta href="/dashboard" arrow>
+                <Cta data-gravity-body href="/dashboard" arrow>
                   Zum Mitgliederbereich
                 </Cta>
               ) : (
-                <Cta href={MEMBERSHIP_APPLICATION_PATH} arrow>
+                <Cta data-gravity-body href={MEMBERSHIP_APPLICATION_PATH} arrow>
                   Mitglied werden
                 </Cta>
               )}
               {shows("/termine") && (
-                <Cta href="/termine" variant="line">
+                <Cta data-gravity-body href="/termine" variant="line">
                   Nächste Termine
                 </Cta>
               )}

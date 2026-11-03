@@ -666,9 +666,9 @@
     "semantic_hash": "3e667da023325c98c835de412488b71f"
   },
   "src/app/page.tsx": {
-    "mtime": 1793115981.8011272,
-    "seen": 1793116007.074676,
-    "ast_hash": "0c674904bf6c3a484816e165df6dda76",
+    "mtime": 1793721734.1577334,
+    "seen": 1793721988.464324,
+    "ast_hash": "dae8037bbf8aa21505c6059000faa790",
     "semantic_hash": ""
   },
   "src/app/reset-password/layout.tsx": {
@@ -1920,9 +1920,9 @@
     "semantic_hash": ""
   },
   "src/components/GravityEasterEgg.tsx": {
-    "mtime": 1792573109.6292622,
-    "seen": 1792743435.4893491,
-    "ast_hash": "82c75feff1b204a3b9121589a337fabb",
+    "mtime": 1793722661.1491013,
+    "seen": 1793722835.494941,
+    "ast_hash": "db576869b09c71bb9c2fd4fd14723bf6",
     "semantic_hash": ""
   },
   "src/components/GravityTrigger.tsx": {
@@ -1938,9 +1938,9 @@
     "semantic_hash": ""
   },
   "tests/gravityEasterEgg.test.ts": {
-    "mtime": 1792501017.031508,
-    "seen": 1792502133.343317,
-    "ast_hash": "f8e6d20140737704ca93c684d19df83b",
+    "mtime": 1793722538.3568547,
+    "seen": 1793722835.5038872,
+    "ast_hash": "5f6eac9506731a58243ce81b4a15e0f0",
     "semantic_hash": ""
   },
   "GEMINI.md": {
@@ -2244,27 +2244,27 @@
     "semantic_hash": ""
   },
   "scripts/campus-plan.py": {
-    "mtime": 1793114542.0673764,
-    "seen": 1793114560.401856,
-    "ast_hash": "4cb8e063d02947bfe73afc1ee2fc03f4",
+    "mtime": 1793720991.0170255,
+    "seen": 1793721165.023585,
+    "ast_hash": "16202f5617e0635d51ff7c46596bb269",
     "semantic_hash": ""
   },
   "src/components/CampusPlan.tsx": {
-    "mtime": 1793113866.7492769,
-    "seen": 1793113966.7037811,
-    "ast_hash": "e5ca29cf32abca99e614129a60f63043",
+    "mtime": 1793720967.2957084,
+    "seen": 1793721165.02628,
+    "ast_hash": "b6f5e45214ad646e22fde835f1afc412",
     "semantic_hash": ""
   },
   "src/components/campusPlan.json": {
-    "mtime": 1793114542.225332,
-    "seen": 1793114560.4049091,
-    "ast_hash": "1e420cbbb953a69febd5fd96d6aff7c5",
+    "mtime": 1793720991.0263758,
+    "seen": 1793721165.026749,
+    "ast_hash": "6c3e639cd0964ee841e95c54c1f45379",
     "semantic_hash": ""
   },
   "src/components/PauseOffscreen.tsx": {
-    "mtime": 1793113841.6612675,
-    "seen": 1793113966.704231,
-    "ast_hash": "d3a3006f623bbf90a98e92ba896b70af",
+    "mtime": 1793721734.1571867,
+    "seen": 1793721988.465034,
+    "ast_hash": "54b77df16c8ee4de9f8b7583bb0edead",
     "semantic_hash": ""
   },
   "anleitungen/beitraege.md": {
@@ -2325,6 +2325,24 @@
     "mtime": 1793655055.2008245,
     "seen": 1793655065.6102898,
     "ast_hash": "48f0a0d9972c8ae51aa91967183e9afe",
+    "semantic_hash": ""
+  },
+  "src/components/Helicopter.tsx": {
+    "mtime": 1793721734.156466,
+    "seen": 1793721988.464833,
+    "ast_hash": "17bc6d6682cbc776d4138827a5f347cd",
+    "semantic_hash": ""
+  },
+  "src/lib/heliFlight.ts": {
+    "mtime": 1793722538.3563228,
+    "seen": 1793722835.496616,
+    "ast_hash": "d02e1ac07981461af4e4cf533aeaf0cb",
+    "semantic_hash": ""
+  },
+  "tests/heliFlight.test.ts": {
+    "mtime": 1793721814.9312587,
+    "seen": 1793721988.467032,
+    "ast_hash": "5d4e19ec26d231cf93bfa0691a9b7dba",
     "semantic_hash": ""
   }
 }

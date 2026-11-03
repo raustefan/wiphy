@@ -126,3 +126,21 @@ test("Masse wächst mit der Fläche, Mindestmasse verhindert Division durch null
   assert.ok(massFromArea(400, 300) > massFromArea(120, 40));
   assert.equal(massFromArea(10, 10), 0.5);
 });
+
+test("auch mit 15 Bildern pro Sekunde stapeln sich Kacheln, ohne einander zu durchdringen", () => {
+  const bottom = box(0, 900);
+  const top = box(20, 0);
+  for (let t = 0; t < 5; t += 1 / 15) stepBodies([bottom, top], { gx: 0, gy: 1600 }, bounds, 1 / 15);
+  assert.ok(Math.abs(bottom.y - 950) < 1.5, `untere liegt am Boden (${bottom.y})`);
+  assert.ok(Math.abs(top.y + top.h - bottom.y) < 2.5, `obere liegt auf der unteren (${top.y})`);
+  assert.ok(Math.abs(top.angle) < 0.05 && Math.abs(bottom.angle) < 0.05, "Stapel bleibt gerade");
+});
+
+test("mit 15 Bildern pro Sekunde fällt eine Kachel so schnell wie mit 60", () => {
+  const fall = (fps: number) => {
+    const b = box(0, 0);
+    for (let t = 0; t < 0.5; t += 1 / fps) stepBodies([b], { gx: 0, gy: 1600 }, bounds, 1 / fps);
+    return b.y;
+  };
+  assert.ok(Math.abs(fall(15) - fall(60)) < 15, `${fall(15)} gegenüber ${fall(60)}`);
+});

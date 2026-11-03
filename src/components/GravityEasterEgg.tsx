@@ -10,7 +10,7 @@ import { distanceToBody, massFromArea, stepBodies, wake, type Body, type Field }
 type GravityPreset = "earth" | "blackhole";
 
 const PRESETS: { id: GravityPreset; icon: string; label: string; status: string; gy: number }[] = [
-  { id: "earth", icon: "🌍", label: "Erde (1g)", status: "Erdschwerefeld: g = 9.81 m/s²", gy: 1200 },
+  { id: "earth", icon: "🌍", label: "Erde (1g)", status: "Erdschwerefeld: g = 9.81 m/s²", gy: 1600 },
   { id: "blackhole", icon: "🕳️", label: "Singulär", status: "Singularität: Ein Schwarzes Loch entsteht", gy: 0 },
 ];
 
@@ -172,12 +172,13 @@ function collectAndDetachBodies(screenOnly: boolean): PhysicsBody[] {
     "code.formula-block",
     "article",
     "a[class*='rounded-full']",
+    "[data-gravity-body]",
   ];
 
   // Nur äußerste Treffer, damit Kacheln als Ganzes fallen (querySelectorAll liefert Eltern vor Kindern)
   const picked: HTMLElement[] = [];
   for (const el of container.querySelectorAll<HTMLElement>(selectors.join(","))) {
-    if (el.closest("[data-gravity-ignore]")) continue;
+    if (el.closest("[data-gravity-ignore]") || el.hasAttribute("data-gravity-split")) continue;
     if (picked.some((parent) => parent.contains(el))) continue;
     const rect = el.getBoundingClientRect();
     if (rect.width < 50 || rect.height < 20) continue;
@@ -292,6 +293,7 @@ export default function GravityEasterEgg() {
     document.body.style.minHeight = "";
     document.documentElement.style.overflow = "";
     delete document.documentElement.dataset.gravityActive;
+    window.dispatchEvent(new CustomEvent("wiphy:gravity-restored"));
     bodiesRef.current = [];
     holeRef.current = null;
     setHoleId(null);
@@ -339,7 +341,8 @@ export default function GravityEasterEgg() {
 
   useEffect(() => cleanupImmediate, [cleanupImmediate]);
 
-  const triggerCollapse = useCallback(() => {
+  /** `impact`: Aufschlagpunkt in Bildschirmkoordinaten — dort fliegen die Kacheln auseinander. */
+  const triggerCollapse = useCallback((impact?: { x: number; y: number }) => {
     if (isActive) return;
 
     // iOS gibt den Neigungssensor nur nach Rückfrage innerhalb einer Nutzergeste frei
@@ -349,10 +352,21 @@ export default function GravityEasterEgg() {
     }
 
     audioFxRef.current.playCollapse();
-    showStatus("Gravitationskonstante manipuliert! G = 9.81 m/s²");
+    showStatus(impact ? "Absturz! G = 9.81 m/s²" : "Gravitationskonstante manipuliert! G = 9.81 m/s²");
     screenOnlyRef.current = window.matchMedia("(pointer: coarse)").matches;
     if (screenOnlyRef.current) document.documentElement.style.overflow = "hidden";
     bodiesRef.current = collectAndDetachBodies(screenOnlyRef.current);
+    if (impact) {
+      for (const b of bodiesRef.current) {
+        const dx = b.x + b.w / 2 - (impact.x + window.scrollX);
+        const dy = b.y + b.h / 2 - (impact.y + window.scrollY);
+        const dist = Math.hypot(dx, dy) || 1;
+        const force = 1600 * Math.max(0, 1 - dist / 900);
+        b.vx += (dx / dist) * force;
+        b.vy += (dy / dist) * force;
+        b.vAngle += ((dx >= 0 ? 1 : -1) * force) / 300;
+      }
+    }
     // Schwebende Hinweise der Seite (z. B. InstallHint) räumen damit die Bühne
     document.documentElement.dataset.gravityActive = "";
     collisionsRef.current = 0;
@@ -369,12 +383,12 @@ export default function GravityEasterEgg() {
     bodiesRef.current.forEach((b) => {
       b.dragging = false;
       release(b); // verschluckte Kacheln kommen vom Loch aus zurückgeflogen
-      b.el.style.transition = "transform 0.75s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.75s ease";
+      b.el.style.transition = "transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.6s ease";
       b.el.style.boxShadow = "";
       place(b, b.homeX, b.homeY, 0);
     });
     // Gesetzter Timer hält Physik und Ziehen an, damit nichts die Transition überschreibt
-    restoreTimerRef.current = setTimeout(cleanupImmediate, 800);
+    restoreTimerRef.current = setTimeout(cleanupImmediate, 650);
   }, [showStatus, cleanupImmediate, dissolveHole]);
 
   const selectPreset = (id: GravityPreset) => {
@@ -423,7 +437,7 @@ export default function GravityEasterEgg() {
 
   // Auslöser aus dem Footer
   useEffect(() => {
-    const handleTrigger = () => triggerCollapse();
+    const handleTrigger = (e: Event) => triggerCollapse((e as CustomEvent).detail ?? undefined);
     window.addEventListener("wiphy:gravity-collapse", handleTrigger);
     return () => window.removeEventListener("wiphy:gravity-collapse", handleTrigger);
   }, [triggerCollapse]);
@@ -437,8 +451,8 @@ export default function GravityEasterEgg() {
       if (e.gamma === null || e.beta === null) return;
       setHasTiltSensor(true);
       const tilt = {
-        gx: Math.sin((e.gamma * Math.PI) / 180) * 1200,
-        gy: Math.sin((e.beta * Math.PI) / 180) * 1200,
+        gx: Math.sin((e.gamma * Math.PI) / 180) * 1600,
+        gy: Math.sin((e.beta * Math.PI) / 180) * 1600,
       };
       tiltRef.current = tilt;
       // Spürbar gekippt: eingeschlafene Kacheln sollen nachrutschen. Sensorrauschen weckt niemanden.
@@ -536,7 +550,8 @@ export default function GravityEasterEgg() {
     bodiesRef.current.forEach(wake); // neues Schwerefeld
     let last = performance.now();
     let frame = requestAnimationFrame(function step(time) {
-      const dt = Math.min(0.04, (time - last) / 1000);
+      // Hoch genug, dass langsame Geräte nicht in Zeitlupe fallen; `stepBodies` deckelt die Rechenschritte ohnehin.
+      const dt = Math.min(1 / 15, (time - last) / 1000);
       last = time;
       frame = requestAnimationFrame(step);
       if (restoreTimerRef.current) return;
@@ -574,7 +589,7 @@ export default function GravityEasterEgg() {
         .filter(({ body }) => body.y + body.h >= top && body.y <= bottom)
         .sort((p, q) => q.speed - p.speed)
         .slice(0, 3)
-        .forEach(({ body, speed }) => audioFxRef.current.playThud(speed / 1200, body.mass));
+        .forEach(({ body, speed }) => audioFxRef.current.playThud(speed / 1600, body.mass));
       if (impacts.length && collisionElRef.current) {
         collisionsRef.current += impacts.length;
         collisionElRef.current.textContent = String(collisionsRef.current);
@@ -696,13 +711,13 @@ export default function GravityEasterEgg() {
       >
         <div role="status" aria-live="polite">
           {statusMessage && (
-            <div className="rounded-full border border-physics/30 bg-surface/95 px-4 py-1.5 text-xs font-semibold text-physics shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2">
+            <div className="rounded-full border border-physics/30 bg-surface/95 px-4 py-1.5 text-xs font-semibold text-physics shadow-xl animate-in fade-in slide-in-from-bottom-2">
               {statusMessage}
             </div>
           )}
         </div>
 
-        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-line bg-surface/90 px-2 py-2 shadow-2xl backdrop-blur-lg sm:max-w-4xl sm:justify-between sm:gap-3 sm:px-6 sm:py-2.5">
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-line bg-surface/95 px-2 py-2 shadow-2xl sm:max-w-4xl sm:justify-between sm:gap-3 sm:px-6 sm:py-2.5">
           <div className="hidden items-center gap-2.5 sm:flex">
             <span className="grid size-8 place-items-center rounded-lg bg-physics/10 text-physics">
               <HugeiconsIcon icon={SparklesIcon} size={17} />
