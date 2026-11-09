@@ -14,6 +14,7 @@ import {
   type DirectoryFilters,
 } from "@/lib/memberDirectory";
 import type { SepaCandidate } from "@/lib/server/services/feeService";
+import type { SepaCreditorDefaults } from "@/lib/server/env";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { DirectoryTable, type DirectoryAccount } from "./DirectoryTable";
 
@@ -63,6 +64,7 @@ export function MemberDirectory({
   year,
   availableYears,
   sepaCandidates,
+  sepaCreditor,
 }: {
   accounts: DirectoryAccount[];
   /** Konten ohne Mitgliedschaft im (vergangenen) Jahr — ausgeblendet. */
@@ -70,6 +72,7 @@ export function MemberDirectory({
   year: number;
   availableYears: number[];
   sepaCandidates: SepaCandidate[];
+  sepaCreditor: SepaCreditorDefaults;
 }) {
   const searchParams = useSearchParams();
   // Die Filter stehen auch in der Adresszeile: sie überstehen Neuladen und den
@@ -188,9 +191,11 @@ export function MemberDirectory({
         users={accounts}
         hiddenCount={hiddenCount}
         visibleIds={visibleIds}
+        filterKey={filters}
         selectedYear={year}
         availableYears={availableYears}
         sepaCandidates={sepaCandidates}
+        sepaCreditor={sepaCreditor}
       />
     </Card>
   );

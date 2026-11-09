@@ -91,3 +91,19 @@ export function getSmtpConfig() {
     from,
   };
 }
+
+/**
+ * Vorbelegung für das Vereinskonto im SEPA-Dialog. Steht nur in der `.env`,
+ * nicht im Repository; im Dialog bleibt alles änderbar. Fehlt eine Variable,
+ * bleibt das Feld leer (die Gläubiger-ID fällt auf `SEPA_CREDITOR_ID` zurück).
+ */
+export function getSepaCreditorDefaults() {
+  return {
+    name: process.env.SEPA_CREDITOR_NAME?.trim() ?? "",
+    iban: process.env.SEPA_CREDITOR_IBAN?.trim() ?? "",
+    bic: process.env.SEPA_CREDITOR_BIC?.trim() ?? "",
+    id: process.env.SEPA_CREDITOR_ID?.trim() ?? "",
+  };
+}
+
+export type SepaCreditorDefaults = ReturnType<typeof getSepaCreditorDefaults>;

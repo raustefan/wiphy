@@ -1,7 +1,7 @@
 "use client";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AddCircleIcon, AlertCircleIcon, Building03Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, CircleIcon, Coins01Icon, EuroCircleIcon, LockIcon, Mail01Icon, Message01Icon, Mortarboard01Icon, PencilEdit02Icon, PencilIcon, SearchMinusIcon, ShieldCheckIcon, SquareUnlock01Icon, TaskDone01Icon, Tick01Icon, UserCircleIcon, UserRemove01Icon } from "@hugeicons/core-free-icons";
+import { AddCircleIcon, AlertCircleIcon, ArrowUpDownIcon, Building03Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, CircleIcon, Coins01Icon, EuroCircleIcon, LockIcon, Mail01Icon, Message01Icon, Mortarboard01Icon, PencilEdit02Icon, PencilIcon, SearchMinusIcon, ShieldCheckIcon, SquareUnlock01Icon, TaskDone01Icon, Tick01Icon, UserCircleIcon, UserRemove01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -46,6 +46,7 @@ import {
   initializeBillingYear,
 } from "./feeActions";
 import type { SepaCandidate } from "@/lib/server/services/feeService";
+import type { SepaCreditorDefaults } from "@/lib/server/env";
 import { SepaDialog } from "./SepaDialog";
 
 export type DirectoryAccount = {
@@ -449,6 +450,10 @@ const GROUPS = [
 /** Spaltenzahl inklusive der auf dem Telefon ausgeblendeten — für `colSpan`. */
 const COLUMNS = 9;
 
+// Händisch angelegte Konten tragen das Anlagedatum als lastLoginAt; alles davor war nie ein echter Login.
+// Prisma speichert UTC; Stichtag ist 15:00 wie in der DB (= 16:00 MEZ). ISO-Strings sind lexikografisch vergleichbar.
+const IMPORT_CUTOFF = "2026-10-25T15:00:00.000Z";
+
 /**
  * Eine Tabelle für alle Konten, hart getrennt in Mitglieder, Ehrenmitglieder
  * und Konten ohne Mitgliedschaft. Jede Gruppe ist ein eigener `<tbody>` mit
@@ -462,18 +467,23 @@ export function DirectoryTable({
   users,
   hiddenCount,
   visibleIds,
+  filterKey,
   selectedYear,
   availableYears,
   sepaCandidates,
+  sepaCreditor,
 }: {
   users: DirectoryAccount[];
   /** Konten ohne Mitgliedschaft im gewählten Jahr, die gar nicht erst übergeben wurden. */
   hiddenCount: number;
   /** Treffer der Suche und Filter; ohne Angabe alle. */
   visibleIds?: Set<string>;
+  /** Wechselt nur, wenn Suche oder Filter geändert werden — nicht bei neuen Daten. */
+  filterKey?: unknown;
   selectedYear: number;
   availableYears: number[];
   sepaCandidates: SepaCandidate[];
+  sepaCreditor: SepaCreditorDefaults;
 }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mailUsers, setMailUsers] = useState<DirectoryAccount[] | null>(null);
@@ -499,19 +509,47 @@ export function DirectoryTable({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const groups = useMemo(() => {
-    const visible = visibleIds ? users.filter((u) => visibleIds.has(u.id)) : users;
+  const liveSorted = useMemo(() => {
     const direction = sort.desc ? -1 : 1;
-    const sorted = [...visible].sort((a, b) => {
+    return [...users].sort((a, b) => {
       const result = compareBy(sort.key, a, b, selectedYear);
       // Gleichstand bricht nach Namen auf: sonst springen Zeilen bei jedem
       // Sortierwechsel umher.
       if (result !== 0) return result * direction;
       return displayName(a).localeCompare(displayName(b), "de");
     });
-    const grouped = groupAccounts(sorted);
-    return GROUPS.map((g) => ({ ...g, users: grouped[g.key] }));
-  }, [users, visibleIds, sort, selectedYear]);
+  }, [users, sort, selectedYear]);
+
+  // Eine Änderung (z. B. Zahlung abgehakt) soll die Zeile weder unter dem
+  // Cursor wegsortieren noch aus dem Filter werfen: Reihenfolge und Treffer
+  // bleiben eingefroren, bis Sortierung, Filter oder Jahr wechseln oder
+  // „Liste aktualisieren“ geklickt wird.
+  const snapshot = () => ({ sort, selectedYear, filterKey, ids: liveSorted.map((u) => u.id), visible: visibleIds });
+  const [frozen, setFrozen] = useState(snapshot);
+  if (frozen.sort !== sort || frozen.selectedYear !== selectedYear || frozen.filterKey !== filterKey) {
+    setFrozen(snapshot());
+  }
+
+  const { groups, listStale } = useMemo(() => {
+    const rank = new Map(frozen.ids.map((id, i) => [id, i]));
+    const live = visibleIds ? liveSorted.filter((u) => visibleIds.has(u.id)) : liveSorted;
+    const shown = liveSorted.filter((u) => !frozen.visible || frozen.visible.has(u.id));
+    // Stabil sortiert: Neue Konten ohne Platz im Schnappschuss bleiben am Ende
+    // in Live-Reihenfolge.
+    const ordered = shown.sort(
+      (a, b) => (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+    );
+    const grouped = groupAccounts(ordered);
+    const liveGrouped = groupAccounts(live);
+    return {
+      groups: GROUPS.map((g) => ({ ...g, users: grouped[g.key] })),
+      listStale: GROUPS.some(
+        (g) =>
+          grouped[g.key].length !== liveGrouped[g.key].length ||
+          grouped[g.key].some((u, i) => u.id !== liveGrouped[g.key][i].id),
+      ),
+    };
+  }, [liveSorted, visibleIds, frozen]);
   const visibleUsers = useMemo(() => groups.flatMap((g) => g.users), [groups]);
 
   // Mitglieder ohne gespeicherte Beitragszeile: erklären und das Anlegen anbieten.
@@ -615,27 +653,41 @@ export function DirectoryTable({
             </Select>
           </div>
 
-          <div
-            className={cn(
-              "flex items-center gap-2 rounded-[3px] border py-1 pr-3 pl-1 transition-colors",
-              editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
+          <div className="flex flex-wrap items-center gap-2">
+            {listStale && (
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                onClick={() => setFrozen(snapshot())}
+                title="Geänderte Zeilen bleiben an ihrem Platz und im Filter, bis die Liste aktualisiert wird."
+              >
+                <HugeiconsIcon icon={ArrowUpDownIcon} size={15} aria-hidden="true" />
+                Liste aktualisieren
+              </Button>
             )}
-          >
-            <Switch
-              checked={editing}
-              onCheckedChange={setEditing}
-              aria-label="Zahlungsdaten bearbeiten"
-            />
-            <span
-              aria-hidden="true"
+            <div
               className={cn(
-                "flex items-center gap-1.5 text-sm font-medium",
-                editing ? "text-physics" : "text-muted",
+                "flex items-center gap-2 rounded-[3px] border py-1 pr-3 pl-1 transition-colors",
+                editing ? "border-physics/40 bg-physics/10" : "border-line bg-surface",
               )}
             >
-              {editing ? <HugeiconsIcon icon={SquareUnlock01Icon} size={14} /> : <HugeiconsIcon icon={LockIcon} size={14} />}
-              Bearbeiten
-            </span>
+              <Switch
+                checked={editing}
+                onCheckedChange={setEditing}
+                aria-label="Zahlungsdaten bearbeiten"
+              />
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex items-center gap-1.5 text-sm font-medium",
+                  editing ? "text-physics" : "text-muted",
+                )}
+              >
+                {editing ? <HugeiconsIcon icon={SquareUnlock01Icon} size={14} /> : <HugeiconsIcon icon={LockIcon} size={14} />}
+                Bearbeiten
+              </span>
+            </div>
           </div>
         </div>
 
@@ -908,7 +960,7 @@ export function DirectoryTable({
                           {formatDateShort(user.joinedAt)}
                         </Td>
                         <Td className="hidden px-2 py-1.5 text-xs whitespace-nowrap text-muted tabular-nums lg:table-cell">
-                          {formatDateShort(user.lastLoginAt)}
+                          {user.lastLoginAt < IMPORT_CUTOFF ? "nie" : formatDateShort(user.lastLoginAt)}
                         </Td>
 
                         <Td className="hidden px-1 py-1.5 text-center sm:table-cell">
@@ -1104,6 +1156,7 @@ export function DirectoryTable({
         <SepaDialog
           year={selectedYear}
           candidates={sepaCandidates}
+          creditor={sepaCreditor}
           selectedUsers={selectedUsers}
           onClose={() => setSepaOpen(false)}
         />

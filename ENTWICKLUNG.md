@@ -188,6 +188,7 @@ Alle Variablen gehören in eine `.env`-Datei im Projektwurzelverzeichnis.
 | `SMTP_HOST` / `SMTP_PORT`   | wenn nicht `GmailWorkspace` | Generische SMTP-Zugangsdaten                          |
 | `SECURITY_LOG_PEPPER`       | optional | Pseudonymisiert IP/E-Mail im Sicherheitsprotokoll; fällt sonst auf `NEXTAUTH_SECRET` zurück |
 | `NEXT_PUBLIC_SITE_URL`      | optional | Öffentliche Adresse für Sitemap, `robots.txt`, RSS, Link-Vorschauen; fällt sonst auf `NEXTAUTH_URL` zurück |
+| `SEPA_CREDITOR_NAME` / `SEPA_CREDITOR_IBAN` / `SEPA_CREDITOR_BIC` / `SEPA_CREDITOR_ID` | optional | Vorbelegung des Vereinskontos (Kontoinhaber, IBAN, BIC, Gläubiger-ID) im SEPA-Dialog der Mitgliederübersicht; im Dialog änderbar, ohne Variable bleiben die Felder leer |
 
 Ohne `DATABASE_URL`, `NEXTAUTH_SECRET`/`NEXTAUTH_URL` oder `ALTCHA_HMAC_KEY`
 startet die Anwendung nicht bzw. bricht `pnpm build` ab — bewusst kein

@@ -9,6 +9,7 @@ import {
   toSepaCandidates,
 } from "@/lib/server/services/feeService";
 import { getFeeDefaults } from "@/lib/server/services/feeDefaultService";
+import { getSepaCreditorDefaults } from "@/lib/server/env";
 import { processTerminations } from "@/lib/server/services/terminationService";
 import { directoryStats } from "@/lib/memberDirectory";
 import { annualFee, wasMemberInYear } from "@/lib/feeCalculation";
@@ -224,6 +225,7 @@ export default async function UserManagementPage({
             year={year}
             availableYears={availableYears}
             sepaCandidates={sepaCandidates}
+            sepaCreditor={getSepaCreditorDefaults()}
           />
         </>
       )}

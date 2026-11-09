@@ -2,6 +2,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Download01Icon } from "@hugeicons/core-free-icons";
 import type { SepaCandidate } from "@/lib/server/services/feeService";
+import type { SepaCreditorDefaults } from "@/lib/server/env";
 import { SEPA_CREDITOR_ID } from "@/lib/membership";
 import { CREDITOR_ID_PATTERN, MANDATE_ID_PATTERN, isoDate } from "@/lib/sepa";
 import { formatDate, formatEuro } from "@/lib/format";
@@ -33,11 +34,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export function SepaDialog({
   year,
   candidates,
+  creditor,
   selectedUsers,
   onClose,
 }: {
   year: number;
   candidates: SepaCandidate[];
+  /** Vorbelegung aus der `.env`; im Dialog änderbar. */
+  creditor: SepaCreditorDefaults;
   selectedUsers: Array<{ id: string; firstName: string; name: string | null }>;
   onClose: () => void;
 }) {
@@ -69,22 +73,22 @@ export function SepaDialog({
         <h3 className="font-bold tracking-tight">Vereinskonto (Zahlungsempfänger)</h3>
         <div className="grid items-start gap-4 sm:grid-cols-2">
           <Field label="Kontoinhaber" required>
-            <Input name="creditorName" required maxLength={70} />
+            <Input name="creditorName" required maxLength={70} defaultValue={creditor.name} />
           </Field>
           <Field label="Gläubiger-ID" required>
             <Input
               name="creditorId"
               required
-              defaultValue={SEPA_CREDITOR_ID}
+              defaultValue={creditor.id || SEPA_CREDITOR_ID}
               pattern={CREDITOR_ID_PATTERN}
               placeholder="DE98ZZZ09999999999"
             />
           </Field>
           <Field label="IBAN" required>
-            <IbanInput name="creditorIban" required />
+            <IbanInput name="creditorIban" required defaultValue={creditor.iban} />
           </Field>
           <Field label="BIC" hint="Optional">
-            <Input name="creditorBic" autoComplete="off" />
+            <Input name="creditorBic" autoComplete="off" defaultValue={creditor.bic} />
           </Field>
         </div>
 
@@ -118,7 +122,7 @@ export function SepaDialog({
               name="remittance"
               required
               maxLength={140}
-              defaultValue={`Mitgliedsbeitrag ${year}`}
+              defaultValue={`Mitgliedsbeitrag Wirtschaftsphysik Alumni e.V. fuer ${year}, Kontaktdaten aktuell? Aktualisieren auf https://wiphy.de/`}
             />
           </Field>
         </div>
