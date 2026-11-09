@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/MailForm.tsx": {
-    "mtime": 1792960424.5867145,
-    "seen": 1792960721.605898,
-    "ast_hash": "450e96d0467d03aa30d59b7e8aa066da",
+    "mtime": 1794257061.388495,
+    "seen": 1794257075.291786,
+    "ast_hash": "25a56e4855f93272c016c94b3cb5c39b",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/actions.ts": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "src/components/EmailComposerDialog.tsx": {
-    "mtime": 1792958790.3258617,
-    "seen": 1792958926.713582,
-    "ast_hash": "d6e29321b895feb149018b8c2b0f067b",
+    "mtime": 1794257033.2776487,
+    "seen": 1794257075.293602,
+    "ast_hash": "bae66772306fe234867fa3feff576a40",
     "semantic_hash": ""
   },
   "src/components/EmailEditorToolbar.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/email/actions.ts": {
-    "mtime": 1792958726.9348311,
-    "seen": 1792958926.7165709,
-    "ast_hash": "05c735a532c80a3ee98d41c82cf8f77c",
+    "mtime": 1794257033.277017,
+    "seen": 1794257075.2948039,
+    "ast_hash": "81aa0807c9ee9d07297a7ec295f529b2",
     "semantic_hash": ""
   },
   "src/lib/server/email/htmlToText.ts": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/email/mailService.ts": {
-    "mtime": 1792960230.9444234,
-    "seen": 1792960721.610128,
-    "ast_hash": "562877b8d0934784c77bd50a659c839e",
+    "mtime": 1794257033.2767036,
+    "seen": 1794257075.294851,
+    "ast_hash": "086f0e1434f406dfb2183720c7d61f5a",
     "semantic_hash": ""
   },
   "src/lib/server/email/mailer.ts": {
@@ -2379,6 +2379,12 @@
     "mtime": 1794256153.513068,
     "seen": 1794256347.231231,
     "ast_hash": "3ab3a484f7c7621b9bf6d2c854de0365",
+    "semantic_hash": ""
+  },
+  "src/components/EmailPreviewButton.tsx": {
+    "mtime": 1794257033.2819817,
+    "seen": 1794257075.293615,
+    "ast_hash": "637d319c7ffe401462e01ae5887c8a98",
     "semantic_hash": ""
   }
 }

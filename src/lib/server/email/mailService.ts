@@ -16,6 +16,8 @@ import { buildEventIcs, icsFileName, type IcsEvent } from "@/lib/server/ics";
 import { sanitizeEmailHtml } from "./sanitizeHtml";
 import { htmlToText } from "./htmlToText";
 import { sendEmail } from "./mailer";
+import { renderEmailHtml } from "./layout";
+import { getSignatureBoardLine } from "@/lib/server/services/boardService";
 import { logSentMail } from "./mailHistory";
 import { describeSendError, sendEach, type MailSendReport } from "./sendReport";
 import { newsletterUnsubscribeUrls } from "@/lib/server/newsletterToken";
@@ -171,6 +173,25 @@ function composeMessage(subject: string, html: string, event?: AnnouncedEvent): 
       ...(event ? eventBlocks(event) : []),
     ],
   };
+}
+
+/**
+ * Die Mail, wie sie beim Empfänger ankommt — dasselbe Briefpapier, derselbe
+ * Terminblock wie beim Versand. Platzhalter bleiben stehen: die Vorschau gilt
+ * für alle Empfänger.
+ */
+export async function renderMailPreview(input: {
+  subject: string;
+  html: string;
+  event?: AnnouncedEvent;
+  newsletter?: boolean;
+}): Promise<string> {
+  return renderEmailHtml(
+    composeMessage(input.subject, sanitizeEmailHtml(input.html), input.event),
+    await getSignatureBoardLine(),
+    // Der echte Abmeldelink ist persönlich; hier zählt nur, dass die Zeile da ist.
+    input.newsletter ? "#" : undefined,
+  );
 }
 
 export async function sendMailToUsers(input: {

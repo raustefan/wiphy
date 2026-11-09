@@ -2,9 +2,11 @@
 
 import { executeAction } from "@/lib/server/errors";
 import { directMailSchema } from "@/lib/server/validation/schemas";
-import { resolveUsersByIds, sendMailToUsers } from "./mailService";
+import { renderMailPreview, resolveUsersByIds, sendMailToUsers } from "./mailService";
 import { enforceAdminMailRateLimit } from "./rateLimitMail";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
+import { requireAdmin } from "@/lib/server/authz";
+import { getAnnouncedEvent } from "@/lib/server/services/eventService";
 
 function parseDirectMailForm(formData: FormData) {
   const selectedUserIds = [
@@ -38,6 +40,24 @@ export async function sendDirectMailAction(formData: FormData) {
       bccToSelf,
       adminEmail: admin.email,
       users: await resolveUsersByIds(selectedUserIds),
+    });
+  });
+}
+
+/**
+ * Vorschau für Rundmail und Direktmail. Verschickt nichts und prüft deshalb
+ * nur die Länge — ein halb ausgefülltes Formular soll sich ansehen lassen.
+ */
+export async function previewMailAction(formData: FormData) {
+  return executeAction(async () => {
+    await requireAdmin();
+    const eventId = String(formData.get("eventId") ?? "");
+
+    return renderMailPreview({
+      subject: String(formData.get("subject") ?? "").slice(0, 200),
+      html: String(formData.get("message") ?? "").slice(0, 100_000),
+      event: eventId ? await getAnnouncedEvent(eventId) : undefined,
+      newsletter: formData.get("newsletter") === "yes",
     });
   });
 }

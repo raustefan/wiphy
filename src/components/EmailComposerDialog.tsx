@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Alert01Icon, CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
 import { sendDirectMailAction } from "@/lib/server/email/actions";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
+import { EmailPreviewButton } from "@/components/EmailPreviewButton";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { MailSendNotice } from "@/components/MailSendNotice";
 import type { MailSendReport } from "@/lib/server/email/sendReport";
@@ -66,10 +67,7 @@ export function EmailComposerDialog({
     onClose();
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (recipients.length === 0) return;
-
+  function readForm() {
     const formData = new FormData();
     for (const r of recipients) {
       formData.append("selectedUserIds", r.id);
@@ -77,6 +75,14 @@ export function EmailComposerDialog({
     formData.set("subject", subject);
     formData.set("message", editor?.getHTML() ?? defaultMessage);
     if (bccToSelf) formData.set("bccToSelf", "on");
+    return formData;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (recipients.length === 0) return;
+
+    const formData = readForm();
 
     void form.submit(formData);
   }
@@ -171,6 +177,7 @@ export function EmailComposerDialog({
           <Button variant="soft" color="neutral" type="button" disabled={form.pending} onClick={handleClose}>
             Abbrechen
           </Button>
+          <EmailPreviewButton getFormData={readForm} />
           <div className="grid gap-1 sm:justify-items-end">
             <Button type="submit" loading={form.pending} disabled={recipients.length === 0}>
               {form.pending ? "Wird gesendet…" : submitLabel}

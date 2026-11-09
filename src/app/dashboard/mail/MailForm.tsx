@@ -27,6 +27,7 @@ import {
 import { sendEmailAction } from "./actions";
 import type { MailAnnouncement } from "./MailDashboard";
 import { EmailBodyField, useEmailEditor } from "@/components/EmailBodyField";
+import { EmailPreviewButton } from "@/components/EmailPreviewButton";
 import { useActionForm } from "@/lib/client/useActionForm";
 import { formatStatus, getStatusTone } from "@/lib/statusLabels";
 import type { MailSendReport } from "@/lib/server/email/sendReport";
@@ -230,13 +231,19 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
         setSelectedIds(new Set());
     }
 
+    const formRef = useRef<HTMLFormElement>(null);
+    function readForm() {
+        const formData = new FormData(formRef.current ?? undefined);
+        formData.set("message", editor?.getHTML() || "");
+        return formData;
+    }
+
     // `onSubmit` statt `action`: in einer Form-Action hält React das
     // Pending-Flag zurück, bis der Versand durch ist — Knopf und Sperre kämen
     // erst, wenn es nichts mehr zu sperren gibt.
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        formData.set("message", editor?.getHTML() || "");
+        const formData = readForm();
         // Bricht nur die Verbindung ab (Proxy-Timeout, WLAN weg), schickt der
         // Server womöglich weiter — also nicht zum erneuten Senden auffordern.
         form.submit(formData).catch(() =>
@@ -247,7 +254,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
             <input type="hidden" name="target" value={target} />
             <SendingOverlay open={form.pending} count={recipients.length} />
 
@@ -455,25 +462,20 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                 {/* Nachricht */}
                 <EmailBodyField editor={editor} />
 
-                {/* Terminanhang: was der Versand unter den Text setzt. */}
+                {/* Terminanhang: wie er aussieht, zeigt die Vorschau. */}
                 {announcement && (
                     <>
                         <input type="hidden" name="eventId" value={announcement.id} />
                         <div className="grid gap-2 rounded-[3px] border border-dashed border-line-strong bg-raised/40 p-4">
                             <p className="flex items-center gap-2 text-sm font-semibold">
                                 <HugeiconsIcon icon={Calendar01Icon} size={16} aria-hidden="true" className="text-market" />
-                                Wird unter die Nachricht gesetzt
+                                Terminblock unter der Nachricht — siehe Vorschau
                             </p>
                             <p className="text-sm text-muted">
                                 <span className="font-semibold text-foreground">
                                     {announcement.title}
                                 </span>{" "}
                                 · {announcement.when}
-                            </p>
-                            <p className="text-xs text-faint">
-                                Eckdaten, ein Knopf zur Terminseite und der Hinweis auf das
-                                Kontaktformular. Der Block entsteht beim Versand aus dem
-                                gespeicherten Termin und lässt sich hier nicht verändern.
                             </p>
                             <label htmlFor="mail-attach-ics" className="flex cursor-pointer items-center gap-2 pt-1">
                                 <Checkbox
@@ -562,6 +564,7 @@ export function MailForm({ users, announcement, onSuccess }: MailFormProps) {
                                 ? "Wird gesendet…"
                                 : `${isNewsletter ? "Newsletter an" : "An"} ${recipients.length} ${recipients.length === 1 ? "Person" : "Personen"} senden`}
                         </Button>
+                        <EmailPreviewButton size="lg" getFormData={readForm} />
                         <ButtonLink href="/dashboard" size="lg" variant="soft" color="neutral">
                             <HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden="true" /> Abbrechen
                         </ButtonLink>
