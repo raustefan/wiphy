@@ -9,7 +9,7 @@ ignoredBuiltDependencies:
   - unrs-resolver
 # Security: patched versions of vulnerable transitive deps (same major only).
 overrides:
-  hono: ^4.12.34
+  hono: ^4.13.11
   '@hono/node-server': ^1.19.10
   postcss: ^8.5.18
   'nanoid@<4': ^3.3.18

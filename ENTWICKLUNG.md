@@ -407,14 +407,24 @@ versehentlich deaktivierter Login sich selbst nicht aussperrt.
 
 ```bash
 pnpm test       # Node-Test-Runner über tests/*.test.ts
+pnpm test:db    # Datenbanktests über tests/db/*.test.ts
 pnpm lint       # ESLint
 pnpm typecheck  # tsc --noEmit
 ```
 
-Die Tests decken bewusst reine, serverunabhängige Logik ab (Beitragsberechnung,
+`pnpm test` deckt bewusst reine, serverunabhängige Logik ab (Beitragsberechnung,
 IBAN-Validierung, ICS-Erzeugung, Bildverarbeitung, Spam-Bewertung,
 Client-IP-Auswertung, Passwortstärke u. a.) — Funktionen ohne Datenbank- oder
 Netzwerkzugriff, die sich deterministisch prüfen lassen.
+
+`pnpm test:db` prüft die Services, die in die Datenbank schreiben (Antrag und
+Aufnahme, Beiträge, Austritt, Konto löschen). Die Tests leeren vor jedem Fall
+alle Tabellen und laufen deshalb nur gegen eine Datenbank, deren Name auf
+`_test` endet: ohne weitere Angabe `wiphy_test` im lokalen PostgreSQL (wird
+beim ersten Lauf angelegt), sonst die aus `TEST_DATABASE_URL`.
+
+Bei jedem Push laufen Typprüfung, Lint und beide Testläufe auf GitHub
+(`.github/workflows/ci.yml`).
 
 ---
 

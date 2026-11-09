@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Nur damit prisma.config.ts lädt — `prisma generate` verbindet sich nicht.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
+      # Wegwerf-Datenbank für `pnpm test:db`; `migrate deploy` legt sie an.
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wiphy_test
+    steps:
+      - uses: actions/checkout@v5
+      # pnpm-Version kommt aus `packageManager` in package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          # Wie auf dem Produktionsserver (BETRIEB.md).
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prisma generate
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm test:db
