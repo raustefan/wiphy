@@ -2,7 +2,7 @@
 
 import { executeAction } from "@/lib/server/errors";
 import { directMailSchema } from "@/lib/server/validation/schemas";
-import { renderMailPreview, resolveUsersByIds, sendMailToUsers } from "./mailService";
+import { eventBlocks, renderMailPreview, resolveUsersByIds, sendMailToUsers } from "./mailService";
 import { enforceAdminMailRateLimit } from "./rateLimitMail";
 import { requireFeatureEnabled } from "@/lib/server/featureGate";
 import { requireAdmin } from "@/lib/server/authz";
@@ -45,7 +45,8 @@ export async function sendDirectMailAction(formData: FormData) {
 }
 
 /**
- * Vorschau für Rundmail und Direktmail. Verschickt nichts und prüft deshalb
+ * Vorschau für die Direktmail (die Rundmail hat ihre eigene, siehe
+ * `dashboard/mail/actions.ts`). Verschickt nichts und prüft deshalb
  * nur die Länge — ein halb ausgefülltes Formular soll sich ansehen lassen.
  */
 export async function previewMailAction(formData: FormData) {
@@ -56,7 +57,7 @@ export async function previewMailAction(formData: FormData) {
     return renderMailPreview({
       subject: String(formData.get("subject") ?? "").slice(0, 200),
       html: String(formData.get("message") ?? "").slice(0, 100_000),
-      event: eventId ? await getAnnouncedEvent(eventId) : undefined,
+      extras: eventId ? { blocks: eventBlocks(await getAnnouncedEvent(eventId)) } : undefined,
       newsletter: formData.get("newsletter") === "yes",
     });
   });

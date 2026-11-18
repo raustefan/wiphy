@@ -9,7 +9,12 @@
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/server/errors";
 import { escapeHtml } from "@/lib/email/escapeHtml";
+import type { SendMailOptions } from "nodemailer";
 import type { EmailBlock, EmailMessage } from "@/lib/email/blocks";
+import { MAIL_TARGET_FILTERS, type GroupTarget, type MailTarget } from "@/lib/mailTargets";
+import { blogImageUrl } from "@/lib/blogImages";
+import { blogPostPath } from "@/lib/slug";
+import { formatDate, formatEuro } from "@/lib/format";
 import { eventContactPath, eventLinkLabel, eventPath, formatEventRange } from "@/lib/events";
 import { siteUrl } from "@/lib/server/siteUrl";
 import { buildEventIcs, icsFileName, type IcsEvent } from "@/lib/server/ics";
@@ -22,10 +27,7 @@ import { logSentMail } from "./mailHistory";
 import { describeSendError, sendEach, type MailSendReport } from "./sendReport";
 import { newsletterUnsubscribeUrls } from "@/lib/server/newsletterToken";
 
-type StatusTarget = "HONORARY_MEMBER" | "REGULAR_MEMBER" | "NON_MEMBER";
-export type MailTarget = "ALL" | StatusTarget | "SELECTED";
-
-type Recipient = {
+export type Recipient = {
   id: string;
   email: string;
   firstName: string | null;
@@ -62,20 +64,17 @@ export async function resolveUsersByIds(userIds: string[]) {
   return found;
 }
 
-export async function resolveUsersByTarget(target: "ALL" | StatusTarget) {
-  if (target === "ALL") {
-    return prisma.user.findMany({ select: RECIPIENT_SELECT });
-  }
-  return prisma.user.findMany({
-    where: { status: target },
-    select: RECIPIENT_SELECT,
+/** Dieselben Filter, mit denen das Formular vorzählt (`mailTargets.ts`). */
+export async function resolveUsersByTarget(target: GroupTarget): Promise<Recipient[]> {
+  const users = await prisma.user.findMany({
+    select: { ...RECIPIENT_SELECT, status: true, directDebit: true },
   });
+  return users
+    .filter(MAIL_TARGET_FILTERS[target])
+    .map(({ id, email, firstName, lastName, newsletter }) => ({ id, email, firstName, lastName, newsletter }));
 }
 
-export async function resolveRecipientEmails(input: {
-  target: MailTarget;
-  selectedUserIds: string[];
-}) {
+export async function resolveRecipients(input: { target: MailTarget; selectedUserIds: string[] }) {
   if (input.target === "SELECTED") {
     return resolveUsersByIds(input.selectedUserIds);
   }
@@ -129,7 +128,7 @@ function replacePlaceholders(
 export type AnnouncedEvent = IcsEvent;
 
 /** Dieselbe Datei, die `/termine/<id>/kalender.ics` öffentlich ausliefert. */
-function icsAttachment(event: AnnouncedEvent) {
+export function icsAttachment(event: AnnouncedEvent) {
   return {
     filename: icsFileName(event.title),
     content: buildEventIcs(event),
@@ -137,7 +136,7 @@ function icsAttachment(event: AnnouncedEvent) {
   };
 }
 
-function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
+export function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
   const place = [event.location.trim(), event.address.trim()].filter(Boolean).join(", ");
   const facts: { label: string; value: string; href?: string }[] = [
     { label: "Wann", value: formatEventRange(event) },
@@ -164,34 +163,120 @@ function eventBlocks(event: AnnouncedEvent): EmailBlock[] {
   ];
 }
 
+/** Ein angekündigter Blogbeitrag: Titelbild, Vorschautext, Knopf zum Beitrag. */
+export function postBlocks(post: {
+  id: string;
+  title: string;
+  preview: string;
+  cover: { id: string; alt: string } | null;
+}): EmailBlock[] {
+  const url = siteUrl(blogPostPath(post));
+  return [
+    { type: "divider" },
+    { type: "heading", content: post.title },
+    ...(post.cover
+      ? ([{ type: "image", src: siteUrl(blogImageUrl(post.cover.id)), alt: post.cover.alt, href: url }] as EmailBlock[])
+      : []),
+    ...(post.preview.trim() ? ([{ type: "text", content: post.preview.trim() }] as EmailBlock[]) : []),
+    { type: "button", label: "Beitrag lesen", url },
+  ];
+}
+
+/** Was eine SEPA-Vorabankündigung pro Person nennt. */
+export type SepaDebitInfo = { amount: number; mandateReference: string; iban: string | null };
+
+/**
+ * Die Vorabankündigung (Pre-Notification) einer Lastschrift: Betrag, Datum,
+ * Mandatsreferenz und Gläubiger-ID. `info` fehlt in Vorschau und Kopie — dort
+ * steht statt der persönlichen Angaben ein Hinweis.
+ */
+export function sepaBlocks(input: {
+  info: SepaDebitInfo | null;
+  /** YYYY-MM-DD */
+  collectionDate: string;
+  creditorId: string;
+}): EmailBlock[] {
+  const personal = "wird pro Person eingesetzt";
+  const iban = input.info?.iban;
+  const facts: { label: string; value: string }[] = [
+    { label: "Betrag", value: input.info ? formatEuro(input.info.amount) : personal },
+    // Mittags, damit die Zeitzone den Tag nicht verschiebt.
+    { label: "Einzug am", value: formatDate(new Date(`${input.collectionDate}T12:00:00`)) },
+    { label: "Mandatsreferenz", value: input.info?.mandateReference || personal },
+    ...(input.creditorId ? [{ label: "Gläubiger-ID", value: input.creditorId }] : []),
+    ...(input.info
+      ? iban
+        ? [{ label: "Konto", value: `IBAN endet auf ${iban.slice(-4)}` }]
+        : []
+      : [{ label: "Konto", value: personal }]),
+  ];
+  return [
+    { type: "divider" },
+    { type: "heading", content: "Dein Lastschrifteinzug" },
+    { type: "facts", items: facts },
+    { type: "button", label: "Bankverbindung prüfen", url: siteUrl("/dashboard/zahlungen") },
+  ];
+}
+
+/** Was eine Rundmail über den Text hinaus mitbringt. */
+export type MailExtras = {
+  /** Anrede „Guten Tag Anna Müller,“ über dem Text. */
+  salutation?: boolean;
+  /** Infoblock unter dem Text (Termin, Beitrag) — für alle gleich. */
+  blocks?: EmailBlock[];
+  /** Persönlicher Infoblock, z. B. der SEPA-Betrag. `null` für Vorschau und Kopie. */
+  personalBlocks?: (user: Recipient | null) => EmailBlock[];
+  attachments?: SendMailOptions["attachments"];
+};
+
+/**
+ * Die Anrede steht als Platzhalter vor dem Text: so ersetzt sie der Versand
+ * wie jeden anderen pro Empfänger, und Vorschau und Kopie zeigen `$Anrede`.
+ */
+function withSalutation(html: string, extras: MailExtras): string {
+  return extras.salutation ? `<p>$Anrede,</p>${html}` : html;
+}
+
 /** Baut aus dem sanitisierten Editor-HTML eine versandfertige Nachricht. */
-function composeMessage(subject: string, html: string, event?: AnnouncedEvent): EmailMessage {
+function composeMessage(
+  subject: string,
+  html: string,
+  extras: MailExtras,
+  user: Recipient | null,
+): EmailMessage {
   return {
     subject,
     blocks: [
       { type: "html", html, text: htmlToText(html) },
-      ...(event ? eventBlocks(event) : []),
+      ...(extras.blocks ?? []),
+      ...(extras.personalBlocks?.(user) ?? []),
     ],
   };
 }
 
 /**
  * Die Mail, wie sie beim Empfänger ankommt — dasselbe Briefpapier, derselbe
- * Terminblock wie beim Versand. Platzhalter bleiben stehen: die Vorschau gilt
+ * Infoblock wie beim Versand. Platzhalter bleiben stehen: die Vorschau gilt
  * für alle Empfänger.
  */
 export async function renderMailPreview(input: {
   subject: string;
   html: string;
-  event?: AnnouncedEvent;
+  extras?: MailExtras;
   newsletter?: boolean;
 }): Promise<string> {
+  const extras = input.extras ?? {};
   return renderEmailHtml(
-    composeMessage(input.subject, sanitizeEmailHtml(input.html), input.event),
+    composeMessage(input.subject, withSalutation(sanitizeEmailHtml(input.html), extras), extras, null),
     await getSignatureBoardLine(),
     // Der echte Abmeldelink ist persönlich; hier zählt nur, dass die Zeile da ist.
     input.newsletter ? "#" : undefined,
   );
+}
+
+/** Ein Newsletter erreicht nur Abonnenten; alle anderen Mails jeden. */
+export function deliverableUsers<T extends { newsletter: boolean }>(users: T[], newsletter?: boolean): T[] {
+  return newsletter ? users.filter((user) => user.newsletter) : users;
 }
 
 export async function sendMailToUsers(input: {
@@ -201,10 +286,7 @@ export async function sendMailToUsers(input: {
   bccToSelf: boolean;
   adminEmail?: string | null;
   users: Recipient[];
-  /** Gesetzt bei einer Terminankündigung — hängt den Terminblock an. */
-  event?: AnnouncedEvent;
-  /** Nur mit `event`: die Kalenderdatei des Termins als Anhang. */
-  attachIcs?: boolean;
+  extras?: MailExtras;
   /** Empfängergruppe fürs Versandprotokoll; weggelassen bei ausgewählten Empfängern. */
   recipientGroup?: string | null;
   /**
@@ -214,11 +296,12 @@ export async function sendMailToUsers(input: {
    */
   newsletter?: boolean;
 }) {
+  const extras = input.extras ?? {};
   // Einmal zentral sanitisieren: entfernt Skripte, Event-Handler und unsichere
   // Link-Schemata, unabhängig davon, was der Editor clientseitig zugelassen hat.
-  const template = sanitizeEmailHtml(input.html);
+  const template = withSalutation(sanitizeEmailHtml(input.html), extras);
 
-  const users = input.newsletter ? input.users.filter((user) => user.newsletter) : input.users;
+  const users = deliverableUsers(input.users, input.newsletter);
   if (users.length === 0) {
     throw new AppError(
       "NOT_FOUND",
@@ -241,16 +324,16 @@ export async function sendMailToUsers(input: {
   // Einzelversand statt BCC, damit die Anrede pro Empfänger stimmt.
   // Protokolliert wird, was tatsächlich rausging — auch wenn der Versand
   // mittendrin abbricht.
-  const attachments = input.event && input.attachIcs ? [icsAttachment(input.event)] : undefined;
   const { sent, failed, error } = await sendEach(users, (user) =>
     sendEmail({
       to: user.email,
       message: composeMessage(
         replacePlaceholders(input.subject, user),
         replacePlaceholders(template, user, { escape: true }),
-        input.event,
+        extras,
+        user,
       ),
-      attachments,
+      attachments: extras.attachments,
       unsubscribe: input.newsletter ? newsletterUnsubscribeUrls(user.id) : undefined,
     }),
   );
@@ -280,8 +363,8 @@ export async function sendMailToUsers(input: {
     try {
       await sendEmail({
         to: selfEmail,
-        message: composeMessage(`${input.subject} (Kopie)`, template, input.event),
-        attachments,
+        message: composeMessage(`${input.subject} (Kopie)`, template, extras, null),
+        attachments: extras.attachments,
       });
     } catch (copyError) {
       console.error(copyError);
@@ -292,30 +375,29 @@ export async function sendMailToUsers(input: {
   return report;
 }
 
-export async function sendMailForTarget(input: {
-  target: MailTarget;
-  selectedUserIds: string[];
+/**
+ * Testmail an den Absender selbst — mit seinen eigenen Daten eingesetzt, ohne
+ * Eintrag im Versandprotokoll. Ein Newsletter bekommt den Abmeldelink, damit
+ * auch der Fuß so aussieht wie beim Versand.
+ */
+export async function sendTestMail(input: {
   subject: string;
   html: string;
-  bccToSelf: boolean;
-  adminEmail?: string | null;
-  event?: AnnouncedEvent;
-  attachIcs?: boolean;
-  newsletter: boolean;
+  extras?: MailExtras;
+  newsletter?: boolean;
+  to: Recipient;
 }) {
-  const users = await resolveRecipientEmails({
-    target: input.target,
-    selectedUserIds: input.selectedUserIds,
-  });
-  return sendMailToUsers({
-    subject: input.subject,
-    html: input.html,
-    bccToSelf: input.bccToSelf,
-    adminEmail: input.adminEmail,
-    users,
-    event: input.event,
-    attachIcs: input.attachIcs,
-    recipientGroup: input.target === "SELECTED" ? null : input.target,
-    newsletter: input.newsletter,
+  const extras = input.extras ?? {};
+  const template = withSalutation(sanitizeEmailHtml(input.html), extras);
+  await sendEmail({
+    to: input.to.email,
+    message: composeMessage(
+      `[Test] ${replacePlaceholders(input.subject, input.to)}`,
+      replacePlaceholders(template, input.to, { escape: true }),
+      extras,
+      input.to,
+    ),
+    attachments: extras.attachments,
+    unsubscribe: input.newsletter ? newsletterUnsubscribeUrls(input.to.id) : undefined,
   });
 }

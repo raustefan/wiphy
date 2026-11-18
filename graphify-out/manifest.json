@@ -24,9 +24,9 @@
     "semantic_hash": ""
   },
   "next.config.ts": {
-    "mtime": 1792337432.5673153,
-    "seen": 1792337456.220459,
-    "ast_hash": "a848b44e6233f0fbbf97a3998339f8da",
+    "mtime": 1794943444.728593,
+    "seen": 1794943564.155591,
+    "ast_hash": "8720e252c09276d5cc997896b39fe6b9",
     "semantic_hash": ""
   },
   "package.json": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "src/app/api/users/route.ts": {
-    "mtime": 1792960411.899462,
-    "seen": 1792960721.605101,
-    "ast_hash": "b80b016ac89ded911415a25bcf2f1bf5",
+    "mtime": 1794943223.4953108,
+    "seen": 1794943564.1560588,
+    "ast_hash": "69ff259f38bba9b3736ec6cbf4db4998",
     "semantic_hash": ""
   },
   "src/app/api/vorstand/photo/[id]/route.ts": {
@@ -198,9 +198,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/blog/page.tsx": {
-    "mtime": 1792573109.6162362,
-    "seen": 1792743435.488191,
-    "ast_hash": "b2d36e873710332344c3895602836567",
+    "mtime": 1794943454.0010946,
+    "seen": 1794943564.1565702,
+    "ast_hash": "9164d77abe1de0cbcec0928a012075bc",
     "semantic_hash": ""
   },
   "src/app/dashboard/feature-flags/FeatureFlagToggle.tsx": {
@@ -252,27 +252,27 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/MailDashboard.tsx": {
-    "mtime": 1792958790.3253012,
-    "seen": 1792958926.71035,
-    "ast_hash": "92edf39b7a79d968a4bb5ca5b857412f",
+    "mtime": 1794943223.494708,
+    "seen": 1794943564.156905,
+    "ast_hash": "5e28f9f92f9f49fbf75889ae36cf877d",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/MailForm.tsx": {
-    "mtime": 1794257061.388495,
-    "seen": 1794257075.291786,
-    "ast_hash": "25a56e4855f93272c016c94b3cb5c39b",
+    "mtime": 1794943468.3656602,
+    "seen": 1794943564.156905,
+    "ast_hash": "51bbc1e2e232385caeeedb8a9ad73e6d",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/actions.ts": {
-    "mtime": 1792960226.0218763,
-    "seen": 1792960721.605898,
-    "ast_hash": "3d7028cbd33e6255231a65bf7d9a6edf",
+    "mtime": 1794943132.8878145,
+    "seen": 1794943564.156906,
+    "ast_hash": "6c729588add1fdcf44202d5c75812cfe",
     "semantic_hash": ""
   },
   "src/app/dashboard/mail/page.tsx": {
-    "mtime": 1792501017.1327019,
-    "seen": 1792502133.34321,
-    "ast_hash": "b262c6feddfd579ffb1f75dce161bc5f",
+    "mtime": 1794943204.5901723,
+    "seen": 1794943564.156907,
+    "ast_hash": "2a7800406e06e0f7da88b470a068fecf",
     "semantic_hash": ""
   },
   "src/app/dashboard/mitgliedsantraege/ApplicationList.tsx": {
@@ -1032,9 +1032,9 @@
     "semantic_hash": "50cf6d01eeb2338017fa679bbe7efd84"
   },
   "src/lib/email/blocks.ts": {
-    "mtime": 1792948551.096257,
-    "seen": 1792948589.232387,
-    "ast_hash": "76b336dd80fe49879abea70702bd27f5",
+    "mtime": 1794943002.3462164,
+    "seen": 1794943564.1605802,
+    "ast_hash": "91ca45c7b7d59c393c8c44ff4a0c4d44",
     "semantic_hash": ""
   },
   "src/lib/email/branding.ts": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/email/actions.ts": {
-    "mtime": 1794257033.277017,
-    "seen": 1794257075.2948039,
-    "ast_hash": "81aa0807c9ee9d07297a7ec295f529b2",
+    "mtime": 1794943077.2705226,
+    "seen": 1794943564.161222,
+    "ast_hash": "eb4212f55ece633c512fe5a2ad940908",
     "semantic_hash": ""
   },
   "src/lib/server/email/htmlToText.ts": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/email/mailService.ts": {
-    "mtime": 1794257033.2767036,
-    "seen": 1794257075.294851,
-    "ast_hash": "086f0e1434f406dfb2183720c7d61f5a",
+    "mtime": 1794943468.3658643,
+    "seen": 1794943564.16129,
+    "ast_hash": "243e124a9d495354919833135638a81e",
     "semantic_hash": ""
   },
   "src/lib/server/email/mailer.ts": {
@@ -1302,9 +1302,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/repositories/blogRepository.ts": {
-    "mtime": 1792501017.0840948,
-    "seen": 1792502133.3432992,
-    "ast_hash": "2cf87d17b3d94dbf41a75d29da0aabbb",
+    "mtime": 1794943030.210991,
+    "seen": 1794943564.16165,
+    "ast_hash": "3bd50dadeafd2de4dae6343cf9e379d0",
     "semantic_hash": ""
   },
   "src/lib/server/repositories/boardRepository.ts": {
@@ -1350,9 +1350,9 @@
     "semantic_hash": ""
   },
   "src/lib/server/services/blogService.ts": {
-    "mtime": 1792501017.0893745,
-    "seen": 1792502133.343304,
-    "ast_hash": "3d90bdc1ebb7859681abe9b55b4be10a",
+    "mtime": 1794943454.000718,
+    "seen": 1794943564.1618738,
+    "ast_hash": "3826c23b012fa07055c52fb07b5375da",
     "semantic_hash": ""
   },
   "src/lib/server/services/boardService.ts": {
@@ -1440,9 +1440,9 @@
     "semantic_hash": "c04fbcc2f66a2d2e3e50717b0e570089"
   },
   "src/lib/server/validation/schemas.ts": {
-    "mtime": 1793030348.425841,
-    "seen": 1793030885.769515,
-    "ast_hash": "44eb4baee7fc1671d283c282243f339e",
+    "mtime": 1794943096.2464168,
+    "seen": 1794943564.1623108,
+    "ast_hash": "01fe88e81073ec3cc98f28e44f7eb0f5",
     "semantic_hash": ""
   },
   "src/lib/siteUrl.ts": {
@@ -2382,9 +2382,45 @@
     "semantic_hash": ""
   },
   "src/components/EmailPreviewButton.tsx": {
-    "mtime": 1794257033.2819817,
-    "seen": 1794257075.293615,
-    "ast_hash": "637d319c7ffe401462e01ae5887c8a98",
+    "mtime": 1794943223.4956126,
+    "seen": 1794943564.159528,
+    "ast_hash": "f6ad197cfe10047786879fa4b37c544b",
+    "semantic_hash": ""
+  },
+  "src/lib/mailPhotos.ts": {
+    "mtime": 1794943022.0301676,
+    "seen": 1794943564.160883,
+    "ast_hash": "7f93fcd26e7ba1eea9df4e8b100ee8e2",
+    "semantic_hash": ""
+  },
+  "src/lib/mailTargets.ts": {
+    "mtime": 1794942998.6557477,
+    "seen": 1794943564.160883,
+    "ast_hash": "570281fc30cba6743fb0732a2613dd24",
+    "semantic_hash": ""
+  },
+  "src/lib/server/email/previewToken.ts": {
+    "mtime": 1794943010.5287127,
+    "seen": 1794943564.161313,
+    "ast_hash": "d7bf026dc09bbb69e96ddc31c6c9c001",
+    "semantic_hash": ""
+  },
+  "src/lib/server/images/mailPhotoProcessing.ts": {
+    "mtime": 1794943018.6307974,
+    "seen": 1794943564.161503,
+    "ast_hash": "15f0b27f91e3026c554b4ff5a0a3b2dc",
+    "semantic_hash": ""
+  },
+  "tests/rundmail.test.ts": {
+    "mtime": 1794943486.0796535,
+    "seen": 1794943564.1629472,
+    "ast_hash": "94642dae1b0ec103ab83038b8f2d33e0",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1794943500.7804947,
+    "seen": 1794943564.163095,
+    "ast_hash": "c98dbebb744eadc1acc4b9f58bfe0f42",
     "semantic_hash": ""
   }
 }

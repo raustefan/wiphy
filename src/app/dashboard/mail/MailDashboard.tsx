@@ -1,31 +1,13 @@
 "use client";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Alert01Icon, Calendar01Icon, Cancel01Icon, CheckmarkCircle01Icon, Megaphone01Icon } from "@hugeicons/core-free-icons";
+import { Alert01Icon, CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { MailForm, type MailUserOption } from "./MailForm";
+import { MailForm, type MailFormSetup, type MailUserOption } from "./MailForm";
 import { DashboardPageHeader } from "../DashboardPageHeader";
-import { ButtonLink, Callout, Card, Container, Table, TableWrap, Td, Th } from "@/components/ui";
+import { ButtonLink, Card, Container, Table, TableWrap, Td, Th } from "@/components/ui";
 import { MailSendNotice } from "@/components/MailSendNotice";
 import type { MailSendReport } from "@/lib/server/email/sendReport";
-
-/** Ein Termin, dessen Ankündigung gerade vorbereitet wird. */
-export type MailAnnouncement = {
-    id: string;
-    title: string;
-    when: string;
-    published: boolean;
-    subject: string;
-    html: string;
-};
-
-/** Kommender Termin in der Auswahl „Termin ankündigen“. */
-export type MailEventOption = {
-    id: string;
-    title: string;
-    when: string;
-};
 
 /** Eine Zeile des Versandprotokolls, serverseitig fertig formatiert. */
 export type MailHistoryEntry = {
@@ -76,42 +58,6 @@ function MailHistory({ entries }: { entries: MailHistoryEntry[] }) {
     );
 }
 
-/**
- * Die Terminauswahl über dem Formular.
- *
- * Ein Klick lädt dieselbe Seite mit `?termin=<id>` — der Server baut die
- * Vorlage, statt sie im Browser zusammenzusetzen. Damit steht die Vorlage
- * einmal an einer Stelle, und der Link ist teilbar.
- */
-function AnnouncePicker({ events }: { events: MailEventOption[] }) {
-    if (events.length === 0) return null;
-
-    return (
-        <Card className="mb-5 grid gap-3 p-4 sm:p-5">
-            <div className="flex items-center gap-2">
-                <HugeiconsIcon icon={Megaphone01Icon} size={16} aria-hidden="true" className="text-market" />
-                <p className="text-sm font-semibold">Termin ankündigen</p>
-            </div>
-            <p className="text-sm text-muted">
-                Vorlage laden: Betreff, Anrede und Einladungstext werden vorgeschrieben, die
-                Eckdaten und ein Knopf zur Terminseite hängen automatisch an der Mail.
-            </p>
-            <div className="flex flex-wrap gap-2">
-                {events.map((event) => (
-                    <Link
-                        key={event.id}
-                        href={`/dashboard/mail?termin=${event.id}`}
-                        className="grid gap-0.5 rounded-[3px] border border-line bg-raised/40 px-3.5 py-2.5 text-left transition-colors hover:border-market/40 hover:bg-market/8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-physics"
-                    >
-                        <span className="text-sm font-semibold">{event.title}</span>
-                        <span className="font-mono text-xs text-faint">{event.when}</span>
-                    </Link>
-                ))}
-            </div>
-        </Card>
-    );
-}
-
 /** Platzhalter in Formularform, solange die Empfängerliste noch lädt. */
 function MailFormSkeleton() {
     return (
@@ -143,14 +89,9 @@ function MailFormSkeleton() {
 }
 
 export function MailDashboard({
-    announcement,
-    upcomingEvents,
     history,
-}: {
-    announcement: MailAnnouncement | null;
-    upcomingEvents: MailEventOption[];
-    history: MailHistoryEntry[];
-}) {
+    ...setup
+}: MailFormSetup & { history: MailHistoryEntry[] }) {
     const [report, setReport] = useState<MailSendReport | null>(null);
     const [users, setUsers] = useState<MailUserOption[]>([]);
     const [loading, setLoading] = useState(true);
@@ -210,76 +151,20 @@ export function MailDashboard({
             <DashboardPageHeader
                 eyebrow="Internbereich"
                 title="Rundmail verschicken"
-                description="Wähle eine Empfängergruppe nach Mitgliedsstatus oder einzelne Nutzer aus."
+                description="Schritt für Schritt: jede Einstellung wird einzeln gewählt, gesendet wird erst nach geprüfter Vorschau."
                 backHref="/dashboard"
             />
 
-            <AnnouncePicker events={upcomingEvents} />
-
-            {announcement && (
-                <div className="mb-5 grid gap-3">
-                    {announcement.published ? (
-                        <Callout tone="info" icon={<HugeiconsIcon icon={Calendar01Icon} size={16} />} title="Vorlage geladen">
-                            <span className="grid gap-1">
-                                <span>
-                                    Die Mail kündigt{" "}
-                                    <span className="font-semibold text-foreground">
-                                        {announcement.title}
-                                    </span>{" "}
-                                    an ({announcement.when}). Eckdaten und Knopf zur Terminseite
-                                    werden angehängt.
-                                </span>
-                                <Link
-                                    href="/dashboard/mail"
-                                    className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-physics underline-offset-4 hover:underline"
-                                >
-                                    <HugeiconsIcon icon={Cancel01Icon} size={14} aria-hidden="true" /> Vorlage entfernen
-                                </Link>
-                            </span>
-                        </Callout>
-                    ) : (
-                        <Callout
-                            tone="warning"
-                            icon={<HugeiconsIcon icon={Alert01Icon} size={16} />}
-                            title="Termin ist noch ein Entwurf"
-                        >
-                            <span className="grid gap-1">
-                                <span>
-                                    „{announcement.title}“ ist nicht veröffentlicht — der Knopf in
-                                    der Mail führte auf eine Seite, die es öffentlich nicht gibt.
-                                    Der Versand lehnt die Ankündigung deshalb ab.
-                                </span>
-                                <Link
-                                    href={`/dashboard/termine/${announcement.id}`}
-                                    className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-physics underline-offset-4 hover:underline"
-                                >
-                                    Termin veröffentlichen
-                                </Link>
-                            </span>
-                        </Callout>
-                    )}
-                </div>
+            {loading ? (
+                <Card className="p-5 sm:p-6">
+                    <span className="sr-only" role="status">
+                        Empfängerliste wird geladen …
+                    </span>
+                    <MailFormSkeleton />
+                </Card>
+            ) : (
+                <MailForm users={users} {...setup} onSuccess={setReport} />
             )}
-
-            <Card className="p-5 sm:p-6">
-                {loading ? (
-                    <>
-                        <span className="sr-only" role="status">
-                            Empfängerliste wird geladen …
-                        </span>
-                        <MailFormSkeleton />
-                    </>
-                ) : (
-                    <MailForm
-                        // Neu aufbauen, sobald eine andere Vorlage geladen wird:
-                        // der Editor übernimmt seinen Inhalt nur beim Einhängen.
-                        key={announcement?.id ?? "leer"}
-                        users={users}
-                        announcement={announcement}
-                        onSuccess={setReport}
-                    />
-                )}
-            </Card>
 
             <MailHistory entries={history} />
         </Container>

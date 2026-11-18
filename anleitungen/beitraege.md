@@ -115,6 +115,10 @@ Ehrenmitglied), startet der Dialog mit leerem Text.
 Die Website erzeugt eine Datei (pain.008) für das Online-Banking. Geld bewegt sie
 selbst nicht.
 
+**Vorher ankündigen:** Den Einzug kündigst du per Rundmail mit der Vorlage
+**SEPA-Ankündigung** an, jede Person bekommt dabei ihren eigenen Betrag. Siehe
+[SEPA-Einzug ankündigen](kommunikation.md#sepa-einzug-ankündigen).
+
 1. Beitragsjahr wählen → **Alle offenen** (oder einzeln anhaken) →
    **SEPA-Lastschrift**.
 2. **Vereinskonto**: Kontoinhaber, Gläubiger-ID, IBAN, BIC (optional). Nicht

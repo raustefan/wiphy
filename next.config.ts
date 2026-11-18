@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
 
+  experimental: {
+    serverActions: {
+      // Fotos im Rundmail-Anhang: bis zu 3 × 1,5 MB (`MAIL_PHOTO_LIMITS`),
+      // im Browser schon verkleinert. Standard wäre 1 MB.
+      bodySizeLimit: "5mb",
+    },
+  },
+
   /**
    * Handy-Test im WLAN: Next blockiert Dev-Anfragen von fremden Hostnamen.
    * Die Seite lädt dann zwar, React startet aber nie — Links gehen, Knöpfe

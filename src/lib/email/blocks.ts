@@ -27,6 +27,8 @@ export type EmailBlock =
   /** Kleingedruckter Hinweis. */
   | { type: "note"; content: string }
   | { type: "divider" }
+  /** Bild über eine absolute URL (z. B. Titelbild eines Beitrags), optional verlinkt. */
+  | { type: "image"; src: string; alt: string; href?: string }
   /**
    * Bereits aufbereitetes Markup (z. B. der Rich-Text aus dem Mail-Composer).
    * Das HTML muss vom Aufrufer sanitisiert sein, der Text wird separat geliefert.
@@ -91,6 +93,12 @@ function blockHtml(block: EmailBlock): string {
     case "divider":
       return `<div style="height:1px;line-height:1px;font-size:0;background:${EMAIL_COLORS.line};margin:24px 0;">&nbsp;</div>`;
 
+    case "image": {
+      const img = `<img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}" width="560" style="display:block;width:100%;max-width:560px;height:auto;border:0;border-radius:6px;">`;
+      const linked = block.href ? `<a href="${escapeHtml(block.href)}">${img}</a>` : img;
+      return `<div style="margin:0 0 16px;">${linked}</div>`;
+    }
+
     case "html":
       return `<div style="font-family:${EMAIL_FONT};font-size:16px;line-height:1.6;color:${EMAIL_COLORS.foreground};">${block.html}</div>`;
   }
@@ -116,6 +124,8 @@ function blockText(block: EmailBlock): string {
         .join("\n");
     case "divider":
       return "—";
+    case "image":
+      return "";
     case "html":
       return block.text;
   }

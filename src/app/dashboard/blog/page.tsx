@@ -1,8 +1,8 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, BookOpen01Icon, Image02Icon, PencilIcon } from "@hugeicons/core-free-icons";
+import { Add01Icon, BookOpen01Icon, Image02Icon, Mail01Icon, PencilIcon } from "@hugeicons/core-free-icons";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/server/authz";
-import { getAdminPosts } from "@/lib/server/services/blogService";
+import { announceCutoff, getAdminPosts } from "@/lib/server/services/blogService";
 import { createDraft, deletePost } from "./actions";
 import { Suspense } from "react";
 import { FeatureDisabledQueryDialog } from "@/components/FeatureDisabledQueryDialog";
@@ -28,6 +28,11 @@ export const metadata: Metadata = { title: "Blog verwalten" };
 export default async function AdminBlogPage() {
     await requireAdmin();
     const posts = await getAdminPosts();
+    const now = new Date();
+    const cutoff = announceCutoff(now);
+    // Per Rundmail ankündigen lässt sich nur, was öffentlich und höchstens ein halbes Jahr alt ist.
+    const announceable = (post: (typeof posts)[number]) =>
+        post.published && post.publishedAt <= now && post.publishedAt >= cutoff;
 
     return (
         <Container size="4" className="py-8 sm:py-12">
@@ -109,6 +114,16 @@ export default async function AdminBlogPage() {
                                             >
                                                 <HugeiconsIcon icon={PencilIcon} size={16} aria-hidden="true" /> Bearbeiten
                                             </ButtonLink>
+                                            {announceable(post) && (
+                                                <ButtonLink
+                                                    href={`/dashboard/mail?beitrag=${post.id}`}
+                                                    size="sm"
+                                                    variant="soft"
+                                                    color="neutral"
+                                                >
+                                                    <HugeiconsIcon icon={Mail01Icon} size={16} aria-hidden="true" /> Per Mail ankündigen
+                                                </ButtonLink>
+                                            )}
                                             <DeletePostButton
                                                 postId={post.id}
                                                 title={post.title}

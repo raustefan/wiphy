@@ -127,6 +127,15 @@ export function findPostById(id: string) {
   return prisma.blogPost.findUnique({ where: { id }, include: withImages });
 }
 
+/** Veröffentlichte Beiträge seit `since`, nur Kopfdaten — Auswahl in der Rundmail. */
+export function findPublishedPostHeadsSince(since: Date) {
+  return prisma.blogPost.findMany({
+    where: { published: true, publishedAt: { gte: since, lte: new Date() } },
+    orderBy: { publishedAt: "desc" },
+    select: { id: true, title: true, publishedAt: true },
+  });
+}
+
 export function findPublishedPostById(id: string) {
   return prisma.blogPost.findFirst({
     where: { id, published: true, publishedAt: { lte: new Date() } },

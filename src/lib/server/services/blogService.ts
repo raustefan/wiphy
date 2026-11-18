@@ -10,6 +10,7 @@ import {
   findImagesForPost,
   findPostById,
   findPublishedPostById,
+  findPublishedPostHeadsSince,
   findPublishedPosts,
   findPublishedPostsPage,
   insertImage,
@@ -87,6 +88,32 @@ export async function getAdminPosts(): Promise<BlogPostWithImages[]> {
 export async function getPostForEdit(id: string): Promise<BlogPostWithImages | null> {
   const post = await findPostById(id);
   return post ? toPost(post) : null;
+}
+
+/** Per Rundmail ankündigen lassen sich nur Beiträge der letzten sechs Monate. */
+export function announceCutoff(now = new Date()): Date {
+  const cutoff = new Date(now);
+  cutoff.setMonth(cutoff.getMonth() - 6);
+  return cutoff;
+}
+
+export function getAnnounceablePosts() {
+  return findPublishedPostHeadsSince(announceCutoff());
+}
+
+/** Der Beitrag einer Ankündigung — veröffentlicht und höchstens ein halbes Jahr alt. */
+export async function getAnnouncedPost(id: string): Promise<BlogPostWithImages> {
+  const post = await findPublishedPostById(id);
+  if (!post) {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      "Der Beitrag ist nicht veröffentlicht. Veröffentliche ihn zuerst, sonst führt der Knopf in der Mail ins Leere.",
+    );
+  }
+  if (post.publishedAt < announceCutoff()) {
+    throw new AppError("VALIDATION_ERROR", "Der Beitrag ist älter als ein halbes Jahr und lässt sich nicht mehr ankündigen.");
+  }
+  return toPost(post);
 }
 
 export async function getPublishedPosts(take?: number): Promise<BlogPostWithImages[]> {

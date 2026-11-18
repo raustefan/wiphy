@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { MAIL_TARGETS } from "@/lib/mailTargets";
 import { normalizeEmail } from "@/lib/server/normalizeEmail";
 import { isSepaIban, isValidBic, isValidIban, normalizeIban, requiresBic } from "@/lib/iban";
 import { parseBerlinLocalInput, startOfBerlinDay } from "@/lib/berlinTime";
 import { addDirectDebitIssues, birthDateField } from "@/lib/membershipFormSchemas";
 import { isCountryCode, toCountryCode } from "@/lib/countries";
-import { isValidMandateId } from "@/lib/sepa";
+import { isoDate, isValidMandateId } from "@/lib/sepa";
 import {
   MAX_ANNUAL_FEE,
   hasControlChars,
@@ -469,53 +470,70 @@ export const userImportSchema = z
 export type UserImport = z.infer<typeof userImportSchema>;
 export type UserImportFee = NonNullable<UserImport["fees"]>[number];
 
-/** Rundmail: Gruppen oder einzeln ausgewählte Nutzer (IDs per FormData getAll) */
+/** Vorlagen der Rundmail; jede bringt ihren eigenen Infoblock mit. */
+export const MAIL_TEMPLATES = ["EVENT", "BLOG", "SEPA", "OTHER"] as const;
+
+/** Sichtbarer Text eines Editor-HTMLs — leer, wenn nur `<p></p>` drinsteht. */
+function hasText(html: string): boolean {
+  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim().length > 0;
+}
+
+/**
+ * Rundmail. Jede Angabe ist Pflicht und hat keinen Standardwert — der Absender
+ * soll alles bewusst gewählt haben. Empfänger-IDs kommen per `getAll`.
+ */
 export const mailSendSchema = z
   .object({
-    target: z.enum(
-      ["ALL", "HONORARY_MEMBER", "REGULAR_MEMBER", "NON_MEMBER", "SELECTED"],
-      {
-        message: "Ungültige Empfänger-Gruppe.",
-      },
-    ),
+    template: z.enum(MAIL_TEMPLATES, { message: "Bitte eine Vorlage wählen." }),
+    /**
+     * Ein Newsletter geht nur an Abonnenten und trägt einen Abmeldelink,
+     * alles andere an alle und ohne.
+     */
+    newsletter: z
+      .enum(["yes", "no"], { message: "Bitte angeben, ob die Mail ein Newsletter ist." })
+      .transform((value) => value === "yes"),
+    target: z.enum(MAIL_TARGETS, { message: "Bitte eine Empfängergruppe wählen." }),
+    selectedUserIds: z.array(z.string().min(1).max(64)).max(5000).default([]),
     subject: z
       .string()
       .trim()
       .min(1, "Bitte einen Betreff angeben.")
       .max(200, "Betreff ist zu lang."),
-    message: z
-      .string()
-      .trim()
-      .min(1, "Bitte eine Nachricht eingeben.")
-      .max(100_000, "Nachricht ist zu lang."),
-    selectedUserIds: z.array(z.string().min(1)).default([]),
-    /** Checkbox „BCC an mich“: FormData sendet value "on" wenn gesetzt */
-    bccToSelf: z.boolean().default(false),
-    /**
-     * Angekündigter Termin. Ist er gesetzt, hängt der Versand einen Terminblock
-     * mit Eckdaten und Knopf zur Terminseite an die Nachricht — der Text im
-     * Editor bleibt davon unberührt.
-     */
+    salutation: z.enum(["PERSONAL", "NONE"], { message: "Bitte eine Anrede wählen." }),
+    /** Bei Termin und Beitrag optional — dort trägt der Infoblock den Inhalt. */
+    message: z.string().trim().max(100_000, "Nachricht ist zu lang."),
+    bccToSelf: z.enum(["yes", "no"], { message: "Bitte angeben, ob du eine Kopie bekommst." }).transform((v) => v === "yes"),
     eventId: optionalEventId,
-    /** Checkbox „Kalenderdatei anhängen“ — wirkt nur zusammen mit `eventId`. */
+    /** Kalenderdatei anhängen — wirkt nur bei der Terminvorlage. */
     attachIcs: z.boolean().default(false),
-    /**
-     * Pflichtangabe ohne Vorauswahl: ein Newsletter geht nur an Abonnenten und
-     * trägt einen Abmeldelink, alles andere an alle und ohne.
-     */
-    newsletter: z
-      .enum(["yes", "no"], { message: "Bitte angeben, ob die Mail ein Newsletter ist." })
-      .transform((value) => value === "yes"),
+    postId: optionalEventId,
+    /** Geplantes Einzugsdatum der SEPA-Ankündigung, YYYY-MM-DD. */
+    sepaDate: z.string().trim().default(""),
   })
   .superRefine((data, ctx) => {
     if (data.target === "SELECTED" && data.selectedUserIds.length === 0) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Bitte mindestens einen Empfänger auswählen.",
-        path: ["selectedUserIds"],
-      });
+      ctx.addIssue({ code: "custom", message: "Bitte mindestens einen Empfänger auswählen.", path: ["selectedUserIds"] });
+    }
+    if (data.template === "EVENT" && !data.eventId) {
+      ctx.addIssue({ code: "custom", message: "Bitte einen Termin wählen.", path: ["eventId"] });
+    }
+    if (data.template === "BLOG" && !data.postId) {
+      ctx.addIssue({ code: "custom", message: "Bitte einen Beitrag wählen.", path: ["postId"] });
+    }
+    if (data.template === "SEPA") {
+      if (data.newsletter) {
+        ctx.addIssue({ code: "custom", message: "Die SEPA-Ankündigung ist eine Pflichtmitteilung, kein Newsletter.", path: ["newsletter"] });
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data.sepaDate) || data.sepaDate <= isoDate(new Date())) {
+        ctx.addIssue({ code: "custom", message: "Das Einzugsdatum muss in der Zukunft liegen.", path: ["sepaDate"] });
+      }
+    }
+    if ((data.template === "SEPA" || data.template === "OTHER") && !hasText(data.message)) {
+      ctx.addIssue({ code: "custom", message: "Bitte eine Nachricht eingeben.", path: ["message"] });
     }
   });
+
+export type MailSendInput = z.infer<typeof mailSendSchema>;
 
 /** Direktmail an explizit ausgewählte Nutzer (Overlay, Fees-Erinnerung, …) */
 export const directMailSchema = z.object({

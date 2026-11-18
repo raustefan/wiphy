@@ -11,7 +11,7 @@ Dashboard → **Termine** → **Neuer Termin**.
 | Feld | Hinweis |
 |---|---|
 | Titel | |
-| Kurzbeschreibung | 1–2 Sätze. Steht in der Terminliste, auf der Startseite und in der Einladungsmail. |
+| Kurzbeschreibung | 1–2 Sätze. Steht in der Terminliste, auf der Startseite und im Infoblock der Einladungsmail. |
 | Ganztägig | ohne Uhrzeit |
 | Beginn / Ende | Ende optional. Der blaue Kasten darunter zeigt, wie der Zeitraum öffentlich steht. |
 | Ort / Anschrift | Die Anschrift wird zum Kartenlink und steht in der Kalenderdatei. |
@@ -43,12 +43,16 @@ Dashboard → **Blog** → **Neuer Beitrag**.
 | Titel, Autor | Autor ist frei wählbar |
 | Veröffentlichungsdatum | bestimmt die Reihenfolge |
 | Gehört zu Termin | macht den Beitrag zum **Rückblick**. Termin und Beitrag verlinken dann aufeinander. |
-| Kurze Textpreview | Pflicht. Steht in der Übersicht unter dem Titel. |
+| Kurze Textpreview | Pflicht. Steht in der Übersicht unter dem Titel und in der Ankündigungsmail. |
 | Inhalt | Markdown, Werkzeugleiste für fett, Links, Listen |
 | Beitrag veröffentlichen | Haken = sichtbar für alle |
 
 Veröffentlichte Beiträge stehen unter `/blog`, im RSS-Feed und (der neueste) auf
 der Startseite.
+
+In der Liste erscheint bei veröffentlichten Beiträgen der letzten sechs Monate
+**Per Mail ankündigen**. Das öffnet die Rundmail mit der Vorlage Blogpost, siehe
+[Kommunikation](kommunikation.md#blogbeitrag-ankündigen).
 
 ### Bilder
 
